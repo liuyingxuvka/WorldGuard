@@ -5,17 +5,17 @@
   "command": "python -m pytest -q tests/test_contracts.py tests/test_guard_model_contract.py",
   "status": "passed",
   "exit_code": 0,
-  "started_at": "2026-08-01T10:49:11.788089+00:00",
-  "finished_at": "2026-08-01T10:49:17.632931+00:00",
+  "started_at": "2026-08-09T18:29:16.742338+00:00",
+  "finished_at": "2026-08-09T18:29:22.044960+00:00",
   "artifact_fingerprints": {
-    ".flowguard/behavior_commitment_ledger/ledger.json": "sha256:5e4e61a3721d898ec9dd91c02adbc3e3edbf44f61912f6cd9ce8e64ea98a64aa",
+    ".flowguard/behavior_commitment_ledger/ledger.json": "sha256:caa44c747a4bef489497c0302cddb7539d0f2c62dccaa98dbd876e24c684d20e",
     ".flowguard/behavior_commitment_ledger/model.py": "sha256:74cb7891116f4ea5f2f93807f5f61fa2e04d0485cd499fed8d700267e2c044f9",
-    ".flowguard/behavior_commitment_ledger/run_checks.py": "sha256:0ec873e11efc480990908ac063f8a570330c639333c82f64d236ff2cea035ace",
-    "worldguard/contracts.py": "sha256:a95f2f0cb3949ce244745011326eeac455c99598e132902a1b6314caa0d1c4ae",
-    "worldguard/semantic.py": "sha256:47a7042a2d8274b9b237a658ea04e6facda09c4263881014663863ff9e2c9474",
-    "worldguard/guard_model_contract.py": "sha256:afe7922771ded4fba75fb262d0e4fa52433bc8aedd806dced2e65e7e5233af8c",
+    ".flowguard/behavior_commitment_ledger/run_checks.py": "sha256:dfa33a800b62e53e622528e67921e6b200e90f011e6784cab0ec9b6f7c27c582",
+    "worldguard/contracts.py": "sha256:d809f4130e45c7f86c16faaec159fdd8eb3bdb4f9382a9e2d7bf3c31f71bdc09",
+    "worldguard/semantic.py": "sha256:c28ac93438c9805f33c71379dc2d16000e676adec4ccd739652e79c1485f0ca2",
+    "worldguard/guard_model_contract.py": "sha256:5dc0e513690cb1d0779bc9fbdf354bd65325e26dbe9aaf016ac63c11243f78e9",
     "tests/test_contracts.py": "sha256:71f59451db58b147aef45cf839dece0dcade3c9f4a817e04fbb73a6d15cf7361",
-    "tests/test_guard_model_contract.py": "sha256:2bb74cbfefcfbc3a92a8638c0ea411114fb8bea11af7d52c668e3c15a59d5200",
+    "tests/test_guard_model_contract.py": "sha256:fde19ab76ff1db883e68c61b6834024f01ab66983798a2585db2b31499c7a4b5",
     ".flowguard/semantic_rollout_model.py": "sha256:a88d17e5c2e513e19c435b63a82a40e2972d3f61ff78e42ea1713b9c6593bb03"
   },
   "toolchain_identity": {
@@ -28,7 +28,7 @@
     ],
     "pytest_version": "9.0.3"
   },
-  "stdout": "..................................                                       [100%]\n34 passed in 4.22s\n",
+  "stdout": "..................................                                       [100%]\n34 passed in 3.98s\n",
   "stderr": "",
-  "receipt_hash": "sha256:2406d15ab77cc6e3ea4de79d0d6b735cb7909c10baa110b413699bd1da05596a"
+  "receipt_hash": "sha256:6484a023ce2eabd5139b7e9b9d33cb11f7bebe1e3f97624e5c62429cacd1e8a3"
 }

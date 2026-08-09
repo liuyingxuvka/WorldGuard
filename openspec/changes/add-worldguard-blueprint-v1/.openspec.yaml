@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-04
+goal: Make WorldGuard produce a living world or workflow DNA while FlowGuard
+  retains ownership of the generic software-blueprint skeleton.

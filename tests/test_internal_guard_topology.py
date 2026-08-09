@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from dataclasses import replace
 from pathlib import Path
 
 
@@ -37,13 +38,28 @@ def test_current_worldguard_has_one_entry_and_seven_internal_routes():
     report = MODULE.check(ROOT)
 
     assert report["ok"], report["findings"]
+    assert report["schema_version"] == "worldguard.internal_guard_topology_check.v5"
+    assert "canonical projection owner" in report["claim_boundary"]
+    assert "not evaluated here" in report["claim_boundary"]
+    assert not hasattr(MODULE, "_runtime_inventory")
+    assert not hasattr(MODULE, "_hash")
     assert report["public_skill_ids"] == ["worldguard"]
     assert report["project_console_ids"] == ["worldguard"]
-    assert report["source_version"] == "0.7.1"
+    assert report["source_version"] == "0.7.3"
     assert len(report["internal_guard_ids"]) == 7
+    assert report["semantic_input_surfaces"]["EventGuard"]["implementation"] == sorted(
+        report["semantic_input_surfaces"]["EventGuard"]["binding"]
+    )
+    assert report["semantic_input_surfaces"]["CausalGuard"]["implementation"] == sorted(
+        report["semantic_input_surfaces"]["CausalGuard"]["binding"]
+    )
+    assert report["semantic_input_surfaces"]["ConflictGuard"]["implementation"] == sorted(
+        report["semantic_input_surfaces"]["ConflictGuard"]["binding"]
+    )
     assert report["task_shape_ids"] == [
         "unit_contract",
         "model_mesh",
+        "world_blueprint",
         "task_local_revision",
         "template_pack",
     ]
@@ -109,6 +125,76 @@ def test_missing_route_admission_field_is_rejected(tmp_path: Path):
         and "first_native_action" in finding.get("fields", [])
         for finding in report["findings"]
     )
+
+
+def test_implementation_input_surface_catches_shared_route_and_binding_omission(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    from worldguard.semantic import EXECUTOR_REGISTRY
+
+    omitted_field = "inputs.event_model.initial_states"
+    payload = _payload()
+    event_route = next(
+        row for row in payload["routes"] if row["guard_id"] == "EventGuard"
+    )
+    event_route["possible_consumed_input_fields"].remove(omitted_field)
+    topology = tmp_path / "routes.json"
+    topology.write_text(json.dumps(payload), encoding="utf-8")
+
+    executor = EXECUTOR_REGISTRY["EventGuard"]
+    narrowed_binding = replace(
+        executor.binding,
+        possible_consumed_input_fields=tuple(
+            field
+            for field in executor.binding.possible_consumed_input_fields
+            if field != omitted_field
+        ),
+    )
+    monkeypatch.setitem(
+        EXECUTOR_REGISTRY,
+        "EventGuard",
+        replace(executor, binding=narrowed_binding),
+    )
+
+    report = MODULE.check(ROOT, topology_path=topology)
+
+    assert not report["ok"]
+    omission = next(
+        finding
+        for finding in report["findings"]
+        if finding["code"] == "semantic_input_surface_omitted"
+        and finding["guard_id"] == "EventGuard"
+    )
+    assert omission["fields"] == [omitted_field]
+    assert not any(
+        finding["code"] == "internal_route_binding_mismatch"
+        and finding.get("guard_id") == "EventGuard"
+        and finding.get("field") == "possible_consumed_input_fields"
+        for finding in report["findings"]
+    )
+
+
+def test_retired_internal_route_required_input_field_is_rejected(
+    tmp_path: Path,
+) -> None:
+    payload = _payload()
+    event_route = next(
+        row for row in payload["routes"] if row["guard_id"] == "EventGuard"
+    )
+    event_route["required_input_fields"] = event_route.pop(
+        "possible_consumed_input_fields"
+    )
+    topology = tmp_path / "routes.json"
+    topology.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = MODULE.check(ROOT, topology_path=topology)
+
+    assert not report["ok"]
+    assert {
+        "retired_internal_route_input_field_present",
+        "internal_route_fields_missing",
+    } <= {finding["code"] for finding in report["findings"]}
 
 
 def test_missing_task_shape_reference_is_rejected(tmp_path: Path):

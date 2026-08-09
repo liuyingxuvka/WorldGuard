@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -269,22 +271,68 @@ def claim_semantics(claim: Claim) -> tuple[str, ...]:
     return tuple(dict.fromkeys(str(item).strip().lower() for item in values if str(item).strip()))
 
 
-def derive_required_guards(claim: Claim) -> tuple[str, ...]:
-    """Derive target-owned Guard requirements from claim semantics, not caller route choice."""
+@dataclass(frozen=True)
+class GuardRequirementDerivation:
+    """Canonical claim-to-Guard denominator shared by every WorldGuard route."""
+
+    claim_id: str
+    requested_semantics: tuple[str, ...]
+    guard_ids: tuple[str, ...]
+    unmapped_semantics: tuple[str, ...]
+    fingerprint: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": "worldguard.guard_requirement_derivation.v1",
+            "claim_id": self.claim_id,
+            "requested_semantics": list(self.requested_semantics),
+            "guard_ids": list(self.guard_ids),
+            "unmapped_semantics": list(self.unmapped_semantics),
+            "fingerprint": self.fingerprint,
+        }
+
+
+def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
+    """Own the one current claim-semantics-to-Guard derivation path."""
 
     guards: list[str] = []
     semantics = claim_semantics(claim)
     for semantic in semantics:
         guards.extend(SEMANTIC_GUARD_ROUTES.get(semantic, ()))
-    return tuple(dict.fromkeys(guards))
+    guard_ids = tuple(dict.fromkeys(guards))
+    unmapped = tuple(
+        semantic for semantic in semantics if semantic not in SEMANTIC_GUARD_ROUTES
+    )
+    identity = {
+        "schema_version": "worldguard.guard_requirement_derivation.v1",
+        "claim_id": claim.claim_id,
+        "requested_semantics": list(semantics),
+        "guard_ids": list(guard_ids),
+        "unmapped_semantics": list(unmapped),
+    }
+    canonical = json.dumps(
+        identity,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return GuardRequirementDerivation(
+        claim_id=claim.claim_id,
+        requested_semantics=semantics,
+        guard_ids=guard_ids,
+        unmapped_semantics=unmapped,
+        fingerprint="sha256:" + hashlib.sha256(canonical).hexdigest(),
+    )
+
+
+def derive_required_guards(claim: Claim) -> tuple[str, ...]:
+    """Return the Guard IDs from the canonical requirement derivation."""
+
+    return derive_guard_requirements(claim).guard_ids
 
 
 def unmapped_claim_semantics(claim: Claim) -> tuple[str, ...]:
-    return tuple(
-        semantic
-        for semantic in claim_semantics(claim)
-        if semantic not in SEMANTIC_GUARD_ROUTES
-    )
+    return derive_guard_requirements(claim).unmapped_semantics
 
 
 @dataclass(frozen=True)

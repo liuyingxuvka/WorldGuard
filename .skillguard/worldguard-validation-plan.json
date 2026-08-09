@@ -1,7 +1,13 @@
 {
   "schema_version": "worldguard.skillguard_validation_plan.v1",
-  "plan_id": "worldguard-skillguard-0.7-current-seven-check-validation",
-  "status": "frozen_pending_execution",
+  "plan_id": "worldguard-skillguard-0.7-historical-seven-check-validation",
+  "status": "stale",
+  "execution_disposition": "not_executable",
+  "stale_reason_codes": [
+    "seven-check-plan-predates-blueprint-integrity-owner",
+    "source-contract-and-test-mesh-are-current-static-authority",
+    "no-owner-execution-authorized"
+  ],
   "maintenance_unit_id": "unit:worldguard",
   "member_skill_ids": [
     "worldguard"
@@ -15,7 +21,7 @@
     "check_manifest_hash": "1972059FDD7C94EEBF398AB38F6F21C4FACE0B9D17D3D75A895BC2DA6679DEB8",
     "content_impact_graph_hash": "sha256:bc7f32a536286e50085698151cb793d71fa159dbef120503cc206d3503d7e9f8"
   },
-  "execution_identity": {
+  "historical_execution_identity": {
     "execution_owner": "skillguard-supervisor-single-foreground-owner",
     "run_state_root": "work/skillguard/v0.7.0-current/run-state",
     "owner_evidence_root": "work/verification/skillguard-v0.7.0-current/owner-evidence",
@@ -144,10 +150,15 @@
     "foreign_unit_receipt_reuse": false,
     "skillguard_added_domain_checks": 0
   },
+  "current_static_authority": {
+    "contract_source_path": "skills/worldguard/.skillguard/contract-source.json",
+    "test_mesh_path": "skills/worldguard/.skillguard/test-mesh.json",
+    "execution_evidence": "not_run"
+  },
   "closure_boundary": {
-    "source_maintenance": "requires current compile parity and maintainer audit",
-    "declared_validation": "requires seven current terminal-success producer receipts and enforced closure",
-    "consumer_projection": "read-only exact source parity plus author-state exclusion",
+    "source_maintenance": "superseded by the current compiled contract and current TestMesh static authority",
+    "declared_validation": "historical seven-check inventory only; not executable and no receipt is accepted from this record",
+    "consumer_projection": "historical declaration only; current projection requires separate current evidence",
     "installation": "not_run",
     "commit": "not_run",
     "push": "not_run",
@@ -155,5 +166,5 @@
     "release": "not_run",
     "openspec_archive": "not_run"
   },
-  "claim_boundary": "This freezes WorldGuard's exact target-declared validation ownership. It does not execute checks, deepen target criteria, install a consumer, publish, release, or prove future AI behavior."
+  "claim_boundary": "This file preserves the pre-blueprint seven-check validation-plan identity as visibly stale and non-executable. Current static ownership comes only from the compiled nine-check contract and the single current TestMesh; this record executes nothing, accepts no receipt, and proves no installation, publication, release, or future AI behavior."
 }

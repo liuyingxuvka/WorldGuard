@@ -1,0 +1,1 @@
+{"policy_decision_record":{"initial":false,"state_id":"access_approved","terminal":true},"policy_rule":{"action":"enter_restricted_zone","condition":"training_valid","condition_value":true,"modality":"permitted","subject_id":"request_actor"},"policy_subject":{"agent_id":"inspector_lee","belief":"training_record_available"}}

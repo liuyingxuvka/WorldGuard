@@ -6,7 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from worldguard import GuardContract, ModelMeshContract
+from worldguard import (
+    GuardContract,
+    ModelMeshContract,
+    QualificationContext,
+    SemanticStatus,
+    run_worldguard,
+)
+from worldguard.status import GuardStatus
 from worldguard.guard_model_contract import (
     PROTECTED_FAILURE_CLASSES,
     build_calibration_task_purpose_declaration,
@@ -185,6 +192,74 @@ def test_no_match_without_base_is_a_typed_blocker() -> None:
             slot_bindings={},
         )
     assert caught.value.code == "TEMPLATE_SELECTION_NO_MATCH"
+
+
+def test_one_matching_candidate_without_base_is_a_typed_blocker() -> None:
+    candidate = TemplatePackManifest.build(
+        pack_id="test.guard.candidate",
+        pack_version="1",
+        contract_kind=GUARD_CONTRACT_KIND,
+        is_base=False,
+        required_fact_ids=("candidate:yes",),
+        fragments=(TemplateFragment.build("fragment:candidate", {"inputs": {"events": []}}),),
+        native_validator_ids=(VALIDATOR_GUARD_SHAPE,),
+        claim_boundary="test-only construction boundary",
+    )
+    registry = TemplatePackRegistry.build((candidate,))
+
+    assert registry.select(GUARD_CONTRACT_KIND, ("candidate:yes",)).outcome == "selected"
+    with pytest.raises(TemplatePackError) as caught:
+        build_template_instance(
+            registry,
+            contract_kind=GUARD_CONTRACT_KIND,
+            fact_ids=("candidate:yes",),
+            slot_bindings={},
+        )
+    assert caught.value.code == "TEMPLATE_SELECTED_BASE_MISSING"
+
+
+def test_two_base_templates_are_rejected_before_selection() -> None:
+    current = builtin_template_registry().by_id("worldguard.guard-contract.base")
+    second = replace(
+        current,
+        pack_id="worldguard.guard-contract.second-base",
+        manifest_fingerprint="",
+    )
+    second = replace(second, manifest_fingerprint=second.current_fingerprint())
+
+    with pytest.raises(TemplatePackError) as caught:
+        TemplatePackRegistry.build((current, second))
+    assert caught.value.code == "TEMPLATE_BASE_AMBIGUOUS"
+
+
+def test_template_construction_never_substitutes_for_semantic_provider_or_depth() -> None:
+    instance = build_template_instance(
+        builtin_template_registry(),
+        contract_kind=GUARD_CONTRACT_KIND,
+        fact_ids=["guard:EventGuard"],
+        slot_bindings=_event_bindings(),
+    )
+
+    provider_missing = run_worldguard(
+        instance.data,
+        context=QualificationContext(
+            provider_availability={"EventGuard": False},
+        ),
+    )
+    assert provider_missing.structural_status == GuardStatus.PASS
+    assert provider_missing.semantic_status == SemanticStatus.NOT_RUN
+    assert provider_missing.status == GuardStatus.GAP
+
+    depth_not_run = run_worldguard(
+        instance.data,
+        context=QualificationContext(
+            rollout_inputs={"status": "NOT_RUN"},
+        ),
+    )
+    assert depth_not_run.structural_status == GuardStatus.PASS
+    assert depth_not_run.semantic_status == SemanticStatus.PASS
+    assert depth_not_run.rollout_status == SemanticStatus.NOT_RUN
+    assert depth_not_run.status == GuardStatus.GAP
 
 
 def test_composition_rejects_overlapping_field_owners() -> None:

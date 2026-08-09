@@ -24,12 +24,20 @@
       "all_owner_component_changed"
     ]
   },
+  "content_role_overrides": [
+    {
+      "path": "skills/worldguard/.skillguard",
+      "role": "contract_schema",
+      "install_disposition": "source_only",
+      "reason": "author_control_never_enters_projection_installation"
+    }
+  ],
   "step_bindings": [
     {
       "step_id": "step:derive-world-coverage-universe",
       "action": {
         "kind": "flowguard_model",
-        "summary": "Load the target-owned WorldGuard FlowGuard export."
+        "summary": "Load the author-side WorldGuard maintenance-process model export without claiming World domain behavior."
       },
       "check_ids": [
         "check:worldguard:flowguard-contract-model"
@@ -37,10 +45,21 @@
       "output_artifact_ids": []
     },
     {
+      "step_id": "step:verify-worldguard-portable-runtime-projection",
+      "action": {
+        "kind": "verifier",
+        "summary": "Verify the one-way author-source-to-portable-runtime projection, exact raw-byte inventory, transactional sync, and isolated bundled import."
+      },
+      "check_ids": [
+        "check:worldguard:portable-runtime-projection"
+      ],
+      "output_artifact_ids": []
+    },
+    {
       "step_id": "step:verify-worldguard-internal-topology",
       "action": {
         "kind": "verifier",
-        "summary": "Verify one public skill, seven internal Guards, their semantic executors, bundled parity, and source-version identity."
+        "summary": "Verify one public skill, seven internal Guards, semantic executors, source-version identity, and the legacy entry facade over the portable CLI."
       },
       "check_ids": [
         "check:worldguard:internal-guard-topology"
@@ -77,6 +96,17 @@
       },
       "check_ids": [
         "check:worldguard:native-depth"
+      ],
+      "output_artifact_ids": []
+    },
+    {
+      "step_id": "step:verify-worldguard-blueprint-integrity",
+      "action": {
+        "kind": "verifier",
+        "summary": "Verify the target-owned WorldGuard blueprint domain path across the complete fixture, fail-closed counterexamples, qualification, seven-Guard semantics, impact/reverse trace, and read-only queries."
+      },
+      "check_ids": [
+        "check:worldguard:blueprint-integrity"
       ],
       "output_artifact_ids": []
     },
@@ -151,10 +181,6 @@
         },
         {
           "kind": "path",
-          "path": "skills/worldguard/runtime/worldguard/fact_revision.py"
-        },
-        {
-          "kind": "path",
           "path": "skills/worldguard/runtime/worldguard/__init__.py"
         },
         {
@@ -167,23 +193,11 @@
         },
         {
           "kind": "path",
-          "path": "worldguard/fact_revision.py"
-        },
-        {
-          "kind": "path",
           "path": "tests/test_task_local_revision.py"
         },
         {
           "kind": "path",
-          "path": "tests/test_fact_revision.py"
-        },
-        {
-          "kind": "path",
           "path": "skills/worldguard/references/worldguard-contracts.md"
-        },
-        {
-          "kind": "path",
-          "path": "skills/worldguard/references/fact-revision.md"
         },
         {
           "kind": "path",
@@ -262,7 +276,7 @@
       "expected": {
         "exit_code": 0
       },
-      "coverage_rationale": "Runs WorldGuard's bundled target-native four-valued fact revision oracle, including contradiction visibility without explosion, immutable preview, preservation enforcement, exact regression/holdout evidence-bound activation, and mandatory return to the sole task-local model owner.",
+      "coverage_rationale": "Runs WorldGuard's bundled target-native formal four-valued fact-revision oracle directly, including contradiction visibility without explosion, immutable preview, preservation enforcement, exact regression/holdout evidence-bound activation, and mandatory return to the sole task-local model owner; an unexecuted pytest file is not claimed as evidence.",
       "maintenance_unit_id": "unit:worldguard",
       "member_skill_id": "worldguard",
       "evidence_subject_id": "subject:check:worldguard:fact-revision"
@@ -333,7 +347,7 @@
       "evidence_class": "hard",
       "timeout_seconds": 180,
       "coverage_scope": "suite",
-      "evidence_domain_id": "worldguard:native-validation",
+      "evidence_domain_id": "worldguard:maintenance-process-model",
       "check_id": "check:worldguard:flowguard-contract-model",
       "kind": "command",
       "command": "python",
@@ -342,7 +356,7 @@
       ],
       "cwd_token": "repository_root",
       "covers_obligation_ids": [
-        "obligation:worldguard-claim-routes"
+        "obligation:worldguard-maintenance-model-export"
       ],
       "depends_on_check_ids": [],
       "execution_owner_id": "owner:worldguard:flowguard-contract-model",
@@ -356,7 +370,7 @@
       "expected": {
         "exit_code": 0
       },
-      "coverage_rationale": "Loads the exact target-owned FlowGuard export that binds WorldGuard routes, steps, and obligations.",
+      "coverage_rationale": "Loads the exact author-side FlowGuard export for maintenance-check steps, ownership, obligations, and process terminals only. It is process evidence and does not prove World domain behavior, blueprint semantics, or runtime correctness.",
       "maintenance_unit_id": "unit:worldguard",
       "member_skill_id": "worldguard",
       "evidence_subject_id": "subject:check:worldguard:flowguard-contract-model"
@@ -370,17 +384,19 @@
       "kind": "command",
       "command": "python",
       "args": [
-        "skills/worldguard/scripts/check_internal_guard_topology.py",
-        "--repository-root",
-        ".",
-        "--json"
+        "-m",
+        "pytest",
+        "tests/test_internal_guard_topology.py",
+        "tests/test_run_worldguard_check_helper.py",
+        "-q"
       ],
       "cwd_token": "repository_root",
       "covers_obligation_ids": [
         "obligation:worldguard-internal-guard-topology",
         "obligation:worldguard-internal-guard-completeness",
         "obligation:worldguard-internal-guard-semantics",
-        "obligation:worldguard-source-version-identity"
+        "obligation:worldguard-source-version-identity",
+        "obligation:worldguard-portable-check-entry-facade"
       ],
       "depends_on_check_ids": [],
       "execution_owner_id": "owner:worldguard:internal-guard-topology",
@@ -421,21 +437,33 @@
         },
         {
           "kind": "path",
+          "path": "skills/worldguard/scripts/run_worldguard_check.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_run_worldguard_check_helper.py"
+        },
+        {
+          "kind": "path",
+          "path": "examples/model_mesh/basic_mesh.yaml"
+        },
+        {
+          "kind": "subtree",
+          "path": "skills/worldguard/runtime/worldguard"
+        },
+        {
+          "kind": "path",
           "path": ".flowguard/run_claim_derived_coverage_checks.py"
         },
         {
           "kind": "subtree",
           "path": "worldguard"
-        },
-        {
-          "kind": "subtree",
-          "path": "skills/worldguard/runtime/worldguard"
         }
       ],
       "expected": {
         "exit_code": 0
       },
-      "coverage_rationale": "Proves source version 0.7.1, one public WorldGuard skill/console, exact task-shape and seven-runner/semantic-executor inventories, complete admission/expectation/prediction-response-validation-terminal bindings, and byte-identical authoritative and bundled runtimes.",
+      "coverage_rationale": "Runs the complete topology and helper-facade suites. It proves source version 0.7.1, one public WorldGuard skill/console, exact task-shape and seven-runner/semantic-executor inventories, complete admission/expectation/prediction-response-validation-terminal bindings, and one bundled-runtime-origin-checked argument facade over the sole CLI. Raw-byte source/bundle parity remains owned only by portable-runtime-projection.",
       "maintenance_unit_id": "unit:worldguard",
       "member_skill_id": "worldguard",
       "evidence_subject_id": "subject:check:worldguard:internal-guard-topology"
@@ -626,6 +654,200 @@
       "maintenance_unit_id": "unit:worldguard",
       "member_skill_id": "worldguard",
       "evidence_subject_id": "subject:check:worldguard:native-depth"
+    },
+    {
+      "evidence_class": "hard",
+      "timeout_seconds": 300,
+      "coverage_scope": "suite",
+      "evidence_domain_id": "worldguard:blueprint-integrity",
+      "check_id": "check:worldguard:blueprint-integrity",
+      "kind": "command",
+      "command": "python",
+      "args": [
+      "-m",
+      "pytest",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_world_blueprint.py",
+      "tests/test_world_blueprint_freeze_blockers.py",
+      "tests/test_world_blueprint_target_semantic_authority.py",
+      "tests/test_world_blueprint_object_census.py",
+      "tests/test_qualification.py",
+        "tests/test_blueprint_impact_trace.py",
+      "tests/test_blueprint_cli.py",
+      "tests/test_world_blueprint_bundle.py",
+      "tests/test_world_blueprint_policy_target.py",
+      "tests/test_world_blueprint_seven_guard_matrix.py::test_seven_guard_matrix_uses_independent_domain_oracles",
+        "tests/test_world_blueprint_seven_guard_matrix.py::test_owner_inputs_do_not_invent_domain_facts",
+        "tests/test_world_blueprint_seven_guard_matrix.py::test_event_rollout_keeps_event_fluent_transition_and_state_identities_separate",
+        "tests/test_world_blueprint_seven_guard_matrix.py::test_every_native_field_has_one_disposition_and_mutation_path",
+        "tests/test_world_blueprint_seven_guard_matrix.py::test_causal_claim_scopes_are_requested_evaluated_and_licensed_honestly",
+        "tests/test_skillguard_blueprint_integrity.py::test_blueprint_queries_leave_contract_and_fixture_unchanged",
+        "-q"
+      ],
+      "cwd_token": "repository_root",
+      "covers_obligation_ids": [
+        "obligation:worldguard-blueprint-complete-fixture",
+        "obligation:worldguard-blueprint-known-bad-closure",
+        "obligation:worldguard-blueprint-qualification",
+        "obligation:worldguard-blueprint-impact-reverse-trace",
+        "obligation:worldguard-blueprint-query-read-only"
+      ],
+      "depends_on_check_ids": [],
+      "execution_owner_id": "owner:worldguard:blueprint-integrity",
+      "semantic_check_id": "semantic:worldguard:blueprint-integrity",
+      "native_route_id": "route:worldguard-claim-derived-depth",
+      "input_selectors": [
+        {
+          "kind": "subtree",
+          "path": "worldguard"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/SKILL.md"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/agents/openai.yaml"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/references/world-blueprint.md"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/references/entry-routing.md"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/references/model-authority.md"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/references/closure-report.md"
+        },
+        {
+          "kind": "path",
+          "path": "skills/worldguard/references/internal-guard-routes.json"
+        },
+        {
+          "kind": "subtree",
+          "path": "tests/fixtures/world_blueprint"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint_freeze_blockers.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint_target_semantic_authority.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint_object_census.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/object_census_fixtures.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_qualification.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_blueprint_impact_trace.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_skillguard_blueprint_integrity.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint_seven_guard_matrix.py"
+        },
+      {
+        "kind": "path",
+        "path": "tests/test_blueprint_cli.py"
+      },
+      {
+        "kind": "path",
+        "path": "tests/test_world_blueprint_bundle.py"
+      },
+      {
+        "kind": "path",
+        "path": "tests/test_world_blueprint_policy_target.py"
+      },
+      {
+        "kind": "path",
+        "path": "scripts/refresh_world_blueprint_external_dna_fixtures.py"
+      }
+      ],
+      "expected": {
+        "exit_code": 0
+      },
+    "coverage_rationale": "One exact WorldGuard-owned domain pytest producer runs the complete blueprint, freeze-blocker, target-semantic-authority, signed external-object census, qualification, impact/trace, CLI, current-only portable bundle, and distinct policy-target suites plus every selected seven-Guard domain-oracle case. It covers the non-code fixtures, per-element four-role authority denominator, exact parent/summary derivations, fail-closed hierarchy/ports/bindings/output closure, independent target-material replay, cache/catalog regeneration, the sole compressed-resource codec and attack surface, exact target semantic denominators and owner reconciliation, coherent-shrink and false-N/A adversaries, census signature/trust/coverage/claim-kind boundaries, separate native versus object-DNA qualification, canonical qualification, affected/reverse provenance, query preflight/termination/read-only behavior, and exact Guard semantics; it makes no helper facade, installation, Git, tag, or release claim.",
+      "maintenance_unit_id": "unit:worldguard",
+      "member_skill_id": "worldguard",
+      "evidence_subject_id": "subject:check:worldguard:blueprint-integrity"
+    },
+    {
+      "evidence_class": "hard",
+      "timeout_seconds": 300,
+      "coverage_scope": "suite",
+      "evidence_domain_id": "worldguard:portable-runtime-projection",
+      "check_id": "check:worldguard:portable-runtime-projection",
+      "kind": "command",
+      "command": "python",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_worldguard_portable_runtime_projection.py",
+        "tests/test_world_blueprint_seven_guard_matrix.py::test_source_and_bundled_runtime_have_all_file_parity_and_isolated_import",
+        "-q"
+      ],
+      "cwd_token": "repository_root",
+      "covers_obligation_ids": [
+        "obligation:worldguard-blueprint-source-bundle-parity",
+        "obligation:worldguard-portable-runtime-projection"
+      ],
+      "depends_on_check_ids": [],
+      "execution_owner_id": "owner:worldguard:portable-runtime-projection",
+      "semantic_check_id": "semantic:worldguard:portable-runtime-projection",
+      "native_route_id": "route:worldguard-claim-derived-depth",
+      "input_selectors": [
+        {
+          "kind": "subtree",
+          "path": "worldguard"
+        },
+        {
+          "kind": "subtree",
+          "path": "skills/worldguard/runtime/worldguard"
+        },
+        {
+          "kind": "path",
+          "path": "scripts/sync_worldguard_portable_runtime.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_worldguard_portable_runtime_projection.py"
+        },
+        {
+          "kind": "path",
+          "path": "tests/test_world_blueprint_seven_guard_matrix.py"
+        }
+      ],
+      "expected": {
+        "exit_code": 0
+      },
+      "coverage_rationale": "One exact process owner runs the complete portable projection suite and the isolated bundled-import parity case. It proves the sole directional raw-byte source-to-bundle inventory, read-only audit, staged transactional sync, pre-activation refreezes, rollback, and bundled import origin; it does not claim World blueprint or Guard semantics.",
+      "maintenance_unit_id": "unit:worldguard",
+      "member_skill_id": "worldguard",
+      "evidence_subject_id": "subject:check:worldguard:portable-runtime-projection"
     }
   ],
   "artifacts": [],
@@ -633,6 +855,7 @@
     {
       "profile_id": "enforced",
       "required_obligation_ids": [
+        "obligation:worldguard-maintenance-model-export",
         "obligation:worldguard-claim-routes",
         "obligation:worldguard-semantic-universe",
         "obligation:worldguard-timepoint-strata-depth",
@@ -662,7 +885,15 @@
         "obligation:worldguard-task-shape-admission",
         "obligation:worldguard-complete-guard-derivation",
         "obligation:worldguard-conditional-reference-loading",
-        "obligation:worldguard-prompt-budget-headroom"
+        "obligation:worldguard-prompt-budget-headroom",
+        "obligation:worldguard-blueprint-complete-fixture",
+        "obligation:worldguard-blueprint-known-bad-closure",
+        "obligation:worldguard-blueprint-qualification",
+        "obligation:worldguard-blueprint-impact-reverse-trace",
+        "obligation:worldguard-blueprint-query-read-only",
+        "obligation:worldguard-blueprint-source-bundle-parity",
+        "obligation:worldguard-portable-runtime-projection",
+        "obligation:worldguard-portable-check-entry-facade"
       ]
     }
   ],
@@ -678,6 +909,15 @@
     "skills/worldguard/.skillguard/checks/check_template_packs.py",
     "skills/worldguard/.skillguard/checks/emit_native_depth_evidence.py",
     "skills/worldguard/.skillguard/contract_model.py",
+    "skills/worldguard/runtime/worldguard/blueprint.py",
+    "skills/worldguard/runtime/worldguard/blueprint_bundle.py",
+    "skills/worldguard/runtime/worldguard/blueprint_census.py",
+    "skills/worldguard/runtime/worldguard/qualification.py",
+    "skills/worldguard/runtime/worldguard/cli.py",
+    "skills/worldguard/runtime/worldguard/__init__.py",
+    "skills/worldguard/runtime/worldguard/contracts.py",
+    "skills/worldguard/runtime/worldguard/mesh.py",
+    "skills/worldguard/runtime/worldguard/semantic.py",
     "skills/worldguard/runtime/worldguard",
     "skills/worldguard/SKILL.md",
     "skills/worldguard/agents/openai.yaml",
@@ -687,14 +927,44 @@
     "skills/worldguard/references/worldguard-contracts.md",
     "skills/worldguard/references/internal-guard-routes.json",
     "skills/worldguard/references/entry-routing.md",
+    "skills/worldguard/references/model-authority.md",
+    "skills/worldguard/references/world-blueprint.md",
     "skills/worldguard/references/task-local-model-deepening.md",
     "skills/worldguard/scripts/check_entry_prompt_bundle.py",
     "skills/worldguard/scripts/check_internal_guard_topology.py",
+    "skills/worldguard/scripts/run_worldguard_check.py",
+    "scripts/sync_worldguard_portable_runtime.py",
+    "scripts/refresh_world_blueprint_external_dna_fixtures.py",
     "skills/worldguard/references/closure-report.md",
     "tests/test_fact_revision.py",
     "tests/test_entry_prompt_bundle.py",
     "tests/test_internal_guard_topology.py",
+    "tests/test_run_worldguard_check_helper.py",
+    "tests/test_worldguard_portable_runtime_projection.py",
+    "examples/model_mesh/basic_mesh.yaml",
+    "tests/fixtures/world_blueprint",
+    "tests/test_world_blueprint.py",
+    "tests/test_world_blueprint_freeze_blockers.py",
+    "tests/test_world_blueprint_target_semantic_authority.py",
+    "tests/test_world_blueprint_object_census.py",
+    "tests/object_census_fixtures.py",
+    "tests/test_qualification.py",
+    "tests/test_blueprint_impact_trace.py",
+    "tests/test_skillguard_blueprint_integrity.py",
+    "tests/test_world_blueprint_seven_guard_matrix.py",
+    "tests/test_world_blueprint_bundle.py",
+    "tests/test_world_blueprint_policy_target.py",
+    "tests/test_blueprint_cli.py",
     "tests/test_task_local_revision.py",
+    "worldguard/blueprint.py",
+    "worldguard/blueprint_bundle.py",
+    "worldguard/blueprint_census.py",
+    "worldguard/qualification.py",
+    "worldguard/cli.py",
+    "worldguard/__init__.py",
+    "worldguard/contracts.py",
+    "worldguard/mesh.py",
+    "worldguard/semantic.py",
     "worldguard"
   ],
   "native_route_bindings": [
@@ -733,7 +1003,19 @@
     {
       "binding_id": "native-check:worldguard-internal-guard-topology",
       "native_check_id": "check:worldguard:internal-guard-topology",
-      "evidence_source": "skills/worldguard/scripts/check_internal_guard_topology.py",
+      "evidence_source": "tests/test_internal_guard_topology.py",
+      "required": true
+    },
+    {
+      "binding_id": "native-check:worldguard-blueprint-integrity",
+      "native_check_id": "check:worldguard:blueprint-integrity",
+      "evidence_source": "tests/test_skillguard_blueprint_integrity.py",
+      "required": true
+    },
+    {
+      "binding_id": "native-check:worldguard-portable-runtime-projection",
+      "native_check_id": "check:worldguard:portable-runtime-projection",
+      "evidence_source": "tests/test_worldguard_portable_runtime_projection.py",
       "required": true
     },
     {
@@ -768,6 +1050,8 @@
       "check:worldguard:flowguard-contract-model",
       "check:worldguard:guard-model-contract",
       "check:worldguard:native-depth",
+      "check:worldguard:blueprint-integrity",
+      "check:worldguard:portable-runtime-projection",
       "check:worldguard:template-packs",
       "check:worldguard:internal-guard-topology",
       "check:worldguard:entry-prompt-bundle",
@@ -796,6 +1080,8 @@
       "readiness_check_ids": [
         "check:worldguard:guard-model-contract",
         "check:worldguard:native-depth",
+        "check:worldguard:blueprint-integrity",
+        "check:worldguard:portable-runtime-projection",
         "check:worldguard:template-packs",
         "check:worldguard:internal-guard-topology",
         "check:worldguard:entry-prompt-bundle",
@@ -803,9 +1089,9 @@
         "check:worldguard:fact-revision"
       ]
     },
-    "claim_boundary": "SkillGuard freezes and reconciles eight exact WorldGuard maintenance checks on one author-side route. Domain investigation, semantic rollout, task-local model revision, template, fact revision, entry loading, and seven internal Guard routes remain target-owned and are not duplicated as SkillGuard execution paths."
+    "claim_boundary": "SkillGuard freezes and reconciles ten exact WorldGuard maintenance checks on one author-side route. Blueprint-integrity owns only World domain evidence, portable-runtime-projection owns only source-to-bundle process evidence, internal-guard-topology also owns the portable helper entry facade, and flowguard-contract-model is maintenance-process evidence only. Domain investigation, semantic rollout, blueprint qualification/query semantics, task-local model revision, template, fact revision, entry loading, and seven internal Guard routes remain target-owned and are not duplicated as SkillGuard execution paths."
   },
-  "claim_boundary": "WorldGuard owns every domain route, task-shape and prompt-load decision, task-local predictive revision, template semantic, fact revision semantic, Guard purpose, protected failure, fixture, oracle, rollout, and prediction. SkillGuard supervises eight exact maintenance checks on one author-side route only; it adds no domain route, compatibility reader, or alternate runtime.",
+  "claim_boundary": "WorldGuard owns every domain route, task-shape and prompt-load decision, blueprint hierarchy/interface/binding/qualification/query semantic, task-local predictive revision, template semantic, fact revision semantic, Guard purpose, protected failure, fixture, oracle, rollout, and prediction. SkillGuard supervises ten exact maintenance checks on one author-side route only. The FlowGuard export models that maintenance process rather than the World domain, and the projection/topology/blueprint owners have non-overlapping claim boundaries; no domain route, compatibility reader, or alternate runtime is added.",
   "repository_role": "skill_maintainer_source",
   "maintenance_unit_id": "unit:worldguard",
   "member_skill_ids": [

@@ -1,0 +1,121 @@
+[
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+    "disposition": "replace",
+    "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+    "replacement_id": "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger"
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "coverage:tests_evidence:check:model-regression:current-input-authority",
+    "disposition": "replace",
+    "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+    "replacement_id": "coverage:tests_evidence:check:model-regression:current_input_authority"
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "coverage:tests_evidence:check:model-regression:fact-revision",
+    "disposition": "replace",
+    "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+    "replacement_id": "coverage:tests_evidence:check:model-regression:fact_revision"
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "coverage:tests_evidence:check:model-regression:task-local-revision",
+    "disposition": "replace",
+    "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+    "replacement_id": "coverage:tests_evidence:check:model-regression:task_local_revision"
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "coverage:tests_evidence:check:model-regression:template-selection",
+    "disposition": "replace",
+    "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+    "replacement_id": "coverage:tests_evidence:check:model-regression:template_selection"
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-current-contract-model",
+    "disposition": "scope_out",
+    "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-current-contract-tests",
+    "disposition": "scope_out",
+    "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-fact-revision-model",
+    "disposition": "scope_out",
+    "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-fact-revision-tests",
+    "disposition": "scope_out",
+    "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-template-model",
+    "disposition": "scope_out",
+    "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "external_surface:surface:worldguard-template-tests",
+    "disposition": "scope_out",
+    "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  },
+  {
+    "schema": "flowguard.revision_removal_disposition.v1",
+    "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+    "disposition": "scope_out",
+    "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+    "replacement_id": ""
+  }
+]

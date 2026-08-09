@@ -13,11 +13,11 @@ states its own purpose and boundary before construction.
 
 | Guard | Prevents | Boundary it does not license |
 | --- | --- | --- |
-| EventGuard | Event-sequence claims with absent event records, contradictory fluents, or missing temporal/fluent axioms | Continuous numeric dynamics, physical equations, causality, norms, and resource enablement |
+| EventGuard | Declared event/state/transition records with absent fields, contradictory fluents, or missing temporal/fluent axioms | Guard/effect truth, terminal reachability, continuous numeric dynamics, physical equations, causality, norms, and resource enablement |
 | AgentGuard | BDI claims with absent/incomplete beliefs, desires, or intentions, or conflicting intentions | Payoff equilibrium, causal effects, resource tokens, and deontic permission |
 | SpaceGuard | Qualitative spatial claims with missing, malformed, or inconsistent RCC8 relations | Metric geometry, sensor fusion, and continuous dynamics |
-| ResourceGuard | Finite-resource claims without executable places/transitions or with missing tokens, overflow, or combined over-consumption | Norms, permission, real physics, price, and causality |
-| CausalGuard | SCM claims with missing equations, cycles, unsafe expressions, or failed scalar rollout | Temporal order alone, norms, resources, and game payoffs |
+| ResourceGuard | Direct declared inventory validity or finite-resource claims without executable places/transitions, missing tokens, overflow, or combined over-consumption | Norms, permission, real physics, price, and causality |
+| CausalGuard | Declared graph-only claims with malformed/cyclic edges or SCM claims with missing equations, unsafe expressions, or failed scalar rollout | Mechanism truth, temporal order alone, norms, resources, and game payoffs |
 | ConflictGuard | Finite-game claims with incomplete games, invalid probabilities, missing payoffs, or policy contradictions | Deontic permission, physical enablement, and SCM causality |
 | NormGuard | Deontic claims without applicable norms/facts or that contradict a prohibition | Physical enablement, resource availability, payoff optimality, and causal effects |
 
@@ -32,7 +32,7 @@ For the current runtime:
 - seven purposes are declared;
 - every Guard has exactly one native good case, and both its unit runner and
   semantic executor must return `PASS`;
-- 43 Guard-owned failure classes are protected;
+- 51 Guard-owned failure classes are protected;
 - every protected failure class has exactly one native bad case;
 - every bad case must emit exactly its expected status and single stable code;
 - duplicate, missing, or extra failure cases block the contract.
@@ -80,7 +80,7 @@ a fallback. A real input without its own declaration fails closed.
 
 ## Formal Candidate Binding
 
-The seven-Guard/43-failure family oracle is necessary but does not by itself
+The seven-Guard/51-failure family oracle is necessary but does not by itself
 authorize a real Guard proof. Before `GuardContract.for_guard` constructs a
 formal child candidate, WorldGuard proves and freezes:
 

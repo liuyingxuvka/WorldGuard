@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import math
 from collections import defaultdict
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
@@ -23,15 +24,19 @@ class SemanticStatus(StrEnum):
 class ProviderStatus(StrEnum):
     AVAILABLE = "AVAILABLE"
     UNAVAILABLE = "UNAVAILABLE"
+    STALE = "STALE"
     NOT_REQUIRED = "NOT_REQUIRED"
     MIXED = "MIXED"
+
+
+NORM_MODALITIES = frozenset({"permitted", "obligatory", "forbidden", "prohibited"})
 
 
 @dataclass(frozen=True)
 class SemanticBinding:
     executor_id: str
     guard: str
-    input_fields: tuple[str, ...]
+    possible_consumed_input_fields: tuple[str, ...]
     output_fields: tuple[str, ...]
     supported_semantics: tuple[str, ...]
     unsupported_boundary: str
@@ -40,7 +45,9 @@ class SemanticBinding:
         return {
             "executor_id": self.executor_id,
             "guard": self.guard,
-            "input_fields": list(self.input_fields),
+            "possible_consumed_input_fields": list(
+                self.possible_consumed_input_fields
+            ),
             "output_fields": list(self.output_fields),
             "supported_semantics": list(self.supported_semantics),
             "unsupported_boundary": self.unsupported_boundary,
@@ -181,6 +188,23 @@ def _coverage_context(contract: GuardContract) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
 
+def _resolve_event_guard(value: Any, declared_values: Mapping[str, Any]) -> bool | None:
+    """Evaluate the deliberately small current EventGuard predicate surface."""
+
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip()
+        if normalized.lower() == "true":
+            return True
+        if normalized.lower() == "false":
+            return False
+        declared = declared_values.get(normalized)
+        if isinstance(declared, bool):
+            return declared
+    return None
+
+
 def _variable_timepoint_map(contract: GuardContract) -> dict[str, list[str]]:
     """Read the one current variable-to-timepoint observation mapping."""
 
@@ -203,17 +227,45 @@ def _variable_timepoint_map(contract: GuardContract) -> dict[str, list[str]]:
 def _event(contract: GuardContract):
     event_model = contract.inputs.get("event_model", {})
     events = contract.inputs.get("events", [])
+    states = event_model.get("states", []) if isinstance(event_model, dict) else []
+    transitions = (
+        event_model.get("transitions", []) if isinstance(event_model, dict) else []
+    )
     variable_timepoints = _variable_timepoint_map(contract)
     consumed = {
         "event_model": event_model,
         "events": events,
         "variable_observations": variable_timepoints,
     }
-    if not events:
-        return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_EVENTS", "No executable event records were supplied.")], consumed, {}
+    if not events and not states and not transitions:
+        return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_EVENTS", "No executable event, state, or transition records were supplied.")], consumed, {}
     contradictory = event_model.get("contradictory_fluents")
     if contradictory:
         return SemanticStatus.FAIL, [_finding("SEM_EVENT_CONTRADICTION", "Declared event fluents are contradictory.", evidence={"contradiction": contradictory})], consumed, {}
+    overlapping_fluents = []
+    for index, event in enumerate(events):
+        if not isinstance(event, dict):
+            continue
+        overlap = sorted(
+            set(_fluent_values(event.get("terminates")))
+            & set(_fluent_values(event.get("initiates")))
+        )
+        if overlap:
+            overlapping_fluents.append(
+                {
+                    "index": index,
+                    "event_id": event.get("event_id"),
+                    "fluent_ids": overlap,
+                }
+            )
+    if overlapping_fluents:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_EVENT_FLUENT_TRANSITION_CONTRADICTION",
+                "One event cannot both terminate and initiate the same fluent.",
+                evidence={"events": overlapping_fluents},
+            )
+        ], consumed, {}
     missing: list[dict[str, Any]] = []
     for index, event in enumerate(events):
         if not isinstance(event, dict):
@@ -226,25 +278,163 @@ def _event(contract: GuardContract):
             missing.append({"index": index, "field": "initiation/termination/release axiom"})
     for axiom in event_model.get("missing_axioms", []):
         missing.append({"field": str(axiom)})
+    for index, state in enumerate(states):
+        if not isinstance(state, dict):
+            missing.append({"state": index, "field": "state mapping"})
+            continue
+        for name in ("state_id", "initial", "terminal"):
+            value = state.get(name)
+            if (
+                (name == "state_id" and not value)
+                or (name in {"initial", "terminal"} and not isinstance(value, bool))
+            ):
+                missing.append({"state": index, "field": name})
+    for index, transition in enumerate(transitions):
+        if not isinstance(transition, dict):
+            missing.append({"transition": index, "field": "transition mapping"})
+            continue
+        for name in (
+            "transition_id",
+            "source_state",
+            "target_state",
+            "guard",
+            "effect",
+        ):
+            if not transition.get(name):
+                missing.append({"transition": index, "field": name})
     if missing:
         return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_AXIOM", "Event records lack required temporal or fluent axioms.", evidence={"missing": missing})], consumed, {}
+
+    if transitions and not states:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_EVENT_MISSING_STATE_DENOMINATOR",
+                "Transitions cannot be executed without the states they reference.",
+            )
+        ], consumed, {}
+
+    state_id_list = [str(state["state_id"]) for state in states]
+    transition_id_list = [str(transition["transition_id"]) for transition in transitions]
+    duplicate_state_ids = sorted(
+        {state_id for state_id in state_id_list if state_id_list.count(state_id) > 1}
+    )
+    duplicate_transition_ids = sorted(
+        {
+            transition_id
+            for transition_id in transition_id_list
+            if transition_id_list.count(transition_id) > 1
+        }
+    )
+    if duplicate_state_ids or duplicate_transition_ids:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_EVENT_DUPLICATE_STATE_TRANSITION_ID",
+                "State and transition identities must be unique within one event model.",
+                evidence={
+                    "duplicate_state_ids": duplicate_state_ids,
+                    "duplicate_transition_ids": duplicate_transition_ids,
+                },
+            )
+        ], consumed, {}
+
+    declared_state_id_set = set(state_id_list)
+    dangling_transitions = [
+        {
+            "transition_id": transition["transition_id"],
+            "unknown_state_ids": sorted(
+                {
+                    str(transition[name])
+                    for name in ("source_state", "target_state")
+                    if str(transition[name]) not in declared_state_id_set
+                }
+            ),
+        }
+        for transition in transitions
+        if any(
+            str(transition[name]) not in declared_state_id_set
+            for name in ("source_state", "target_state")
+        )
+    ]
+    if dangling_transitions:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_EVENT_DANGLING_TRANSITION_STATE",
+                "Every transition source and target must name a declared state.",
+                evidence={"transitions": dangling_transitions},
+            )
+        ], consumed, {}
+
+    initial_state_ids = {
+        str(state["state_id"])
+        for state in states
+        if state.get("initial") is True
+    }
+    if transitions and not initial_state_ids:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_EVENT_MISSING_INITIAL_STATE",
+                "A bounded state-machine rollout needs at least one initial state.",
+            )
+        ], consumed, {}
+
+    guard_values = event_model.get("guard_values", {})
+    if not isinstance(guard_values, Mapping):
+        guard_values = {}
+    unresolved_guards = [
+        {
+            "transition_id": transition["transition_id"],
+            "guard": transition["guard"],
+        }
+        for transition in transitions
+        if _resolve_event_guard(transition["guard"], guard_values) is None
+    ]
+    if unresolved_guards:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_EVENT_UNEVALUABLE_TRANSITION_GUARD",
+                "Every transition guard must be a boolean constant or have a declared boolean value.",
+                evidence={"transitions": unresolved_guards},
+            )
+        ], consumed, {}
 
     coverage = _coverage_context(contract)
     scenario_ids = _string_values(coverage.get("scenario_ids"))
     holdout_ids = _string_values(coverage.get("holdout_scenario_ids"))
     rollout_scenarios = [*scenario_ids, *holdout_ids] or ["default"]
-    initial_state = set(_fluent_values(event_model.get("initial_states", [])))
+    initial_fluents = set(_fluent_values(event_model.get("initial_states", [])))
     executed_scenarios: list[str] = []
     executed_holdouts: list[str] = []
     observed_timepoints: set[str] = set()
-    executed_state_ids: set[str] = set(initial_state)
+    declared_state_ids = set(state_id_list)
+    declared_terminal_state_ids = {
+        str(state.get("state_id"))
+        for state in states
+        if isinstance(state, dict) and state.get("state_id") and state.get("terminal")
+    }
+    declared_transition_ids: set[str] = set(transition_id_list)
+    referenced_transition_state_ids: set[str] = set()
+    for transition in transitions:
+        if isinstance(transition, dict):
+            referenced_transition_state_ids.update(
+                str(transition.get(name))
+                for name in ("source_state", "target_state")
+                if transition.get(name)
+            )
+    executed_event_ids: set[str] = set()
+    initiated_fluent_ids: set[str] = set()
+    terminated_fluent_ids: set[str] = set()
+    released_fluent_ids: set[str] = set()
+    reached_fluent_ids: set[str] = set(initial_fluents)
+    active_fluent_ids: set[str] = set()
+    reached_state_ids: set[str] = set(initial_state_ids)
+    executed_state_ids: set[str] = set(initial_state_ids)
     executed_transition_ids: set[str] = set()
     executed_branch_ids: set[str] = set()
     executed_perturbation_ids: set[str] = set()
     rollout_steps = 0
-    final_states: dict[str, list[str]] = {}
+    final_fluent_ids_by_scenario: dict[str, list[str]] = {}
     for scenario_id in rollout_scenarios:
-        state = set(initial_state)
+        active_fluents = set(initial_fluents)
         applicable = [
             event
             for event in events
@@ -256,35 +446,79 @@ def _event(contract: GuardContract):
             rollout_steps += 1
             observed_timepoints.add(str(event.get("at")))
             event_id = str(event.get("event_id"))
-            executed_transition_ids.add(event_id)
+            executed_event_ids.add(event_id)
             executed_branch_ids.update(_string_values(event.get("branch_id")))
             executed_perturbation_ids.update(
                 _string_values(event.get("perturbation_id"))
             )
             for fluent in _fluent_values(event.get("terminates")):
-                state.discard(fluent)
+                terminated_fluent_ids.add(fluent)
+                active_fluents.discard(fluent)
             for fluent in _fluent_values(event.get("releases")):
-                state.discard(fluent)
+                released_fluent_ids.add(fluent)
+                active_fluents.discard(fluent)
             for fluent in _fluent_values(event.get("initiates")):
-                state.add(fluent)
-                executed_state_ids.add(fluent)
-        final_states[scenario_id] = sorted(state)
+                initiated_fluent_ids.add(fluent)
+                active_fluents.add(fluent)
+                reached_fluent_ids.add(fluent)
+        final_fluent_ids_by_scenario[scenario_id] = sorted(active_fluents)
+        active_fluent_ids.update(active_fluents)
         if scenario_id in holdout_ids:
             executed_holdouts.append(scenario_id)
         elif scenario_id != "default":
             executed_scenarios.append(scenario_id)
+
+    active_state_ids = set(initial_state_ids)
+    remaining_transitions = list(transitions)
+    for _ in range(max(1, len(transitions))):
+        progressed = False
+        for transition in list(remaining_transitions):
+            source_state = str(transition["source_state"])
+            if source_state not in active_state_ids:
+                continue
+            guard_value = _resolve_event_guard(transition["guard"], guard_values)
+            remaining_transitions.remove(transition)
+            if guard_value is False:
+                continue
+            target_state = str(transition["target_state"])
+            transition_id = str(transition["transition_id"])
+            active_state_ids.discard(source_state)
+            active_state_ids.add(target_state)
+            reached_state_ids.add(target_state)
+            executed_state_ids.update({source_state, target_state})
+            executed_transition_ids.add(transition_id)
+            rollout_steps += 1
+            progressed = True
+        if not progressed:
+            break
     return SemanticStatus.PASS, [], consumed, {
         "evaluated_events": len(events),
+        "evaluated_states": len(states),
+        "evaluated_transition_specs": len(transitions),
         "rollout_steps": rollout_steps,
         "observed_timepoints": sorted(observed_timepoints),
         "observed_variable_timepoints": variable_timepoints,
         "executed_scenario_ids": executed_scenarios,
         "executed_holdout_scenario_ids": executed_holdouts,
+        "declared_state_ids": sorted(declared_state_ids),
+        "declared_terminal_state_ids": sorted(declared_terminal_state_ids),
+        "declared_transition_ids": sorted(declared_transition_ids),
+        "referenced_transition_state_ids": sorted(
+            referenced_transition_state_ids
+        ),
+        "declared_initial_fluent_ids": sorted(initial_fluents),
+        "initiated_fluent_ids": sorted(initiated_fluent_ids),
+        "terminated_fluent_ids": sorted(terminated_fluent_ids),
+        "released_fluent_ids": sorted(released_fluent_ids),
+        "reached_fluent_ids": sorted(reached_fluent_ids),
+        "active_fluent_ids": sorted(active_fluent_ids),
+        "executed_event_ids": sorted(executed_event_ids),
+        "reached_state_ids": sorted(reached_state_ids),
         "executed_state_ids": sorted(executed_state_ids),
         "executed_transition_ids": sorted(executed_transition_ids),
         "executed_branch_ids": sorted(executed_branch_ids),
         "executed_perturbation_ids": sorted(executed_perturbation_ids),
-        "final_states": final_states,
+        "final_fluent_ids_by_scenario": final_fluent_ids_by_scenario,
     }
 
 
@@ -292,9 +526,27 @@ def _agent(contract: GuardContract):
     agent_model = contract.inputs.get("agent_model", {})
     agents = contract.inputs.get("beliefs", {})
     consumed = {"agent_model": agent_model, "agents": agents}
-    if not agents:
+    if not isinstance(agents, dict) or not agents:
         return SemanticStatus.GAP, [_finding("SEM_AGENT_MISSING_MODEL", "No BDI agent records were supplied.")], consumed, {}
-    records = agents.values() if isinstance(agents, dict) else agents
+    identity_mismatches = [
+        {
+            "map_key": str(agent_key),
+            "agent_id": record.get("agent_id") if isinstance(record, dict) else None,
+        }
+        for agent_key, record in agents.items()
+        if not isinstance(record, dict)
+        or not record.get("agent_id")
+        or str(record.get("agent_id")) != str(agent_key)
+    ]
+    if identity_mismatches:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_AGENT_IDENTITY_MISMATCH",
+                "Each BDI map key must equal the stable agent_id in its record.",
+                evidence={"agents": identity_mismatches},
+            )
+        ], consumed, {}
+    records = agents.values()
     missing = []
     for index, record in enumerate(records):
         if not isinstance(record, dict):
@@ -308,10 +560,23 @@ def _agent(contract: GuardContract):
     conflicts = agent_model.get("conflicting_intentions", []) if isinstance(agent_model, dict) else []
     if conflicts:
         return SemanticStatus.FAIL, [_finding("SEM_AGENT_CONFLICTING_INTENTIONS", "The BDI model declares conflicting intentions.", evidence={"conflicts": conflicts})], consumed, {}
-    return SemanticStatus.PASS, [], consumed, {"evaluated_agents": len(agents)}
+    return SemanticStatus.PASS, [], consumed, {
+        "evaluated_agents": len(agents),
+        "agent_ids": sorted(str(key) for key in agents),
+    }
 
 
 _RCC8 = {"DC", "EC", "PO", "EQ", "TPP", "NTPP", "TPPI", "NTPPI"}
+_RCC8_CONVERSE = {
+    "DC": "DC",
+    "EC": "EC",
+    "PO": "PO",
+    "EQ": "EQ",
+    "TPP": "TPPI",
+    "NTPP": "NTPPI",
+    "TPPI": "TPP",
+    "NTPPI": "NTPP",
+}
 
 
 def _space(contract: GuardContract):
@@ -322,6 +587,7 @@ def _space(contract: GuardContract):
     by_pair: dict[tuple[Any, Any, Any], set[str]] = defaultdict(set)
     ntpp: set[tuple[Any, Any, Any]] = set()
     malformed = []
+    reflexive_conflicts = []
     for index, relation in enumerate(relations):
         if not isinstance(relation, dict):
             malformed.append({"index": index, "reason": "not a mapping"})
@@ -332,11 +598,44 @@ def _space(contract: GuardContract):
             malformed.append({"index": index, "relation": rel, "x": x, "y": y})
             continue
         by_pair[(x, y, at)].add(rel)
+        if x == y and rel != "EQ":
+            reflexive_conflicts.append(
+                {
+                    "index": index,
+                    "at": at,
+                    "object_id": x,
+                    "relation": rel,
+                    "expected": "EQ",
+                }
+            )
         if rel == "NTPP":
             ntpp.add((x, y, at))
     if malformed:
         return SemanticStatus.GAP, [_finding("SEM_SPACE_UNEVALUABLE_RCC8", "Some RCC8 relations are incomplete or unsupported.", evidence={"relations": malformed})], consumed, {}
+    if reflexive_conflicts:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_SPACE_RCC8_REFLEXIVITY_CONFLICT",
+                "An object related to itself must use RCC8 EQ.",
+                evidence={"relations": reflexive_conflicts},
+            )
+        ], consumed, {}
     conflicts = [{"pair": list(pair), "relations": sorted(values)} for pair, values in by_pair.items() if len(values) > 1]
+    for (x, y, at), observed in by_pair.items():
+        reverse = by_pair.get((y, x, at), set())
+        if not reverse:
+            continue
+        expected = {_RCC8_CONVERSE[relation] for relation in observed}
+        if reverse != expected:
+            conflicts.append(
+                {
+                    "pair": [x, y, at],
+                    "relations": sorted(observed),
+                    "reverse_relations": sorted(reverse),
+                    "expected_reverse_relations": sorted(expected),
+                    "conflict_kind": "converse",
+                }
+            )
     for a, b, at in ntpp:
         for b2, c, at2 in ntpp:
             if b2 != b or at2 != at:
@@ -345,6 +644,8 @@ def _space(contract: GuardContract):
             if observed and observed != {"NTPP"}:
                 conflicts.append({"chain": [a, b, c], "at": at, "expected": "NTPP", "observed": sorted(observed)})
     if conflicts:
+        if any(item.get("conflict_kind") == "converse" for item in conflicts):
+            return SemanticStatus.FAIL, [_finding("SEM_SPACE_RCC8_CONVERSE_CONFLICT", "Declared reverse RCC8 relations are inconsistent.", evidence={"conflicts": conflicts})], consumed, {}
         return SemanticStatus.FAIL, [_finding("SEM_SPACE_RCC8_CONFLICT", "RCC8 base relations or NTPP composition are inconsistent.", evidence={"conflicts": conflicts})], consumed, {}
     return SemanticStatus.PASS, [], consumed, {"evaluated_relations": len(relations)}
 
@@ -354,8 +655,38 @@ def _resource(contract: GuardContract):
     consumed = {"resources": resources}
     places = resources.get("places", {}) if isinstance(resources, dict) else {}
     transitions = resources.get("transitions", []) if isinstance(resources, dict) else []
-    if not places or not transitions:
+    inventory = resources.get("inventory", []) if isinstance(resources, dict) else []
+    inventory_output: dict[str, Any] = {}
+    if inventory:
+        malformed = [
+            row
+            for row in inventory
+            if not isinstance(row, dict)
+            or not row.get("resource_id")
+            or not row.get("unit")
+            or isinstance(row.get("quantity"), bool)
+            or not isinstance(row.get("quantity"), (int, float))
+            or not math.isfinite(float(row.get("quantity", 0)))
+            or float(row.get("quantity", 0)) < 0
+        ]
+        if malformed:
+            return SemanticStatus.GAP, [
+                _finding(
+                    "SEM_RESOURCE_MISSING_MODEL",
+                    "Direct inventory records require stable identity, unit, and non-negative quantity.",
+                    evidence={"records": malformed},
+                )
+            ], consumed, {}
+        inventory_output = {
+            "evaluated_inventory_records": len(inventory),
+            "resource_ids": sorted(str(row["resource_id"]) for row in inventory),
+        }
+    if not places and not transitions:
+        if inventory:
+            return SemanticStatus.PASS, [], consumed, inventory_output
         return SemanticStatus.GAP, [_finding("SEM_RESOURCE_MISSING_MODEL", "Places and transitions are required for conservation rollout.")], consumed, {}
+    if not places or not transitions:
+        return SemanticStatus.GAP, [_finding("SEM_RESOURCE_MISSING_MODEL", "Both places and transitions are required when either transition-system field is declared.")], consumed, inventory_output
     available: dict[tuple[str, str], float] = defaultdict(float)
     demanded: dict[tuple[str, str], float] = defaultdict(float)
     for place, tokens in places.items():
@@ -371,7 +702,11 @@ def _resource(contract: GuardContract):
     ]
     if overspent:
         return SemanticStatus.FAIL, [_finding("SEM_RESOURCE_DOUBLE_CONSUMPTION", "Combined transitions consume more finite resource than the initial marking provides.", evidence={"overspent": overspent})], consumed, {}
-    return SemanticStatus.PASS, [], consumed, {"evaluated_transitions": len(transitions), "conserved_keys": len(demanded)}
+    return SemanticStatus.PASS, [], consumed, {
+        **inventory_output,
+        "evaluated_transitions": len(transitions),
+        "conserved_keys": len(demanded),
+    }
 
 
 _ALLOWED_AST = (
@@ -468,6 +803,29 @@ def _causal(contract: GuardContract):
     }
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {})
+    graph = causal.get("graph", [])
+    claim_scope = causal.get("claim_scope", "equation_model")
+    if claim_scope == "graph_only":
+        malformed = [
+            {"index": index, "edge": edge}
+            for index, edge in enumerate(graph)
+            if not isinstance(edge, (list, tuple))
+            or len(edge) != 2
+            or any(str(value) not in variables for value in edge)
+        ]
+        if not variables or not graph or malformed:
+            return SemanticStatus.GAP, [
+                _finding(
+                    "SEM_CAUSAL_MISSING_EQUATIONS",
+                    "Graph-only evaluation requires declared variables and exact graph edges.",
+                    evidence={"malformed_edges": malformed},
+                )
+            ], consumed, {}
+        return SemanticStatus.PASS, [], consumed, {
+            "evaluated_graph_edges": len(graph),
+            "evaluated_variable_ids": variables,
+            "observed_variable_timepoints": variable_timepoints,
+        }
     if not variables or not isinstance(equations, dict):
         return SemanticStatus.GAP, [_finding("SEM_CAUSAL_MISSING_EQUATIONS", "Variables and structural equations are required.")], consumed, {}
     missing = [variable for variable in variables if variable not in equations]
@@ -477,10 +835,19 @@ def _causal(contract: GuardContract):
         return SemanticStatus.GAP, [_finding("SEM_CAUSAL_UNEVALUABLE_EQUATION", "At least one structural equation is missing or outside the supported scalar subset.", evidence={"missing": missing, "errors": errors})], consumed, {}
 
     coverage = _coverage_context(contract)
-    scenario_ids = _string_values(coverage.get("scenario_ids"))
-    holdout_ids = _string_values(coverage.get("holdout_scenario_ids"))
     scenarios = _scenario_records(causal.get("scenarios", {}))
     holdouts = _scenario_records(causal.get("holdout_scenarios", {}))
+    interventions = causal.get("interventions", [])
+    counterfactuals = causal.get("counterfactuals", [])
+    if not scenarios and not holdouts and not interventions and not counterfactuals:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_CAUSAL_MISSING_BEHAVIOR_OBLIGATION",
+                "An equation-model claim needs at least one declared scenario, holdout, intervention, or counterfactual to execute.",
+            )
+        ], consumed, {}
+    scenario_ids = _string_values(coverage.get("scenario_ids")) or sorted(scenarios)
+    holdout_ids = _string_values(coverage.get("holdout_scenario_ids")) or sorted(holdouts)
     scenario_results: dict[str, dict[str, float]] = {}
     execution_errors: list[dict[str, Any]] = []
     executed_scenarios: list[str] = []
@@ -504,7 +871,6 @@ def _causal(contract: GuardContract):
         scenario_results[scenario_id] = values
         executed_holdouts.append(scenario_id)
 
-    interventions = causal.get("interventions", [])
     intervention_results: dict[str, dict[str, float]] = {}
     executed_interventions: list[str] = []
     for index, intervention in enumerate(interventions or []):
@@ -533,7 +899,6 @@ def _causal(contract: GuardContract):
         intervention_results[intervention_id] = values
         executed_interventions.append(intervention_id)
 
-    counterfactuals = causal.get("counterfactuals", [])
     counterfactual_results: dict[str, Any] = {}
     executed_counterfactuals: list[str] = []
     for index, counterfactual in enumerate(counterfactuals or []):
@@ -548,12 +913,38 @@ def _causal(contract: GuardContract):
         counterfactual_results[counterfactual_id] = result[query]
         executed_counterfactuals.append(counterfactual_id)
 
-    if execution_errors:
+    declared_intervention_ids = [
+        str(item.get("intervention_id", ""))
+        for item in interventions or []
+        if isinstance(item, dict)
+    ]
+    declared_counterfactual_ids = [
+        str(item.get("counterfactual_id", ""))
+        for item in counterfactuals or []
+        if isinstance(item, dict)
+    ]
+    missing_executions = {
+        "scenario_ids": sorted(set(scenario_ids) - set(executed_scenarios)),
+        "holdout_scenario_ids": sorted(set(holdout_ids) - set(executed_holdouts)),
+        "intervention_ids": sorted(
+            set(declared_intervention_ids) - set(executed_interventions)
+        ),
+        "counterfactual_ids": sorted(
+            set(declared_counterfactual_ids) - set(executed_counterfactuals)
+        ),
+    }
+    missing_executions = {
+        key: value for key, value in missing_executions.items() if value
+    }
+    if execution_errors or missing_executions:
         return SemanticStatus.GAP, [
             _finding(
                 "SEM_CAUSAL_ROLLOUT_ERROR",
                 "One or more declared causal scenarios could not be evaluated safely.",
-                evidence={"errors": execution_errors},
+                evidence={
+                    "errors": execution_errors,
+                    "missing_executions": missing_executions,
+                },
             )
         ], consumed, {
             "evaluated_equations": len(variables),
@@ -582,14 +973,106 @@ def _conflict(contract: GuardContract):
     required = [name for name in ("players", "actions", "states", "transitions", "payoffs") if not game.get(name)]
     if required:
         return SemanticStatus.GAP, [_finding("SEM_CONFLICT_INCOMPLETE_GAME", "Conflict rollout requires players, actions, states, transitions, and payoffs.", evidence={"missing": required})], consumed, {}
+    players = game.get("players", [])
+    duplicate_participants = sorted(
+        {
+            str(participant)
+            for participant in players
+            if players.count(participant) > 1
+        }
+    )
+    if duplicate_participants:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_CONFLICT_DUPLICATE_PARTICIPANT",
+                "A finite conflict model requires distinct participant identities.",
+                evidence={"participant_ids": duplicate_participants},
+            )
+        ], consumed, {}
+    actions = game.get("actions", [])
+    states = game.get("states", [])
+    transitions = game.get("transitions", [])
+    payoffs = game.get("payoffs", [])
+    player_ids = {str(player) for player in players}
+    state_ids = {str(state) for state in states}
+    action_ids = (
+        {
+            str(action)
+            for owner_actions in actions.values()
+            for action in owner_actions
+        }
+        if isinstance(actions, dict)
+        else {str(action) for action in actions}
+    )
+    reference_errors = []
+    if isinstance(actions, dict):
+        reference_errors.extend(
+            {"kind": "action_owner", "player": str(player)}
+            for player in actions
+            if str(player) not in player_ids
+        )
+    for index, transition in enumerate(transitions):
+        if not isinstance(transition, dict):
+            reference_errors.append({"kind": "transition", "index": index})
+            continue
+        source = str(
+            transition.get("from", transition.get("source_state", transition.get("state", "")))
+        )
+        target = str(transition.get("to", transition.get("target_state", "")))
+        if source not in state_ids or target not in state_ids:
+            reference_errors.append(
+                {"kind": "transition_state", "index": index, "source": source, "target": target}
+            )
+        referenced_actions = transition.get(
+            "actions", transition.get("joint_action", transition.get("action", []))
+        )
+        if isinstance(referenced_actions, str):
+            referenced_actions = [referenced_actions]
+        if isinstance(referenced_actions, dict):
+            referenced_actions = list(referenced_actions.values())
+        for action in referenced_actions or []:
+            if str(action) not in action_ids:
+                reference_errors.append(
+                    {"kind": "transition_action", "index": index, "action": str(action)}
+                )
+    for index, payoff in enumerate(payoffs):
+        if not isinstance(payoff, dict):
+            reference_errors.append({"kind": "payoff", "index": index})
+            continue
+        if payoff.get("player") and str(payoff["player"]) not in player_ids:
+            reference_errors.append(
+                {"kind": "payoff_player", "index": index, "player": str(payoff["player"])}
+            )
+        if payoff.get("state") and str(payoff["state"]) not in state_ids:
+            reference_errors.append(
+                {"kind": "payoff_state", "index": index, "state": str(payoff["state"])}
+            )
+        reward = payoff.get("reward", {})
+        if isinstance(reward, dict):
+            reference_errors.extend(
+                {"kind": "reward_player", "index": index, "player": str(player)}
+                for player in reward
+                if str(player) not in player_ids
+            )
+    if reference_errors:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_CONFLICT_REFERENCE_CLOSURE",
+                "Conflict transitions and payoffs must reference declared players, states, and actions.",
+                evidence={"references": reference_errors},
+            )
+        ], consumed, {}
     invalid = []
-    for transition in game.get("transitions", []):
+    for transition in transitions:
         probabilities = transition.get("probabilities")
         if probabilities and abs(sum(float(value) for value in probabilities) - 1.0) > 0.0001:
             invalid.append(transition)
     if invalid:
         return SemanticStatus.FAIL, [_finding("SEM_CONFLICT_INVALID_TRANSITION", "Conflict transition probabilities do not sum to one.", evidence={"transitions": invalid})], consumed, {}
-    return SemanticStatus.PASS, [], consumed, {"evaluated_transitions": len(game.get("transitions", []))}
+    return SemanticStatus.PASS, [], consumed, {
+        "evaluated_transitions": len(transitions),
+        "issue": game.get("issue"),
+    }
 
 
 def _norm(contract: GuardContract):
@@ -599,31 +1082,111 @@ def _norm(contract: GuardContract):
     consumed = {"norm_model": norm_model}
     if not norms:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_MODEL", "No norms were supplied.")], consumed, {}
-    fact_ids = {
-        str(item.get("fact_id", "")) if isinstance(item, dict) else str(item)
-        for item in facts
-    }
+    invalid_modalities = sorted(
+        {
+            str(norm.get("modality", ""))
+            for norm in norms
+            if isinstance(norm, dict)
+            and str(norm.get("modality", "")) not in NORM_MODALITIES
+        }
+    )
+    if invalid_modalities:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_NORM_MODALITY_UNKNOWN",
+                "Norm modality is outside the current deontic enumeration.",
+                evidence={
+                    "observed": invalid_modalities,
+                    "allowed": sorted(NORM_MODALITIES),
+                },
+            )
+        ], consumed, {}
+    malformed_facts = [
+        {"index": index, "fact": item}
+        for index, item in enumerate(facts)
+        if not isinstance(item, dict)
+        or not item.get("fact_id")
+        or not isinstance(item.get("value"), bool)
+    ]
+    if malformed_facts:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_NORM_UNEVALUABLE_FACT",
+                "Norm conditions require facts with stable ids and explicit boolean values.",
+                evidence={"facts": malformed_facts},
+            )
+        ], consumed, {}
+
+    fact_id_list = [str(item["fact_id"]) for item in facts]
+    duplicate_fact_ids = sorted(
+        {fact_id for fact_id in fact_id_list if fact_id_list.count(fact_id) > 1}
+    )
+    if duplicate_fact_ids:
+        return SemanticStatus.FAIL, [
+            _finding(
+                "SEM_NORM_DUPLICATE_FACT_ID",
+                "A norm model cannot give one fact identity multiple truth values.",
+                evidence={"fact_ids": duplicate_fact_ids},
+            )
+        ], consumed, {}
+
+    fact_values = {str(item["fact_id"]): item["value"] for item in facts}
     missing = []
+    unsatisfied = []
     for index, norm in enumerate(norms):
         condition = norm.get("condition") if isinstance(norm, dict) else None
-        if not condition:
-            missing.append({"norm": index, "needed": "condition"})
-        elif isinstance(condition, str) and condition not in fact_ids:
-            missing.append({"norm": index, "needed_fact": condition})
+        needed = ""
+        expected: bool | None = None
+        if isinstance(condition, str) and condition:
+            needed = condition
+            expected = True
         elif isinstance(condition, dict):
             needed = str(condition.get("fact_id", ""))
-            if not needed or needed not in fact_ids:
-                missing.append({"norm": index, "needed_fact": needed or "condition fact"})
+            expected_value = condition.get(
+                "equals", condition.get("value", True)
+            )
+            if isinstance(expected_value, bool):
+                expected = expected_value
+        if not needed or expected is None or needed not in fact_values:
+            missing.append(
+                {
+                    "norm": index,
+                    "condition": condition,
+                    "needed_fact": needed or "condition fact",
+                }
+            )
+        elif fact_values[needed] is not expected:
+            unsatisfied.append(
+                {
+                    "norm": index,
+                    "fact_id": needed,
+                    "expected": expected,
+                    "observed": fact_values[needed],
+                }
+            )
     if missing:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_CONDITION_FACT", "Norm applicability cannot be evaluated without declared condition facts.", evidence={"missing": missing})], consumed, {}
-    return SemanticStatus.PASS, [], consumed, {"evaluated_norms": len(norms), "condition_facts": len(fact_ids)}
+    if unsatisfied:
+        return SemanticStatus.GAP, [
+            _finding(
+                "SEM_NORM_CONDITION_NOT_SATISFIED",
+                "The declared fact values do not make the norm applicable.",
+                evidence={"conditions": unsatisfied},
+            )
+        ], consumed, {}
+    return SemanticStatus.PASS, [], consumed, {"evaluated_norms": len(norms), "condition_facts": len(fact_values)}
 
 
-def _binding(guard: str, fields: tuple[str, ...], semantics: tuple[str, ...], boundary: str) -> SemanticBinding:
+def _binding(
+    guard: str,
+    possible_consumed_input_fields: tuple[str, ...],
+    semantics: tuple[str, ...],
+    boundary: str,
+) -> SemanticBinding:
     return SemanticBinding(
         executor_id=f"worldguard.semantic.{guard.removesuffix('Guard').lower()}.v1",
         guard=guard,
-        input_fields=fields,
+        possible_consumed_input_fields=possible_consumed_input_fields,
         output_fields=("status", "findings", "consumed_inputs", "outputs"),
         supported_semantics=semantics,
         unsupported_boundary=boundary,
@@ -631,13 +1194,13 @@ def _binding(guard: str, fields: tuple[str, ...], semantics: tuple[str, ...], bo
 
 
 EXECUTOR_REGISTRY: dict[str, SemanticExecutor] = {
-    "EventGuard": SemanticExecutor(_binding("EventGuard", ("inputs.events", "inputs.event_model", "inputs.variable_observations", "mesh.semantic_coverage"), ("event_axiom_completeness", "fluent_consistency", "bounded_state_rollout", "scenario_and_holdout_execution", "declared_variable_timepoint_observation"), "arbitrary temporal theorem proving and continuous dynamics"), _event),
-    "AgentGuard": SemanticExecutor(_binding("AgentGuard", ("inputs.beliefs", "inputs.agent_model"), ("bdi_completeness", "declared_intention_conflict"), "open-ended planning and belief revision"), _agent),
-    "SpaceGuard": SemanticExecutor(_binding("SpaceGuard", ("inputs.spatial_relations",), ("rcc8_base_consistency", "ntpp_transitivity"), "metric geometry and full RCC8 closure"), _space),
-    "ResourceGuard": SemanticExecutor(_binding("ResourceGuard", ("inputs.resources.places", "inputs.resources.transitions"), ("finite_resource_conservation",), "unbounded colored Petri-net reachability"), _resource),
-    "CausalGuard": SemanticExecutor(_binding("CausalGuard", ("inputs.causal_model.variables", "inputs.causal_model.equations", "inputs.causal_model.scenarios", "inputs.causal_model.interventions", "inputs.causal_model.counterfactuals", "inputs.variable_observations", "mesh.semantic_coverage"), ("safe_scalar_equation_evaluability", "bounded_scenario_rollout", "declared_intervention_execution", "declared_counterfactual_query", "declared_variable_timepoint_observation"), "arbitrary code, external solvers, and causal identification"), _causal),
-    "ConflictGuard": SemanticExecutor(_binding("ConflictGuard", ("inputs.game_model.players", "inputs.game_model.actions", "inputs.game_model.states", "inputs.game_model.transitions", "inputs.game_model.payoffs"), ("finite_game_completeness", "transition_probability"), "equilibrium solving and open-ended strategy search"), _conflict),
-    "NormGuard": SemanticExecutor(_binding("NormGuard", ("inputs.norms", "inputs.facts"), ("condition_fact_binding",), "general deontic theorem proving and legal interpretation"), _norm),
+    "EventGuard": SemanticExecutor(_binding("EventGuard", ("inputs.events", "inputs.event_model.contradictory_fluents", "inputs.event_model.initial_states", "inputs.event_model.missing_axioms", "inputs.event_model.states", "inputs.event_model.transitions", "inputs.event_model.guard_values", "inputs.variable_observations", "mesh.semantic_coverage"), ("event_axiom_completeness", "state_transition_identity_closure", "boolean_guard_evaluation", "fluent_consistency", "bounded_state_and_event_rollout", "scenario_and_holdout_execution", "declared_variable_timepoint_observation"), "arbitrary predicate languages, unbounded temporal theorem proving, and continuous dynamics"), _event),
+    "AgentGuard": SemanticExecutor(_binding("AgentGuard", ("inputs.beliefs", "inputs.agent_model"), ("agent_identity_closure", "bdi_completeness", "declared_intention_conflict"), "open-ended planning and belief revision"), _agent),
+    "SpaceGuard": SemanticExecutor(_binding("SpaceGuard", ("inputs.spatial_relations",), ("rcc8_base_and_converse_consistency", "ntpp_transitivity"), "metric geometry and full RCC8 closure"), _space),
+    "ResourceGuard": SemanticExecutor(_binding("ResourceGuard", ("inputs.resources.inventory", "inputs.resources.places", "inputs.resources.transitions"), ("declared_inventory_validity", "inventory_and_transition_coevaluation", "finite_resource_conservation"), "unbounded colored Petri-net reachability"), _resource),
+    "CausalGuard": SemanticExecutor(_binding("CausalGuard", ("inputs.causal_model.variables", "inputs.causal_model.graph", "inputs.causal_model.claim_scope", "inputs.causal_model.equations", "inputs.causal_model.exogenous", "inputs.causal_model.scenarios", "inputs.causal_model.holdout_scenarios", "inputs.causal_model.interventions", "inputs.causal_model.counterfactuals", "inputs.variable_observations", "mesh.semantic_coverage"), ("declared_graph_consistency", "safe_scalar_equation_evaluability", "required_behavior_obligation", "bounded_scenario_rollout", "declared_intervention_execution", "declared_counterfactual_query", "declared_variable_timepoint_observation"), "arbitrary code, external solvers, and causal identification"), _causal),
+    "ConflictGuard": SemanticExecutor(_binding("ConflictGuard", ("inputs.game_model.players", "inputs.game_model.actions", "inputs.game_model.states", "inputs.game_model.transitions", "inputs.game_model.payoffs", "inputs.game_model.issue"), ("finite_game_completeness", "player_state_action_reference_closure", "transition_probability"), "equilibrium solving and open-ended strategy search"), _conflict),
+    "NormGuard": SemanticExecutor(_binding("NormGuard", ("inputs.norms", "inputs.facts"), ("condition_fact_binding", "boolean_fact_truth_evaluation"), "general deontic theorem proving and legal interpretation"), _norm),
 }
 
 
@@ -717,6 +1280,8 @@ def aggregate_provider_status(receipts: list[SemanticExecutionReceipt], *, requi
     statuses = {receipt.provider_status for receipt in receipts}
     if not statuses or statuses == {ProviderStatus.UNAVAILABLE}:
         return ProviderStatus.UNAVAILABLE
+    if statuses == {ProviderStatus.STALE}:
+        return ProviderStatus.STALE
     if statuses == {ProviderStatus.AVAILABLE}:
         return ProviderStatus.AVAILABLE
     return ProviderStatus.MIXED

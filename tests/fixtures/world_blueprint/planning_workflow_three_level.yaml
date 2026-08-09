@@ -1,0 +1,1982 @@
+schema_version: worldguard.world_blueprint.v1
+blueprint_id: planning-workflow-three-level
+target_id: planning-workflow
+target_revision: revision-1
+declared_boundary: planning workflow revision 1 only
+root_node_id: plan_root
+commitment_inventory:
+  inventory_id: planning-workflow:commitments:revision-1
+  authority_owner_id: planning-request-contract-owner
+  locator: support/behavior-commitments.json
+  adapter_id: worldguard.request-contract.commitment-adapter
+  adapter_version: v2
+  adapter_capability_id: worldguard.behavior-commitment.replay.v2
+  target_id: planning-workflow
+  target_revision: revision-1
+  input_refs:
+  - input_id: object-census-source:planning-workflow:revision-1
+    input_kind: target_object_census_source
+    observation_mode: local_content
+    locator: support/target-object-census-source.json
+    target_id: planning-workflow
+    target_revision: revision-1
+    content_fingerprint: sha256:1566ad9b2f49a86beaabe38090a455ac97913b277d16434345e6f1f8e65c3cd3
+  - input_id: object-census:planning-workflow:revision-1
+    input_kind: target_object_census_authority
+    observation_mode: local_content
+    locator: support/target-object-census-authority.json
+    target_id: planning-workflow
+    target_revision: revision-1
+    content_fingerprint: sha256:2679414b077772c34d92d268b61b1f0eda6857a2a20e72a05011e0410716a371
+  - input_id: request:planning-workflow:revision-1
+    input_kind: request_contract
+    observation_mode: local_content
+    locator: support/behavior-request-contract.json
+    target_id: planning-workflow
+    target_revision: revision-1
+    content_fingerprint: sha256:b35a0d367b26478b76672f9666b16736a6881c398d725f782489c1537ad796e6
+  - input_id: target-material:planning-workflow:revision-1
+    input_kind: target_material
+    observation_mode: local_content
+    locator: support/target-material.json
+    target_id: planning-workflow
+    target_revision: revision-1
+    content_fingerprint: sha256:ee9451801594ca70f36a7d003c7efaaacb444de4fc9ebe084f6646dc4921dd02
+  - input_id: target-semantics:planning-workflow:revision-1
+    input_kind: target_semantic_authority
+    observation_mode: local_content
+    locator: support/target-semantic-authority.json
+    target_id: planning-workflow
+    target_revision: revision-1
+    content_fingerprint: sha256:5192c877afd8d0e0efaf06684950c1ed81ae3cdcc3a9d745090a406fe0da0bc7
+  claim_boundary: planning workflow revision 1 only
+nodes:
+- node_id: plan_root
+  title: Plan objective and externally visible outcome
+  depth: 0
+  parent_node_id: ''
+  child_node_ids:
+  - allocation_layer
+  - governance_layer
+  - scheduling_layer
+  owned_element_ids:
+  - plan_outcome
+  input_ports:
+  - port_id: root_plan_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: root_plan_outcome
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings:
+  - mapping_id: root_request_to_allocation
+    child_node_id: allocation_layer
+    child_input_port_id: allocation_request
+    source_kind: parent_input
+    source_id: plan_root
+    source_port_id: root_plan_request
+  - mapping_id: root_request_to_governance
+    child_node_id: governance_layer
+    child_input_port_id: governance_request
+    source_kind: parent_input
+    source_id: plan_root
+    source_port_id: root_plan_request
+  - mapping_id: root_request_to_scheduling
+    child_node_id: scheduling_layer
+    child_input_port_id: scheduling_request
+    source_kind: parent_input
+    source_id: plan_root
+    source_port_id: root_plan_request
+  element_input_mappings: []
+  child_output_mappings:
+  - mapping_id: allocation_to_root
+    child_node_id: allocation_layer
+    child_output_port_id: allocation_result
+    disposition: parent_output
+    parent_port_id: root_plan_outcome
+    reason: ''
+  - mapping_id: governance_to_root
+    child_node_id: governance_layer
+    child_output_port_id: governance_result
+    disposition: parent_output
+    parent_port_id: root_plan_outcome
+    reason: ''
+  - mapping_id: scheduling_to_root
+    child_node_id: scheduling_layer
+    child_output_port_id: scheduling_result
+    disposition: parent_output
+    parent_port_id: root_plan_outcome
+    reason: ''
+  output_derivations:
+  - derivation_id: derive_root_plan_outcome
+    parent_output_port_id: root_plan_outcome
+    sources:
+    - source_kind: child_output
+      source_id: allocation_layer
+      source_port_id: allocation_result
+    - source_kind: child_output
+      source_id: governance_layer
+      source_port_id: governance_result
+    - source_kind: child_output
+      source_id: scheduling_layer
+      source_port_id: scheduling_result
+- node_id: allocation_layer
+  title: Actor role and task allocation
+  depth: 1
+  parent_node_id: plan_root
+  child_node_ids:
+  - assign_task_leaf
+  owned_element_ids:
+  - allocation_summary
+  input_ports:
+  - port_id: allocation_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: allocation_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings:
+  - mapping_id: allocation_request_to_assignment
+    child_node_id: assign_task_leaf
+    child_input_port_id: assign_task_request
+    source_kind: parent_input
+    source_id: allocation_layer
+    source_port_id: allocation_request
+  element_input_mappings: []
+  child_output_mappings:
+  - mapping_id: assignment_to_allocation
+    child_node_id: assign_task_leaf
+    child_output_port_id: assign_task_result
+    disposition: parent_output
+    parent_port_id: allocation_result
+    reason: ''
+  output_derivations:
+  - derivation_id: derive_allocation_result
+    parent_output_port_id: allocation_result
+    sources:
+    - source_kind: child_output
+      source_id: assign_task_leaf
+      source_port_id: assign_task_result
+- node_id: scheduling_layer
+  title: Schedule and state coordination
+  depth: 1
+  parent_node_id: plan_root
+  child_node_ids:
+  - schedule_task_leaf
+  owned_element_ids:
+  - scheduling_summary
+  input_ports:
+  - port_id: scheduling_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: scheduling_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings:
+  - mapping_id: scheduling_request_to_schedule
+    child_node_id: schedule_task_leaf
+    child_input_port_id: schedule_task_request
+    source_kind: parent_input
+    source_id: scheduling_layer
+    source_port_id: scheduling_request
+  element_input_mappings: []
+  child_output_mappings:
+  - mapping_id: schedule_to_scheduling
+    child_node_id: schedule_task_leaf
+    child_output_port_id: schedule_task_result
+    disposition: parent_output
+    parent_port_id: scheduling_result
+    reason: ''
+  output_derivations:
+  - derivation_id: derive_scheduling_result
+    parent_output_port_id: scheduling_result
+    sources:
+    - source_kind: child_output
+      source_id: schedule_task_leaf
+      source_port_id: schedule_task_result
+- node_id: governance_layer
+  title: Resource and norm coordination
+  depth: 1
+  parent_node_id: plan_root
+  child_node_ids:
+  - authorize_task_leaf
+  - reserve_resource_leaf
+  owned_element_ids:
+  - governance_summary
+  input_ports:
+  - port_id: governance_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: governance_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings:
+  - mapping_id: governance_request_to_authorization
+    child_node_id: authorize_task_leaf
+    child_input_port_id: authorize_task_request
+    source_kind: parent_input
+    source_id: governance_layer
+    source_port_id: governance_request
+  - mapping_id: governance_request_to_resource
+    child_node_id: reserve_resource_leaf
+    child_input_port_id: reserve_resource_request
+    source_kind: parent_input
+    source_id: governance_layer
+    source_port_id: governance_request
+  element_input_mappings: []
+  child_output_mappings:
+  - mapping_id: authorization_to_governance
+    child_node_id: authorize_task_leaf
+    child_output_port_id: authorize_task_result
+    disposition: parent_output
+    parent_port_id: governance_result
+    reason: ''
+  - mapping_id: resource_to_governance
+    child_node_id: reserve_resource_leaf
+    child_output_port_id: reserve_resource_result
+    disposition: parent_output
+    parent_port_id: governance_result
+    reason: ''
+  output_derivations:
+  - derivation_id: derive_governance_result
+    parent_output_port_id: governance_result
+    sources:
+    - source_kind: child_output
+      source_id: authorize_task_leaf
+      source_port_id: authorize_task_result
+    - source_kind: child_output
+      source_id: reserve_resource_leaf
+      source_port_id: reserve_resource_result
+- node_id: assign_task_leaf
+  title: Assign one task to an actor in a role
+  depth: 2
+  parent_node_id: allocation_layer
+  child_node_ids: []
+  owned_element_ids:
+  - actor_alex
+  - planner_role
+  - task_prepare
+  - assignment_transition
+  input_ports:
+  - port_id: assign_task_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: assign_task_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings: []
+  element_input_mappings:
+  - mapping_id: assignment_request_to_transition
+    element_id: assignment_transition
+    element_input_port_id: assignment_transition_in
+    source_kind: node_input
+    source_id: assign_task_leaf
+    source_port_id: assign_task_request
+  child_output_mappings: []
+  output_derivations:
+  - derivation_id: derive_assign_task_result
+    parent_output_port_id: assign_task_result
+    sources:
+    - source_kind: owned_element_output
+      source_id: assignment_transition
+      source_port_id: assignment_transition_out
+- node_id: schedule_task_leaf
+  title: Schedule the assigned task and move its state
+  depth: 2
+  parent_node_id: scheduling_layer
+  child_node_ids: []
+  owned_element_ids:
+  - schedule_event
+  - scheduled_state
+  - schedule_transition
+  input_ports:
+  - port_id: schedule_task_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: schedule_task_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings: []
+  element_input_mappings:
+  - mapping_id: schedule_request_to_transition
+    element_id: schedule_transition
+    element_input_port_id: schedule_transition_in
+    source_kind: node_input
+    source_id: schedule_task_leaf
+    source_port_id: schedule_task_request
+  child_output_mappings: []
+  output_derivations:
+  - derivation_id: derive_schedule_task_result
+    parent_output_port_id: schedule_task_result
+    sources:
+    - source_kind: owned_element_output
+      source_id: schedule_transition
+      source_port_id: schedule_transition_out
+- node_id: reserve_resource_leaf
+  title: Reserve the required finite resource
+  depth: 2
+  parent_node_id: governance_layer
+  child_node_ids: []
+  owned_element_ids:
+  - resource_reservation
+  input_ports:
+  - port_id: reserve_resource_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: reserve_resource_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings: []
+  element_input_mappings:
+  - mapping_id: resource_request_to_reservation
+    element_id: resource_reservation
+    element_input_port_id: resource_reservation_in
+    source_kind: node_input
+    source_id: reserve_resource_leaf
+    source_port_id: reserve_resource_request
+  child_output_mappings: []
+  output_derivations:
+  - derivation_id: derive_reserve_resource_result
+    parent_output_port_id: reserve_resource_result
+    sources:
+    - source_kind: owned_element_output
+      source_id: resource_reservation
+      source_port_id: resource_reservation_out
+- node_id: authorize_task_leaf
+  title: Apply the authorization norm to the task
+  depth: 2
+  parent_node_id: governance_layer
+  child_node_ids: []
+  owned_element_ids:
+  - authorization_norm
+  input_ports:
+  - port_id: authorize_task_request
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: authorize_task_result
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings: []
+  element_input_mappings:
+  - mapping_id: authorization_request_to_norm
+    element_id: authorization_norm
+    element_input_port_id: authorization_norm_in
+    source_kind: node_input
+    source_id: authorize_task_leaf
+    source_port_id: authorize_task_request
+  child_output_mappings: []
+  output_derivations:
+  - derivation_id: derive_authorize_task_result
+    parent_output_port_id: authorize_task_result
+    sources:
+    - source_kind: owned_element_output
+      source_id: authorization_norm
+      source_port_id: authorization_norm_out
+elements:
+- element_id: plan_outcome
+  kind: state
+  owner_node_id: plan_root
+  dependencies:
+  - dependency_id: dep_plan_allocation
+    relation: depends_on
+    depends_on_element_id: allocation_summary
+  - dependency_id: dep_plan_governance
+    relation: depends_on
+    depends_on_element_id: governance_summary
+  - dependency_id: dep_plan_schedule
+    relation: depends_on
+    depends_on_element_id: scheduling_summary
+  input_ports: []
+  output_ports:
+  - port_id: plan_outcome_element_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: plan_outcome_element_out
+    reason: retained as the root state summary
+  native_semantic:
+    semantic_id: semantic:plan_outcome
+    element_kind: state
+    native_object_id: native_plan_outcome
+    native_schema_id: worldguard.native.state.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: plan_outcome_native
+    semantic_fields:
+      state_id: plan_ready
+      initial: false
+      terminal: true
+    content_fingerprint: sha256:b6ff63a135463687ccb0050ea6f757ffe9df0d49ea4a8b6122b5245a23409c03
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:plan_outcome
+      purpose: Prevent a state declaration from being accepted without executable
+        EventGuard semantics.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:plan_outcome:good
+        case_kind: known_good
+        text: The declared plan outcome is a valid bounded EventGuard state input.
+        inputs:
+          event_model:
+            states:
+            - state_id: plan_ready
+              initial: false
+              terminal: true
+          events: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          declared_state_ids:
+          - plan_ready
+        post_state: {}
+        effects: {}
+        state_effect_disposition: unverified
+        state_effect_reason: A declaration-only terminal state does not prove reachability.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:plan_outcome:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license semantic execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+- element_id: allocation_summary
+  kind: relation
+  owner_node_id: allocation_layer
+  dependencies:
+  - dependency_id: dep_allocation_assignment
+    relation: depends_on
+    depends_on_element_id: assignment_transition
+  input_ports: []
+  output_ports:
+  - port_id: allocation_summary_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: allocation_summary_out
+    reason: retained as the allocation-layer summary
+  native_semantic:
+    semantic_id: semantic:allocation_summary
+    element_kind: relation
+    native_object_id: native_allocation_summary
+    native_schema_id: worldguard.native.relation.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: allocation_summary_native
+    semantic_fields:
+      relation: summarizes
+      participant_ids:
+      - actor_alex
+      - planner_role
+      - task_prepare
+      - assignment_transition
+    content_fingerprint: sha256:38fd01c062d3934b5ef22d7c4642fa27e7faec1ba0b0ca8c0012b8c12293f9e1
+    claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+- element_id: scheduling_summary
+  kind: state
+  owner_node_id: scheduling_layer
+  dependencies:
+  - dependency_id: dep_scheduling_transition
+    relation: depends_on
+    depends_on_element_id: schedule_transition
+  input_ports: []
+  output_ports:
+  - port_id: scheduling_summary_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: scheduling_summary_out
+    reason: retained as the scheduling-layer summary
+  native_semantic:
+    semantic_id: semantic:scheduling_summary
+    element_kind: state
+    native_object_id: native_scheduling_summary
+    native_schema_id: worldguard.native.state.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: scheduling_summary_native
+    semantic_fields:
+      state_id: scheduled_summary
+      initial: false
+      terminal: true
+    content_fingerprint: sha256:5828beec4a0f16a2d44ac17bd9eb0a99cddec053f5dfa192714a6759c818fb58
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:scheduling_summary
+      purpose: Prevent a scheduling summary from being accepted without executable
+        EventGuard semantics.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:scheduling_summary:good
+        case_kind: known_good
+        text: The scheduling summary is a valid bounded EventGuard state input.
+        inputs:
+          event_model:
+            states:
+            - state_id: scheduled_summary
+              initial: false
+              terminal: true
+          events: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          declared_state_ids:
+          - scheduled_summary
+        post_state: {}
+        effects: {}
+        state_effect_disposition: unverified
+        state_effect_reason: A summary state declaration does not prove reachability.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:scheduling_summary:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license semantic execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+- element_id: governance_summary
+  kind: relation
+  owner_node_id: governance_layer
+  dependencies:
+  - dependency_id: dep_governance_resource
+    relation: depends_on
+    depends_on_element_id: resource_reservation
+  - dependency_id: dep_governance_norm
+    relation: depends_on
+    depends_on_element_id: authorization_norm
+  input_ports: []
+  output_ports:
+  - port_id: governance_summary_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: governance_summary_out
+    reason: retained as the governance-layer summary
+  native_semantic:
+    semantic_id: semantic:governance_summary
+    element_kind: relation
+    native_object_id: native_governance_summary
+    native_schema_id: worldguard.native.relation.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: governance_summary_native
+    semantic_fields:
+      relation: coordinates
+      participant_ids:
+      - resource_reservation
+      - authorization_norm
+    content_fingerprint: sha256:0f5c1d8d5228e9d5471c9710a76d13268daccc9d6b9ac00c00819e4d3fbf9eda
+    claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+- element_id: actor_alex
+  kind: agent
+  owner_node_id: assign_task_leaf
+  dependencies: []
+  input_ports: []
+  output_ports:
+  - port_id: actor_alex_out
+    value_type: actor_identity
+    schema_id: worldguard.port.actor-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: actor_alex_out
+    reason: retained as agent identity context
+  native_semantic:
+    semantic_id: semantic:actor_alex
+    element_kind: agent
+    native_object_id: native_actor_alex
+    native_schema_id: worldguard.native.agent.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: actor_alex_native
+    semantic_fields:
+      agent_id: alex
+      beliefs:
+      - planning_context_available
+      desires:
+      - complete_plan
+      intentions:
+      - assign_task
+      conflicting_intentions: []
+    content_fingerprint: sha256:13359f535ac87929f0e8f95a6d6591a8c1e40099a01098af2fcf523a9f9eb66f
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:actor_alex
+      purpose: Prevent an incomplete or absent BDI actor model from licensing the
+        planning actor claim.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:agent:semantic:sem-agent-missing-model
+      behavior_cases:
+      - case_id: case:actor_alex:good
+        case_kind: known_good
+        text: Alex has one identity-closed BDI record.
+        inputs:
+          beliefs:
+            alex:
+              agent_id: alex
+              beliefs:
+              - planning_context_available
+              desires:
+              - complete_plan
+              intentions:
+              - assign_task
+          agent_model:
+            conflicting_intentions: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          agent_ids:
+          - alex
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This bounded BDI check does not model actor state transition.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:AgentGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:actor_alex:bad:missing-model
+        case_kind: known_bad
+        text: An absent BDI model cannot license the actor claim.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks absent BDI input.
+        failure_id: failure:agent:semantic:sem-agent-missing-model
+        blocked_claim: Semantic BDI execution cannot pass without agent records.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_AGENT_MISSING_MODEL
+        oracle_id: oracle:worldguard:AgentGuard:semantic:SEM_AGENT_MISSING_MODEL
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: planner_role
+  kind: property
+  owner_node_id: assign_task_leaf
+  dependencies:
+  - dependency_id: dep_role_actor
+    relation: depends_on
+    depends_on_element_id: actor_alex
+  input_ports: []
+  output_ports:
+  - port_id: planner_role_out
+    value_type: role_identity
+    schema_id: worldguard.port.role-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: planner_role_out
+    reason: retained as role identity context
+  native_semantic:
+    semantic_id: semantic:planner_role
+    element_kind: property
+    native_object_id: native_planner_role
+    native_schema_id: worldguard.native.property.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: planner_role_native
+    semantic_fields:
+      subject_id: actor_alex
+      property_name: role
+      value: planner
+    content_fingerprint: sha256:562ecc345437449f302a6a60aa4147820a7d0163359a2f851ebba90e36c27031
+    claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: task_prepare
+  kind: entity
+  owner_node_id: assign_task_leaf
+  dependencies: []
+  input_ports: []
+  output_ports:
+  - port_id: task_prepare_out
+    value_type: task_identity
+    schema_id: worldguard.port.task-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: task_prepare_out
+    reason: retained as task identity context
+  native_semantic:
+    semantic_id: semantic:task_prepare
+    element_kind: entity
+    native_object_id: native_task_prepare
+    native_schema_id: worldguard.native.entity.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: task_prepare_native
+    semantic_fields:
+      identity: prepare_materials
+    content_fingerprint: sha256:21e120d05d13fc83e04506cac58808470336e402be44cc97bf8aa06385c1573c
+    claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: assignment_transition
+  kind: transition
+  owner_node_id: assign_task_leaf
+  dependencies:
+  - dependency_id: dep_assignment_actor
+    relation: depends_on
+    depends_on_element_id: actor_alex
+  - dependency_id: dep_assignment_role
+    relation: governed_by
+    depends_on_element_id: planner_role
+  - dependency_id: dep_assignment_task
+    relation: consumes
+    depends_on_element_id: task_prepare
+  input_ports:
+  - port_id: assignment_transition_in
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: assignment_transition_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  native_semantic:
+    semantic_id: semantic:assignment_transition
+    element_kind: transition
+    native_object_id: native_assignment
+    native_schema_id: worldguard.native.transition.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: assignment_native
+    semantic_fields:
+      source_state: unassigned
+      target_state: assigned
+      source_initial: true
+      target_terminal: true
+      guard: actor_and_role_ready
+      guard_value: true
+      effect: task_assigned
+    content_fingerprint: sha256:c10f537d081a0198dd89e9657561db68ac42c9e105993eae7cb1c0af2e1f5fb5
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:assignment_transition
+      purpose: Prevent an unexecutable assignment transition from licensing task assignment.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:assignment_transition:good
+        case_kind: known_good
+        text: The assignment transition executes from unassigned to assigned.
+        inputs:
+          event_model:
+            states:
+            - state_id: unassigned
+              initial: true
+              terminal: false
+            - state_id: assigned
+              initial: false
+              terminal: true
+            transitions:
+            - transition_id: native_assignment
+              source_state: unassigned
+              target_state: assigned
+              guard: actor_and_role_ready
+              effect: task_assigned
+            guard_values:
+              actor_and_role_ready: true
+          events: []
+        coverage_context: {}
+        pre_state:
+          event_model:
+            guard_values:
+              actor_and_role_ready: true
+        expected_output:
+          executed_transition_ids:
+          - native_assignment
+        post_state:
+          reached_state_ids:
+          - assigned
+          - unassigned
+        effects:
+          executed_transition_ids:
+          - native_assignment
+        state_effect_disposition: applicable
+        state_effect_reason: ''
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:assignment_transition:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license transition execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: true
+  required_binding_roles:
+  - evidence
+  - native_result
+  - target_material
+  - test_check
+- element_id: schedule_event
+  kind: event
+  owner_node_id: schedule_task_leaf
+  dependencies:
+  - dependency_id: dep_schedule_event_assignment
+    relation: precedes
+    depends_on_element_id: assignment_transition
+  input_ports: []
+  output_ports:
+  - port_id: schedule_event_out
+    value_type: event_identity
+    schema_id: worldguard.port.event-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: schedule_event_out
+    reason: retained as event identity context
+  native_semantic:
+    semantic_id: semantic:schedule_event
+    element_kind: event
+    native_object_id: native_schedule_event
+    native_schema_id: worldguard.native.event.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: schedule_event_native
+    semantic_fields:
+      at: after_assignment
+      terminates:
+      - assignment_complete
+      initiates:
+      - schedule_requested
+      releases: []
+    content_fingerprint: sha256:2f5592eb7ddb2f18f1e4cc0b44ce9068d571ac53ef802edc3c7429d0bed6de98
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:schedule_event
+      purpose: Prevent a contradictory or unexecuted schedule event from licensing
+        scheduling progress.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:schedule_event:good
+        case_kind: known_good
+        text: The schedule event executes its declared fluent update.
+        inputs:
+          events:
+          - event_id: native_schedule_event
+            at: after_assignment
+            terminates:
+            - assignment_complete
+            initiates:
+            - schedule_requested
+            releases: []
+          event_model: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          executed_event_ids:
+          - native_schedule_event
+        post_state:
+          active_fluent_ids:
+          - schedule_requested
+        effects:
+          initiated_fluent_ids:
+          - schedule_requested
+          terminated_fluent_ids:
+          - assignment_complete
+        state_effect_disposition: applicable
+        state_effect_reason: ''
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:schedule_event:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license event execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: scheduled_state
+  kind: state
+  owner_node_id: schedule_task_leaf
+  dependencies:
+  - dependency_id: dep_scheduled_state_event
+    relation: caused_by
+    depends_on_element_id: schedule_event
+  input_ports: []
+  output_ports:
+  - port_id: scheduled_state_out
+    value_type: state_identity
+    schema_id: worldguard.port.state-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: scheduled_state_out
+    reason: retained as state identity context
+  native_semantic:
+    semantic_id: semantic:scheduled_state
+    element_kind: state
+    native_object_id: native_scheduled_state
+    native_schema_id: worldguard.native.state.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: scheduled_state_native
+    semantic_fields:
+      state_id: scheduled
+      initial: false
+      terminal: true
+    content_fingerprint: sha256:41986e0aca37a6f9231f3cdca53797f6afbb6e54fa8ebf29f13c1b818377cbe8
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:scheduled_state
+      purpose: Prevent a scheduled-state declaration from being accepted without EventGuard
+        semantics.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:scheduled_state:good
+        case_kind: known_good
+        text: The scheduled state is a valid bounded EventGuard declaration.
+        inputs:
+          event_model:
+            states:
+            - state_id: scheduled
+              initial: false
+              terminal: true
+          events: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          declared_state_ids:
+          - scheduled
+        post_state: {}
+        effects: {}
+        state_effect_disposition: unverified
+        state_effect_reason: A declaration-only state does not prove reachability.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:scheduled_state:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license semantic execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: schedule_transition
+  kind: transition
+  owner_node_id: schedule_task_leaf
+  dependencies:
+  - dependency_id: dep_schedule_assignment
+    relation: depends_on
+    depends_on_element_id: assignment_transition
+  - dependency_id: dep_schedule_event
+    relation: caused_by
+    depends_on_element_id: schedule_event
+  - dependency_id: dep_schedule_state
+    relation: depends_on
+    depends_on_element_id: scheduled_state
+  input_ports:
+  - port_id: schedule_transition_in
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: schedule_transition_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  native_semantic:
+    semantic_id: semantic:schedule_transition
+    element_kind: transition
+    native_object_id: native_schedule
+    native_schema_id: worldguard.native.transition.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: schedule_native
+    semantic_fields:
+      source_state: assigned
+      target_state: scheduled
+      source_initial: true
+      target_terminal: true
+      guard: schedule_slot_available
+      guard_value: true
+      effect: task_scheduled
+    content_fingerprint: sha256:440f38fe0f8d78624f07c77599a6416aa7e9f747ea2505782b65e8528a372a54
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:schedule_transition
+      purpose: Prevent an unexecutable schedule transition from licensing scheduled
+        completion.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:schedule_transition:good
+        case_kind: known_good
+        text: The schedule transition executes from assigned to scheduled.
+        inputs:
+          event_model:
+            states:
+            - state_id: assigned
+              initial: true
+              terminal: false
+            - state_id: scheduled
+              initial: false
+              terminal: true
+            transitions:
+            - transition_id: native_schedule
+              source_state: assigned
+              target_state: scheduled
+              guard: schedule_slot_available
+              effect: task_scheduled
+            guard_values:
+              schedule_slot_available: true
+          events: []
+        coverage_context: {}
+        pre_state:
+          event_model:
+            guard_values:
+              schedule_slot_available: true
+        expected_output:
+          executed_transition_ids:
+          - native_schedule
+        post_state:
+          reached_state_ids:
+          - assigned
+          - scheduled
+        effects:
+          executed_transition_ids:
+          - native_schedule
+        state_effect_disposition: applicable
+        state_effect_reason: ''
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:schedule_transition:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license transition execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: true
+  required_binding_roles:
+  - evidence
+  - native_result
+  - target_material
+  - test_check
+- element_id: resource_reservation
+  kind: resource
+  owner_node_id: reserve_resource_leaf
+  dependencies:
+  - dependency_id: dep_resource_schedule
+    relation: depends_on
+    depends_on_element_id: schedule_transition
+  input_ports:
+  - port_id: resource_reservation_in
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: resource_reservation_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  native_semantic:
+    semantic_id: semantic:resource_reservation
+    element_kind: resource
+    native_object_id: native_resource
+    native_schema_id: worldguard.native.resource.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: resource_native
+    semantic_fields:
+      resource_id: room_a
+      quantity: 1
+      unit: room
+    content_fingerprint: sha256:8b0b380e874d13f875a1c99f4ba154f2ece7a7db7617488bb09b03fd959ad897
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:resource_reservation
+      purpose: Prevent an absent resource model from licensing the room reservation.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:resource:semantic:sem-resource-missing-model
+      behavior_cases:
+      - case_id: case:resource_reservation:good
+        case_kind: known_good
+        text: The room inventory is finite and evaluable.
+        inputs:
+          resources:
+            inventory:
+            - resource_id: room_a
+              quantity: 1
+              unit: room
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          resource_ids:
+          - room_a
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This bounded inventory declaration performs no reservation
+          transition.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:ResourceGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:resource_reservation:bad:missing-model
+        case_kind: known_bad
+        text: An absent resource model cannot license inventory semantics.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks absent resource input.
+        failure_id: failure:resource:semantic:sem-resource-missing-model
+        blocked_claim: Semantic resource execution cannot pass without places and
+          transitions.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_RESOURCE_MISSING_MODEL
+        oracle_id: oracle:worldguard:ResourceGuard:semantic:SEM_RESOURCE_MISSING_MODEL
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: true
+  required_binding_roles:
+  - evidence
+  - native_result
+  - target_material
+  - test_check
+- element_id: authorization_norm
+  kind: norm
+  owner_node_id: authorize_task_leaf
+  dependencies:
+  - dependency_id: dep_norm_assignment
+    relation: governed_by
+    depends_on_element_id: assignment_transition
+  input_ports:
+  - port_id: authorization_norm_in
+    value_type: task_request
+    schema_id: worldguard.port.task-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: authorization_norm_out
+    value_type: plan_result
+    schema_id: worldguard.port.plan-result
+    schema_version: v1
+    refines: []
+    cardinality: one
+  native_semantic:
+    semantic_id: semantic:authorization_norm
+    element_kind: norm
+    native_object_id: native_norm
+    native_schema_id: worldguard.native.norm.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: norm_native
+    semantic_fields:
+      modality: permitted
+      subject_id: actor_alex
+      action: execute_task
+      condition: assignment_authorized
+      facts:
+      - fact_id: assignment_authorized
+        value: true
+    content_fingerprint: sha256:eabe737232c9c8fff4f3b7ab3d4bfccc426a24a4e3e05dbce06e0f8de5159a80
+    claim_boundary: planning workflow revision 1 only
+    task_purpose:
+      declaration_id: purpose:authorization_norm
+      purpose: Prevent an absent norm model from licensing task authorization.
+      boundary: planning workflow revision 1 only
+      selected_failure_ids:
+      - failure:norm:semantic:sem-norm-missing-model
+      behavior_cases:
+      - case_id: case:authorization_norm:good
+        case_kind: known_good
+        text: The permission norm has one true matching condition fact.
+        inputs:
+          norms:
+          - norm_id: native_norm
+            modality: permitted
+            subject_id: actor_alex
+            action: execute_task
+            condition: assignment_authorized
+          facts:
+          - fact_id: assignment_authorized
+            value: true
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          evaluated_norms: 1
+          condition_facts: 1
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This bounded norm check performs no world-state transition.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:NormGuard:known-good
+        claim_boundary: planning workflow revision 1 only
+      - case_id: case:authorization_norm:bad:missing-model
+        case_kind: known_bad
+        text: An absent norm model cannot license authorization semantics.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks absent norm input.
+        failure_id: failure:norm:semantic:sem-norm-missing-model
+        blocked_claim: Semantic norm execution cannot pass without norms.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_NORM_MISSING_MODEL
+        oracle_id: oracle:worldguard:NormGuard:semantic:SEM_NORM_MISSING_MODEL
+        claim_boundary: planning workflow revision 1 only
+  contributes_to_claim: true
+  required_binding_roles:
+  - evidence
+  - native_result
+  - target_material
+  - test_check
+bindings:
+- binding_id: actor_alex_material
+  role: target_material
+  subject_element_id: actor_alex
+  resource_id: workflow_record_assignment
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8b9a153f2865e4e3ec58c782816e11bcc9d2f524ea110b74ad7be3d68b8d5081
+  receipt_fingerprint: sha256:297d0acc3249a64c25b272b63574db616941d9732452c6800546c358cd6f23f4
+  claim_boundary: planning workflow revision 1 only
+- binding_id: actor_alex_native
+  role: native_result
+  subject_element_id: actor_alex
+  resource_id: native_actor_alex
+  owner: AgentGuard
+  locator: support/native-results.json#native_actor_alex
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:13359f535ac87929f0e8f95a6d6591a8c1e40099a01098af2fcf523a9f9eb66f
+  receipt_fingerprint: sha256:eb34ff89b5435bc9e1b0b98671ecf0c663c3cf8d98fd9171c764da03927a5160
+  claim_boundary: planning workflow revision 1 only
+- binding_id: allocation_summary_native
+  role: native_result
+  subject_element_id: allocation_summary
+  resource_id: native_allocation_summary
+  owner: worldguard
+  locator: support/native-results.json#native_allocation_summary
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:38fd01c062d3934b5ef22d7c4642fa27e7faec1ba0b0ca8c0012b8c12293f9e1
+  receipt_fingerprint: sha256:48b2b3cb800831eba5298c54cacbf91e68069759073ed409337ef7cd188912cb
+  claim_boundary: planning workflow revision 1 only
+- binding_id: assignment_evidence
+  role: evidence
+  subject_element_id: assignment_transition
+  resource_id: evidence_assignment
+  owner: evidence_owner
+  locator: support/evidence.json#evidence_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:0f48b777813d4210ae88b2540747a64d3ca2e3f3192f7436ea1b3a7fa6086cd0
+  receipt_fingerprint: sha256:4483f96b906074f6e64902bf8e4debf8411c0d0aebe9c20d27dc11957badf6bc
+  claim_boundary: planning workflow revision 1 only
+- binding_id: assignment_material
+  role: target_material
+  subject_element_id: assignment_transition
+  resource_id: workflow_record_assignment
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8b9a153f2865e4e3ec58c782816e11bcc9d2f524ea110b74ad7be3d68b8d5081
+  receipt_fingerprint: sha256:50b807aeb76177d53a29172ec5848036e3653394bbac5a64a4c2d5d692e0b69f
+  claim_boundary: planning workflow revision 1 only
+- binding_id: assignment_native
+  role: native_result
+  subject_element_id: assignment_transition
+  resource_id: native_assignment
+  owner: EventGuard
+  locator: support/native-results.json#native_assignment
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:c10f537d081a0198dd89e9657561db68ac42c9e105993eae7cb1c0af2e1f5fb5
+  receipt_fingerprint: sha256:3562d6db7b766243694fa1e31adb416a693cacb1bc0220fdd65fd1d03cbe907b
+  claim_boundary: planning workflow revision 1 only
+- binding_id: assignment_test
+  role: test_check
+  subject_element_id: assignment_transition
+  resource_id: check_assignment
+  owner: check_owner
+  locator: support/tests.json#check_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:7e9947e1e8ba6d01d7aa280c27f75adb77622b8252e9d0e23e322447ff480922
+  receipt_fingerprint: sha256:34d0092fcc54626d95e366d93d7f9ac68f37c130e5ad401ad8f5bb224046235e
+  claim_boundary: planning workflow revision 1 only
+- binding_id: governance_summary_native
+  role: native_result
+  subject_element_id: governance_summary
+  resource_id: native_governance_summary
+  owner: worldguard
+  locator: support/native-results.json#native_governance_summary
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:0f5c1d8d5228e9d5471c9710a76d13268daccc9d6b9ac00c00819e4d3fbf9eda
+  receipt_fingerprint: sha256:07db3afaac11eae7db58487c161bf3342cf507eb5e5f6ecff2c3f621f1d948f4
+  claim_boundary: planning workflow revision 1 only
+- binding_id: norm_evidence
+  role: evidence
+  subject_element_id: authorization_norm
+  resource_id: evidence_norm
+  owner: evidence_owner
+  locator: support/evidence.json#evidence_norm
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:3a6fdf00e9b35efde2dc48723ce230faea69c1bc71464b110151362535c96c8a
+  receipt_fingerprint: sha256:3c22cfc41bc850e90cd79024928031417a4f24da244b25e3844b9b63eaf2de88
+  claim_boundary: planning workflow revision 1 only
+- binding_id: norm_material
+  role: target_material
+  subject_element_id: authorization_norm
+  resource_id: workflow_record_norm
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_norm
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:c3bec211f6f016dbb81230f81cf54e0c6a27fe2bccabb82eaf09526bc97313f7
+  receipt_fingerprint: sha256:edf3133d84990ccccb607e3ae971c054131afbb0a817ed0e06261dcb0ac27e4c
+  claim_boundary: planning workflow revision 1 only
+- binding_id: norm_native
+  role: native_result
+  subject_element_id: authorization_norm
+  resource_id: native_norm
+  owner: NormGuard
+  locator: support/native-results.json#native_norm
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:eabe737232c9c8fff4f3b7ab3d4bfccc426a24a4e3e05dbce06e0f8de5159a80
+  receipt_fingerprint: sha256:bc888c6eff54e088af7339d8c70b5984ca28e7dec5a50ffb1f24ff413579b07e
+  claim_boundary: planning workflow revision 1 only
+- binding_id: norm_test
+  role: test_check
+  subject_element_id: authorization_norm
+  resource_id: check_norm
+  owner: check_owner
+  locator: support/tests.json#check_norm
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:1428ffe90b16f5ee8696970a109dbb90fc58563f1f29525258fbac51ed4ca515
+  receipt_fingerprint: sha256:54bae6f4132305d56491c1cb28cd29883c1d4f5a9f0c67102bbeac7b73c3bcdc
+  claim_boundary: planning workflow revision 1 only
+- binding_id: plan_outcome_native
+  role: native_result
+  subject_element_id: plan_outcome
+  resource_id: native_plan_outcome
+  owner: EventGuard
+  locator: support/native-results.json#native_plan_outcome
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:b6ff63a135463687ccb0050ea6f757ffe9df0d49ea4a8b6122b5245a23409c03
+  receipt_fingerprint: sha256:1f88b11815460924ede49a64b3d455a8a368559c96766d96b994c186391b057f
+  claim_boundary: planning workflow revision 1 only
+- binding_id: planner_role_material
+  role: target_material
+  subject_element_id: planner_role
+  resource_id: workflow_record_assignment
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8b9a153f2865e4e3ec58c782816e11bcc9d2f524ea110b74ad7be3d68b8d5081
+  receipt_fingerprint: sha256:97c9388d28e12d3159e527ddf6cc43aa84924fee08bf832215645e2c1b6ba516
+  claim_boundary: planning workflow revision 1 only
+- binding_id: planner_role_native
+  role: native_result
+  subject_element_id: planner_role
+  resource_id: native_planner_role
+  owner: worldguard
+  locator: support/native-results.json#native_planner_role
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:562ecc345437449f302a6a60aa4147820a7d0163359a2f851ebba90e36c27031
+  receipt_fingerprint: sha256:8be52a00e42a7cc6628891f88c02f86be1fc88d2ed7c701fb65f54bbe7084ff3
+  claim_boundary: planning workflow revision 1 only
+- binding_id: resource_evidence
+  role: evidence
+  subject_element_id: resource_reservation
+  resource_id: evidence_resource
+  owner: evidence_owner
+  locator: support/evidence.json#evidence_resource
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:a36eda903a34326a54a3e023e9ee9538de6f83aa99c95e0ecd54682415c5827f
+  receipt_fingerprint: sha256:3f65697c963c00713eb34c2b0de29e9ac4dd96466a71664477415764267361f0
+  claim_boundary: planning workflow revision 1 only
+- binding_id: resource_material
+  role: target_material
+  subject_element_id: resource_reservation
+  resource_id: workflow_record_resource
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_resource
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:731d41e7063ab6546101fb94b685e493be3288c0cc9841b96131975771b9aa35
+  receipt_fingerprint: sha256:5ee2da260fab92ef2b38a685e6c0d8bf77e8b32840e7e2da79685ecb4e1941c5
+  claim_boundary: planning workflow revision 1 only
+- binding_id: resource_native
+  role: native_result
+  subject_element_id: resource_reservation
+  resource_id: native_resource
+  owner: ResourceGuard
+  locator: support/native-results.json#native_resource
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8b0b380e874d13f875a1c99f4ba154f2ece7a7db7617488bb09b03fd959ad897
+  receipt_fingerprint: sha256:12e40f7b77dfb3f28a941340284660d679bb2eb89683d4f27039ce978838b318
+  claim_boundary: planning workflow revision 1 only
+- binding_id: resource_test
+  role: test_check
+  subject_element_id: resource_reservation
+  resource_id: check_resource
+  owner: check_owner
+  locator: support/tests.json#check_resource
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:c262660437e5881511d892a04a1a2ee2f27fe3ef90d902cf893f65619e139f85
+  receipt_fingerprint: sha256:add21c15c096a4cee37533f5b37ce7328c56b8c4d7fdfd31eea8879b1531a93b
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_event_material
+  role: target_material
+  subject_element_id: schedule_event
+  resource_id: workflow_record_schedule
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_schedule
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:095de93fb696d81d425fc769e6d4c3cf6bdf6a9ab65fe6333833137d8a9d8966
+  receipt_fingerprint: sha256:2f26fdf407a968ac871928fe03fa4587ac95556ab7211551b0e487c2e7ee1df1
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_event_native
+  role: native_result
+  subject_element_id: schedule_event
+  resource_id: native_schedule_event
+  owner: EventGuard
+  locator: support/native-results.json#native_schedule_event
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:2f5592eb7ddb2f18f1e4cc0b44ce9068d571ac53ef802edc3c7429d0bed6de98
+  receipt_fingerprint: sha256:1435291fb48ac829eacdd0ffe1d77868007913285aa8275800dcced4b6aba54a
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_evidence
+  role: evidence
+  subject_element_id: schedule_transition
+  resource_id: evidence_schedule
+  owner: evidence_owner
+  locator: support/evidence.json#evidence_schedule
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:1025787f8d52000f17d8772d3b1b8e45f7bb717bf9bd01fc9bb214502a016d14
+  receipt_fingerprint: sha256:3240e41a3d938cf9b430dcf9271b2b131d823b80a738e37280f955ae5ad69460
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_material
+  role: target_material
+  subject_element_id: schedule_transition
+  resource_id: workflow_record_schedule
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_schedule
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:095de93fb696d81d425fc769e6d4c3cf6bdf6a9ab65fe6333833137d8a9d8966
+  receipt_fingerprint: sha256:3afcdafb698858243af937416fc8adcd7d887f27299a86fee64bcbcaf2a3581c
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_native
+  role: native_result
+  subject_element_id: schedule_transition
+  resource_id: native_schedule
+  owner: EventGuard
+  locator: support/native-results.json#native_schedule
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:440f38fe0f8d78624f07c77599a6416aa7e9f747ea2505782b65e8528a372a54
+  receipt_fingerprint: sha256:6641b07c7ff7d1b6d7d712677a42da4784dfd03ed53ba32661bb2129a93d4377
+  claim_boundary: planning workflow revision 1 only
+- binding_id: schedule_test
+  role: test_check
+  subject_element_id: schedule_transition
+  resource_id: check_schedule
+  owner: check_owner
+  locator: support/tests.json#check_schedule
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:ef35a9c166075bcfd04a26f183de392a44c574a89bea20b57bffdb3cd5cdcd03
+  receipt_fingerprint: sha256:8cabc55e5c58aba65b1f3be68b5d41610f89b134e1302070f2dea3d5b2faf7ab
+  claim_boundary: planning workflow revision 1 only
+- binding_id: scheduled_state_material
+  role: target_material
+  subject_element_id: scheduled_state
+  resource_id: workflow_record_schedule
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_schedule
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:095de93fb696d81d425fc769e6d4c3cf6bdf6a9ab65fe6333833137d8a9d8966
+  receipt_fingerprint: sha256:26894fa412d3892cb9cc172a41b4dd870c9128fdb2cdcdd372c639fdc0b8d8a2
+  claim_boundary: planning workflow revision 1 only
+- binding_id: scheduled_state_native
+  role: native_result
+  subject_element_id: scheduled_state
+  resource_id: native_scheduled_state
+  owner: EventGuard
+  locator: support/native-results.json#native_scheduled_state
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:41986e0aca37a6f9231f3cdca53797f6afbb6e54fa8ebf29f13c1b818377cbe8
+  receipt_fingerprint: sha256:0563f6b9bf4a9ff862428e0c0036515721dc2e80932d4f99e9d02151f1a15bdf
+  claim_boundary: planning workflow revision 1 only
+- binding_id: scheduling_summary_native
+  role: native_result
+  subject_element_id: scheduling_summary
+  resource_id: native_scheduling_summary
+  owner: EventGuard
+  locator: support/native-results.json#native_scheduling_summary
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:5828beec4a0f16a2d44ac17bd9eb0a99cddec053f5dfa192714a6759c818fb58
+  receipt_fingerprint: sha256:ea749a03875b78340d6c9006ac157207fd4ce09643b085b352cdd7770110f6dc
+  claim_boundary: planning workflow revision 1 only
+- binding_id: task_prepare_material
+  role: target_material
+  subject_element_id: task_prepare
+  resource_id: workflow_record_assignment
+  owner: workflow_owner
+  locator: support/target-material.json#workflow_record_assignment
+  provider_id: fixture.local
+  provider_version: v1
+  provider_capability_id: fixture.json-selector
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8b9a153f2865e4e3ec58c782816e11bcc9d2f524ea110b74ad7be3d68b8d5081
+  receipt_fingerprint: sha256:5d567425db953df0b4384c28def41decf5b5cf1e11b9a5ad9ae08d8221daf540
+  claim_boundary: planning workflow revision 1 only
+- binding_id: task_prepare_native
+  role: native_result
+  subject_element_id: task_prepare
+  resource_id: native_task_prepare
+  owner: worldguard
+  locator: support/native-results.json#native_task_prepare
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: planning-workflow
+  target_revision: revision-1
+  freshness_status: current
+  content_fingerprint: sha256:21e120d05d13fc83e04506cac58808470336e402be44cc97bf8aa06385c1573c
+  receipt_fingerprint: sha256:d2f3bc5bd35a03632a5904bdf742fa93a7afa6c48997f2c55ae655d53f72ad8d
+  claim_boundary: planning workflow revision 1 only
+declared_inputs:
+- input_id: external_plan_request
+  node_id: plan_root
+  port_id: root_plan_request
+declared_outputs:
+- output_id: declared_plan_outcome
+  node_id: plan_root
+  port_id: root_plan_outcome
+declared_gaps: []
+blueprint_fingerprint: d018aee1e6eb872ce17ff83bee5f5fbd9b09509f2ad37edadd94b678a8cbf74e

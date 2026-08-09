@@ -38,6 +38,11 @@ def pass_mesh():
                 "model_id": "event-source",
                 "model_version": "v1",
                 "freshness_status": "current",
+                "output_ports": [
+                    {"port_id": "ready", "value_type": "fact", "cardinality": "one"},
+                    {"port_id": "secret", "value_type": "fact", "cardinality": "one"},
+                    {"port_id": "unexpected", "value_type": "fact", "cardinality": "one"},
+                ],
                 "authority": {"owns": ["event"], "excludes": ["norm"]},
                 "contract": {
                     "contract_id": "event-contract",
@@ -60,6 +65,9 @@ def pass_mesh():
                 "model_id": "norm-target",
                 "model_version": "v1",
                 "freshness_status": "current",
+                "input_ports": [
+                    {"port_id": "condition", "value_type": "fact", "cardinality": "one"}
+                ],
                 "authority": {"owns": ["norm"], "excludes": ["resource"]},
                 "contract": {
                     "contract_id": "norm-contract",
@@ -90,7 +98,13 @@ def pass_mesh():
                 "source_model_id": "event-source",
                 "target_model_id": "norm-target",
                 "relation": "consumes_output_of",
-                "output_refs": ["ready"],
+                "port_mappings": [
+                    {
+                        "mapping_id": "ready-to-condition",
+                        "source_port_id": "ready",
+                        "target_port_id": "condition",
+                    }
+                ],
                 "allowed_use": ["ready"],
                 "forbidden_use": [],
                 "read_only": True,
@@ -138,7 +152,7 @@ def test_authority_excluded_semantic_marks_boundary():
 
 def test_forbidden_handoff_use_fails_mesh():
     mesh = pass_mesh()
-    mesh["edges"][0]["output_refs"] = ["secret"]
+    mesh["edges"][0]["port_mappings"][0]["source_port_id"] = "secret"
     mesh["edges"][0]["forbidden_use"] = ["secret"]
 
     report = run_model_mesh(mesh)
@@ -149,7 +163,7 @@ def test_forbidden_handoff_use_fails_mesh():
 
 def test_unallowed_handoff_use_marks_boundary():
     mesh = pass_mesh()
-    mesh["edges"][0]["output_refs"] = ["unexpected"]
+    mesh["edges"][0]["port_mappings"][0]["source_port_id"] = "unexpected"
     mesh["edges"][0]["allowed_use"] = ["ready"]
 
     report = run_model_mesh(mesh)
@@ -174,8 +188,18 @@ def test_dependency_cycle_fails_mesh():
         "run_id": "mesh-test",
         "nodes": [{"model_id": "a"}, {"model_id": "b"}],
         "edges": [
-            {"edge_id": "a-b", "source_model_id": "a", "target_model_id": "b"},
-            {"edge_id": "b-a", "source_model_id": "b", "target_model_id": "a"},
+            {
+                "edge_id": "a-b",
+                "source_model_id": "a",
+                "target_model_id": "b",
+                "relation": "depends_on",
+            },
+            {
+                "edge_id": "b-a",
+                "source_model_id": "b",
+                "target_model_id": "a",
+                "relation": "depends_on",
+            },
         ],
     }
 
@@ -183,6 +207,108 @@ def test_dependency_cycle_fails_mesh():
 
     assert report.status == GuardStatus.FAIL
     assert any(finding.code == "MESH_DEPENDENCY_CYCLE" for finding in report.findings)
+
+
+def test_unknown_relation_and_missing_transfer_mapping_fail_closed() -> None:
+    unknown = pass_mesh()
+    unknown["edges"][0]["relation"] = "looks_like_dependency"
+    with pytest.raises(ValueError, match="unknown model edge relation"):
+        ModelMeshContract.from_dict(unknown)
+
+    missing = pass_mesh()
+    missing["edges"][0]["port_mappings"] = []
+    with pytest.raises(ValueError, match="requires port_mappings"):
+        ModelMeshContract.from_dict(missing)
+
+
+def test_incompatible_transfer_ports_fail_with_exact_mapping() -> None:
+    mesh = pass_mesh()
+    mesh["nodes"][1]["input_ports"][0]["value_type"] = "resource"
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == GuardStatus.FAIL
+    mismatch = next(
+        finding
+        for finding in report.findings
+        if finding.code == "MESH_INCOMPATIBLE_PORT_MAPPING"
+    )
+    assert mismatch.evidence["mapping"]["mapping_id"] == "ready-to-condition"
+
+
+@pytest.mark.parametrize(
+    ("mapping_field", "unknown_port", "expected_code"),
+    [
+        ("source_port_id", "unknown-source", "MESH_UNKNOWN_SOURCE_PORT"),
+        ("target_port_id", "unknown-target", "MESH_UNKNOWN_TARGET_PORT"),
+    ],
+)
+def test_unknown_transfer_ports_fail_closed(
+    mapping_field: str,
+    unknown_port: str,
+    expected_code: str,
+) -> None:
+    mesh = pass_mesh()
+    mesh["edges"][0]["port_mappings"][0][mapping_field] = unknown_port
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == GuardStatus.FAIL
+    finding = next(item for item in report.findings if item.code == expected_code)
+    assert finding.evidence["mapping"][mapping_field] == unknown_port
+
+
+def test_transfer_port_cardinality_mismatch_fails_closed() -> None:
+    mesh = pass_mesh()
+    mesh["nodes"][1]["input_ports"][0]["cardinality"] = "many"
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == GuardStatus.FAIL
+    mismatch = next(
+        finding
+        for finding in report.findings
+        if finding.code == "MESH_INCOMPATIBLE_PORT_MAPPING"
+    )
+    assert mismatch.evidence["source_port"]["cardinality"] == "one"
+    assert mismatch.evidence["target_port"]["cardinality"] == "many"
+
+
+@pytest.mark.parametrize(
+    ("edge_field", "expected_code"),
+    [
+        ("source_model_id", "MESH_MISSING_SOURCE_NODE"),
+        ("target_model_id", "MESH_MISSING_TARGET_NODE"),
+    ],
+)
+def test_missing_handoff_endpoint_remains_a_visible_gap(
+    edge_field: str,
+    expected_code: str,
+) -> None:
+    mesh = pass_mesh()
+    mesh["edges"][0][edge_field] = "missing-model"
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == GuardStatus.GAP
+    assert any(finding.code == expected_code for finding in report.findings)
+
+
+def test_edge_boundary_and_type_checks_remain_reachable_together() -> None:
+    mesh = pass_mesh()
+    mesh["edges"][0]["port_mappings"][0]["source_port_id"] = "secret"
+    mesh["edges"][0]["forbidden_use"] = ["secret"]
+    mesh["edges"][0]["allowed_use"] = ["ready"]
+    mesh["nodes"][1]["input_ports"][0]["value_type"] = "resource"
+
+    report = run_model_mesh(mesh)
+    codes = {finding.code for finding in report.findings}
+
+    assert {
+        "MESH_FORBIDDEN_DOWNSTREAM_USE",
+        "MESH_UNALLOWED_DOWNSTREAM_USE",
+        "MESH_INCOMPATIBLE_PORT_MAPPING",
+    } <= codes
 
 
 def test_public_api_exports_model_mesh():

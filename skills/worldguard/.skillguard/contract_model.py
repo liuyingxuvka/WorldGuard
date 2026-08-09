@@ -14,10 +14,12 @@ def export_contract_model() -> dict[str, object]:
     route_id = "route:worldguard-claim-derived-depth"
     owner_id = "worldguard.maintenance_validation"
     model_step = "step:derive-world-coverage-universe"
+    projection_step = "step:verify-worldguard-portable-runtime-projection"
     topology_step = "step:verify-worldguard-internal-topology"
     entry_prompt_step = "step:verify-worldguard-entry-prompt-bundle"
     guard_contract_step = "step:verify-world-guard-model-contract"
     depth_step = "step:execute-world-semantic-depth"
+    blueprint_step = "step:verify-worldguard-blueprint-integrity"
     template_step = "step:worldguard-template-pack-builder:execute"
     task_local_step = "step:worldguard-task-local-model-closure:execute"
     fact_revision_step = "step:worldguard-fact-revision:execute"
@@ -35,11 +37,20 @@ def export_contract_model() -> dict[str, object]:
             "terminal_kind": "",
         },
         {
+            "step_id": projection_step,
+            "route_id": route_id,
+            "owner_id": "worldguard.portable_runtime_projection",
+            "action_kind": "verifier",
+            "prerequisite_step_ids": [model_step],
+            "required": True,
+            "terminal_kind": "",
+        },
+        {
             "step_id": topology_step,
             "route_id": route_id,
             "owner_id": "worldguard.internal.topology",
             "action_kind": "verifier",
-            "prerequisite_step_ids": [model_step],
+            "prerequisite_step_ids": [projection_step],
             "required": True,
             "terminal_kind": "",
         },
@@ -71,11 +82,20 @@ def export_contract_model() -> dict[str, object]:
             "terminal_kind": "",
         },
         {
+            "step_id": blueprint_step,
+            "route_id": route_id,
+            "owner_id": "worldguard.blueprint_integrity",
+            "action_kind": "verifier",
+            "prerequisite_step_ids": [depth_step],
+            "required": True,
+            "terminal_kind": "",
+        },
+        {
             "step_id": template_step,
             "route_id": route_id,
             "owner_id": "worldguard.template_packs",
             "action_kind": "native",
-            "prerequisite_step_ids": [depth_step],
+            "prerequisite_step_ids": [blueprint_step],
             "required": True,
             "terminal_kind": "",
         },
@@ -148,6 +168,15 @@ def export_contract_model() -> dict[str, object]:
         "worldguard_claim_semantics_derive_the_complete_guard_set",
         "worldguard_selected_shape_and_guards_load_only_mandatory_references",
         "worldguard_prompt_bundle_preserves_reasoning_headroom",
+        "worldguard_blueprint_complete_fixture_is_current",
+        "worldguard_blueprint_known_bad_hierarchy_ports_and_bindings_fail_closed",
+        "worldguard_blueprint_qualification_is_current",
+        "worldguard_blueprint_impact_and_reverse_trace_are_exact",
+        "worldguard_blueprint_queries_are_read_only",
+        "worldguard_blueprint_source_and_bundle_are_exact",
+        "worldguard_portable_projection_is_directional_transactional_and_current",
+        "worldguard_portable_check_entry_delegates_to_single_cli_authority",
+        "worldguard_maintenance_model_export_is_process_only_and_exact",
     ]
     obligations = [
         ("obligation:worldguard-claim-routes", invariant_ids[0], depth_step),
@@ -244,6 +273,51 @@ def export_contract_model() -> dict[str, object]:
             invariant_ids[29],
             entry_prompt_step,
         ),
+        (
+            "obligation:worldguard-blueprint-complete-fixture",
+            invariant_ids[30],
+            blueprint_step,
+        ),
+        (
+            "obligation:worldguard-blueprint-known-bad-closure",
+            invariant_ids[31],
+            blueprint_step,
+        ),
+        (
+            "obligation:worldguard-blueprint-qualification",
+            invariant_ids[32],
+            blueprint_step,
+        ),
+        (
+            "obligation:worldguard-blueprint-impact-reverse-trace",
+            invariant_ids[33],
+            blueprint_step,
+        ),
+        (
+            "obligation:worldguard-blueprint-query-read-only",
+            invariant_ids[34],
+            blueprint_step,
+        ),
+        (
+            "obligation:worldguard-blueprint-source-bundle-parity",
+            invariant_ids[35],
+            projection_step,
+        ),
+        (
+            "obligation:worldguard-portable-runtime-projection",
+            invariant_ids[36],
+            projection_step,
+        ),
+        (
+            "obligation:worldguard-portable-check-entry-facade",
+            invariant_ids[37],
+            topology_step,
+        ),
+        (
+            "obligation:worldguard-maintenance-model-export",
+            invariant_ids[38],
+            model_step,
+        ),
     ]
     return {
         "schema_version": "skillguard.flowguard_model_export.v2",
@@ -254,7 +328,7 @@ def export_contract_model() -> dict[str, object]:
             {
                 "function_id": "worldguard_claim_derived_depth",
                 "business_intent": (
-                    "execute the eight exact WorldGuard maintenance validation owners"
+                    "execute the ten exact WorldGuard maintenance validation owners"
                 ),
                 "owner_id": owner_id,
                 "route_ids": [route_id],
@@ -285,8 +359,10 @@ def export_contract_model() -> dict[str, object]:
         ],
         "invariant_ids": invariant_ids,
         "claim_boundary": (
-            "This author-side export gives each of the eight WorldGuard checks one "
-            "maintenance step and one execution owner. WorldGuard's public investigation, "
+            "This author-side export gives each of the ten WorldGuard checks one "
+            "maintenance step and one execution owner. It models the author-side validation "
+            "process, not World domain behavior. Blueprint semantics, portable projection, "
+            "and the helper entry facade retain separate evidence owners. WorldGuard's public investigation, "
             "semantic-rollout, task-local revision, template, fact-revision, and seven internal Guard runtime routes remain "
             "target-owned in the skill/runtime and are verified by those checks; this "
             "maintenance model does not duplicate them as alternate execution paths."

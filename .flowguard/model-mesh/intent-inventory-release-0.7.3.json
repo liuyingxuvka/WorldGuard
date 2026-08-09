@@ -1,0 +1,549 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:final-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release10-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release11-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release12-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release13-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release14-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release15-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release16-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release17-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release2-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release3-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release4-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release5-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release6-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release7-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release8-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release9-currentness-20260810",
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:stable-currentness-20260810"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system",
+        "relation:system-contains:behavior_commitment_ledger",
+        "relation:system-contains:compositional_verification_kernel",
+        "relation:system-contains:current_input_authority",
+        "relation:system-contains:fact_revision",
+        "relation:system-contains:hierarchical_model_mesh",
+        "relation:system-contains:model_test_code_alignment",
+        "relation:system-contains:task_local_revision",
+        "relation:system-contains:template_selection",
+        "relation:system-contains:test_evidence_mesh"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3",
+      "rationale": "Refresh the authoritative_model_system model binding for the WorldGuard 0.7.3 patch release while preserving its existing source, code, test, and declared model boundary.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:ccd17946d19380aa0811b079e95b187f2df62362d5a646123a8d0c2c89aefefc"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:fact_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3",
+      "rationale": "Refresh the fact_revision model binding for the WorldGuard 0.7.3 patch release while preserving its existing source, code, test, and declared model boundary.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:a45277b947bbeca5d4d8908f5664e15892706abd2ac5ed1d4c3c754006ca2daa"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:task_local_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3",
+      "rationale": "Refresh the task_local_revision model binding for the WorldGuard 0.7.3 patch release while preserving its existing source, code, test, and declared model boundary.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:745a9629d1be340cb142ceec8af537f6078ab6ca2c8a0d80a413ad351aa396e4"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809",
+      "contribution_fingerprint": "sha256:ccd17946d19380aa0811b079e95b187f2df62362d5a646123a8d0c2c89aefefc",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system",
+        "relation:system-contains:behavior_commitment_ledger",
+        "relation:system-contains:compositional_verification_kernel",
+        "relation:system-contains:current_input_authority",
+        "relation:system-contains:fact_revision",
+        "relation:system-contains:hierarchical_model_mesh",
+        "relation:system-contains:model_test_code_alignment",
+        "relation:system-contains:task_local_revision",
+        "relation:system-contains:template_selection",
+        "relation:system-contains:test_evidence_mesh"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact current authoritative_model_system model relation changes as part of the 0.7.3 patch refresh; no external reconstruction or trial-use proof is required.",
+      "fingerprint": "sha256:61747a44f39b3f0255859ebfbb5f55852b529d1c4ebde669a37f4e011a28d06f"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809",
+      "contribution_fingerprint": "sha256:a45277b947bbeca5d4d8908f5664e15892706abd2ac5ed1d4c3c754006ca2daa",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact current fact_revision model relation changes as part of the 0.7.3 patch refresh; no external reconstruction or trial-use proof is required.",
+      "fingerprint": "sha256:58e22e93e1b7e89d0d1bab0f726e878f8fd8e975673ab92ad66e96ef5e72cf06"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809",
+      "contribution_fingerprint": "sha256:745a9629d1be340cb142ceec8af537f6078ab6ca2c8a0d80a413ad351aa396e4",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact current task_local_revision model relation changes as part of the 0.7.3 patch refresh; no external reconstruction or trial-use proof is required.",
+      "fingerprint": "sha256:2f1c5f196f0d4f456705f76dd56eede56d04441b15f165cdf2325ea755298340"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+      "prior_contribution_fingerprint": "sha256:f5e1f193eae5053c6bf0cc1b41dc27b6361b2d9a2cf6a0db6d0d2f5bc5b2f081",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:eb159daf158e7fc190867db4e2334e4d686b2f96d12140c0e8add5ba3fbf44b5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:bd7e162dc0ed39a8ea6d6d2e06a914465c42b33d3e14e50f9b37dba23472af9a"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "prior_contribution_fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:ef9ed2d8d365e6c9951811a02ede233b55d15e11b68b5d7d86ea13aaa0826aae"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:5c87ed94504d5d92b50a868019a9c4ec0bfb66d1012f7c1d04469d4fbeec1617"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:fe904e5b23edad971f79009ea825cd9f65c1a395d230c5758680c616bf5b7e12",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior fact_revision binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:2806ed5e2eef07c40ace7383758b0380d746a3948f472b59d69e7ea4af87f15d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:b54cab43a63e4262946fe68587b9472d8b26dba4ba5b942617b51245af25228b"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:8f8be7306f983c481ba44b24627394937296d4a2f742f0ae0cb0ff3fc60a9061"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:ce7b1e0cb0d4bbff7395743a3a22f68bce19d60a732ab8999bab26b6045523e6",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior task_local_revision binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:22d0bfbaf9989d2a4afba013e45c6c4dc89f6e606a308543a105eb1bd57970c6"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:2d5921e2c9ab01409df8287d6e2b28fa9b98ed5173376e7a0a276dbd577154e1"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:227710ba6ae5a1abb096ff430a4ae1210a77568f15dfcc6172cbc4ce6415a325"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:163b56de547eda84a9348ad972b11334d2670579b21955a0c99830a62fc61c84",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:6e22564323f6183b5162e746c0ea77e847695db8f6ae258b24373ce8adc23bf2"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:final-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:984034a5b011f83ae73eb141c9629313cbaa6968b44a5991cb1fad66daa531d2",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:18bc8a1b07487c01f5c7af5f9cb64b5c28ca2f0b0f28c3761eea7b8f795d90b1"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:fac6f201cf485a655932a0668f20108ef7d04a8770557b78cd77acc6f85cbfef",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:8e3681f10eb1d395b45c9072f8fdfad325c155652e4222d0b8e58bfba3aac50a"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release10-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:9422326d1d68a8193b2a40d9b4521337013aa4d54934273fb788508bff48b600",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:17debae48c2f1fb1c8c8b0bcf94427e60d6de8245279b9829ec9079ff155e41f"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release11-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:b99869f2ea7b7bd9711744d65e0240683013ac259e49733f03159691a1be760f",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:f73f8f62d04bd39ab7459393ac4396515c6896e861cdb5bc16c901ba686ef75e"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release12-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:301ef8094bea8d66cb6de92d82278b3736fa41af13cefd81293fb48d95c0f5ec",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:f6c4d7351f79a81beb37990839d4712c02c6e1db6e3bc64d30dc6be96629d515"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release13-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:ae03dcccbb66b97c38e62cd04870fe6713f70310d53f0d66289f2ad542042c94",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:33f5f21e0ab18c67af5e7992da48bc1a1717db4e5e390e6dfdc2a3b62b87a341"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release14-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:f5489cc22ab30d95e97bc5a95653ce11d173324e3ff1b5be80e98d9fb5a3314e",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:a9b7544abae5a6ce64326ff84b228459e99bc501e50566ac6a9c85cb8c767806"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release15-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:6ce4e4c75199b4bcd9b7550c6dde6692037bffe86a22a07b2c89cbc1d362697f",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:b1c87c6f533649270fc21ce621d375c4fa1998f0d36ce5dc035dd448754035ae"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release16-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:6588166802d7feb1a88372bfcd9effbcee5ee705a9b7d8658cfe04aaaf0f9a8a",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:7069ff8e52a875f5066732a144780da627d7ca19771ad5fef2faa4a85a8a3320"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release17-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:937fd4fcbcc8516893b331f5b7d5ddda8922347271c578a7789bbd16f35ec784",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:d1960fd8f6e0432854cf4f9f0054669c79aad9c1c20d1f61fa1c9375cd2ac9e7"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release2-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:c97790eb0d78857901a468f28465990b4fe125347df276bdecb4e43773e2761f",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:83b3cada458e899915da90c8c31541fbad890b261b2d14a02c20d12fe1cfb67e"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release3-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:80969f96b79ae397a3f5710ad6c643bf9207344a3c6295b1b384aeb03eb05f55",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:a1ef0ba3d78010de1e6d8e6cddac12d4229602941e90fedf97c8532d3e3d954b"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release4-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:a32c6ed4972fa0a4390800c01971d523b4ac19059bc432a68aacdc3f4ba648b2",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:1abcd76f6081c0171acf9042c6623853de9d94c8b30e886e004cbed89b63ca10"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release5-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:dc0862cfd3ee84871845441d6172e742e2757267a6f77b53f387c0c882be8c24",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:c4edc6eb65e11730e8155c6b1f64b5f795981630b7b463192c5c63c4735bb89c"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release6-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:01521d4019d1965773aafcc4e7f8c5a96aa1f503c30ac732de9e68d48b365345",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:f4f5a3d9724bbe5be2cae66d3806728e161142ac24ad1abda00fb8cb948d6555"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release7-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:a30fa8daafe1d6c5ec7d9705339f265feeb9bd557b8f46aadbda31adcda76727",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:92cb58c2d4d20520c0e262f1a99b5ae318d14cb245326160dcc5c829be474a2b"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release8-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:c6907a4f959e14ccb1e0ef633a6446990d2398ca5b52abd39dc200c8fef8d7e2",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:2c5c509cf0eb9315fd0406385f6bfd0820e77b98f42eba991ac781e55392ae6d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release9-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:35a78284216f1aa29cdb73a507eb453b387b1198e690f08dc836fd56b74944e6",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:d8463345cb14e823195a398d4473ad0d15871535081739fc21f59258b5871c20"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:stable-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:293ec5d663749bfe48c7e1ff7715b47325ff5d07dedea0ecc5fdd630ed1d552d",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "reason": "Supersede the prior authoritative_model_system binding with the exact 0.7.3 currentness contribution while preserving its declared design intent.",
+      "fingerprint": "sha256:87a629a43ffebc3c2427c081c397f15c9a380912b41fe70135ac9939e935654a"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release18-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:f2157bb274f9709128651d36d8cf0004ba2196c92fc19a3cec40621d1f554d61",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:d5c16fe2aee13580a8a23ba01fb77e7da930d8a68b8f482917eb30d0e6015807"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release19-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:4292cef38e428d362292c75e7895ab14c0b51d264289c81f07131b0466d445e4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding while refreshing only the explicitly changed patch-release model owners.",
+      "fingerprint": "sha256:df663fcdddad6728aa65460d44013ff71ce7c763205f80d05a203d8f935144cf"
+    }
+  ]
+}

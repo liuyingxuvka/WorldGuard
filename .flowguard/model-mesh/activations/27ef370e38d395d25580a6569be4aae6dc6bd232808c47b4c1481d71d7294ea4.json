@@ -1,0 +1,12 @@
+{
+  "candidate_snapshot_fingerprint": "sha256:607c6d59e337bfd810536b4950e36b97d8d09133c690cb20e7359c3c0d51d955",
+  "expected_head_fingerprint": "sha256:dbaab82a493c3b50ae5272124e00c8a4fb9bd1979c16384193e1c15f6ec7d38c",
+  "fingerprint": "sha256:27ef370e38d395d25580a6569be4aae6dc6bd232808c47b4c1481d71d7294ea4",
+  "next_generation": 33,
+  "previous_snapshot_fingerprint": "sha256:0c7767b2dda70b1d5c09bd300e4b276b4ebf63cddd7f2a51e9af42ea4a9a1ee5",
+  "receipt_id": "receipt:worldguard-software-dna-20260809-release-0.7.3",
+  "revision_set_fingerprint": "sha256:9e5b9137db0fd63f03c6d263cbd49bb030ac3e321814d124bf32d69eaa506a55",
+  "schema": "flowguard.model_activation_receipt.v1",
+  "subject_revision": "source-inventory:2e6c938bcffa12af7ddceb41af77ab7f510bfffffd32a17b855bea26ac474328",
+  "system_id": "flowguard"
+}

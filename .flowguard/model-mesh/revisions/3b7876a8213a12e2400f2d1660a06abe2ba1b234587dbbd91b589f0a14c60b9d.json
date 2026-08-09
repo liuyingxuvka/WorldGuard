@@ -1,0 +1,2278 @@
+{
+  "added_ids": [
+    "coverage:code_contracts:contract:purpose:authoritative_model_system",
+    "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+    "coverage:model_instances:authoritative_model_system",
+    "coverage:model_instances:compositional_verification_kernel",
+    "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+    "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+    "model_instance:model:authoritative_model_system",
+    "model_instance:model:compositional_verification_kernel",
+    "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+    "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+    "model_relation:relation:system-contains:authoritative_model_system",
+    "model_relation:relation:system-contains:compositional_verification_kernel",
+    "parent_closure:purpose:authoritative_model_system",
+    "parent_closure:purpose:compositional_verification_kernel",
+    "root:model:authoritative_model_system"
+  ],
+  "affected_closure_fingerprint": "sha256:8a7f10da41d94c9573ddb4f6c58c85815f391567a919a63d4e61e797a02e65ee",
+  "affected_closure_ids": [
+    "behavior_commitment:commitment:worldguard-current-input-authority",
+    "behavior_commitment:commitment:worldguard-fact-revision-authority",
+    "behavior_commitment:commitment:worldguard-template-selection-authority",
+    "code_contract:contract:contract:worldguard-fact-revision",
+    "code_contract:contract:contract:worldguard-template-selection",
+    "code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "coverage:code_contracts:contract:purpose:authoritative_model_system",
+    "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+    "coverage:model_instances:authoritative_model_system",
+    "coverage:model_instances:compositional_verification_kernel",
+    "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+    "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+    "coverage:universe",
+    "model_instance:model:authoritative_model_system",
+    "model_instance:model:behavior_commitment_ledger",
+    "model_instance:model:compositional_verification_kernel",
+    "model_instance:model:current_input_authority",
+    "model_instance:model:fact_revision",
+    "model_instance:model:hierarchical_model_mesh",
+    "model_instance:model:model_test_code_alignment",
+    "model_instance:model:task_local_revision",
+    "model_instance:model:template_selection",
+    "model_instance:model:test_evidence_mesh",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:system-contains:authoritative_model_system",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:compositional_verification_kernel",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh",
+    "parent_closure:purpose:authoritative_model_system",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:compositional_verification_kernel",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:fact_revision",
+    "parent_closure:purpose:hierarchical_model_mesh",
+    "parent_closure:purpose:model_test_code_alignment",
+    "parent_closure:purpose:task_local_revision",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:purpose:test_evidence_mesh",
+    "parent_closure:system:flowguard:model-regression-manifest",
+    "root:model:authoritative_model_system",
+    "root:model:behavior_commitment_ledger",
+    "system_property:subject_revision",
+    "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "test_evidence:test:tests/test_contracts.py",
+    "test_evidence:test:tests/test_fact_revision.py",
+    "test_evidence:test:tests/test_guard_model_contract.py",
+    "test_evidence:test:tests/test_template_packs.py"
+  ],
+  "affected_edge_ids": [
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:system-contains:authoritative_model_system",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:compositional_verification_kernel",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh"
+  ],
+  "affected_owner_bindings": [
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-current-input-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-fact-revision-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-template-selection-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-fact-revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-template-selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "coverage:code_contracts:contract:purpose:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:model_instances:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:model_instances:compositional_verification_kernel",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:universe",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_instance:model:authoritative_model_system",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:behavior_commitment_ledger",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:compositional_verification_kernel",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:current_input_authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:fact_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:hierarchical_model_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:model_test_code_alignment",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:task_local_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:template_selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:test_evidence_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:current_input_authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:fact_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:task_local_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:template_selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:compositional_verification_kernel",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:current_input_authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:fact_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:task_local_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:template_selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "parent_closure:purpose:authoritative_model_system",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:behavior_commitment_ledger",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:compositional_verification_kernel",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:current_input_authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:fact_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:hierarchical_model_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:model_test_code_alignment",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:task_local_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:template_selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:test_evidence_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:system:flowguard:model-regression-manifest",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "root:model:authoritative_model_system",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "root:model:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "system_property:subject_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_contracts.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_fact_revision.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_guard_model_contract.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_template_packs.py",
+      "owner_route": "test_mesh_maintenance"
+    }
+  ],
+  "base_snapshot_fingerprint": "sha256:5254e98b8aec13210cc895079cfec4181ad9e67fc9805e6927e3b723861c5003",
+  "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+  "changed_commitment_ids": [],
+  "changed_contract_ids": [],
+  "changed_coverage_ids": [
+    "coverage:code_contracts:contract:purpose:authoritative_model_system",
+    "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+    "coverage:model_instances:authoritative_model_system",
+    "coverage:model_instances:compositional_verification_kernel",
+    "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+    "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+    "coverage:universe"
+  ],
+  "changed_field_ids": [],
+  "changed_gap_ids": [],
+  "changed_owner_artifact_ids": [
+    "parent_closure:purpose:authoritative_model_system",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:compositional_verification_kernel",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:system:flowguard:model-regression-manifest"
+  ],
+  "changed_relation_ids": [
+    "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "relation:model-realizes-purpose:authoritative_model_system",
+    "relation:model-realizes-purpose:behavior_commitment_ledger",
+    "relation:model-realizes-purpose:compositional_verification_kernel",
+    "relation:model-realizes-purpose:current_input_authority",
+    "relation:model-realizes-purpose:template_selection",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "relation:system-contains:authoritative_model_system",
+    "relation:system-contains:behavior_commitment_ledger",
+    "relation:system-contains:compositional_verification_kernel",
+    "relation:system-contains:current_input_authority",
+    "relation:system-contains:fact_revision",
+    "relation:system-contains:hierarchical_model_mesh",
+    "relation:system-contains:model_test_code_alignment",
+    "relation:system-contains:task_local_revision",
+    "relation:system-contains:template_selection",
+    "relation:system-contains:test_evidence_mesh"
+  ],
+  "changed_root_ids": [
+    "root:model:authoritative_model_system",
+    "root:model:behavior_commitment_ledger"
+  ],
+  "changed_side_effect_ids": [],
+  "changed_source_surface_ids": [],
+  "changed_system_property_ids": [
+    "system_property:subject_revision"
+  ],
+  "changed_test_ids": [],
+  "completed_evidence_refs": [],
+  "current_effective_intent_view": {
+    "active_contributions": [
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:f5e1f193eae5053c6bf0cc1b41dc27b6361b2d9a2cf6a0db6d0d2f5bc5b2f081",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:authoritative_model_system",
+        "native_owner_id": "",
+        "rationale": "Bind the accepted WorldGuard blueprint design directly to the authoritative_model_system software-DNA owner so its current model, code, and evidence remain independently addressable.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:behavior_commitment_ledger",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current behavior_commitment_ledger model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:compositional_verification_kernel",
+        "native_owner_id": "",
+        "rationale": "Bind the accepted WorldGuard blueprint design directly to the compositional_verification_kernel software-DNA owner so its current model, code, and evidence remain independently addressable.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:current_input_authority",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current current_input_authority model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:current_input_authority"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:fe904e5b23edad971f79009ea825cd9f65c1a395d230c5758680c616bf5b7e12",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:fact_revision",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current fact_revision model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:fact_revision"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:hierarchical_model_mesh",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current hierarchical_model_mesh model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:model_test_code_alignment",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current model_test_code_alignment model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:ce7b1e0cb0d4bbff7395743a3a22f68bce19d60a732ab8999bab26b6045523e6",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:task_local_revision",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current task_local_revision model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:task_local_revision"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:template_selection",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current template_selection model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:template_selection"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:test_evidence_mesh",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current test_evidence_mesh model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      }
+    ],
+    "base_effective_intent_view_fingerprint": "sha256:f8c57450cc12161d26aa187e8bdfb3018670743183bde8c0d2670869f1012077",
+    "bootstrap_receipt": null,
+    "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+    "fingerprint": "sha256:a20e0010c06ecafa478320cea21f373fb244f1f707afe49432c5ee82a1a2d3cb",
+    "model_owner_ids": [
+      "model-obligation:authoritative_model_system",
+      "model-obligation:behavior_commitment_ledger",
+      "model-obligation:compositional_verification_kernel",
+      "model-obligation:current_input_authority",
+      "model-obligation:fact_revision",
+      "model-obligation:hierarchical_model_mesh",
+      "model-obligation:model_test_code_alignment",
+      "model-obligation:task_local_revision",
+      "model-obligation:template_selection",
+      "model-obligation:test_evidence_mesh"
+    ],
+    "owner_bindings": [
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810"
+        ],
+        "fingerprint": "sha256:bfeb3e7e81ce41eea502ee986e2cb3b1d503cf6ad7d8c24cf812b2d294f6708d",
+        "logical_model_id": "authoritative_model_system",
+        "model_owner_id": "model-obligation:authoritative_model_system",
+        "realization_relation_fingerprint": "sha256:99903ece0a533b7a34a06cc4e588df3a76f2d025aac6f5446f0d19e322d849c6",
+        "realization_relation_id": "relation:model-realizes-purpose:authoritative_model_system",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:abd82bcaaaf6e8a8b792a06f41b707249a02f0b5b54bf03bee7bed85eb15f648",
+        "logical_model_id": "behavior_commitment_ledger",
+        "model_owner_id": "model-obligation:behavior_commitment_ledger",
+        "realization_relation_fingerprint": "sha256:6b6d43b6f64161aabe6ec43876f591a33cada470f1e65f4d828b4c53eada97aa",
+        "realization_relation_id": "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810"
+        ],
+        "fingerprint": "sha256:aeb35231a8ae5f18c72ffb5143aac942b45c3a4f20ffb3e3d45ec32ac1b5aca5",
+        "logical_model_id": "compositional_verification_kernel",
+        "model_owner_id": "model-obligation:compositional_verification_kernel",
+        "realization_relation_fingerprint": "sha256:c2919e2fa82e9e3c89e59a6794b1c184d3ee358dbdc453d1e96417cb1413b441",
+        "realization_relation_id": "relation:model-realizes-purpose:compositional_verification_kernel",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:64384fe6527b1c1127fdce13e83d4afb5a166055922f09da4b63fcf018c7bc91",
+        "logical_model_id": "current_input_authority",
+        "model_owner_id": "model-obligation:current_input_authority",
+        "realization_relation_fingerprint": "sha256:cc545b3bc3e8e6cf45afd6a60c796287f82f3359e3dc50ece61c6d7ce1ca1a8b",
+        "realization_relation_id": "relation:model-realizes-purpose:current_input_authority",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:b11acf4e0ec2d90d5c0cd274c6d38063e93a6807e896eb4b10444c2ef8d80a01",
+        "logical_model_id": "fact_revision",
+        "model_owner_id": "model-obligation:fact_revision",
+        "realization_relation_fingerprint": "sha256:3d38a6ab1de6e2eaf2a1ada395880435886f3fb62924c1996d422d8cad02379c",
+        "realization_relation_id": "relation:model-realizes-purpose:fact_revision",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:c8c59819893f72845a45cb183c9d1f6fd61e6bb1196f0931ac64cd85901e69b2",
+        "logical_model_id": "hierarchical_model_mesh",
+        "model_owner_id": "model-obligation:hierarchical_model_mesh",
+        "realization_relation_fingerprint": "sha256:9a508e67932b8382cb131f6fa129762738be9179be5e271a0b21e990f690132c",
+        "realization_relation_id": "relation:model-realizes-purpose:hierarchical_model_mesh",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:51e3c198b325fe97335995ca978d45e3e16c63c8bea14f6ded19d040258a49ac",
+        "logical_model_id": "model_test_code_alignment",
+        "model_owner_id": "model-obligation:model_test_code_alignment",
+        "realization_relation_fingerprint": "sha256:8b513a163f334f4297a378611028f35e94d6e8e3fe5acf725684916e300d7eca",
+        "realization_relation_id": "relation:model-realizes-purpose:model_test_code_alignment",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:882fc0581034573fe200137f1acfdaf36856ec8255ccdcf008eb49df09468b80",
+        "logical_model_id": "task_local_revision",
+        "model_owner_id": "model-obligation:task_local_revision",
+        "realization_relation_fingerprint": "sha256:d1dfe875bf409006b52e01954644b60fe5e9e76b93f4089907f24eb579281a0b",
+        "realization_relation_id": "relation:model-realizes-purpose:task_local_revision",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:f46a5c07f266c4ef32dc5c64cfcb113a8401f39b52a20477ce79a370428928c1",
+        "logical_model_id": "template_selection",
+        "model_owner_id": "model-obligation:template_selection",
+        "realization_relation_fingerprint": "sha256:ddcd9720b9609c56debcae5e50b05b775edd2ef82b7e804f3c59a7654560a6de",
+        "realization_relation_id": "relation:model-realizes-purpose:template_selection",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809"
+        ],
+        "fingerprint": "sha256:4c5ed6f7048431f429d05f9879342ecc52c3e5b7f078d3920bd13a3175b15ff3",
+        "logical_model_id": "test_evidence_mesh",
+        "model_owner_id": "model-obligation:test_evidence_mesh",
+        "realization_relation_fingerprint": "sha256:bfb64b3e0b71dd2ebf951bf3d6710fa8c77ee6bcd60c25c0e72952c01f8a5c8c",
+        "realization_relation_id": "relation:model-realizes-purpose:test_evidence_mesh",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      }
+    ],
+    "schema": "flowguard.current_effective_intent_view.v1",
+    "subject_lane": "observed_implementation",
+    "system_id": "flowguard",
+    "transitions": [
+      {
+        "action": "retain",
+        "fingerprint": "sha256:15db728c7cd44f9d54af13b990ab4918cd874055d2b5e6e53a9f70bf8f9efed5",
+        "prior_contribution_fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:a00cab169f2b014b7e90f8bb5cb8426dc0fc0b96a6453059dfddbb91df2226dc",
+        "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:51b2aeff9f809535da285217c68eb5f790ccd7f233db474218106ea1d78719da",
+        "prior_contribution_fingerprint": "sha256:fe904e5b23edad971f79009ea825cd9f65c1a395d230c5758680c616bf5b7e12",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:2d7b87fcfaf9272f2c2dc76616f777213eea1832dc29aba51276fc20625b3610",
+        "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:ffc2577e9e357a66a02c6e0e806d2c141533372890e97ee908609e78c17874e2",
+        "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:6a951a53f22e8d18f7807155d96082afb4c6b49dc24e2c0e5194f446a2f90cc6",
+        "prior_contribution_fingerprint": "sha256:ce7b1e0cb0d4bbff7395743a3a22f68bce19d60a732ab8999bab26b6045523e6",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:871139d6000b8b6a388d6fff58f824d193de6c77693bbf645ed0bfb42a47490b",
+        "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      },
+      {
+        "action": "retain",
+        "fingerprint": "sha256:bc310d6da4d64f3ce189fe4657bb1ee757455c0f526438d9032f237e975bada3",
+        "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+        "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+        "reason": "Retain the exact current effective design binding; this revision adds only the new self-DNA owners.",
+        "replacement_contribution_ids": [],
+        "schema": "flowguard.effective_intent_transition.v1"
+      }
+    ],
+    "verified_source_identities": [
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+        "fingerprint": "sha256:5ffbbb51c54e2dffd9ad489cb310d7b52a9dfbb387aaba71de0d8476ccc1b5de",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+        "fingerprint": "sha256:764fcaf6f5fa3a1b9e31318f6470bcf09b18c6847221be134d13238992ac22e0",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+        "fingerprint": "sha256:8020b3a832f051f2265e91eb57162f99f710f9d743a634a5502e86ffb5d05497",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+        "fingerprint": "sha256:8748535a638b79bfc50938668919bf7353157c38a78eb760d15078e95aef102d",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+        "fingerprint": "sha256:c6800d03ea8d96d4364f9733c1f7552c473bab22d21ac91eaa0e5ecdc70420e9",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+        "fingerprint": "sha256:97c14deea7040c986e92eb0ac1fa6edea454c271bf6d6e5ffacc682827ae3a8d",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+        "fingerprint": "sha256:8be8be773730d4a5527d7aaafbfac9f74bd114827efa136429d9ac8ec7b3007c",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+        "fingerprint": "sha256:ad992624987f25877f70199c0139939b233446f832e0c9f8ad4cefdaffdf9148",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+        "fingerprint": "sha256:c3c74ae0232170438ca450d0c785ba804d70f37eabd093fcfdfdc5076e74d9ff",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+        "fingerprint": "sha256:ea726d92adf131f885c7e81fca4e4c06b4e16de221e66bd0d4152a7a98e117ea",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      }
+    ]
+  },
+  "decision_reason": "",
+  "expected_head_fingerprint": "sha256:e7f031e5a2508e7c5708bc6d14be50b12eca3b5b09eddeb8798d1ad9df3aa08e",
+  "fingerprint": "sha256:3b7876a8213a12e2400f2d1660a06abe2ba1b234587dbbd91b589f0a14c60b9d",
+  "fingerprint_changed_ids": [
+    "coverage:universe",
+    "model_instance:model:behavior_commitment_ledger",
+    "model_instance:model:current_input_authority",
+    "model_instance:model:template_selection",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:system:flowguard:model-regression-manifest"
+  ],
+  "implementation_bundle_fingerprint": "",
+  "intent_conflict_ids": [],
+  "intent_contribution_inventory_fingerprint": "sha256:d5ecbedb3519f170fe107edb0fb1a8daa11de091b0723e46e3c3976a6ef246cc",
+  "intent_contributions": [
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "fingerprint": "sha256:f5e1f193eae5053c6bf0cc1b41dc27b6361b2d9a2cf6a0db6d0d2f5bc5b2f081",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:authoritative_model_system",
+      "native_owner_id": "",
+      "rationale": "Bind the accepted WorldGuard blueprint design directly to the authoritative_model_system software-DNA owner so its current model, code, and evidence remain independently addressable.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    },
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:compositional_verification_kernel",
+      "native_owner_id": "",
+      "rationale": "Bind the accepted WorldGuard blueprint design directly to the compositional_verification_kernel software-DNA owner so its current model, code, and evidence remain independently addressable.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    }
+  ],
+  "intent_dispositions": [
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:f5e1f193eae5053c6bf0cc1b41dc27b6361b2d9a2cf6a0db6d0d2f5bc5b2f081",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+      "disposition": "accepted",
+      "fingerprint": "sha256:240220d39aef2f2ea276bb5857173b19f8abd3d9417f5fdaf6e6e5f4bef477b7",
+      "reason": "Admit the new authoritative_model_system self-DNA owner as a direct current design binding with exact model and evidence coverage.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    },
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:compositional_verification_kernel",
+        "relation:system-contains:compositional_verification_kernel"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "disposition": "accepted",
+      "fingerprint": "sha256:f0fa1fe912e007cade5bc70308bc63b7b8f4d2b3dd1e7ca1dbd73d1d8a8420ff",
+      "reason": "Admit the new compositional_verification_kernel self-DNA owner as a direct current design binding with exact model and evidence coverage.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    }
+  ],
+  "intent_unresolved_ids": [
+    "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "relation:model-realizes-purpose:behavior_commitment_ledger",
+    "relation:model-realizes-purpose:current_input_authority",
+    "relation:model-realizes-purpose:template_selection",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "relation:system-contains:behavior_commitment_ledger",
+    "relation:system-contains:current_input_authority",
+    "relation:system-contains:fact_revision",
+    "relation:system-contains:hierarchical_model_mesh",
+    "relation:system-contains:model_test_code_alignment",
+    "relation:system-contains:task_local_revision",
+    "relation:system-contains:template_selection",
+    "relation:system-contains:test_evidence_mesh"
+  ],
+  "members": [
+    {
+      "base_instance_fingerprint": "",
+      "candidate_instance_fingerprint": "sha256:aaf42ad0321da8e08c9539d5938bb70b90ad78017292aa58c10be747d317dee4",
+      "changed_element_ids": [
+        "model_instance:model:authoritative_model_system"
+      ],
+      "member_id": "authoritative_model_system",
+      "operation": "add",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:a4da20b24db9986663306da1c05401b0812a98bee346c28f87f80b8a08f79563",
+      "candidate_instance_fingerprint": "sha256:9df9631ad59ab0a6ab0b3cd939ae1a0e9c8e2445c2fce1199179a74685551b28",
+      "changed_element_ids": [
+        "model_instance:model:behavior_commitment_ledger"
+      ],
+      "member_id": "behavior_commitment_ledger",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "",
+      "candidate_instance_fingerprint": "sha256:7637aa62ce36d7b23f5ffd2fc1e44ad8bcc488cd7998c530090bf8811354136e",
+      "changed_element_ids": [
+        "model_instance:model:compositional_verification_kernel"
+      ],
+      "member_id": "compositional_verification_kernel",
+      "operation": "add",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:1b0803d7e10195fcc15914a13ce9e1948a260f7a8af663666ab19b062f20e189",
+      "candidate_instance_fingerprint": "sha256:ae6862770de8fc5a43b16907a761b31b2287a1e56f49dafb2f01be701d785f84",
+      "changed_element_ids": [
+        "model_instance:model:current_input_authority"
+      ],
+      "member_id": "current_input_authority",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:6aa5d58217dbde8c0cf203f8bbe60115a17ca7ff6414ddb76c6b3e03c14353e6",
+      "candidate_instance_fingerprint": "sha256:e97f2882ede6ac0d8c29e0867c3986f69594cc54a72810d58eeb952dd57611f9",
+      "changed_element_ids": [
+        "model_instance:model:template_selection"
+      ],
+      "member_id": "template_selection",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    }
+  ],
+  "no_declared_intent_evidence_fingerprints": [],
+  "no_declared_intent_rationale": "",
+  "no_declared_intent_rationale_id": "",
+  "originating_activation_receipt_fingerprint": "",
+  "originating_revision_set_fingerprint": "",
+  "path_quality_result_set_fingerprint": "sha256:b633495d76e918c45905a1a6f8a7d28d5f682f8a9fbf0dd24a6989c11e91bff1",
+  "path_quality_results": [
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:ed0dd8868355e0c56e108feeb4ca8f2856d9d1ca253739f104d8ebb778049fe9",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 25897.0,
+        "states": 11.0,
+        "steps": 10.0,
+        "transitions": 10.0,
+        "validations": 4.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:94951ac27bf74d2eee804fcd250327a46fdc2340f1765974842a9419a55b1187",
+      "finding_ids": [],
+      "fingerprint": "sha256:02f9e32ba54a31e48d39ab8f6d5fdce6348b3259901bdc5144e9652a6b7bd828",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:c81ca83c4115250206dca72ce682f633dc53b719407c93153979a374ee1bfa41",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:behavior_commitment_ledger:842a9419a55b1187",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:065820afaec138a508e2d99c8675473313b054ccc1728cd40c44101a1379f805",
+      "trigger_evidence_fingerprint": "sha256:0a88c798e87e6551b4d79c7029cee0062e4628705bed5c0c63010cdb90d82b42",
+      "trigger_ids": [
+        "explicit_request"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:450878b8ad9740f0431b83caab87eb789de109dd76984390e5145b75de13a539",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 5776.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 5.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:df4f7f4cae319986a128afeb465e6979ea017feb61ae21ef5918d607a7913f5f",
+      "finding_ids": [],
+      "fingerprint": "sha256:94fac5fffc0e2574dba5abe8ce3a892000f1567b1195d285975ce7fab46dd14e",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:16c1363b1883212c700021bab737593181e4d286bede7f98db8c64c9b51c9d84",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:provider-gap:5918d607a7913f5f",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:10a89a835195e179ab444251379f01d01c5eaa0eb31bf6615722ba2be613e3fb",
+      "trigger_evidence_fingerprint": "sha256:c09a0ed579e204006db04c55b00853e61d460d2abec48d8156b4a5e181237ddd",
+      "trigger_ids": [
+        "explicit_request",
+        "missing_necessity_witness"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request",
+        "provider_gap:provider_native_entrypoint_graph_incomplete"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:74b1dda514bd84e34804bafd368e89889f74c738415c90d2727cf90a4e9b267f",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 19454.0,
+        "states": 3.0,
+        "steps": 2.0,
+        "transitions": 2.0,
+        "validations": 10.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:7d17a50c8341e40cf101c6fed4f010023f15c3b55d54717245addd02c5bb6084",
+      "finding_ids": [],
+      "fingerprint": "sha256:ef53f5c178cba261307bda33dc5c4d2964acb5ec00e6dbc6cd21d4d8a8bfb16f",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:9c6b69cf945e2ef3da55fc098aa655ad178843fcd1ca5ca2ff45661d9e9ed8e6",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:task_local_revision:45addd02c5bb6084",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:37f246140ed79322fe7f8900347f0df6ac9496630a3eccfc27a071c0e41da278",
+      "trigger_evidence_fingerprint": "sha256:a8602bfe17456c61ee9ee9f634b3adebae80b04f95a35fa21e181b5914627f6a",
+      "trigger_ids": [
+        "explicit_request"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:48d780531daff90b6c960015e53679d98b64a159be547c57ac0d8f43ab859757",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 16575.0,
+        "states": 3.0,
+        "steps": 2.0,
+        "transitions": 2.0,
+        "validations": 11.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:f0cae77b13aa02c9687e0298356f93adf4dfa4d754d851974a80dcef47f8755f",
+      "finding_ids": [],
+      "fingerprint": "sha256:1c990db9005fb7021b7b896a46b7a5259e6247392faf69c0cb0f60b7f2475c18",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:875ad981265ec3cfc6654b18e6109b5a3d4eceffc3b9088a2c1cfee22e43ae69",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:fact_revision:4a80dcef47f8755f",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:44e8b3fa65e91fbbc87af58d6e5564aec7a141d69279234e96e228033255cd09",
+      "trigger_evidence_fingerprint": "sha256:3a83b408c702deeeb6f99f7f2072d878dc263a5c301c98e37cda7056bc06ee4d",
+      "trigger_ids": [
+        "explicit_request"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:7150cad1881a379599082399a96c91706ecbb75c1e3831e97848790ace782625",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 9316.0,
+        "states": 4.0,
+        "steps": 3.0,
+        "transitions": 3.0,
+        "validations": 3.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:834e173095eb5a1f3bb3c19bb03304d812c39a3268d56a0c1eb8539afa844348",
+      "finding_ids": [],
+      "fingerprint": "sha256:4d2e6546106bd00f97b6b9c23ea705b70a94668eb7e00e30d0224401c1a8dff9",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:ec53b8966a8d8c3cbbc823c23d96eef48d01f45e7cdc90422805bc03bbe55132",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:authoritative_model_system:1eb8539afa844348",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:535d48871a2411eba0d55842b6d7073545a898310b1aadd02b8d0b32e85828d6",
+      "trigger_evidence_fingerprint": "sha256:32e32d67fca31553d0a5b8e089c9d965b4cbd29f48708f24f5f2a7d246bf4ed1",
+      "trigger_ids": [
+        "explicit_request"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:0208676c4a46d6d931e734671d81ab30d22e8729ffbd3c4b1a543a41b55cd469",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 5200.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 4.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:ebcb5c5a86ac89eb7f3dfe9d4f0de498189e8ceb55dbbd5e2e88f2dd6b5b7647",
+      "finding_ids": [],
+      "fingerprint": "sha256:a78bd4e3b42197549e1199a51ec3304dab78746f30ed89ce508fb34a6a9ab7ec",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:12d7d871770fc0af3b063e90c397eec3689929d0ffc0bef5d9401ef42910fdcc",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:provider-gap:2e88f2dd6b5b7647",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:613027caa587f00a3a6361101fa45636d4bec1c2f8f174a9b6ba2c05f5b5893f",
+      "trigger_evidence_fingerprint": "sha256:48260d28029dbcb34db71b5137a86d6b8a9d6496f02ffb9826d162d4f256690f",
+      "trigger_ids": [
+        "explicit_request",
+        "missing_necessity_witness"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request",
+        "provider_gap:provider_native_entrypoint_graph_incomplete"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:2db4e4e8ec8f86bbcfce74cc448176b42bd0e68eb9509120af64007202692af3",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 4998.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 4.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:ba6587452ca366adeeac2464a33e94a64e73d32351dadf6379de989e3ad160f1",
+      "finding_ids": [],
+      "fingerprint": "sha256:0398017f52c4bd534c562025fef989492165bbde441dad2420767d8bdd54c5ee",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:62267a60c71766aac1599d1d270343a1f126d79b8e000977796a71c6c6539b6f",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:provider-gap:79de989e3ad160f1",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:7647ca193616395238d9867188426fbebea05224029757c95e1f805b4e7579c9",
+      "trigger_evidence_fingerprint": "sha256:6de43f5ed8f438e1ac0a71c6a6abe747b89019c5d5a3ac27efbd2370f87a6932",
+      "trigger_ids": [
+        "explicit_request",
+        "missing_necessity_witness"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request",
+        "provider_gap:provider_native_entrypoint_graph_incomplete"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:42f86ce153680962e894006bcf3a4cf08017061c8eccb8c632b5f865819c182e",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 5860.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 5.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:8cbec925f7a09ea74afdffa660eb089bc26184217260efd16f9d330dbba00573",
+      "finding_ids": [],
+      "fingerprint": "sha256:2b079c27830293f33f4387d33549e1483aab57bbe197077dcf4c8f04eca051f3",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:5125dd0c73a39584c547b27a9b063a1fb55ecb972e889130014deb886b708e42",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:provider-gap:6f9d330dbba00573",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:83a0cad8c88c5733227ca33de1441693667db9ebb8fe96ec5ec79ba95783d707",
+      "trigger_evidence_fingerprint": "sha256:5b7e66a384fdc6b033d2fa977448c6c6a64b80a106746656a95a633b85f6e41c",
+      "trigger_ids": [
+        "explicit_request",
+        "missing_necessity_witness"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request",
+        "provider_gap:provider_native_entrypoint_graph_incomplete"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:93ce4c4534678fbac7d30de23c53f1bed90f4331239b239aa3ee8d61698acc48",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 5437.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 5.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:0b330387a0da8f0af5b7b60503e21b9369a6c520a89770b99bc8987e3a22aa80",
+      "finding_ids": [],
+      "fingerprint": "sha256:1c304dca723f5a5506ad9281d822d70219fa7a83164390371e4d1ecacc0cd2cb",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:b500fffbfcd3ce471f71608ebad19fbe8e2c131837d13e2d411dbe37ec05119b",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:provider-gap:9bc8987e3a22aa80",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:c2a6cc4187ad024b55eb45d810d5d7e4e9a2ec932000f62a1804f0b01fbf29fc",
+      "trigger_evidence_fingerprint": "sha256:bb6dc4dbeb96eaa38a300b714d125e5407dc674d8623ef25b47f93965b157a3c",
+      "trigger_ids": [
+        "explicit_request",
+        "missing_necessity_witness"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request",
+        "provider_gap:provider_native_entrypoint_graph_incomplete"
+      ]
+    },
+    {
+      "candidate_ids": [],
+      "candidate_set_exhausted": false,
+      "candidate_set_fingerprint": "",
+      "comparison_boundary_id": "",
+      "conclusion": "unresolved",
+      "cost_detail_evidence_fingerprint": "sha256:2d7baca13faee3037ad32802d65d0c5445ae39575046a9e0bf281050ab57a154",
+      "cost_dimensions": [
+        "branches",
+        "payload_bytes",
+        "states",
+        "steps",
+        "transitions",
+        "validations"
+      ],
+      "cost_measurements": {
+        "branches": 0.0,
+        "payload_bytes": 5175.0,
+        "states": 2.0,
+        "steps": 1.0,
+        "transitions": 1.0,
+        "validations": 3.0
+      },
+      "current": true,
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "detail_evidence_fingerprint": "sha256:4f3d1acd63e4fa2f447075812286be115f86cefdf9e88340d27335ffdc62c8ac",
+      "finding_ids": [],
+      "fingerprint": "sha256:662ff78df05a680a815f335544ca2f6973137e9d8f5e8e33e0e5cec8de4f11df",
+      "mode": "lightweight",
+      "necessity_witness_set_fingerprint": "sha256:b6acfaf7a0bcf2781f6f350b8f8859487471a37dd802b24333fc31a5e84dbb43",
+      "optimization_depth": "deep_required",
+      "producer_id": "flowguard-self-path-quality",
+      "result_id": "path-quality:compositional_verification_kernel:d27335ffdc62c8ac",
+      "rewrite_rule_ids": [],
+      "rewrite_set_exhausted": false,
+      "rewrite_set_fingerprint": "",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "selected_candidate_id": "",
+      "selected_candidate_lane": "",
+      "subject_fingerprint": "sha256:cbd227b1ae5f38db22df93f20d4dba2478da70e42b13e295e3b3b02b9261ae70",
+      "trigger_evidence_fingerprint": "sha256:a2de1f22167768e371888f39b489a4e78a11bfb293561b8911d864d1be18a0a3",
+      "trigger_ids": [
+        "explicit_request"
+      ],
+      "unresolved_ids": [
+        "deep_review_required:explicit_request"
+      ]
+    }
+  ],
+  "path_quality_subjects": [
+    {
+      "boundary_id": "model-boundary:authoritative_model_system",
+      "code_fingerprint": "sha256:ef41939ef129c26cf4c9a4c575a6832f72b64120e81874c522e63fb051a64f64",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:297a76f98bc8ee6623a85f196cdab70df1aea7b06064b9ef4fc664f8f940acfc",
+      "evidence_fingerprint": "sha256:6ff9da13ef6c406625f19f8bf35a822f26bd4207e99fb1a84e358bd819fe5910",
+      "fingerprint": "sha256:535d48871a2411eba0d55842b6d7073545a898310b1aadd02b8d0b32e85828d6",
+      "intent_fingerprint": "sha256:a2d59dff9bee423f336f92d0357dd7687e353d217647810eb6e593388d0083b4",
+      "model_fingerprint": "sha256:aaf42ad0321da8e08c9539d5938bb70b90ad78017292aa58c10be747d317dee4",
+      "model_id": "authoritative_model_system",
+      "normalized_facts_fingerprint": "sha256:99e5f8e1712b3e66429c55a5f0f28d5d550114ffa91b5293326fd361a2e9d9a7",
+      "obligation_fingerprint": "sha256:c23bfbe8febb3d8992c7495bf319bde28c335ab70dbbf5f9fa8269be97544f61",
+      "oracle_fingerprint": "sha256:b61cc18849051c4eb6dc07ba20f23d30881a15ec7e80bd00fc3dcc21a8d14af3",
+      "provider_fingerprint": "sha256:faff73d6b7c1abd784d9d2ebf86bda2e47b43fc94cc837fbe003218545de4197",
+      "purpose_fingerprint": "sha256:eeedf1654838aa012a954de0ebbd5ff0597363b9d92a213925c0771de3b8d81a",
+      "retained_element_inventory_fingerprint": "sha256:272ccb378cd51c60b6858c3f7b992c92aa9af7aa6cdf0931b8eeaf518c93e593",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:f564ecb392b41a43e84025d3f766326a53d2bdce1eebba6c61a246863f990f34"
+    },
+    {
+      "boundary_id": "model-boundary:behavior_commitment_ledger",
+      "code_fingerprint": "sha256:74cb7891116f4ea5f2f93807f5f61fa2e04d0485cd499fed8d700267e2c044f9",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:9c918b2abbbfeb321d89e7ca322e82175c7dc4403a111745424ce88581ab8cdd",
+      "evidence_fingerprint": "sha256:6289674f3e95c57e2c39fa1082a8349004bbfe18973cbec0c73ec7c34e1b465c",
+      "fingerprint": "sha256:065820afaec138a508e2d99c8675473313b054ccc1728cd40c44101a1379f805",
+      "intent_fingerprint": "sha256:fcab6e6b06683c99eb35da0d08af691f61c7bac6d2d7ee52802eb28326d5fd92",
+      "model_fingerprint": "sha256:9df9631ad59ab0a6ab0b3cd939ae1a0e9c8e2445c2fce1199179a74685551b28",
+      "model_id": "behavior_commitment_ledger",
+      "normalized_facts_fingerprint": "sha256:f31a4f710df470188c1004b56a026b07d54747f3d47249f67e01d9cae073370e",
+      "obligation_fingerprint": "sha256:311737a6cce338a2f41484e87732d78c5675ac2a82f776ec7fc3050e4532ccfc",
+      "oracle_fingerprint": "sha256:5a3e88d36b2a3a49a948495841101628addd28052a205e457dee5d8ffa0c461e",
+      "provider_fingerprint": "sha256:9d92ddac926228f7536738c5ec0fd9408fbd6ab09c3b215867c046384a7dd0cf",
+      "purpose_fingerprint": "sha256:9d23b40fbc670960abe6c0d4c3fd22ffc45b21ab56357878f5f72f3c3e27f6d5",
+      "retained_element_inventory_fingerprint": "sha256:8a64c4e0a9dff7c66bb3cdf31961b0448d43a3040b115239fce5f35bf3f27d96",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:13c0083f7ba6008b1ba451c9227d2096b6a8c2b59c619adf7a959d8162cda5fd"
+    },
+    {
+      "boundary_id": "model-boundary:compositional_verification_kernel",
+      "code_fingerprint": "sha256:56654e564ce955d58cd6d8d888a2dbf9ec572f69cf4c04dbc0c15ebd61c3424a",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:05ddf6370f465a7f6de5700c91a377d2312cdc20cd784e9eafa91860f7a247ed",
+      "evidence_fingerprint": "sha256:f71e769c9324c45ecc59a89262cca41259c9313538c040df21bb3d348b2c4360",
+      "fingerprint": "sha256:cbd227b1ae5f38db22df93f20d4dba2478da70e42b13e295e3b3b02b9261ae70",
+      "intent_fingerprint": "sha256:ce68a902efb61694676dda71b1b8d933ca8443e2b4b207ccfe827aee73245b8e",
+      "model_fingerprint": "sha256:7637aa62ce36d7b23f5ffd2fc1e44ad8bcc488cd7998c530090bf8811354136e",
+      "model_id": "compositional_verification_kernel",
+      "normalized_facts_fingerprint": "sha256:2dc5ecad3aeba90983d1e87907b07d692ebeefb269f18014ef6a32582bb7d840",
+      "obligation_fingerprint": "sha256:75f5be17b920b1bec10c44c1bb5c63b47d86ffbf5c455db9d95927a983412dc0",
+      "oracle_fingerprint": "sha256:13b0a3555b58150cc66284d19ba52dd6d5f2ba31a7cb69cb3509d4996291c771",
+      "provider_fingerprint": "sha256:4dfc26c9c06400d468e5ea06d46b76827bb8b983c674980b0ff6da0702fc0295",
+      "purpose_fingerprint": "sha256:62238eb72d8806ce8ddfc781851208497eac3fb1a995e20055aaef3f512355aa",
+      "retained_element_inventory_fingerprint": "sha256:8542bbebcb236b97190e8d661b13e289622f101ae41c1d76dd60c1a55a1f140b",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:ff6da3906ddfcc1c0e393615c0ac03578054f553fba1e5fd5503793a44ff1f0a"
+    },
+    {
+      "boundary_id": "model-boundary:current_input_authority",
+      "code_fingerprint": "sha256:b854ea07df030c84fded96fabe48a0517fdbf5b74b878a4fb417c46ea2971463",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:d76fc38af915560b6730f80fd37717f69a7bea939574808db8c2975359cce8b1",
+      "evidence_fingerprint": "sha256:c9895b71e9911fe386c0ba590ef7a7998e2e9cde150a3997539ee83d69d48a3f",
+      "fingerprint": "sha256:613027caa587f00a3a6361101fa45636d4bec1c2f8f174a9b6ba2c05f5b5893f",
+      "intent_fingerprint": "sha256:8798800699b2b8ab168575190e3850ebbbb2f0f4b19a964c5ce5a636df109294",
+      "model_fingerprint": "sha256:ae6862770de8fc5a43b16907a761b31b2287a1e56f49dafb2f01be701d785f84",
+      "model_id": "current_input_authority",
+      "normalized_facts_fingerprint": "sha256:8014a00eddb3202083e7b6492f425415e8fef7107be5d33a1f6583119a1d4d7a",
+      "obligation_fingerprint": "sha256:d1aaa48e7130e85a182e2f205eb26b2f67ee0f5a3d69c0ff349f619db86ad9e2",
+      "oracle_fingerprint": "sha256:8346e5fd03e2c4504b08cce73909efb2496c9ff4f7cf559590cf25464be81ece",
+      "provider_fingerprint": "sha256:07301e364f50a42f51c008bc260985b186340393ddce088595368dc5d9d11c56",
+      "purpose_fingerprint": "sha256:d4cff1dcdfe84f56c1c417c3133573af78083f1cf4b4a979d6a63458b844784a",
+      "retained_element_inventory_fingerprint": "sha256:08560f4e2d5a2b75b29a6a5a6d409d45d87eecdf3f7b6c99ddae639841f12904",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:a8ebb396d017f8fb315eea4bb8e75da329c3d8babc6ff17d38690372a7f7f5b9"
+    },
+    {
+      "boundary_id": "model-boundary:fact_revision",
+      "code_fingerprint": "sha256:d0e25f54a0cc2d0197bc5327af58c4fed4ef628720931ea7683ee57035514103",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:0a959d29bc7d4d389f37fe4e9772779d38bc2279221d9f949b7795d855be507b",
+      "evidence_fingerprint": "sha256:d8753fe1b091a56e12fa78fc717880a0b4577e9ef7ed29faeaa1d0076faa78a2",
+      "fingerprint": "sha256:44e8b3fa65e91fbbc87af58d6e5564aec7a141d69279234e96e228033255cd09",
+      "intent_fingerprint": "sha256:52f869232e8edd0c22c3329d2e0f0fca4072059501231a50a0f2b103100884fc",
+      "model_fingerprint": "sha256:d7252c8d8ad0b0c2ffaf5aca94e87e0b2fec2ffe5deb32a0335c15454cccb93b",
+      "model_id": "fact_revision",
+      "normalized_facts_fingerprint": "sha256:ff49b4efc77dbb870899af31f187d1641230f0e18277872dba5ef22a70864d93",
+      "obligation_fingerprint": "sha256:711fc80b348631e7bfd4ca8a4c0178a91c9d936667beb0b4307f89b2d1577957",
+      "oracle_fingerprint": "sha256:ba6905c52ec58dbbbb18de8a131ee41dd8e56841c7d7f81f1031127f874b9970",
+      "provider_fingerprint": "sha256:33bd486811a54791f9d76b55937c20a3e4ab0667dc2431a04525ea3a8a5383b4",
+      "purpose_fingerprint": "sha256:82d0282528bc0d6ee5975897c486e9ef52a3337ede7eca15865c56e56f179d15",
+      "retained_element_inventory_fingerprint": "sha256:197f56cb84d1c3444abdf2fff470660c0313712c1ae95bbc143bf5043198a771",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:4912b6fd05cc541ec8876c5e7aea08345f4f17dcb15bbb580cf136f5a8226d78"
+    },
+    {
+      "boundary_id": "model-boundary:hierarchical_model_mesh",
+      "code_fingerprint": "sha256:f5656b02e6ab9c975290c6cbc17b119aa28319d32544cad5f324afc1d41022aa",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:e6215c6945201542e6dc4a031f001840ce9bce1be2cd89fefdb47a061ccfc53e",
+      "evidence_fingerprint": "sha256:951fa0f6e512db7be1c521498078f90ea8253842d504cdafe137ca30ffad9a17",
+      "fingerprint": "sha256:10a89a835195e179ab444251379f01d01c5eaa0eb31bf6615722ba2be613e3fb",
+      "intent_fingerprint": "sha256:eaaccdc72e300cc5de59d1092a3eb940c6519af21fb1c0b25fc151ab993305e3",
+      "model_fingerprint": "sha256:7ed3b0bb23adaa7c9accc4a7ce834ac5a6297010d9f67090f4e4c100bde04d4a",
+      "model_id": "hierarchical_model_mesh",
+      "normalized_facts_fingerprint": "sha256:3f07326365a4c58442917e73eae29d735e82a3e338aed79002fa5a00dc3c2011",
+      "obligation_fingerprint": "sha256:424671acb13816601a2a8bd86c5e58bd1af0999260ff98627cd852c1d63f4e4f",
+      "oracle_fingerprint": "sha256:f4a3658d8c68e6fc521062b3327c79dbeaef65203b8233569f2291fca34425d1",
+      "provider_fingerprint": "sha256:2234479326d9cd07f9b5d525430faf1d28e306e98d55a822289a657928911191",
+      "purpose_fingerprint": "sha256:6b7f333d58d9d29f5db7fb23771bd59cfc5259abb647f007e019a7c567c2b9c3",
+      "retained_element_inventory_fingerprint": "sha256:da6b19bb8b56eb8ce9f43380397f7b1f886c06405417e6b5cec26ad7579d1e56",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:98340278235b97576903ddb9a472bb5c2c35a2e815d7093bd579248f8c7c8f95"
+    },
+    {
+      "boundary_id": "model-boundary:model_test_code_alignment",
+      "code_fingerprint": "sha256:1a5cb87cb6fffdec2eb00900488d68f05e79c5bd3d5ac44b230dad168bc3f0eb",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:6f3dbbb8a5ae18d56127c402464f06420e45641a567520f6554e45285a5354d9",
+      "evidence_fingerprint": "sha256:5b66630ed177b3689269a79358ef8b2c532ff1e4fb4524054b30b9314d829faf",
+      "fingerprint": "sha256:83a0cad8c88c5733227ca33de1441693667db9ebb8fe96ec5ec79ba95783d707",
+      "intent_fingerprint": "sha256:5c7717c87809831e3df59f877b52d4b2a1ed2a476540148d17b4d92f114d7777",
+      "model_fingerprint": "sha256:f40ea3d129f16a9763b7c7b708d2d6d1e209699fd448f4329a528b40caf6282e",
+      "model_id": "model_test_code_alignment",
+      "normalized_facts_fingerprint": "sha256:627c8133d14db5cd9e5a7e5c6d00a16a87fb02d8bdf7323727a2e28239ce2a69",
+      "obligation_fingerprint": "sha256:c0459084319a3050496a2be12e74b8cf65fd3a53ed745b9fd2d832c5642b330e",
+      "oracle_fingerprint": "sha256:fb570d395414ba31e67de18ec8f51e18d6dd73b83fbbb4a1bc12eebd8086fcdf",
+      "provider_fingerprint": "sha256:1cbcb857a20f5c253daa6a304989e41767874a50e072b1569f7a97442e245b85",
+      "purpose_fingerprint": "sha256:d413ac7fab985786e2baf5e607d850739a12a8cffcb3bea4aaa02b0ef0c2de18",
+      "retained_element_inventory_fingerprint": "sha256:8fba94306ca4f1aa3583a6c8d2b7519861267007cd4f4580dd05463e39377135",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:98340278235b97576903ddb9a472bb5c2c35a2e815d7093bd579248f8c7c8f95"
+    },
+    {
+      "boundary_id": "model-boundary:task_local_revision",
+      "code_fingerprint": "sha256:dca76bc35d021a65bfd520fc264d3d4d315275fb782f0bc481ae4cea9e607a9a",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:5ffccd41eb6d00e82f8c6abcbecd3c7f9c26293a9a2cbe0feccebeb8bcf8e8e0",
+      "evidence_fingerprint": "sha256:8f5766b55f8ea746bc4e849341c019c7f979debd1010713aa48fd86a2661e4e0",
+      "fingerprint": "sha256:37f246140ed79322fe7f8900347f0df6ac9496630a3eccfc27a071c0e41da278",
+      "intent_fingerprint": "sha256:666553df3c080ef8c971f3d9bd0a28d9669639bd698dbe799fafe38e892ee3ce",
+      "model_fingerprint": "sha256:3ef160e496fb9a8d293517e73d01badbd3c81a5665bf682eb8251794edccc3ac",
+      "model_id": "task_local_revision",
+      "normalized_facts_fingerprint": "sha256:04e2bb09179156dfd2472e1d13fc6bb7f52b2b4970f49eab64b09aa5f5aabfce",
+      "obligation_fingerprint": "sha256:295980c5ec84dc3cb8e52295d07d60841dd04983e1b115b773329a68e20414dd",
+      "oracle_fingerprint": "sha256:242e47d9cddeccbc2e6344f5fb72e000634d2de43c286a0035ccc74a0e64f821",
+      "provider_fingerprint": "sha256:19f04c0adc31d19c799110949b9b40cddd0cc0f2d49194d6e3f9197b351fac7c",
+      "purpose_fingerprint": "sha256:37da076dc491562fa37edd2e05f9cf8e13c4ba261f8048f083f31132a8c88ccd",
+      "retained_element_inventory_fingerprint": "sha256:d2fb0cb49342a5f9bb55062ea60c0b4cb6fe8884b2c7ce7cc6883c0405586a46",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:a8b9407a2335dcc345ef5119171aeea88cc8817a3b0474ada959224720d85ba6"
+    },
+    {
+      "boundary_id": "model-boundary:template_selection",
+      "code_fingerprint": "sha256:2fe6dc23c1e955f0124b377ba3841073daf575d7c78870543b5a6f5dbf08c544",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:d1013ababb1b2057efcd26fa84b63cb221070e9c556a4caabf6898de3f2569f2",
+      "evidence_fingerprint": "sha256:0145e21742ed7dc4f0001a3541f42fca878140d1aadbd27be166f42d1b9f9375",
+      "fingerprint": "sha256:7647ca193616395238d9867188426fbebea05224029757c95e1f805b4e7579c9",
+      "intent_fingerprint": "sha256:2605c5432594913725ed1680bb383268b2f5ccf3c4af83da7a3921ea289d22fd",
+      "model_fingerprint": "sha256:e97f2882ede6ac0d8c29e0867c3986f69594cc54a72810d58eeb952dd57611f9",
+      "model_id": "template_selection",
+      "normalized_facts_fingerprint": "sha256:ae30ca3e30e8902513c688e32b7d0755941aaae8b672e00a49ed7813b4090d97",
+      "obligation_fingerprint": "sha256:188c8a04ad86fbd2798cf3028d7280e20cc279495a09a0731b8b6a997b5dd7bb",
+      "oracle_fingerprint": "sha256:85e22f224cc19df3388ff1c8e167f5e0e60e341735f143d88c28dd9d9f1e8e46",
+      "provider_fingerprint": "sha256:7926c51cbd75ac630b52677da2d367ff87b11b04207dc766c21d06fdc275900e",
+      "purpose_fingerprint": "sha256:c1839442640dfcf095bed473d8024674533c1e40de920595336a45f11ff5d3c6",
+      "retained_element_inventory_fingerprint": "sha256:05c5ada840a0eeda6d0bdf517d6b2796b92915b619f49d21352cad59e57e6f4b",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:1ebec80d9ae6afe9342054dfce68ca312155341189f64a80e98f729822443cc3"
+    },
+    {
+      "boundary_id": "model-boundary:test_evidence_mesh",
+      "code_fingerprint": "sha256:9c7f2b21500d8d968127961e75943fc987d1a650f840470c341ae71cee7e33bb",
+      "currentness_id": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "dependency_fingerprint": "sha256:818aec5a7d378198a2095f9d5c43ace2c3ff7cf3a865c8969d879226eeafb849",
+      "evidence_fingerprint": "sha256:6ccfac1e4fb02a26e61e34781d7996102f792cb649cca3209fe58395a28bd1fc",
+      "fingerprint": "sha256:c2a6cc4187ad024b55eb45d810d5d7e4e9a2ec932000f62a1804f0b01fbf29fc",
+      "intent_fingerprint": "sha256:653b35b083c78075c2ededa0034c884996e11a3692cfc962256d777ff3f73051",
+      "model_fingerprint": "sha256:1907f1b696f98bcdc10cf2edefd09b13a12719aca3d055ba2607b31059476e53",
+      "model_id": "test_evidence_mesh",
+      "normalized_facts_fingerprint": "sha256:29389f9e818fd72906afef0a38543bdd397a23f6d3f824fa14122e50962c7f45",
+      "obligation_fingerprint": "sha256:dfc710dd9a83155e405e9b08a30428b4b9930f9063c0c6480bef5595a27d6e0e",
+      "oracle_fingerprint": "sha256:1f681e80861893918c7338a4b6a077ee87c6f65946286615ab6eab5f63783107",
+      "provider_fingerprint": "sha256:a91e40d024dccf12325c3a9753a12d339889f5ee1e5d685fd5f751c0b826804d",
+      "purpose_fingerprint": "sha256:89577d42ca38b622f167266cac496a1b5f791e7f28661364749593985b6305b4",
+      "retained_element_inventory_fingerprint": "sha256:ae04c05e9bf2c2d7a8f7b1abf8cc47087e9201cfb9374a8064e90807561d186e",
+      "schema_version": "flowguard.model-path-quality.v2",
+      "test_fingerprint": "sha256:98340278235b97576903ddb9a472bb5c2c35a2e815d7093bd579248f8c7c8f95"
+    }
+  ],
+  "prediction_replay_refs": [],
+  "removal_dispositions": [
+    {
+      "disposition": "replace",
+      "reason": "The former behavior_commitment_ledger root binding is replaced by the authoritative_model_system root; behavior_commitment_ledger remains a contained current model owner under the refreshed mesh.",
+      "removed_id": "root:model:behavior_commitment_ledger",
+      "replacement_id": "root:model:authoritative_model_system",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    }
+  ],
+  "removed_ids": [
+    "root:model:behavior_commitment_ledger"
+  ],
+  "required_evidence_refs": [
+    {
+      "affected_closure_fingerprint": "sha256:8a7f10da41d94c9573ddb4f6c58c85815f391567a919a63d4e61e797a02e65ee",
+      "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "covered_affected_ids": [
+        "behavior_commitment:commitment:worldguard-current-input-authority",
+        "behavior_commitment:commitment:worldguard-fact-revision-authority",
+        "behavior_commitment:commitment:worldguard-template-selection-authority"
+      ],
+      "current": true,
+      "eligible": true,
+      "environment_fingerprint": "sha256:0cd5decd91d4f0aecde21c176b6c7ff760368d2574380333363724948a989304",
+      "obligation_ids": [
+        "behavior_commitment:commitment:worldguard-current-input-authority",
+        "behavior_commitment:commitment:worldguard-fact-revision-authority",
+        "behavior_commitment:commitment:worldguard-template-selection-authority"
+      ],
+      "owner_route": "behavior_commitment_ledger",
+      "receipt_fingerprint": "sha256:83d121a004b1298d26e99f1d17f146ad60d1c048ba39e35ca7cdf85612809584",
+      "receipt_id": "receipt:validation-owner:behavior_commitment_ledger:9926b8768bde52d68935e37040d8d577",
+      "schema": "flowguard.model_revision_evidence.v2",
+      "status": "required",
+      "subject_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "toolchain_fingerprint": "sha256:2ac9d3f40a04093ee85a58474d8e82ab614ac0bed4b4478ee767555c0a8a100b"
+    },
+    {
+      "affected_closure_fingerprint": "sha256:8a7f10da41d94c9573ddb4f6c58c85815f391567a919a63d4e61e797a02e65ee",
+      "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "covered_affected_ids": [
+        "coverage:code_contracts:contract:purpose:authoritative_model_system",
+        "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+        "coverage:model_instances:authoritative_model_system",
+        "coverage:model_instances:compositional_verification_kernel",
+        "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+        "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+        "coverage:universe",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+        "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+        "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+        "model_relation:relation:model-realizes-purpose:current_input_authority",
+        "model_relation:relation:model-realizes-purpose:fact_revision",
+        "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+        "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+        "model_relation:relation:model-realizes-purpose:task_local_revision",
+        "model_relation:relation:model-realizes-purpose:template_selection",
+        "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "model_relation:relation:system-contains:authoritative_model_system",
+        "model_relation:relation:system-contains:behavior_commitment_ledger",
+        "model_relation:relation:system-contains:compositional_verification_kernel",
+        "model_relation:relation:system-contains:current_input_authority",
+        "model_relation:relation:system-contains:fact_revision",
+        "model_relation:relation:system-contains:hierarchical_model_mesh",
+        "model_relation:relation:system-contains:model_test_code_alignment",
+        "model_relation:relation:system-contains:task_local_revision",
+        "model_relation:relation:system-contains:template_selection",
+        "model_relation:relation:system-contains:test_evidence_mesh",
+        "parent_closure:system:flowguard:model-regression-manifest",
+        "root:model:authoritative_model_system",
+        "root:model:behavior_commitment_ledger",
+        "system_property:subject_revision"
+      ],
+      "current": true,
+      "eligible": true,
+      "environment_fingerprint": "sha256:0cd5decd91d4f0aecde21c176b6c7ff760368d2574380333363724948a989304",
+      "obligation_ids": [
+        "coverage:code_contracts:contract:purpose:authoritative_model_system",
+        "coverage:code_contracts:contract:purpose:compositional_verification_kernel",
+        "coverage:model_instances:authoritative_model_system",
+        "coverage:model_instances:compositional_verification_kernel",
+        "coverage:tests_evidence:check:model-regression:authoritative_model_system",
+        "coverage:tests_evidence:check:model-regression:compositional_verification_kernel",
+        "coverage:universe",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "model_relation:relation:model-realizes-purpose:authoritative_model_system",
+        "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+        "model_relation:relation:model-realizes-purpose:compositional_verification_kernel",
+        "model_relation:relation:model-realizes-purpose:current_input_authority",
+        "model_relation:relation:model-realizes-purpose:fact_revision",
+        "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+        "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+        "model_relation:relation:model-realizes-purpose:task_local_revision",
+        "model_relation:relation:model-realizes-purpose:template_selection",
+        "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "model_relation:relation:system-contains:authoritative_model_system",
+        "model_relation:relation:system-contains:behavior_commitment_ledger",
+        "model_relation:relation:system-contains:compositional_verification_kernel",
+        "model_relation:relation:system-contains:current_input_authority",
+        "model_relation:relation:system-contains:fact_revision",
+        "model_relation:relation:system-contains:hierarchical_model_mesh",
+        "model_relation:relation:system-contains:model_test_code_alignment",
+        "model_relation:relation:system-contains:task_local_revision",
+        "model_relation:relation:system-contains:template_selection",
+        "model_relation:relation:system-contains:test_evidence_mesh",
+        "parent_closure:system:flowguard:model-regression-manifest",
+        "root:model:authoritative_model_system",
+        "root:model:behavior_commitment_ledger",
+        "system_property:subject_revision"
+      ],
+      "owner_route": "model_mesh_maintenance",
+      "receipt_fingerprint": "sha256:456cc1f01abe063a97e501cf702481539ec934d7dc2a393ed0e7bf23a0217969",
+      "receipt_id": "receipt:validation-owner:model_mesh_maintenance:6ccb66d3716d732b95a86816a4e11590",
+      "schema": "flowguard.model_revision_evidence.v2",
+      "status": "required",
+      "subject_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "toolchain_fingerprint": "sha256:421654452ca6fd1f3e641e8652d948d3f9c429c03fef64c1a6c787c4ddf4d0fe"
+    },
+    {
+      "affected_closure_fingerprint": "sha256:8a7f10da41d94c9573ddb4f6c58c85815f391567a919a63d4e61e797a02e65ee",
+      "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "covered_affected_ids": [
+        "code_contract:contract:contract:worldguard-fact-revision",
+        "code_contract:contract:contract:worldguard-template-selection",
+        "code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "model_instance:model:authoritative_model_system",
+        "model_instance:model:behavior_commitment_ledger",
+        "model_instance:model:compositional_verification_kernel",
+        "model_instance:model:current_input_authority",
+        "model_instance:model:fact_revision",
+        "model_instance:model:hierarchical_model_mesh",
+        "model_instance:model:model_test_code_alignment",
+        "model_instance:model:task_local_revision",
+        "model_instance:model:template_selection",
+        "model_instance:model:test_evidence_mesh",
+        "parent_closure:purpose:authoritative_model_system",
+        "parent_closure:purpose:behavior_commitment_ledger",
+        "parent_closure:purpose:compositional_verification_kernel",
+        "parent_closure:purpose:current_input_authority",
+        "parent_closure:purpose:fact_revision",
+        "parent_closure:purpose:hierarchical_model_mesh",
+        "parent_closure:purpose:model_test_code_alignment",
+        "parent_closure:purpose:task_local_revision",
+        "parent_closure:purpose:template_selection",
+        "parent_closure:purpose:test_evidence_mesh"
+      ],
+      "current": true,
+      "eligible": true,
+      "environment_fingerprint": "sha256:0cd5decd91d4f0aecde21c176b6c7ff760368d2574380333363724948a989304",
+      "obligation_ids": [
+        "code_contract:contract:contract:worldguard-fact-revision",
+        "code_contract:contract:contract:worldguard-template-selection",
+        "code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "model_instance:model:authoritative_model_system",
+        "model_instance:model:behavior_commitment_ledger",
+        "model_instance:model:compositional_verification_kernel",
+        "model_instance:model:current_input_authority",
+        "model_instance:model:fact_revision",
+        "model_instance:model:hierarchical_model_mesh",
+        "model_instance:model:model_test_code_alignment",
+        "model_instance:model:task_local_revision",
+        "model_instance:model:template_selection",
+        "model_instance:model:test_evidence_mesh",
+        "parent_closure:purpose:authoritative_model_system",
+        "parent_closure:purpose:behavior_commitment_ledger",
+        "parent_closure:purpose:compositional_verification_kernel",
+        "parent_closure:purpose:current_input_authority",
+        "parent_closure:purpose:fact_revision",
+        "parent_closure:purpose:hierarchical_model_mesh",
+        "parent_closure:purpose:model_test_code_alignment",
+        "parent_closure:purpose:task_local_revision",
+        "parent_closure:purpose:template_selection",
+        "parent_closure:purpose:test_evidence_mesh"
+      ],
+      "owner_route": "model_test_alignment",
+      "receipt_fingerprint": "sha256:416ff9c5058aa49f90eccb72002505c328d114afbaf7f59d2c4d76055c209bf8",
+      "receipt_id": "receipt:validation-owner:model_test_alignment:3dfc3085e9aeae51e6a8164fae32965d",
+      "schema": "flowguard.model_revision_evidence.v2",
+      "status": "required",
+      "subject_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "toolchain_fingerprint": "sha256:6d6f49488e38dab50e19a800ce9a84bcb18d8acf98b94bc10b660b3fd4ba686e"
+    },
+    {
+      "affected_closure_fingerprint": "sha256:8a7f10da41d94c9573ddb4f6c58c85815f391567a919a63d4e61e797a02e65ee",
+      "candidate_snapshot_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "covered_affected_ids": [
+        "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "test_evidence:test:tests/test_contracts.py",
+        "test_evidence:test:tests/test_fact_revision.py",
+        "test_evidence:test:tests/test_guard_model_contract.py",
+        "test_evidence:test:tests/test_template_packs.py"
+      ],
+      "current": true,
+      "eligible": true,
+      "environment_fingerprint": "sha256:0cd5decd91d4f0aecde21c176b6c7ff760368d2574380333363724948a989304",
+      "obligation_ids": [
+        "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "test_evidence:test:tests/test_contracts.py",
+        "test_evidence:test:tests/test_fact_revision.py",
+        "test_evidence:test:tests/test_guard_model_contract.py",
+        "test_evidence:test:tests/test_template_packs.py"
+      ],
+      "owner_route": "test_mesh_maintenance",
+      "receipt_fingerprint": "sha256:ad0290faa6ae0141bf7255d5ac7fa258eeb6358c83bbfdef034c57956572fa64",
+      "receipt_id": "receipt:validation-owner:test_mesh_maintenance:d5ca9124620366a5ea8111605c653835",
+      "schema": "flowguard.model_revision_evidence.v2",
+      "status": "required",
+      "subject_fingerprint": "sha256:ae0d198ee1f653e5814b167326cbdec23d3f902e2964db020b71c1948dbbe535",
+      "toolchain_fingerprint": "sha256:0b2a8e54ad0558a9083d0ff6c94fa9e5a184a00cbbc20ef5eb158e6c7442bed7"
+    }
+  ],
+  "required_path_quality_model_ids": [
+    "authoritative_model_system",
+    "behavior_commitment_ledger",
+    "compositional_verification_kernel",
+    "current_input_authority",
+    "fact_revision",
+    "hierarchical_model_mesh",
+    "model_test_code_alignment",
+    "task_local_revision",
+    "template_selection",
+    "test_evidence_mesh"
+  ],
+  "revision_set_id": "revision:worldguard:software-dna-20260810-v3",
+  "rollback_contract_fingerprint": "",
+  "schema": "flowguard.model_revision_set.v5",
+  "snapshot_diff_fingerprint": "sha256:21ab37d5764ab12c38d25c22c10b062fe9cf7429dcefd6b4f7aa806d2c0c62ef",
+  "status": "proposed",
+  "task_id": "task:worldguard:software-dna-20260810-v3"
+}

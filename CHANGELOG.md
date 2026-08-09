@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.7.3 - 2026-08-09
+
+- Complete the WorldGuard self-DNA spine with current model, code, test,
+  target-material, and installation bindings.
+- Keep object-blueprint qualification bounded to the declared world target
+  and its own evidence boundary.
+
+## v0.7.2 - 2026-08-08
+
+- Synchronized the current WorldGuard package, portable runtime projection, and model-regression identities for the patch release.
+- Preserved the strict WorldBlueprint object-DNA qualification boundary and its visible external-authority gaps.
+
 ## v0.7.1 - 2026-08-01
 
 - Contracted the always-loaded WorldGuard prompt into one task-shape entry and

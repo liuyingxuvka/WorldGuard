@@ -28,7 +28,7 @@ def _release_gate_binding() -> dict:
     return {
         "schema_version": "worldguard.release_gate_binding.v1",
         "target_skill_id": "worldguard",
-        "release_version": "0.7.1",
+        "release_version": "0.7.3",
         "gate_id": "skillguard-final-validation",
         "execution_owner_id": "owner:worldguard:native-depth",
     }
@@ -193,7 +193,28 @@ def test_dynamic_axis_inventory_uses_real_native_object_classes() -> None:
     axes = _dynamic_universe("deep.json", UNIVERSE_PREDICTIVE_AXES)
     classes = {item["object_class_id"] for item in axes["inventory_items"]}
 
-    assert {"state_axis", "transition_axis", "intervention_axis"} <= classes
+    assert {
+        "state_axis_disposition",
+        "transition_axis_disposition",
+        "event_axis",
+        "fluent_axis",
+        "intervention_axis",
+    } <= classes
+    not_applicable = [
+        item
+        for item in axes["inventory_items"]
+        if item.get("disposition") == "not_applicable"
+    ]
+    assert {item["object_class_id"] for item in not_applicable} == {
+        "state_axis_disposition",
+        "transition_axis_disposition",
+    }
+    assert all(
+        item["reason"]
+        and item["claim_boundary"]
+        and not item["observation_field"]
+        for item in not_applicable
+    )
     assert len(axes["validated_item_ids"]) == len(axes["inventory_items"])
 
 

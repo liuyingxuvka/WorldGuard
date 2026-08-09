@@ -1,12 +1,7 @@
 {
-  "claim_boundary": "This TestMesh freezes and aggregates only the current WorldGuard declared-check owner receipts for the final family gate.",
+  "claim_boundary": "This is the single current static TestMesh authority for focused or full WorldGuard declared-check planning. A future claimed run begins through the official plan_only mode; this manifest is not a run, receipt, aggregation, installation, or release result.",
   "mesh_id": "worldguard-guard-family-final.current",
   "profiles": [
-    {
-      "closure_profile_id": "enforced",
-      "full_admission_required": false,
-      "profile_id": "fast"
-    },
     {
       "closure_profile_id": "enforced",
       "full_admission_required": false,

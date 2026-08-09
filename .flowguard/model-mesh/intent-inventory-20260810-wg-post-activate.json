@@ -1,0 +1,151 @@
+{
+  "contributions": [
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:currentness-20260810",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "fingerprint": "sha256:163b56de547eda84a9348ad972b11334d2670579b21955a0c99830a62fc61c84",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:authoritative_model_system",
+      "native_owner_id": "",
+      "rationale": "Refresh the authoritative_model_system design binding after the accepted software-DNA authority pointer changed; preserve the exact current model owner and its direct evidence path.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    }
+  ],
+  "dispositions": [
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:163b56de547eda84a9348ad972b11334d2670579b21955a0c99830a62fc61c84",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:currentness-20260810",
+      "disposition": "accepted",
+      "fingerprint": "sha256:ccc5b8fc8112ed054367272147b8be65965e5f5baaddc9fed0f594695d3942d3",
+      "reason": "Account for the accepted authority-pointer refresh as a current root-model relation change; no fallback or external reconstruction is involved.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "action": "retain",
+      "fingerprint": "sha256:04abc9096ac9d6dc3cc896d6e7970d3ab561ea1490222854d243535c462aa334",
+      "prior_contribution_fingerprint": "sha256:f5e1f193eae5053c6bf0cc1b41dc27b6361b2d9a2cf6a0db6d0d2f5bc5b2f081",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260810",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:28238d885245db3649ac8da906fe7cf66959686c43713caf288f6fa152d9be2d",
+      "prior_contribution_fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:5927f857687bd5ffff4f819dee0bdea371669e7ef778df8a1aaed5a621288beb",
+      "prior_contribution_fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:6d1090cd01e9eae7e3bbe23d6c410b43fbc2f906636af2e1ecdb8a5d9607a5d1",
+      "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:e4b7c741d71810457b72c0048b6f8c0a475867c543e0a552ee9eb34ffd2bfbc5",
+      "prior_contribution_fingerprint": "sha256:fe904e5b23edad971f79009ea825cd9f65c1a395d230c5758680c616bf5b7e12",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:71afad8f1921a48e735f97b422ff69745b36695d416658670a919dc13498b5cf",
+      "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:7c37b6f6397af1d67cd1bbd0cddcd27530d2eec4b6ca4f03b0a708f333da115f",
+      "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:e01078ab7f3c0dcdb2bdccf54e9ad2dfc6ce511f90249f731c29c60c53f9f5bb",
+      "prior_contribution_fingerprint": "sha256:ce7b1e0cb0d4bbff7395743a3a22f68bce19d60a732ab8999bab26b6045523e6",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:2bd568bfcf208e29928fe0ffe702a07e50a1747c19e311321515cda28243cc55",
+      "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:1d924b348c504da1222a859d9e89e42d10aca20c184547eee221a1ef19b06d62",
+      "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+      "reason": "Retain the exact current effective design binding while refreshing only the authoritative pointer relation.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    }
+  ]
+}

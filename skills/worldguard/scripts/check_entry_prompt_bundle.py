@@ -8,8 +8,46 @@ import json
 from pathlib import Path
 from typing import Any
 
+from worldguard.contracts import (
+    Claim,
+    claim_predictive_intent,
+    derive_guard_requirements,
+)
 
-PREDICTIVE_SEMANTICS = {"prediction", "predictive", "forecast", "future_outcome"}
+
+BLUEPRINT_OPERATIONS = {
+    "create",
+    "update",
+    "check",
+    "impact",
+    "trace",
+    "bundle-export",
+    "bundle-verify",
+    "bundle-query",
+}
+BLUEPRINT_IDENTITY_OPERATIONS = {
+    "update",
+    "check",
+    "impact",
+    "trace",
+    "bundle-export",
+}
+BUNDLE_QUERY_KINDS = {
+    "node",
+    "element",
+    "behavior-case",
+    "binding",
+    "impact",
+    "reverse",
+}
+CLAIM_REQUIRED_SHAPES = {"unit_contract", "model_mesh", "task_local_revision"}
+RETIRED_PROMPT_FACT_FIELDS = {
+    "task_shape_candidates",
+    "task_shape_facts",
+    "requested_semantics",
+    "predictive_intent",
+    "target_guards",
+}
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -30,85 +68,245 @@ def compose_prompt_bundle(
     topology = _load_json(topology_path)
     findings: list[dict[str, Any]] = []
 
-    candidates = facts.get("task_shape_candidates")
-    if candidates is None:
-        direct_shape = facts.get("task_shape")
-        candidates = [direct_shape] if isinstance(direct_shape, str) and direct_shape else []
-    if not isinstance(candidates, list) or any(not isinstance(item, str) for item in candidates):
-        candidates = []
-        findings.append({"code": "task_shape_candidates_invalid"})
-    candidates = list(dict.fromkeys(item.strip() for item in candidates if item.strip()))
+    retired_fields = sorted(RETIRED_PROMPT_FACT_FIELDS.intersection(facts))
+    if retired_fields:
+        findings.append(
+            {"code": "prompt_fact_fields_retired", "fields": retired_fields}
+        )
+
+    shape_value = facts.get("task_shape")
+    selected_shape = shape_value.strip() if isinstance(shape_value, str) else ""
+    if not selected_shape:
+        findings.append({"code": "task_shape_invalid", "field": "task_shape"})
     shape_rows = {
         row["shape_id"]: row
         for row in topology.get("task_shapes", [])
         if isinstance(row, dict) and isinstance(row.get("shape_id"), str)
     }
-    if len(candidates) != 1:
+    if selected_shape and selected_shape not in shape_rows:
         findings.append(
-            {
-                "code": "task_shape_not_exact",
-                "candidates": candidates,
-                "missing_discriminator": "unit_contract|model_mesh|task_local_revision|template_pack",
-            }
+            {"code": "task_shape_unsupported", "task_shape": selected_shape}
         )
-        selected_shape = ""
-    else:
-        selected_shape = candidates[0]
-        if selected_shape not in shape_rows:
-            findings.append(
-                {"code": "task_shape_unsupported", "task_shape": selected_shape}
-            )
 
-    semantics_value = facts.get("requested_semantics", [])
-    if isinstance(semantics_value, str):
-        semantics_value = [semantics_value]
-    if not isinstance(semantics_value, list) or any(
-        not isinstance(item, str) for item in semantics_value
-    ):
-        semantics_value = []
-        findings.append({"code": "requested_semantics_invalid"})
-    semantics = tuple(
-        dict.fromkeys(item.strip().lower() for item in semantics_value if item.strip())
+    claim: Claim | None = None
+    claim_value = facts.get("claim")
+    if claim_value is not None:
+        if not isinstance(claim_value, dict):
+            findings.append({"code": "claim_invalid", "reason": "claim_not_object"})
+        else:
+            try:
+                claim = Claim.from_dict(claim_value)
+            except (TypeError, ValueError) as error:
+                findings.append({"code": "claim_invalid", "reason": str(error)})
+    elif selected_shape in CLAIM_REQUIRED_SHAPES:
+        findings.append({"code": "claim_missing", "task_shape": selected_shape})
+
+    guard_derivation = derive_guard_requirements(claim) if claim is not None else None
+    semantics = (
+        guard_derivation.requested_semantics if guard_derivation is not None else ()
+    )
+    derived_guards = guard_derivation.guard_ids if guard_derivation is not None else ()
+    unmapped = (
+        list(guard_derivation.unmapped_semantics)
+        if guard_derivation is not None
+        else []
     )
 
     routes = [row for row in topology.get("routes", []) if isinstance(row, dict)]
-    semantics_to_guards: dict[str, list[str]] = {}
-    for row in routes:
-        guard_id = str(row.get("guard_id", ""))
-        for semantic in row.get("applicability_semantics", []):
-            semantics_to_guards.setdefault(str(semantic), []).append(guard_id)
-    unmapped = sorted(semantic for semantic in semantics if semantic not in semantics_to_guards)
-    if unmapped and selected_shape != "template_pack":
+    if unmapped and selected_shape not in {"template_pack", "world_blueprint"}:
         findings.append({"code": "claim_semantics_unmapped", "semantics": unmapped})
-    guards = tuple(
-        dict.fromkeys(
-            guard
-            for semantic in semantics
-            for guard in semantics_to_guards.get(semantic, [])
-        )
-    )
-    if selected_shape in {"unit_contract", "model_mesh", "task_local_revision"} and not guards:
+    if selected_shape in {"unit_contract", "model_mesh", "task_local_revision"} and not derived_guards:
         findings.append({"code": "derived_guard_set_empty"})
 
-    caller_guards_value = facts.get("target_guards", [])
-    if isinstance(caller_guards_value, str):
-        caller_guards_value = [caller_guards_value]
-    caller_guards = {
-        str(item) for item in caller_guards_value if isinstance(item, str) and item
-    }
-    omitted = sorted(set(guards) - caller_guards) if caller_guards else []
+    affected_guard_value = facts.get("affected_guard_ids", [])
+    if isinstance(affected_guard_value, str):
+        affected_guard_value = [affected_guard_value]
+    if not isinstance(affected_guard_value, list) or any(
+        not isinstance(item, str) for item in affected_guard_value
+    ):
+        affected_guard_value = []
+        findings.append({"code": "affected_guard_ids_invalid"})
+    affected_guards = tuple(
+        dict.fromkeys(item.strip() for item in affected_guard_value if item.strip())
+    )
+    known_guard_ids = {str(row.get("guard_id", "")) for row in routes}
+    unknown_affected = sorted(set(affected_guards).difference(known_guard_ids))
+    if selected_shape == "world_blueprint":
+        operation = str(facts.get("blueprint_operation", "")).strip()
+        if operation not in BLUEPRINT_OPERATIONS:
+            findings.append(
+                {
+                    "code": "blueprint_operation_not_exact",
+                    "operation": operation,
+                    "allowed": sorted(BLUEPRINT_OPERATIONS),
+                }
+            )
+        spans = facts.get("request_source_spans")
+        spans_valid = isinstance(spans, list) and bool(spans)
+        if spans_valid:
+            for span in spans:
+                if not isinstance(span, dict):
+                    spans_valid = False
+                    break
+                start = span.get("start")
+                end = span.get("end")
+                if (
+                    not isinstance(span.get("source_id"), str)
+                    or not span["source_id"].strip()
+                    or not isinstance(span.get("text"), str)
+                    or not span["text"].strip()
+                    or not isinstance(start, int)
+                    or isinstance(start, bool)
+                    or not isinstance(end, int)
+                    or isinstance(end, bool)
+                    or start < 0
+                    or end <= start
+                ):
+                    spans_valid = False
+                    break
+        if not spans_valid:
+            findings.append(
+                {
+                    "code": "blueprint_required_input_missing",
+                    "fields": ["request_source_spans"],
+                }
+            )
+        target_identity_required = operation not in {"bundle-verify", "bundle-query"}
+        common_missing = (
+            [
+                field_name
+                for field_name in (
+                    "target_id",
+                    "target_revision",
+                    "declared_boundary",
+                )
+                if not isinstance(facts.get(field_name), str)
+                or not str(facts.get(field_name, "")).strip()
+            ]
+            if target_identity_required
+            else []
+        )
+        if common_missing:
+            findings.append(
+                {
+                    "code": "blueprint_required_input_missing",
+                    "fields": common_missing,
+                }
+            )
+        if "affected_guard_ids" not in facts:
+            findings.append(
+                {
+                    "code": "blueprint_required_input_missing",
+                    "fields": ["affected_guard_ids"],
+                }
+            )
+        operation_missing: list[str] = []
+        blueprint_identity = facts.get("world_blueprint_or_query_identity")
+        if operation in BLUEPRINT_IDENTITY_OPERATIONS and (
+            not isinstance(blueprint_identity, str) or not blueprint_identity.strip()
+        ):
+            operation_missing.append("world_blueprint_or_query_identity")
+        if operation == "create":
+            refs = facts.get("target_material_refs")
+            if (
+                not isinstance(refs, list)
+                or not refs
+                or any(not isinstance(item, str) or not item.strip() for item in refs)
+            ):
+                operation_missing.append("target_material_refs")
+        elif operation == "update":
+            if not isinstance(facts.get("change_intent"), str) or not str(
+                facts.get("change_intent", "")
+            ).strip():
+                operation_missing.append("change_intent")
+            changed_ids = facts.get("changed_ids")
+            if (
+                not isinstance(changed_ids, list)
+                or not changed_ids
+                or any(
+                    not isinstance(item, str) or not item.strip()
+                    for item in changed_ids
+                )
+            ):
+                operation_missing.append("changed_ids")
+        elif operation == "impact":
+            changed_ids = facts.get("changed_ids")
+            if (
+                not isinstance(changed_ids, list)
+                or not changed_ids
+                or any(
+                    not isinstance(item, str) or not item.strip()
+                    for item in changed_ids
+                )
+            ):
+                operation_missing.append("changed_ids")
+        elif operation == "trace":
+            if not isinstance(facts.get("trace_target_id"), str) or not str(
+                facts.get("trace_target_id", "")
+            ).strip():
+                operation_missing.append("trace_target_id")
+        elif operation == "bundle-export":
+            if not isinstance(facts.get("bundle_destination"), str) or not str(
+                facts.get("bundle_destination", "")
+            ).strip():
+                operation_missing.append("bundle_destination")
+        elif operation in {"bundle-verify", "bundle-query"}:
+            for field_name in ("bundle_identity", "materialization_root"):
+                if not isinstance(facts.get(field_name), str) or not str(
+                    facts.get(field_name, "")
+                ).strip():
+                    operation_missing.append(field_name)
+            if operation == "bundle-query":
+                query_kind = str(facts.get("bundle_query_kind", "")).strip()
+                if query_kind not in BUNDLE_QUERY_KINDS:
+                    operation_missing.append("bundle_query_kind")
+                if not isinstance(facts.get("bundle_member_id"), str) or not str(
+                    facts.get("bundle_member_id", "")
+                ).strip():
+                    operation_missing.append("bundle_member_id")
+        if operation_missing:
+            findings.append(
+                {
+                    "code": "blueprint_operation_input_missing",
+                    "operation": operation,
+                    "fields": sorted(set(operation_missing)),
+                }
+            )
+        if unknown_affected:
+            findings.append(
+                {
+                    "code": "blueprint_affected_guard_unknown",
+                    "guard_ids": unknown_affected,
+                }
+            )
+        selected_guards = affected_guards
+    else:
+        operation = ""
+        if affected_guards:
+            findings.append(
+                {
+                    "code": "blueprint_affected_guards_outside_blueprint_route",
+                    "guard_ids": list(affected_guards),
+                }
+            )
+        selected_guards = derived_guards
+
+    caller_guards = set(claim.target_guards) if claim is not None else set()
+    omitted = (
+        sorted(set(derived_guards) - caller_guards)
+        if caller_guards and selected_shape != "world_blueprint"
+        else []
+    )
 
     bundle_paths: list[str] = ["SKILL.md", "references/entry-routing.md"]
     if selected_shape in shape_rows:
         bundle_paths.append(str(shape_rows[selected_shape].get("reference_path", "")))
     rows_by_guard = {str(row.get("guard_id", "")): row for row in routes}
-    for guard in guards:
+    for guard in selected_guards:
         row = rows_by_guard.get(guard, {})
         bundle_paths.append(str(row.get("reference_path", "")))
 
-    predictive = bool(PREDICTIVE_SEMANTICS.intersection(semantics)) or bool(
-        facts.get("predictive_intent")
-    )
+    predictive = claim_predictive_intent(claim) if claim is not None else False
     if selected_shape == "task_local_revision" or predictive:
         bundle_paths.append("references/task-local-model-deepening.md")
     if selected_shape == "model_mesh" and facts.get("handoff_present"):
@@ -121,21 +319,119 @@ def compose_prompt_bundle(
         bundle_paths.append("references/closure-report.md")
     bundle_paths = list(dict.fromkeys(path for path in bundle_paths if path))
 
-    bundle_characters = 0
+    bundle_components: list[dict[str, Any]] = []
     for relative in bundle_paths:
         path = skill_root / relative
         if not path.is_file():
             findings.append({"code": "mandatory_prompt_reference_missing", "path": relative})
             continue
-        bundle_characters += len(path.read_text(encoding="utf-8"))
+        bundle_components.append({"path": relative, "bytes": len(path.read_bytes())})
+    route_capsules = [
+        {
+            "guard_id": guard,
+            "bytes": len(
+                json.dumps(
+                    rows_by_guard[guard],
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ),
+        }
+        for guard in selected_guards
+        if guard in rows_by_guard
+    ]
+    bundle_bytes = sum(item["bytes"] for item in bundle_components) + sum(
+        item["bytes"] for item in route_capsules
+    )
     budget = topology.get("prompt_budget", {})
-    selected_max = budget.get("selected_bundle_max_characters")
-    headroom = budget.get("minimum_reasoning_headroom_characters")
-    if not isinstance(selected_max, int) or bundle_characters > selected_max:
+    entry_max = budget.get("entry_shell_max_bytes")
+    route_max = budget.get("single_route_capsule_max_bytes")
+    blueprint_reference_max = budget.get("single_blueprint_reference_max_bytes")
+    blueprint_reference_minimum_headroom = budget.get(
+        "single_blueprint_reference_minimum_headroom_bytes"
+    )
+    selected_max = budget.get("selected_operation_bundle_max_bytes")
+    headroom = budget.get("minimum_reasoning_headroom_bytes")
+    entry_bytes = next(
+        (item["bytes"] for item in bundle_components if item["path"] == "SKILL.md"),
+        0,
+    )
+    if not isinstance(entry_max, int) or entry_bytes > entry_max:
+        findings.append(
+            {
+                "code": "entry_prompt_budget_exceeded",
+                "observed": entry_bytes,
+                "maximum": entry_max,
+            }
+        )
+    if not isinstance(route_max, int) or route_max <= 0:
+        findings.append(
+            {
+                "code": "route_capsule_budget_invalid",
+                "observed": route_max,
+            }
+        )
+    else:
+        for capsule in route_capsules:
+            if capsule["bytes"] > route_max:
+                findings.append(
+                    {
+                        "code": "route_capsule_budget_exceeded",
+                        "guard_id": capsule["guard_id"],
+                        "observed": capsule["bytes"],
+                        "maximum": route_max,
+                    }
+                )
+    blueprint_bytes = 0
+    blueprint_reference_headroom: int | None = None
+    if selected_shape == "world_blueprint":
+        blueprint_bytes = next(
+            (
+                item["bytes"]
+                for item in bundle_components
+                if item["path"] == "references/world-blueprint.md"
+            ),
+            0,
+        )
+        if (
+            not isinstance(blueprint_reference_max, int)
+            or blueprint_bytes > blueprint_reference_max
+        ):
+            findings.append(
+                {
+                    "code": "blueprint_reference_budget_exceeded",
+                    "observed": blueprint_bytes,
+                    "maximum": blueprint_reference_max,
+                }
+            )
+        if (
+            not isinstance(blueprint_reference_minimum_headroom, int)
+            or blueprint_reference_minimum_headroom < 0
+        ):
+            findings.append(
+                {
+                    "code": "blueprint_reference_headroom_budget_invalid",
+                    "observed": blueprint_reference_minimum_headroom,
+                }
+            )
+        elif isinstance(blueprint_reference_max, int):
+            blueprint_reference_headroom = blueprint_reference_max - blueprint_bytes
+            if blueprint_reference_headroom < blueprint_reference_minimum_headroom:
+                findings.append(
+                    {
+                        "code": "blueprint_reference_headroom_too_small",
+                        "observed": blueprint_reference_headroom,
+                        "minimum": blueprint_reference_minimum_headroom,
+                        "reference_bytes": blueprint_bytes,
+                        "maximum": blueprint_reference_max,
+                    }
+                )
+    if not isinstance(selected_max, int) or bundle_bytes > selected_max:
         findings.append(
             {
                 "code": "selected_prompt_bundle_budget_exceeded",
-                "observed": bundle_characters,
+                "observed": bundle_bytes,
                 "maximum": selected_max,
             }
         )
@@ -148,17 +444,50 @@ def compose_prompt_bundle(
             }
         )
 
+    operation_claim_boundaries = {
+        "bundle-export": (
+            "Bundle export proves deterministic packaging of one already checked blueprint; "
+            "it does not independently prove target behavior, semantic truth, or factual truth."
+        ),
+        "bundle-verify": (
+            "Bundle verification proves package integrity and deterministic replay only within "
+            "the bundled target boundary; it does not independently prove semantic truth or factual truth."
+        ),
+        "bundle-query": (
+            "Bundle query returns one identity-bound stored or derived slice; retrieval does not "
+            "prove qualification, target behavior, semantic truth, or factual truth."
+        ),
+    }
     return {
         "schema_version": "worldguard.prompt_bundle_check.v1",
         "status": "pass" if not findings else "blocked",
         "ok": not findings,
         "selected_task_shape": selected_shape,
+        "blueprint_operation": operation,
+        "blueprint_operation_claim_boundary": operation_claim_boundaries.get(
+            operation,
+            (
+                "The selected blueprint operation remains bounded to its declared target, "
+                "revision, evidence, and native result."
+                if operation
+                else ""
+            ),
+        ),
         "requested_semantics": list(semantics),
-        "derived_guard_ids": list(guards),
+        "derived_guard_ids": list(derived_guards),
+        "guard_derivation_fingerprint": (
+            guard_derivation.fingerprint if guard_derivation is not None else ""
+        ),
+        "affected_guard_ids": list(affected_guards),
+        "selected_guard_ids": list(selected_guards),
         "caller_target_guard_omissions": omitted,
         "bundle_paths": bundle_paths,
-        "bundle_characters": bundle_characters,
-        "reasoning_headroom_characters": headroom,
+        "bundle_components": bundle_components,
+        "route_capsules": route_capsules,
+        "bundle_bytes": bundle_bytes,
+        "blueprint_reference_bytes": blueprint_bytes,
+        "blueprint_reference_headroom_bytes": blueprint_reference_headroom,
+        "reasoning_headroom_bytes": headroom,
         "findings": findings,
         "claim_boundary": (
             "This check proves only deterministic task-shape, complete claim-derived Guard, "
@@ -189,4 +518,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -20,6 +20,59 @@ from tests.helpers import attach_task_purpose_declarations
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _event_axis_dispositions() -> list[dict[str, str]]:
+    return [
+        {
+            "axis_id": "state",
+            "disposition": "not_applicable",
+            "reason": "the static EventGuard rollout does not execute a state-machine",
+            "claim_boundary": "no state-machine state execution is claimed",
+        },
+        {
+            "axis_id": "transition",
+            "disposition": "not_applicable",
+            "reason": "the static EventGuard rollout does not execute transition specifications",
+            "claim_boundary": "no state-machine transition execution is claimed",
+        },
+        {
+            "axis_id": "event",
+            "disposition": "required",
+            "observation_field": "executed_event_ids",
+            "claim_boundary": "exact event identities executed by EventGuard",
+        },
+        {
+            "axis_id": "fluent",
+            "disposition": "required",
+            "observation_field": "reached_fluent_ids",
+            "claim_boundary": "exact fluent identities reached by EventGuard",
+        },
+        {
+            "axis_id": "branch",
+            "disposition": "required",
+            "observation_field": "executed_branch_ids",
+            "claim_boundary": "exact branch identities exercised",
+        },
+        {
+            "axis_id": "perturbation",
+            "disposition": "required",
+            "observation_field": "executed_perturbation_ids",
+            "claim_boundary": "exact perturbation identities exercised",
+        },
+        {
+            "axis_id": "intervention",
+            "disposition": "required",
+            "observation_field": "executed_intervention_ids",
+            "claim_boundary": "exact intervention identities evaluated",
+        },
+        {
+            "axis_id": "counterfactual",
+            "disposition": "required",
+            "observation_field": "executed_counterfactual_ids",
+            "claim_boundary": "exact counterfactual identities evaluated",
+        },
+    ]
+
+
 def test_worldguard_prompt_requires_exact_per_obligation_evidence() -> None:
     raw_prompt = (ROOT / "skills/worldguard/SKILL.md").read_text(encoding="utf-8")
     contracts = (ROOT / "skills/worldguard/references/worldguard-contracts.md").read_text(encoding="utf-8")
@@ -40,13 +93,16 @@ def _predictive_mesh() -> dict:
             "expected_model_node_ids": ["world"],
             "scenario_ids": ["s-base"],
             "holdout_scenario_ids": ["s-hold"],
-            "state_ids": ["ready", "running"],
-            "transition_ids": ["e0", "e1", "e2"],
+            "state_ids": [],
+            "transition_ids": [],
+            "event_ids": ["e0", "e1", "e2"],
+            "fluent_ids": ["ready", "running"],
             "branch_ids": ["b0"],
             "perturbation_ids": ["p0"],
             "intervention_ids": ["do-y"],
             "counterfactual_ids": ["cf-y"],
             "horizon": {"start": "t0", "end": "t2", "steps": 3},
+            "axis_dispositions": _event_axis_dispositions(),
         },
         "nodes": [
             {
@@ -145,7 +201,7 @@ def _long_horizon_mesh(
     }
     mesh["semantic_coverage"].update(
         {
-            "transition_ids": [event["event_id"] for event in events],
+            "event_ids": [event["event_id"] for event in events],
             "timepoint_ids": timepoint_ids,
             "horizon": {"start": "t0", "end": f"t{steps - 1}", "steps": steps},
         }
@@ -313,6 +369,201 @@ def test_complete_supported_predictive_fixture_gets_mesh_bound_license() -> None
         assert str(observation["evidence_ref"]).startswith("worldguard:")
         assert len(observation["evidence_sha256"]) == 64
         assert observation["evidence_sha256"] == observation["evidence_sha256"].lower()
+
+
+def _axis_disposition(mesh: dict, axis_id: str) -> dict:
+    return next(
+        row
+        for row in mesh["semantic_coverage"]["axis_dispositions"]
+        if row["axis_id"] == axis_id
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_fragment"),
+    [
+        ("missing", "missing=['state']"),
+        ("duplicate", "duplicates=['state']"),
+        ("unknown", "extra=['weather']"),
+    ],
+)
+def test_predictive_axis_dispositions_require_exactly_one_current_row_per_axis(
+    mutation: str,
+    expected_fragment: str,
+) -> None:
+    mesh = _predictive_mesh()
+    dispositions = mesh["semantic_coverage"]["axis_dispositions"]
+    state = deepcopy(_axis_disposition(mesh, "state"))
+    if mutation == "missing":
+        dispositions.remove(_axis_disposition(mesh, "state"))
+    elif mutation == "duplicate":
+        dispositions.append(state)
+    else:
+        state["axis_id"] = "weather"
+        dispositions.append(state)
+
+    with pytest.raises(
+        ValueError,
+        match=r"predictive axis dispositions must contain exactly one current row per axis",
+    ) as exc_info:
+        run_model_mesh(mesh)
+
+    assert expected_fragment in str(exc_info.value)
+
+
+def test_not_applicable_axis_requires_reason() -> None:
+    mesh = _predictive_mesh()
+    _axis_disposition(mesh, "state").pop("reason")
+
+    with pytest.raises(
+        ValueError,
+        match="not_applicable predictive axis state requires reason",
+    ):
+        run_model_mesh(mesh)
+
+
+def test_required_axis_requires_claim_boundary() -> None:
+    mesh = _predictive_mesh()
+    _axis_disposition(mesh, "event").pop("claim_boundary")
+
+    with pytest.raises(
+        ValueError,
+        match="predictive axis event requires claim_boundary",
+    ):
+        run_model_mesh(mesh)
+
+
+def test_not_applicable_axis_cannot_carry_observation_field() -> None:
+    mesh = _predictive_mesh()
+    _axis_disposition(mesh, "state")["observation_field"] = "executed_state_ids"
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "not_applicable predictive axis state must not carry observation_field"
+        ),
+    ):
+        run_model_mesh(mesh)
+
+
+def test_required_axis_cannot_carry_reason() -> None:
+    mesh = _predictive_mesh()
+    _axis_disposition(mesh, "event")["reason"] = "required axes need evidence"
+
+    with pytest.raises(
+        ValueError,
+        match="required predictive axis event must not carry reason",
+    ):
+        run_model_mesh(mesh)
+
+
+@pytest.mark.parametrize(
+    ("observation_field", "expected_fluent_ids"),
+    [
+        ("reached_fluent_ids", ["ready", "running"]),
+        ("active_fluent_ids", ["running"]),
+        ("final_fluent_ids_by_scenario", ["running"]),
+    ],
+)
+def test_fluent_axis_accepts_each_native_observation_domain(
+    observation_field: str,
+    expected_fluent_ids: list[str],
+) -> None:
+    mesh = _predictive_mesh()
+    mesh["semantic_coverage"]["fluent_ids"] = expected_fluent_ids
+    _axis_disposition(mesh, "fluent")["observation_field"] = observation_field
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == GuardStatus.PASS
+    assert report.depth_receipt is not None
+    assert report.depth_receipt.predictive_claim_licensed is True
+
+
+def test_not_applicable_axis_cannot_be_changed_to_required_with_empty_ids() -> None:
+    mesh = _predictive_mesh()
+    state = _axis_disposition(mesh, "state")
+    state.update(
+        {
+            "disposition": "required",
+            "observation_field": "executed_state_ids",
+        }
+    )
+    state.pop("reason")
+
+    with pytest.raises(
+        ValueError,
+        match="required predictive axis state has empty state_ids",
+    ):
+        run_model_mesh(mesh)
+
+
+def test_not_applicable_axis_cannot_carry_expected_ids() -> None:
+    mesh = _predictive_mesh()
+    mesh["semantic_coverage"]["state_ids"] = ["state:invented"]
+
+    with pytest.raises(
+        ValueError,
+        match="not_applicable predictive axis state must not carry state_ids",
+    ):
+        run_model_mesh(mesh)
+
+
+@pytest.mark.parametrize(
+    ("axis_id", "wrong_observation_field"),
+    [
+        ("event", "reached_fluent_ids"),
+        ("fluent", "executed_event_ids"),
+    ],
+)
+def test_event_and_fluent_axes_cannot_use_each_others_identity_domain(
+    axis_id: str,
+    wrong_observation_field: str,
+) -> None:
+    mesh = _predictive_mesh()
+    _axis_disposition(mesh, axis_id)[
+        "observation_field"
+    ] = wrong_observation_field
+
+    with pytest.raises(
+        ValueError,
+        match=rf"predictive axis {axis_id} observation_field must be one of",
+    ):
+        run_model_mesh(mesh)
+
+
+def test_required_axis_empty_array_cannot_bypass_predictive_depth() -> None:
+    mesh = _predictive_mesh()
+    mesh["semantic_coverage"]["event_ids"] = []
+
+    with pytest.raises(
+        ValueError,
+        match="required predictive axis event has empty event_ids",
+    ):
+        run_model_mesh(mesh)
+
+
+def test_not_applicable_axis_blocks_when_runtime_still_observes_that_domain() -> None:
+    mesh = _predictive_mesh()
+    event = _axis_disposition(mesh, "event")
+    event.update(
+        {
+            "disposition": "not_applicable",
+            "reason": "caller claims no event execution applies",
+        }
+    )
+    event.pop("observation_field")
+    mesh["semantic_coverage"]["event_ids"] = []
+
+    report = run_model_mesh(mesh)
+
+    assert report.depth_receipt is not None
+    assert report.depth_receipt.predictive_claim_licensed is False
+    assert {
+        "predictive_event_not_applicable_observed:e0",
+        "predictive_event_not_applicable_observed:e1",
+        "predictive_event_not_applicable_observed:e2",
+    } <= set(report.depth_receipt.predictive_gaps)
 
 
 def test_native_obligation_hash_tracks_exact_semantic_input() -> None:
@@ -498,22 +749,15 @@ def test_coverage_fingerprint_changes_when_expected_universe_changes() -> None:
     assert second.predictive_claim_licensed is False
 
 
-def test_current_generic_skill_contract_supervises_target_checks_without_domain_modes() -> None:
+def test_current_skill_contract_source_supervises_ten_distinct_owners_without_domain_modes() -> None:
     root = Path(__file__).resolve().parents[1]
     control = root / "skills" / "worldguard" / ".skillguard"
     source = json.loads((control / "contract-source.json").read_text(encoding="utf-8"))
-    manifest = json.loads((control / "check-manifest.json").read_text(encoding="utf-8"))
     checks = {item["check_id"]: item for item in source["checks"]}
     native_ids = set(source["depth_profile"]["native_check_ids"])
-    manifest_ids = {item["check_id"] for item in manifest["checks"]}
 
-    assert "check:worldguard:native-depth" in native_ids & manifest_ids
-    assert "check:worldguard:guard-model-contract" in native_ids & manifest_ids
-    assert "check:worldguard:flowguard-contract-model" in native_ids & manifest_ids
-    assert "check:worldguard:template-packs" in native_ids & manifest_ids
-    assert "check:worldguard:internal-guard-topology" in native_ids & manifest_ids
-    assert "check:worldguard:fact-revision" in native_ids & manifest_ids
     assert native_ids == {
+        "check:worldguard:blueprint-integrity",
         "check:worldguard:flowguard-contract-model",
         "check:worldguard:guard-model-contract",
         "check:worldguard:native-depth",
@@ -522,6 +766,7 @@ def test_current_generic_skill_contract_supervises_target_checks_without_domain_
         "check:worldguard:fact-revision",
         "check:worldguard:task-local-model-closure",
         "check:worldguard:entry-prompt-bundle",
+        "check:worldguard:portable-runtime-projection",
     }
     assert set(checks) == native_ids
     assert source["depth_profile"]["target_skill_id"] == "worldguard"

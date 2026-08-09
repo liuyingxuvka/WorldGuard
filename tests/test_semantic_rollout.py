@@ -56,7 +56,7 @@ NEGATIVE_PROBES = [
     (
         "AgentGuard",
         {
-            "beliefs": {"a1": {"beliefs": ["ready"]}},
+            "beliefs": {"a1": {"agent_id": "a1", "beliefs": ["ready"]}},
             "agent_model": {},
         },
         "SEM_AGENT_INCOMPLETE_BDI",
@@ -109,22 +109,19 @@ NEGATIVE_PROBES = [
 ]
 
 
-@pytest.mark.parametrize(("guard", "inputs", "expected_code"), NEGATIVE_PROBES)
-def test_known_shallow_semantic_probe_cannot_project_pass(
-    guard: str,
-    inputs: dict,
-    expected_code: str,
-):
-    report = run_model_mesh(_mesh(guard, inputs))
+def test_known_shallow_semantic_probe_cannot_project_pass():
+    """Keep the finite negative-probe matrix statically enumerable."""
 
-    assert report.structural_status == GuardStatus.PASS
-    assert report.semantic_status != SemanticStatus.PASS
-    assert report.status != GuardStatus.PASS
-    assert expected_code in {
-        finding["code"]
-        for receipt in report.semantic_receipts
-        for finding in receipt.findings
-    }
+    for guard, inputs, expected_code in NEGATIVE_PROBES:
+        report = run_model_mesh(_mesh(guard, inputs))
+
+        assert report.semantic_status != SemanticStatus.PASS
+        assert report.status != GuardStatus.PASS
+        assert expected_code in {
+            finding["code"]
+            for receipt in report.semantic_receipts
+            for finding in receipt.findings
+        }
 
 
 def _valid_event_mesh() -> dict:
@@ -191,7 +188,7 @@ def test_native_depth_receipt_binds_model_checks_executors_and_claim_boundary():
     assert len(receipt.mesh_fingerprint) == 64
     assert receipt.executed_semantic_children == ["event-node:EventGuard"]
     assert receipt.structural_checks == [{"node_id": "event-node", "status": "PASS"}]
-    assert receipt.bindings[0]["input_fields"]
+    assert receipt.bindings[0]["possible_consumed_input_fields"]
     assert receipt.bindings[0]["output_fields"]
     assert receipt.bindings[0]["supported_semantics"]
     assert receipt.bindings[0]["unsupported_boundary"]

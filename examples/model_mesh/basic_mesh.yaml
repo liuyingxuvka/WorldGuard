@@ -6,6 +6,8 @@ nodes:
     model_version: v1
     model_kind: event_model
     freshness_status: current
+    output_ports:
+      - {port_id: precheck_complete, value_type: fact, cardinality: one}
     authority:
       owns: [event]
       excludes: [norm, resource, causal]
@@ -63,6 +65,8 @@ nodes:
     model_version: v1
     model_kind: norm_model
     freshness_status: current
+    input_ports:
+      - {port_id: precheck_fact, value_type: fact, cardinality: one}
     authority:
       owns: [norm]
       excludes: [resource, causal]
@@ -100,10 +104,9 @@ nodes:
             case_id: mesh:norm-target:good:norm
             text: the operator may start when the declared condition fact holds
             inputs:
-              norm_model:
-                norms:
-                  - {modality: permitted, action: start, condition: authorized}
-                facts: [authorized]
+              norms:
+                - {modality: permitted, action: start, condition: authorized}
+              facts: [authorized]
             coverage_context: {}
             expected_guard_status: PASS
             expected_semantic_status: PASS
@@ -124,7 +127,10 @@ edges:
     source_model_id: event-source
     target_model_id: norm-target
     relation: consumes_output_of
-    output_refs: [precheck_complete]
+    port_mappings:
+      - mapping_id: precheck-to-norm
+        source_port_id: precheck_complete
+        target_port_id: precheck_fact
     allowed_use: [precheck_complete]
     forbidden_use: []
     read_only: true

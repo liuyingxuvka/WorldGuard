@@ -48,7 +48,11 @@ TARGET_NATIVE_POLICY_DEFINITIONS = {
     UNIVERSE_PREDICTIVE_AXES: {
         "algorithm_id": "worldguard.native-exhaustive-floor.v1",
         "scope": "each expected predictive model node",
-        "required": "state, transition, branch, perturbation, intervention, and counterfactual axes",
+        "required": (
+            "one closed required or not_applicable disposition for each state, "
+            "transition, event, fluent, branch, perturbation, intervention, and "
+            "counterfactual axis"
+        ),
     },
     UNIVERSE_NATIVE_POLICY: {
         "algorithm_id": "worldguard.native-exhaustive-floor.v1",
@@ -109,14 +113,76 @@ def build_scheduled_production_depth_input(
                 "expected_model_node_ids": ["world"],
                 "scenario_ids": ["s-base"],
                 "holdout_scenario_ids": ["s-hold"],
-                "state_ids": ["ready", "running"],
-                "transition_ids": [event["event_id"] for event in events],
+                "state_ids": [],
+                "transition_ids": [],
+                "event_ids": [event["event_id"] for event in events],
+                "fluent_ids": ["ready", "running"],
                 "timepoint_ids": timepoint_ids,
                 "branch_ids": ["b0"],
                 "perturbation_ids": ["p0"],
                 "intervention_ids": ["do-y"],
                 "counterfactual_ids": ["cf-y"],
                 "horizon": {"start": "t0", "end": "t999", "steps": 1000},
+                "axis_dispositions": [
+                    {
+                        "axis_id": "state",
+                        "disposition": "not_applicable",
+                        "reason": (
+                            "this EventGuard event-calculus rollout does not execute "
+                            "a declared state-machine"
+                        ),
+                        "claim_boundary": (
+                            "no state-machine state execution is claimed by this rollout"
+                        ),
+                    },
+                    {
+                        "axis_id": "transition",
+                        "disposition": "not_applicable",
+                        "reason": (
+                            "this EventGuard event-calculus rollout does not execute "
+                            "declared transition specifications"
+                        ),
+                        "claim_boundary": (
+                            "no state-machine transition execution is claimed by this rollout"
+                        ),
+                    },
+                    {
+                        "axis_id": "event",
+                        "disposition": "required",
+                        "observation_field": "executed_event_ids",
+                        "claim_boundary": "exact events executed in the bounded rollout",
+                    },
+                    {
+                        "axis_id": "fluent",
+                        "disposition": "required",
+                        "observation_field": "reached_fluent_ids",
+                        "claim_boundary": "exact fluents reached in the bounded rollout",
+                    },
+                    {
+                        "axis_id": "branch",
+                        "disposition": "required",
+                        "observation_field": "executed_branch_ids",
+                        "claim_boundary": "exact branches exercised in the bounded rollout",
+                    },
+                    {
+                        "axis_id": "perturbation",
+                        "disposition": "required",
+                        "observation_field": "executed_perturbation_ids",
+                        "claim_boundary": "exact perturbations exercised in the bounded rollout",
+                    },
+                    {
+                        "axis_id": "intervention",
+                        "disposition": "required",
+                        "observation_field": "executed_intervention_ids",
+                        "claim_boundary": "exact interventions evaluated in the bounded rollout",
+                    },
+                    {
+                        "axis_id": "counterfactual",
+                        "disposition": "required",
+                        "observation_field": "executed_counterfactual_ids",
+                        "claim_boundary": "exact counterfactuals evaluated in the bounded rollout",
+                    },
+                ],
             },
             "nodes": [
                 {
@@ -273,33 +339,31 @@ def build_native_depth_evidence(
             for item in receipt.predictive_gaps
         )
     )
-    state_transition_complete = bool(
-        quantitative.get("expected_state_count") == quantitative.get("executed_state_count")
-        and quantitative.get("expected_transition_count")
-        == quantitative.get("executed_transition_count")
-        and not any("state" in item or "transition" in item for item in receipt.predictive_gaps)
-    )
-    branch_perturbation_complete = bool(
-        quantitative.get("expected_branch_count") == quantitative.get("executed_branch_count")
-        and quantitative.get("expected_perturbation_count")
-        == quantitative.get("executed_perturbation_count")
-        and not any("branch" in item or "perturbation" in item for item in receipt.predictive_gaps)
-    )
-    intervention_counterfactual_complete = bool(
-        quantitative.get("expected_intervention_count")
-        == quantitative.get("executed_intervention_count")
-        and quantitative.get("expected_counterfactual_count")
-        == quantitative.get("executed_counterfactual_count")
-        and not any(
-            "intervention" in item or "counterfactual" in item
-            for item in receipt.predictive_gaps
+    axis_results = {
+        str(row.get("axis_id", "")): row
+        for row in quantitative.get("predictive_axis_results", [])
+        if isinstance(row, Mapping) and str(row.get("axis_id", ""))
+    }
+
+    def axes_complete(*axis_ids: str) -> bool:
+        return all(
+            axis_id in axis_results and axis_results[axis_id].get("passed") is True
+            for axis_id in axis_ids
         )
+
+    state_transition_complete = axes_complete("state", "transition")
+    event_fluent_complete = axes_complete("event", "fluent")
+    branch_perturbation_complete = axes_complete("branch", "perturbation")
+    intervention_counterfactual_complete = axes_complete(
+        "intervention",
+        "counterfactual",
     )
     per_object = [
         _object_result("worldguard:claim-derived-routes", routes_complete),
         _object_result("worldguard:semantic-universe", semantic_universe_complete),
         _object_result("worldguard:time-scenario-holdout", time_scenario_complete),
         _object_result("worldguard:state-transition", state_transition_complete),
+        _object_result("worldguard:event-fluent", event_fluent_complete),
         _object_result("worldguard:branch-perturbation", branch_perturbation_complete),
         _object_result(
             "worldguard:intervention-counterfactual",
@@ -562,6 +626,12 @@ def _finalize_dynamic_runtime_contracts(
                     "object_class_id": str(item.get("object_class_id", "")).strip(),
                     "stratum_ids": sorted(str(value) for value in item["stratum_ids"]),
                     "critical": bool(item["critical"]),
+                    "disposition": str(item.get("disposition", "")).strip(),
+                    "reason": str(item.get("reason", "")).strip(),
+                    "observation_field": str(
+                        item.get("observation_field", "")
+                    ).strip(),
+                    "claim_boundary": str(item.get("claim_boundary", "")).strip(),
                 }
                 for item in row["inventory_items"]
             ),
@@ -842,15 +912,8 @@ def build_dynamic_depth_universes(
     scenario_items: list[dict[str, Any]] = []
     scenario_observed: list[str] = []
     axis_items: list[dict[str, Any]] = []
-    axis_observed: list[str] = []
-    axis_fields = {
-        "state": ("state_ids", "executed_state_ids"),
-        "transition": ("transition_ids", "executed_transition_ids"),
-        "branch": ("branch_ids", "executed_branch_ids"),
-        "perturbation": ("perturbation_ids", "executed_perturbation_ids"),
-        "intervention": ("intervention_ids", "executed_intervention_ids"),
-        "counterfactual": ("counterfactual_ids", "executed_counterfactual_ids"),
-    }
+    axis_evaluated: list[str] = []
+    axis_validated: list[str] = []
     for node_id in receipt.expected_model_nodes:
         coverage = _node_coverage(mesh, node_id)
         required_guards = list(receipt.required_guards.get(node_id, []))
@@ -891,24 +954,95 @@ def build_dynamic_depth_universes(
                     )
                     if value in observed_ids:
                         scenario_observed.append(item_id)
-        for axis, (expected_field, output_field) in axis_fields.items():
-            expected_ids = list(getattr(coverage, expected_field))
-            observed_ids = _output_ids(report, node_id, output_field)
-            if not expected_ids:
-                expected_ids = ["<missing>"]
-            for value in expected_ids:
+        raw_axis_results = node_results.get(node_id, {}).get("axis_results", [])
+        if not isinstance(raw_axis_results, list) or not raw_axis_results:
+            item_id = f"axis-contract:{node_id}:unavailable"
+            axis_items.append(
+                {
+                    "item_id": item_id,
+                    "object_id": f"{node_id}:axis-contract",
+                    "object_class_id": "unavailable_predictive_axis_contract",
+                    "stratum_ids": ["axis:contract"],
+                    "critical": True,
+                    "disposition": "invalid",
+                    "reason": "predictive axis results were unavailable",
+                    "observation_field": "",
+                    "claim_boundary": "no predictive-axis claim is licensed",
+                }
+            )
+            axis_evaluated.append(item_id)
+            continue
+        for raw_axis_result in raw_axis_results:
+            if not isinstance(raw_axis_result, Mapping):
+                continue
+            axis = str(raw_axis_result.get("axis_id", ""))
+            disposition = str(raw_axis_result.get("disposition", ""))
+            reason = str(raw_axis_result.get("reason", ""))
+            observation_field = str(
+                raw_axis_result.get("observation_field", "")
+            )
+            claim_boundary = str(raw_axis_result.get("claim_boundary", ""))
+            expected_ids = {
+                str(value) for value in raw_axis_result.get("expected_ids", [])
+            }
+            observed_ids = {
+                str(value) for value in raw_axis_result.get("observed_ids", [])
+            }
+            passed = raw_axis_result.get("passed") is True
+            if disposition == "not_applicable":
+                item_id = f"axis:{axis}:{node_id}:not_applicable"
+                axis_items.append(
+                    {
+                        "item_id": item_id,
+                        "object_id": f"{node_id}:{axis}",
+                        "object_class_id": f"{axis}_axis_disposition",
+                        "stratum_ids": [f"axis:{axis}", "not_applicable"],
+                        "critical": True,
+                        "disposition": disposition,
+                        "reason": reason,
+                        "observation_field": "",
+                        "claim_boundary": claim_boundary,
+                    }
+                )
+                axis_evaluated.append(item_id)
+                if passed and not expected_ids and not observed_ids:
+                    axis_validated.append(item_id)
+                continue
+            if disposition != "required":
+                item_id = f"axis-contract:{axis}:{node_id}:invalid"
+                axis_items.append(
+                    {
+                        "item_id": item_id,
+                        "object_id": f"{node_id}:{axis}",
+                        "object_class_id": "invalid_predictive_axis_disposition",
+                        "stratum_ids": [f"axis:{axis}", "invalid"],
+                        "critical": True,
+                        "disposition": disposition or "invalid",
+                        "reason": reason or "predictive axis disposition is invalid",
+                        "observation_field": observation_field,
+                        "claim_boundary": claim_boundary,
+                    }
+                )
+                axis_evaluated.append(item_id)
+                continue
+            for value in sorted(expected_ids):
                 item_id = f"axis:{axis}:{node_id}:{value}"
                 axis_items.append(
                     {
                         "item_id": item_id,
                         "object_id": f"{node_id}:{axis}",
                         "object_class_id": f"{axis}_axis",
-                        "stratum_ids": [f"axis:{axis}"],
+                        "stratum_ids": [f"axis:{axis}", "required"],
                         "critical": True,
+                        "disposition": disposition,
+                        "reason": "",
+                        "observation_field": observation_field,
+                        "claim_boundary": claim_boundary,
                     }
                 )
-                if value != "<missing>" and value in observed_ids:
-                    axis_observed.append(item_id)
+                axis_evaluated.append(item_id)
+                if passed and value in observed_ids:
+                    axis_validated.append(item_id)
     if not scenario_items:
         scenario_items.append(
             {
@@ -922,13 +1056,18 @@ def build_dynamic_depth_universes(
     if not axis_items:
         axis_items.append(
             {
-                "item_id": "axis:<missing>",
-                "object_id": "missing-model-node:axis",
-                "object_class_id": "missing_predictive_axis",
-                "stratum_ids": ["axis:missing"],
+                "item_id": "axis-contract:no-model-node:unavailable",
+                "object_id": "no-model-node:axis-contract",
+                "object_class_id": "unavailable_predictive_axis_contract",
+                "stratum_ids": ["axis:contract"],
                 "critical": True,
+                "disposition": "invalid",
+                "reason": "no model node produced predictive axis results",
+                "observation_field": "",
+                "claim_boundary": "no predictive-axis claim is licensed",
             }
         )
+        axis_evaluated.append("axis-contract:no-model-node:unavailable")
 
     claim_items: list[dict[str, Any]] = []
     claim_validated: list[str] = []
@@ -1009,11 +1148,11 @@ def build_dynamic_depth_universes(
             "universe_id": UNIVERSE_PREDICTIVE_AXES,
             "inventory_items": axis_items,
             "selected_item_ids": [row["item_id"] for row in axis_items],
-            "evaluated_item_ids": axis_observed,
-            "validated_item_ids": axis_observed,
+            "evaluated_item_ids": axis_evaluated,
+            "validated_item_ids": axis_validated,
             "requested_claim_scope": ["predictive_axes"],
             "covered_claim_scope": _coverage_scope(
-                len(axis_observed) == len(axis_items), "predictive_axes"
+                len(axis_validated) == len(axis_items), "predictive_axes"
             ),
             "policy_fingerprint": policy(UNIVERSE_PREDICTIVE_AXES),
         },

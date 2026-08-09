@@ -35,7 +35,7 @@ def run(contract: GuardContract):
         )
 
     missing = agent_model.get("missing_beliefs", [])
-    if missing or not agents:
+    if missing or not isinstance(agents, dict) or not agents:
         return result(
             contract,
             guard,
@@ -46,13 +46,67 @@ def run(contract: GuardContract):
             errors=[error("AGENT_MISSING_BELIEF", "Required BDI slot is missing.")],
         )
 
+    identity_mismatches = [
+        {
+            "map_key": str(agent_key),
+            "agent_id": record.get("agent_id") if isinstance(record, dict) else None,
+        }
+        for agent_key, record in agents.items()
+        if not isinstance(record, dict)
+        or not record.get("agent_id")
+        or str(record.get("agent_id")) != str(agent_key)
+    ]
+    if identity_mismatches:
+        return result(
+            contract,
+            guard,
+            GuardStatus.FAIL,
+            channel="agent",
+            impact="supports_fail",
+            errors=[
+                error(
+                    "AGENT_IDENTITY_MISMATCH",
+                    "Each BDI map key must equal the stable agent_id in its record.",
+                )
+            ],
+            counterexamples=[{"kind": "model_conflict", "steps": identity_mismatches}],
+        )
+
+    incomplete = [
+        {
+            "agent_id": str(agent_key),
+            "missing": [
+                field_name
+                for field_name in ("beliefs", "desires", "intentions")
+                if not record.get(field_name)
+            ],
+        }
+        for agent_key, record in agents.items()
+        if any(not record.get(name) for name in ("beliefs", "desires", "intentions"))
+    ]
+    if incomplete:
+        return result(
+            contract,
+            guard,
+            GuardStatus.GAP,
+            channel="gap",
+            impact="creates_gap",
+            missing_slots=incomplete,
+            errors=[
+                error(
+                    "AGENT_INCOMPLETE_BDI",
+                    "Every declared agent needs beliefs, desires, and intentions.",
+                )
+            ],
+        )
+
     return result(
         contract,
         guard,
         GuardStatus.PASS,
         channel="agent",
         impact="supports_pass",
-        payload={"agent_count": len(agents) if hasattr(agents, "__len__") else 1},
+        payload={"agent_count": len(agents), "agent_ids": sorted(str(key) for key in agents)},
         supported=True,
         consumed_inputs={"agents": agents, "agent_model": agent_model},
     )

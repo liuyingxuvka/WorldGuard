@@ -1,0 +1,173 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:blueprint-contracts-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3-blueprint-contracts",
+      "rationale": "Refresh the authoritative model composite-contract source binding after aligning both purpose fingerprints to the current 0.7.3 model closures; preserve the same internal model, code, and test boundary.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:ca8af9793227c0854c9bb508ba4567c9eccae0d8b26bbee0549f9cd5da79606a"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:blueprint-contracts-20260809",
+      "contribution_fingerprint": "sha256:ca8af9793227c0854c9bb508ba4567c9eccae0d8b26bbee0549f9cd5da79606a",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact two authoritative model relation updates needed to align composite contract source identities with the current 0.7.3 closures; no external reconstruction or trial-use proof is required.",
+      "fingerprint": "sha256:a2aeb0e4248d953e9600ecd1cb773fca9e4350fc06dae7c851485d74fa2af5c5"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:e4be22a054a07ac0be5091c00a932dcaafdfc3c5cbb4cc852b7da15d6deba379"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "prior_contribution_fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:d7bd0bfce48a036aee7f1504e682d7087cd3a535dfcf66444de13aa7950f9dee"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:c11ec27e75633f251d84e336c44e7295b23906ce541c9be3071f52b96ba0a9f6"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:ea1c1d9bc355f00cb701871584c091d0a392478e628fe80072766cfab21a4e0a"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:e86ed3dbc6bc0aefbb024102ea456e89c6ccb2100f0068f50904cd4dbf81cbd8"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:c38e1b16400a1036223093a7f1a4beff3ec223e73262069ac2459151c1afc373"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:8282d213812c2582694a643cf8169e51f1d3a52ddecb897f335628e83362f8e5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-0.7.3-currentness-20260809",
+      "prior_contribution_fingerprint": "sha256:ccd17946d19380aa0811b079e95b187f2df62362d5a646123a8d0c2c89aefefc",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:blueprint-contracts-20260809"
+      ],
+      "reason": "Supersede the previous authoritative model binding with the exact current composite-contract source identity.",
+      "fingerprint": "sha256:906d720f3bc5fc5f8fc1de18706a851aa576a9e9963262a22ff879792806cebb"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release18-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:f2157bb274f9709128651d36d8cf0004ba2196c92fc19a3cec40621d1f554d61",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:ccb0345ac10c36e5b6cd14fb9e886b6936a457c88498ee885a1b50e887af68b3"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release19-currentness-20260810",
+      "prior_contribution_fingerprint": "sha256:4292cef38e428d362292c75e7895ab14c0b51d264289c81f07131b0466d445e4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:2a6bf8eaf8939b86f8f08acceecd1f9992e959bf3953418eaeb28c1f04bfd4bc"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809",
+      "prior_contribution_fingerprint": "sha256:a45277b947bbeca5d4d8908f5664e15892706abd2ac5ed1d4c3c754006ca2daa",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:3dff2e3ced5370f63188c589bbbb953fa096199f461a9bb35310205fd928618d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809",
+      "prior_contribution_fingerprint": "sha256:745a9629d1be340cb142ceec8af537f6078ab6ca2c8a0d80a413ad351aa396e4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current effective design binding while refreshing only the authoritative composite-contract source identity.",
+      "fingerprint": "sha256:6ea10f22c9368fb792db6d53e3a1571fe61a90395c8a5a6559d235ff11b17bb7"
+    }
+  ]
+}

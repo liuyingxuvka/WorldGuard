@@ -8,7 +8,7 @@ Handoff contracts define how one model node may consume another model node's out
 - `source_model_id`
 - `target_model_id`
 - `relation`
-- `output_refs`
+- `port_mappings` with exact `mapping_id`, `source_port_id`, and `target_port_id`
 - `allowed_use`
 - `forbidden_use`
 - `read_only`
@@ -19,10 +19,13 @@ Handoff contracts define how one model node may consume another model node's out
 - Handoffs are read-only.
 - Downstream nodes may not mutate upstream reports, fill upstream gaps, delete upstream counterexamples, or relabel upstream statuses.
 - If `requires_current_source` is true and the source node is stale or unknown, return `GAP`.
-- If any `output_refs` item is listed in `forbidden_use`, return `FAIL`.
-- If `allowed_use` is non-empty and any `output_refs` item is outside it, return `BOUNDARY_EXCEEDED`.
+- `parent_child` and `consumes_output_of` require non-empty exact port mappings; other relations reject port mappings.
+- Every source port must be a declared source-node output and every target port a declared target-node input with identical type and cardinality.
+- If any transferred source port is listed in `forbidden_use`, return `FAIL`.
+- If `allowed_use` is non-empty and any transferred source port is outside it, return `BOUNDARY_EXCEEDED`.
 - If a source or target node id is missing, return `GAP`.
 - Dependency cycles return `FAIL`.
+- Missing or unknown relation kinds are rejected before evaluation and never converted to `depends_on`.
 
 ## Relation Meanings
 

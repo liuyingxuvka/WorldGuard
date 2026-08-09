@@ -132,14 +132,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--shard",
-        required=True,
-        choices=("input", "template", "fact", "aggregate"),
+        required=False,
+        default="model",
+        choices=("model", "input", "template", "fact", "aggregate"),
         help=(
             "Run exactly one affected evidence owner, or aggregate current "
             "immutable shard receipts without starting tests."
         ),
     )
     args = parser.parse_args(argv)
+    if args.shard == "model":
+        from run_model_checks import main as run_model_checks_main
+
+        return run_model_checks_main()
     if args.shard == "aggregate":
         return _aggregate()
     validation = _run_shard(args.shard)

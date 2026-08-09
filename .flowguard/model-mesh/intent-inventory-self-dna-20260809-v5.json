@@ -1,0 +1,180 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Bind the accepted worldguard blueprint design directly to the authoritative_model_system software-DNA owner so its current model, code, and evidence remain independently addressable.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:1bd96fb1bb357fac196583dd32a093838fe9cf05a2aa7bcc7d3c54fa3c8b876c"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260809",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:compositional_verification_kernel",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Bind the accepted worldguard blueprint design directly to the compositional_verification_kernel software-DNA owner so its current model, code, and evidence remain independently addressable.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:0272b9e87a6bd613447c41bed63e12ba44a5f00fe8a1eb02f4a929141205d84a"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:authoritative_model_system:self-dna-20260809",
+      "contribution_fingerprint": "sha256:1bd96fb1bb357fac196583dd32a093838fe9cf05a2aa7bcc7d3c54fa3c8b876c",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Admit the new authoritative_model_system self-DNA owner as a direct current design binding with exact model and evidence coverage.",
+      "fingerprint": "sha256:6a0562209f719da28d534b8940259239baac16254c66642e239a70a208974f15"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260809",
+      "contribution_fingerprint": "sha256:0272b9e87a6bd613447c41bed63e12ba44a5f00fe8a1eb02f4a929141205d84a",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:compositional_verification_kernel",
+        "relation:system-contains:compositional_verification_kernel"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Admit the new compositional_verification_kernel self-DNA owner as a direct current design binding with exact model and evidence coverage.",
+      "fingerprint": "sha256:054ddcc51c1ed2f33e346ce6d8187145ed3ecb07243b815da30360b885b74b99"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:c5b0b1c32b9cd622ffe90d97955834066055d379d56b6de5208cbabda8c4e4b6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:1c3140c92911024e49cc06e39d360f8accc93881c159716c03c5b25d90b508ed"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:42b6599e5ae3743ee44843aee903a05d3731d75e7ff8bd28b74b21e2dbe94bde"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:fe904e5b23edad971f79009ea825cd9f65c1a395d230c5758680c616bf5b7e12",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:015159b28542e9817e1bab23ba6040a7fb9e6af41f84c9ed0787b1f2e8adec1f"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:c68cd71059e99a663c4ae54d297945d5e9e50c382ef9a217ada0b84dfcc6afe5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:786cf907e19173da6596fc186029393de68ad37a48f6f40179fcb2ab2920d3a4"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:ce7b1e0cb0d4bbff7395743a3a22f68bce19d60a732ab8999bab26b6045523e6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:0281c7b2143163cb8888111f880afdb9de30142c166df757ec65a7d2bdbd6530"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:ec7c49c46d376378b14224b72d69137e8c8a379256a4578b6a1f4286af84d6c5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current worldguard design intent while adding only the two new software-DNA owner bindings.",
+      "fingerprint": "sha256:730241b2f9e46a5c46a92e483ed27494c18a22a91380e1bdf7e7b826d5f71962"
+    }
+  ]
+}

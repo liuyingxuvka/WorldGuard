@@ -1,0 +1,32 @@
+{
+  "affected_closure_fingerprint": "sha256:5eb2d6100c2b8885da9b12aac5826bc309b42b788868329a8f849dc4603e50bd",
+  "affected_owner_routes": [
+    "behavior_commitment_ledger",
+    "model_mesh_maintenance",
+    "model_test_alignment",
+    "test_mesh_maintenance"
+  ],
+  "candidate_snapshot_fingerprint": "sha256:a5cead9ca730227d14ff7028ab9faf4db1c663a37a53e9e50f1c8c9fd60b8561",
+  "claim_boundary": "This report proves one exact-current full model-regression parent was recomposed into distinct current native-owner receipts over one frozen candidate closure. It does not rerun models, activate model authority, or prove release readiness.",
+  "observed_head_fingerprint": "sha256:8fb171df8030be1b97c7d6112f41451280f965139a125273b6bd0218d1223bf7",
+  "output_path": "C:\\Users\\liu_y\\Documents\\WorldGuard\\.flowguard\\model-mesh\\native-owner-evidence-20260809.json",
+  "owner_receipt_ids": [
+    "receipt:validation-owner:behavior_commitment_ledger:2ed1659a4b99c242ba2feb9d011bb4e8",
+    "receipt:validation-owner:model_mesh_maintenance:619fa36900d650da9ae3fcae421aab2a",
+    "receipt:validation-owner:model_test_alignment:30dd091dafc817f426501d0d1a8afc78",
+    "receipt:validation-owner:test_mesh_maintenance:398c6f36d82afbc44055bcbe170730e3"
+  ],
+  "parent_receipt_fingerprint": "sha256:93df4329eeb34425fb645ae5fc5c3c380fcc362553560da65eb4f5b97a236e77",
+  "parent_receipt_path": "C:\\Users\\liu_y\\Documents\\WorldGuard\\.flowguard\\evidence\\model-owner-receipts\\model-parents\\93df4329eeb34425fb645ae5fc5c3c380fcc362553560da65eb4f5b97a236e77.json",
+  "root": "C:\\Users\\liu_y\\Documents\\WorldGuard",
+  "schema": "flowguard.model_revision_owner_evidence_report.v1",
+  "snapshot_diff_fingerprint": "sha256:d66022e6283b7bc9e5059a71f7a503b8da954d7e5cb818908e17f1d93ad9c60e",
+  "status": "pass",
+  "validation_observation": {
+    "complete_observation_count": 2,
+    "final_freshness_fingerprint": "sha256:a17a70378cfa0513c093f61aa872065ee2eb67542d510462f49328e2c45233fb",
+    "final_freshness_seconds": 0.4084922999609262,
+    "initial_fingerprint": "sha256:809a62bc04b98fd114e4f3e26c177b86be51ac5604447dd94e319b60caa86691",
+    "initial_seconds": 0.587028400041163
+  }
+}

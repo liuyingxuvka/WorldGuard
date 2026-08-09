@@ -19,6 +19,7 @@ Required canonical fields:
 - `edges`
 - `snapshots`
 - `provider_availability`: optional per-Guard availability override
+- `provider_results`: optional complete current provider evidence envelopes; every row must exactly bind provider/version/capability, target/revision, contract, claim boundary, and current content/receipt fingerprints. A partial or mismatched supplied row becomes stale/not-run and is never completed from defaults.
 - `semantic_coverage`: a `SemanticCoverageContract`; expected node ids default to every current mesh node
 
 ## SemanticCoverageContract Fields
@@ -31,6 +32,8 @@ Required canonical fields:
 - `holdout_scenario_ids`
 - `state_ids`
 - `transition_ids`
+- `event_ids`
+- `fluent_ids`
 - `branch_ids`
 - `perturbation_ids`
 - `intervention_ids`
@@ -39,6 +42,7 @@ Required canonical fields:
 - `timepoint_ids`: target-owned representative checkpoints; these are required observations, not a demand to enumerate every raw point
 - `minimum_timepoint_count` and `minimum_timepoint_coverage`: optional stricter target floors; they cannot weaken the native square-root floor or maximum-gap gate
 - `time_strata`: optional target-authored additional phase-to-timepoint mapping; WorldGuard always derives its native early/middle/late positions from numeric, prefixed-numeric, or ISO time values, and caller labels cannot replace those three gates
+- `axis_dispositions`: for predictive coverage, exactly one current row for each `state`, `transition`, `event`, `fluent`, `branch`, `perturbation`, `intervention`, and `counterfactual` axis. Each row is either `required` with a non-empty expected-id inventory, one allowed native `observation_field`, and a claim boundary, or `not_applicable` with empty expected/observed identities, no observation field, a concrete reason, and a claim boundary.
 - `per_model_node`: optional target-owned overrides when expected model nodes genuinely have different horizons or axes; without an override the shared policy applies independently to every expected node
 
 The current mesh inventory defines the denominator. `expected_model_node_ids`
@@ -47,9 +51,24 @@ discovered node. A valid exclusion remains in the discovered/declared/excluded
 reconciliation receipt but contributes to neither execution nor covered claim
 scope. WorldGuard reports which effective nodes were executed, skipped,
 missing, or locally bounded. Predictive fields are not credited merely
-because they exist: native EventGuard/CausalGuard outputs must demonstrate the
-corresponding scenario, state, transition, branch, perturbation, intervention,
-counterfactual, holdout, representative timepoint count/ratio, native phase-stratified execution, and per-model-node depth. A 1,000-step horizon with only two observed points is a predictive gap; enough points concentrated in one phase are also a gap; and a rich aggregate cannot hide one shallow expected model node.
+because they exist. Every predictive identity axis must first close its
+applicability disposition. A required axis compares exact expected ids to its
+native output; an empty required inventory is a blocking contract defect. A
+not-applicable axis passes only when its expected and native-observed ids are
+both empty and its reason and claim boundary are present. Event ids bind only
+to `executed_event_ids`. Fluent ids bind only to one declared fluent-specific
+output: `reached_fluent_ids`, `active_fluent_ids`, or the normalized values of
+`final_fluent_ids_by_scenario`. They never become state or transition
+evidence. For a static EventGuard event-calculus exercise, state and transition
+may therefore be reasoned `not_applicable`; WorldGuard records that disposition
+instead of manufacturing `<missing>` items or treating empty arrays as a pass.
+The remaining required EventGuard/CausalGuard outputs must demonstrate the
+corresponding scenario, event/fluent or other applicable axes, branch,
+perturbation, intervention, counterfactual, holdout, representative timepoint
+count/ratio, native phase-stratified execution, and per-model-node depth. A
+1,000-step horizon with only two observed points is a predictive gap; enough
+points concentrated in one phase are also a gap; and a rich aggregate cannot
+hide one shallow expected model node.
 
 When a node exposes variables or signals, each `(node, variable-or-signal)` pair
 is its own temporal child universe over the same horizon. Every child uses its
@@ -68,7 +87,10 @@ normalized gap exceeds the native maximum-gap bound.
 - `model_kind`
 - `authority`
 - `freshness_status`: `current`, `stale`, or `unknown`
+- `input_ports` and `output_ports`: typed `port_id`, `value_type`, and `cardinality` inventories
 - `contract`: optional embedded `GuardContract`
+
+This legacy `ModelMesh` transfer contract remains unchanged. `WorldBlueprint` ports use the stricter `schema_id`/`schema_version`/`refines` compatibility proof defined in `world-blueprint.md`; do not project that proof back to plain `value_type` equality.
 
 ## ModelEdge Fields
 
@@ -76,13 +98,13 @@ normalized gap exceeds the native maximum-gap bound.
 - `source_model_id`
 - `target_model_id`
 - `relation`
-- `output_refs`
+- `port_mappings`: exact `mapping_id`, producer `source_port_id`, and consumer `target_port_id`
 - `allowed_use`
 - `forbidden_use`
 - `read_only`
 - `requires_current_source`
 
-If `allowed_use` is non-empty, the output refs consumed by the edge must stay inside it. Output outside that list is a handoff boundary violation.
+`parent_child` and `consumes_output_of` transfer data/state and therefore require at least one exact port mapping. Other relation kinds do not accept transfer mappings. Producer outputs and consumer inputs must exist and have the same type and cardinality. Unknown relations, missing mappings, unknown ports, and incompatible ports are current validation failures; they never become `depends_on` or an untyped handoff. If `allowed_use` is non-empty, transferred producer port ids must stay inside it. A transferred port outside that list is a handoff boundary violation.
 
 Allowed relation values:
 
@@ -109,7 +131,7 @@ Snapshots are optional metadata for version/state context. They do not replace n
 - `status`
 - `structural_status`
 - `semantic_status`: `PASS`, `FAIL`, `GAP`, `BOUNDARY_ONLY`, or `NOT_RUN`
-- `provider_status`: `AVAILABLE`, `UNAVAILABLE`, `MIXED`, or `NOT_REQUIRED`
+- `provider_status`: `AVAILABLE`, `UNAVAILABLE`, `STALE`, `MIXED`, or `NOT_REQUIRED`
 - `rollout_status`
 - `node_reports`
 - `semantic_receipts`
@@ -118,7 +140,7 @@ Snapshots are optional metadata for version/state context. They do not replace n
 - `scope_limits`
 - `depth_receipt`
 
-The aggregate ledger must include child Guard ledgers and mesh-level ledger entries.
+Every executable node obtains exactly one current `GuardedReport` from `worldguard.qualification`. That qualification consumes the same canonical `derive_guard_requirements` result and Guard-derivation fingerprint used by unit and prompt routes. Mesh reads its structural results, semantic receipts, provider identities, rollout/depth state, gaps, fingerprints, and ledger without re-running a Guard, semantic executor, or Guard selector. The aggregate ledger includes that child qualification evidence once plus mesh-level topology findings.
 The aggregate `status` is a conservative projection. Structural `PASS` cannot
 become aggregate `PASS` when semantic execution did not run, a required
 provider was unavailable, or an executor reported a gap or boundary.

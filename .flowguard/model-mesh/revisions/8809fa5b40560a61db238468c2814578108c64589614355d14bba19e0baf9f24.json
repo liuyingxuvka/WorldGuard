@@ -1,0 +1,1704 @@
+{
+  "added_ids": [
+    "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+    "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+    "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+    "coverage:model_instances:hierarchical_model_mesh",
+    "coverage:model_instances:model_test_code_alignment",
+    "coverage:model_instances:test_evidence_mesh",
+    "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+    "coverage:tests_evidence:check:model-regression:current_input_authority",
+    "coverage:tests_evidence:check:model-regression:fact_revision",
+    "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+    "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+    "coverage:tests_evidence:check:model-regression:task_local_revision",
+    "coverage:tests_evidence:check:model-regression:template_selection",
+    "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+    "model_instance:model:hierarchical_model_mesh",
+    "model_instance:model:model_test_code_alignment",
+    "model_instance:model:test_evidence_mesh",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:test_evidence_mesh",
+    "parent_closure:purpose:hierarchical_model_mesh",
+    "parent_closure:purpose:model_test_code_alignment",
+    "parent_closure:purpose:test_evidence_mesh",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests"
+  ],
+  "affected_closure_fingerprint": "sha256:5eb2d6100c2b8885da9b12aac5826bc309b42b788868329a8f849dc4603e50bd",
+  "affected_closure_ids": [
+    "behavior_commitment:commitment:worldguard-current-input-authority",
+    "behavior_commitment:commitment:worldguard-fact-revision-authority",
+    "behavior_commitment:commitment:worldguard-template-selection-authority",
+    "code_contract:contract:contract:worldguard-fact-revision",
+    "code_contract:contract:contract:worldguard-template-selection",
+    "code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+    "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+    "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+    "coverage:external_surfaces:surface:worldguard-current-contract-model",
+    "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+    "coverage:external_surfaces:surface:worldguard-template-model",
+    "coverage:external_surfaces:surface:worldguard-template-tests",
+    "coverage:model_instances:hierarchical_model_mesh",
+    "coverage:model_instances:model_test_code_alignment",
+    "coverage:model_instances:test_evidence_mesh",
+    "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+    "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+    "coverage:tests_evidence:check:model-regression:current-input-authority",
+    "coverage:tests_evidence:check:model-regression:current_input_authority",
+    "coverage:tests_evidence:check:model-regression:fact-revision",
+    "coverage:tests_evidence:check:model-regression:fact_revision",
+    "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+    "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+    "coverage:tests_evidence:check:model-regression:task-local-revision",
+    "coverage:tests_evidence:check:model-regression:task_local_revision",
+    "coverage:tests_evidence:check:model-regression:template-selection",
+    "coverage:tests_evidence:check:model-regression:template_selection",
+    "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+    "coverage:universe",
+    "external_surface:surface:worldguard-current-contract-code",
+    "external_surface:surface:worldguard-current-contract-model",
+    "external_surface:surface:worldguard-current-contract-openspec",
+    "external_surface:surface:worldguard-current-contract-tests",
+    "external_surface:surface:worldguard-fact-revision-code",
+    "external_surface:surface:worldguard-fact-revision-docs",
+    "external_surface:surface:worldguard-fact-revision-model",
+    "external_surface:surface:worldguard-fact-revision-tests",
+    "external_surface:surface:worldguard-template-code",
+    "external_surface:surface:worldguard-template-docs",
+    "external_surface:surface:worldguard-template-model",
+    "external_surface:surface:worldguard-template-tests",
+    "model_instance:model:behavior_commitment_ledger",
+    "model_instance:model:current_input_authority",
+    "model_instance:model:fact_revision",
+    "model_instance:model:hierarchical_model_mesh",
+    "model_instance:model:model_test_code_alignment",
+    "model_instance:model:task_local_revision",
+    "model_instance:model:template_selection",
+    "model_instance:model:test_evidence_mesh",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:fact_revision",
+    "parent_closure:purpose:hierarchical_model_mesh",
+    "parent_closure:purpose:model_test_code_alignment",
+    "parent_closure:purpose:task_local_revision",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:purpose:test_evidence_mesh",
+    "parent_closure:system:flowguard:model-regression-manifest",
+    "root:model:behavior_commitment_ledger",
+    "system_property:subject_revision",
+    "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "test_evidence:test:tests/test_contracts.py",
+    "test_evidence:test:tests/test_fact_revision.py",
+    "test_evidence:test:tests/test_guard_model_contract.py",
+    "test_evidence:test:tests/test_template_packs.py",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests"
+  ],
+  "affected_edge_ids": [
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh"
+  ],
+  "affected_owner_bindings": [
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-current-input-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-fact-revision-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "behavior_commitment:commitment:worldguard-template-selection-authority",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-fact-revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-template-selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-current-contract-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-template-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:external_surfaces:surface:worldguard-template-tests",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:model_instances:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:model_instances:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:model_instances:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:current_input_authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:fact-revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:fact_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:task-local-revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:task_local_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:template-selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:template_selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "coverage:universe",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-current-contract-code",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-current-contract-model",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-current-contract-openspec",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-current-contract-tests",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-fact-revision-code",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-fact-revision-docs",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-fact-revision-model",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-fact-revision-tests",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-template-code",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-template-docs",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-template-model",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "external_surface:surface:worldguard-template-tests",
+      "owner_route": "behavior_commitment_ledger"
+    },
+    {
+      "affected_id": "model_instance:model:behavior_commitment_ledger",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:current_input_authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:fact_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:hierarchical_model_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:model_test_code_alignment",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:task_local_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:template_selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_instance:model:test_evidence_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:current_input_authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:fact_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:task_local_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:template_selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:current_input_authority",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:fact_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:hierarchical_model_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:model_test_code_alignment",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:task_local_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:template_selection",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "model_relation:relation:system-contains:test_evidence_mesh",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "parent_closure:purpose:behavior_commitment_ledger",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:current_input_authority",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:fact_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:hierarchical_model_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:model_test_code_alignment",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:task_local_revision",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:template_selection",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:purpose:test_evidence_mesh",
+      "owner_route": "model_test_alignment"
+    },
+    {
+      "affected_id": "parent_closure:system:flowguard:model-regression-manifest",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "root:model:behavior_commitment_ledger",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "system_property:subject_revision",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_contracts.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_fact_revision.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_guard_model_contract.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "test_evidence:test:tests/test_template_packs.py",
+      "owner_route": "test_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+      "owner_route": "model_mesh_maintenance"
+    },
+    {
+      "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests",
+      "owner_route": "model_mesh_maintenance"
+    }
+  ],
+  "base_snapshot_fingerprint": "sha256:cec0551af5b0d746008e24896e4ad1b0a2764838a6b733fbb0930cd8abccd14f",
+  "candidate_snapshot_fingerprint": "sha256:a5cead9ca730227d14ff7028ab9faf4db1c663a37a53e9e50f1c8c9fd60b8561",
+  "changed_commitment_ids": [
+    "commitment:worldguard-current-input-authority",
+    "commitment:worldguard-fact-revision-authority",
+    "commitment:worldguard-template-selection-authority"
+  ],
+  "changed_contract_ids": [],
+  "changed_coverage_ids": [
+    "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+    "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+    "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+    "coverage:external_surfaces:surface:worldguard-current-contract-model",
+    "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+    "coverage:external_surfaces:surface:worldguard-template-model",
+    "coverage:external_surfaces:surface:worldguard-template-tests",
+    "coverage:model_instances:hierarchical_model_mesh",
+    "coverage:model_instances:model_test_code_alignment",
+    "coverage:model_instances:test_evidence_mesh",
+    "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+    "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+    "coverage:tests_evidence:check:model-regression:current-input-authority",
+    "coverage:tests_evidence:check:model-regression:current_input_authority",
+    "coverage:tests_evidence:check:model-regression:fact-revision",
+    "coverage:tests_evidence:check:model-regression:fact_revision",
+    "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+    "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+    "coverage:tests_evidence:check:model-regression:task-local-revision",
+    "coverage:tests_evidence:check:model-regression:task_local_revision",
+    "coverage:tests_evidence:check:model-regression:template-selection",
+    "coverage:tests_evidence:check:model-regression:template_selection",
+    "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+    "coverage:universe"
+  ],
+  "changed_field_ids": [],
+  "changed_gap_ids": [
+    "gap:external_surfaces:surface:worldguard-current-contract-model",
+    "gap:external_surfaces:surface:worldguard-current-contract-tests",
+    "gap:external_surfaces:surface:worldguard-fact-revision-model",
+    "gap:external_surfaces:surface:worldguard-fact-revision-tests",
+    "gap:external_surfaces:surface:worldguard-template-model",
+    "gap:external_surfaces:surface:worldguard-template-tests"
+  ],
+  "changed_owner_artifact_ids": [
+    "behavior_commitment:commitment:worldguard-current-input-authority",
+    "behavior_commitment:commitment:worldguard-fact-revision-authority",
+    "behavior_commitment:commitment:worldguard-template-selection-authority",
+    "external_surface:surface:worldguard-current-contract-code",
+    "external_surface:surface:worldguard-current-contract-model",
+    "external_surface:surface:worldguard-current-contract-openspec",
+    "external_surface:surface:worldguard-current-contract-tests",
+    "external_surface:surface:worldguard-fact-revision-code",
+    "external_surface:surface:worldguard-fact-revision-docs",
+    "external_surface:surface:worldguard-fact-revision-model",
+    "external_surface:surface:worldguard-fact-revision-tests",
+    "external_surface:surface:worldguard-template-code",
+    "external_surface:surface:worldguard-template-docs",
+    "external_surface:surface:worldguard-template-model",
+    "external_surface:surface:worldguard-template-tests",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:fact_revision",
+    "parent_closure:purpose:hierarchical_model_mesh",
+    "parent_closure:purpose:model_test_code_alignment",
+    "parent_closure:purpose:task_local_revision",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:purpose:test_evidence_mesh",
+    "parent_closure:system:flowguard:model-regression-manifest"
+  ],
+  "changed_relation_ids": [
+    "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "relation:model-realizes-purpose:behavior_commitment_ledger",
+    "relation:model-realizes-purpose:current_input_authority",
+    "relation:model-realizes-purpose:fact_revision",
+    "relation:model-realizes-purpose:hierarchical_model_mesh",
+    "relation:model-realizes-purpose:model_test_code_alignment",
+    "relation:model-realizes-purpose:task_local_revision",
+    "relation:model-realizes-purpose:template_selection",
+    "relation:model-realizes-purpose:test_evidence_mesh",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+    "relation:system-contains:behavior_commitment_ledger",
+    "relation:system-contains:current_input_authority",
+    "relation:system-contains:fact_revision",
+    "relation:system-contains:hierarchical_model_mesh",
+    "relation:system-contains:model_test_code_alignment",
+    "relation:system-contains:task_local_revision",
+    "relation:system-contains:template_selection",
+    "relation:system-contains:test_evidence_mesh"
+  ],
+  "changed_root_ids": [
+    "root:model:behavior_commitment_ledger"
+  ],
+  "changed_side_effect_ids": [],
+  "changed_source_surface_ids": [
+    "surface:worldguard-current-contract-code",
+    "surface:worldguard-current-contract-model",
+    "surface:worldguard-current-contract-openspec",
+    "surface:worldguard-current-contract-tests",
+    "surface:worldguard-fact-revision-code",
+    "surface:worldguard-fact-revision-docs",
+    "surface:worldguard-fact-revision-model",
+    "surface:worldguard-fact-revision-tests",
+    "surface:worldguard-template-code",
+    "surface:worldguard-template-docs",
+    "surface:worldguard-template-model",
+    "surface:worldguard-template-tests"
+  ],
+  "changed_system_property_ids": [
+    "system_property:subject_revision"
+  ],
+  "changed_test_ids": [],
+  "completed_evidence_refs": [],
+  "current_effective_intent_view": {
+    "active_contributions": [
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:4425e718ee1af139e2ed59fab393bcd86bd1788e321597c31a692cb6a7c2626c",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:behavior_commitment_ledger",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current behavior_commitment_ledger model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:d8671816b99647fba8efdad540ca5603d123098b38333f076e9f627dc0b169fd",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:current_input_authority",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current current_input_authority model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:82e34cf2e2e340f85e5ef4c47541c85dcc246b4202a0c1fa27fda6d2d1bed849",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:fact_revision",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current fact_revision model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:e1b0d466ba14303b3b1635c3c440307c74c25139c27cc2657e327470caa80040",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:hierarchical_model_mesh",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current hierarchical_model_mesh model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:a5054151ca38e82c19907b222df1d480e686955472538380b6f363d5f20b09be",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:model_test_code_alignment",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current model_test_code_alignment model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:1b188653ff770b6e38b6c8338cd955b4d837d99354fd3781c272ddc5a4890243",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:task_local_revision",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current task_local_revision model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:7bca38e226e33016b83b94407cfc3b7daa700da816e65a31831b54ca29bbaa5b",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:template_selection",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current template_selection model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "conflicts_with_contribution_ids": [],
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh",
+        "decision_state": "accepted",
+        "declared_consumer_ids": [],
+        "desired_terminal_state_ids": [],
+        "effective_revision": "change:add-worldguard-blueprint-v1",
+        "fingerprint": "sha256:e22e10ae3e2c6f245dc6958310a8051243a671ce6782e8951b75910c87b5a8c9",
+        "lifecycle_state": "candidate",
+        "logical_model_id": "model:test_evidence_mesh",
+        "native_owner_id": "",
+        "rationale": "The accepted WorldGuard blueprint design is now bound directly to the current test_evidence_mesh model owner during explicit intent migration, without claiming implementation beyond its declared model scope.",
+        "schema": "flowguard.model_intent_contribution.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_kind": "design",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "subject_lane": "normative_target",
+        "subject_role": "design",
+        "supersedes_contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:preimplementation"
+        ],
+        "target_invariant_ids": [],
+        "target_obligation_ids": [],
+        "target_output_ids": [],
+        "target_relation_ids": [],
+        "target_state_ids": [],
+        "target_transition_ids": [],
+        "unresolved_owner_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      }
+    ],
+    "base_effective_intent_view_fingerprint": "",
+    "bootstrap_receipt": {
+      "ancestry_activation_receipt_fingerprints": [
+        "sha256:55b09b3dfc842b343befd917ac804b0ce0b1b563b539e1e768c61a409bdb704e",
+        "sha256:d41a1772fb19b7f01eb9c8e58567df501c0205de7c641844b7bf099392c8b0e5",
+        "sha256:e5506a7e7d032b7d19be5e996649b57b3f8264f8f4df39cafb7748ec49109cac",
+        "sha256:c71a5a311a1cc38117741c39db2b697cdbfb7b442f0015a999635c0e945a6f4d",
+        "sha256:ec2f0ff13a831eb8d137d0488249a5a68a1e6c5ffb7a00ab66d25bbc2cbb4f68",
+        "sha256:2c7b0eb08e6569dbf8af8a437e33ab120d21ee89e21d377e96f847d8bd0515a8"
+      ],
+      "ancestry_intent_entries": [
+        {
+          "contribution_fingerprint": "sha256:75904dda10240dd581ede992257c094e20ffe590a3e260d4cc6a4a133d2b58ec",
+          "contribution_id": "intent:add-worldguard-blueprint-v1:preimplementation",
+          "generation": 7,
+          "revision_set_fingerprint": "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+          "schema": "flowguard.legacy_intent_audit_entry.v1"
+        }
+      ],
+      "ancestry_revision_set_fingerprints": [
+        "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+        "sha256:c85970cf510647d2e4b752d6a6fcea399991ebe08dd7230b3dcf731172b4a696",
+        "sha256:6d1e38f82d34d763c0f5e25c89a0772d0bdc6f2baa47b3304ff4f7a9d0f46644",
+        "sha256:707c8e0d01eccaf12812231ddc42b9c850469234d7eedd21477ea57d4d071596",
+        "sha256:179687d5fa5ac7d2f22b85d144cf778e1adae3f5541d6df02e837fc5e641b5e3",
+        "sha256:d59e6b1222ea86995da2144aa900d6457877195739496d9ac8c6bfaa2b6c67ca"
+      ],
+      "bootstrap_authority_fingerprint": "sha256:eb0cdf0c73947a8316a6e13935b7d63beda2a91c22ebb22ef00ea6af46a07c49",
+      "candidate_snapshot_fingerprint": "sha256:a5cead9ca730227d14ff7028ab9faf4db1c663a37a53e9e50f1c8c9fd60b8561",
+      "claim_boundary": "This bootstrap proves only the migration of declared design intent into current model-owner bindings; it does not prove implementation, installation, publication, or release.",
+      "current_design_contribution_fingerprints": [
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger",
+          "fingerprint": "sha256:4425e718ee1af139e2ed59fab393bcd86bd1788e321597c31a692cb6a7c2626c"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority",
+          "fingerprint": "sha256:d8671816b99647fba8efdad540ca5603d123098b38333f076e9f627dc0b169fd"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision",
+          "fingerprint": "sha256:82e34cf2e2e340f85e5ef4c47541c85dcc246b4202a0c1fa27fda6d2d1bed849"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh",
+          "fingerprint": "sha256:e1b0d466ba14303b3b1635c3c440307c74c25139c27cc2657e327470caa80040"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment",
+          "fingerprint": "sha256:a5054151ca38e82c19907b222df1d480e686955472538380b6f363d5f20b09be"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision",
+          "fingerprint": "sha256:1b188653ff770b6e38b6c8338cd955b4d837d99354fd3781c272ddc5a4890243"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection",
+          "fingerprint": "sha256:7bca38e226e33016b83b94407cfc3b7daa700da816e65a31831b54ca29bbaa5b"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh",
+          "fingerprint": "sha256:e22e10ae3e2c6f245dc6958310a8051243a671ce6782e8951b75910c87b5a8c9"
+        }
+      ],
+      "current_design_contribution_inventory_fingerprint": "sha256:ff2a639bcf068e450fb254363e8ce5c30bd97734d1efe8e86669406492367931",
+      "current_design_source_identity_fingerprints": [
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger",
+          "fingerprint": "sha256:3a478540926c85f8ed4d90cf6c635cd5f851da42f10000e8fcb265a7ceb088a7"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority",
+          "fingerprint": "sha256:2e3bc9e8ce2f1b40ae7b6f45fcb14550501cd1123adcf57fd968b21b1bb8e97c"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision",
+          "fingerprint": "sha256:0f10ea259d3790e97dc3e9d497f54e99b2c443d51683fed47a88da2c2a902b18"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh",
+          "fingerprint": "sha256:0c9cba12e61499dc0498797848ebb8d5627687031d52f39f7b60df07d1cf3433"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment",
+          "fingerprint": "sha256:f56736943e1be564c70b693c1fe3e1f739101ed60406f204154a9401f7745950"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision",
+          "fingerprint": "sha256:e90ce451322aa4571d53a31713a9f882fbc43863c3900d45c8df9b8913d4a1eb"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection",
+          "fingerprint": "sha256:76a70899ff9a4209fe6bf4cd3c51bd4bf99935c7589ff9797989308c5289a41d"
+        },
+        {
+          "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh",
+          "fingerprint": "sha256:3996aa75d5ddb9673c511a7377b2e9caa1a63e3d8241b35d42b5690721ce47cc"
+        }
+      ],
+      "current_model_owner_ids": [
+        "model-obligation:behavior_commitment_ledger",
+        "model-obligation:current_input_authority",
+        "model-obligation:fact_revision",
+        "model-obligation:hierarchical_model_mesh",
+        "model-obligation:model_test_code_alignment",
+        "model-obligation:task_local_revision",
+        "model-obligation:template_selection",
+        "model-obligation:test_evidence_mesh"
+      ],
+      "expected_head_fingerprint": "sha256:8fb171df8030be1b97c7d6112f41451280f965139a125273b6bd0218d1223bf7",
+      "fingerprint": "sha256:9c90a06f5a3ca3ef599907204cd139d8170d4c101e912047688977021b15e7d2",
+      "legacy_entry_dispositions": [
+        {
+          "action": "supersede",
+          "contribution_fingerprint": "sha256:75904dda10240dd581ede992257c094e20ffe590a3e260d4cc6a4a133d2b58ec",
+          "contribution_id": "intent:add-worldguard-blueprint-v1:preimplementation",
+          "fingerprint": "sha256:54225ac57950ef4a21ec26c7767c8114f4848071231c055f8015121f3b699613",
+          "generation": 7,
+          "reason": "The legacy unresolved WorldGuard design entry is replaced by eight explicit current model-owner contributions so every present owner, including the three governance models, has one direct current intent binding.",
+          "replacement_contribution_ids": [
+            "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger",
+            "intent:add-worldguard-blueprint-v1:model:current_input_authority",
+            "intent:add-worldguard-blueprint-v1:model:fact_revision",
+            "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh",
+            "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment",
+            "intent:add-worldguard-blueprint-v1:model:task_local_revision",
+            "intent:add-worldguard-blueprint-v1:model:template_selection",
+            "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh"
+          ],
+          "revision_set_fingerprint": "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+          "schema": "flowguard.legacy_intent_bootstrap_disposition.v1"
+        }
+      ],
+      "owner_binding_inventory_fingerprint": "sha256:dacda7ac27537720259ba29ec810b77856e02dd3d2827d42de8ae6b7e98ea479",
+      "rationale": "This explicit migration converts the legacy WorldGuard design intent into one direct current contribution per model owner, preserving the source design and making the current effective intent denominator auditable.",
+      "receipt_id": "receipt:worldguard-intent-bootstrap-20260809",
+      "schema": "flowguard.effective_intent_bootstrap_receipt.v1",
+      "source_current_revision_set_fingerprint": "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+      "source_head_generation": 7,
+      "source_revision_schema": "flowguard.model_revision_set.v4",
+      "source_snapshot_fingerprint": "sha256:cec0551af5b0d746008e24896e4ad1b0a2764838a6b733fbb0930cd8abccd14f",
+      "status": "audited",
+      "system_id": "flowguard"
+    },
+    "candidate_snapshot_fingerprint": "sha256:a5cead9ca730227d14ff7028ab9faf4db1c663a37a53e9e50f1c8c9fd60b8561",
+    "fingerprint": "sha256:2ef91e280366742826a4204e1a3305ea93b8e128e2bf01b8bf40d4f46887e743",
+    "model_owner_ids": [
+      "model-obligation:behavior_commitment_ledger",
+      "model-obligation:current_input_authority",
+      "model-obligation:fact_revision",
+      "model-obligation:hierarchical_model_mesh",
+      "model-obligation:model_test_code_alignment",
+      "model-obligation:task_local_revision",
+      "model-obligation:template_selection",
+      "model-obligation:test_evidence_mesh"
+    ],
+    "owner_bindings": [
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger"
+        ],
+        "fingerprint": "sha256:93275dda4efb342f89bd547bfe759d7e17f292d5d2d2a887798ea38077b66700",
+        "logical_model_id": "behavior_commitment_ledger",
+        "model_owner_id": "model-obligation:behavior_commitment_ledger",
+        "realization_relation_fingerprint": "sha256:fe47b454f6a341d51bb4a9c343110442cf77b14939ad8ffcffaf339a4e308d32",
+        "realization_relation_id": "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:current_input_authority"
+        ],
+        "fingerprint": "sha256:65a4b68be6e88d5a93ed349c2b68191dfc76485c57bdd0676cb920238f922491",
+        "logical_model_id": "current_input_authority",
+        "model_owner_id": "model-obligation:current_input_authority",
+        "realization_relation_fingerprint": "sha256:7efd80c42e27a872dcefc0ba6dd9cc3cd1fd15fe480e833a63a4293280145da2",
+        "realization_relation_id": "relation:model-realizes-purpose:current_input_authority",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:fact_revision"
+        ],
+        "fingerprint": "sha256:0b8b5a7b66e68f1314efff9a738b7469d4dde14224abcc13cbb615ff716de6db",
+        "logical_model_id": "fact_revision",
+        "model_owner_id": "model-obligation:fact_revision",
+        "realization_relation_fingerprint": "sha256:92d85ba65961f456f5ebd66aa9c928b322a7dfd3be8b8678f9479a9b3e002293",
+        "realization_relation_id": "relation:model-realizes-purpose:fact_revision",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh"
+        ],
+        "fingerprint": "sha256:36ce23c4b524b416955b91e37a3028ede64f9e7298fd838f686beb7e5e93cfef",
+        "logical_model_id": "hierarchical_model_mesh",
+        "model_owner_id": "model-obligation:hierarchical_model_mesh",
+        "realization_relation_fingerprint": "sha256:9a508e67932b8382cb131f6fa129762738be9179be5e271a0b21e990f690132c",
+        "realization_relation_id": "relation:model-realizes-purpose:hierarchical_model_mesh",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment"
+        ],
+        "fingerprint": "sha256:1986271f72eb08db17b8f5e54bc6595b5b54de1b16ac8b91ef4e45a38e676d2a",
+        "logical_model_id": "model_test_code_alignment",
+        "model_owner_id": "model-obligation:model_test_code_alignment",
+        "realization_relation_fingerprint": "sha256:8b513a163f334f4297a378611028f35e94d6e8e3fe5acf725684916e300d7eca",
+        "realization_relation_id": "relation:model-realizes-purpose:model_test_code_alignment",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:task_local_revision"
+        ],
+        "fingerprint": "sha256:314eec3cdf621a0736d644234d97afbb9479e37edc27eda9c51583d9ba5d3d42",
+        "logical_model_id": "task_local_revision",
+        "model_owner_id": "model-obligation:task_local_revision",
+        "realization_relation_fingerprint": "sha256:1eb9e878521b41a8f7a5adb99733156fb121131b9e672839ef0263a45c4c0fe6",
+        "realization_relation_id": "relation:model-realizes-purpose:task_local_revision",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:template_selection"
+        ],
+        "fingerprint": "sha256:9d49f2daaa4eec338a6c3e86a8f02572456b36c9c077e34df25ddcceb2ca0ba6",
+        "logical_model_id": "template_selection",
+        "model_owner_id": "model-obligation:template_selection",
+        "realization_relation_fingerprint": "sha256:6a2f094b59bab3c8b6ad44ce6171432f5298d1c331904165c7e99f246e14fded",
+        "realization_relation_id": "relation:model-realizes-purpose:template_selection",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      },
+      {
+        "contribution_ids": [
+          "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh"
+        ],
+        "fingerprint": "sha256:5867648596badd85d33d7ca01a621464415e3341c551c344080a4a9ec8bd48ef",
+        "logical_model_id": "test_evidence_mesh",
+        "model_owner_id": "model-obligation:test_evidence_mesh",
+        "realization_relation_fingerprint": "sha256:bfb64b3e0b71dd2ebf951bf3d6710fa8c77ee6bcd60c25c0e72952c01f8a5c8c",
+        "realization_relation_id": "relation:model-realizes-purpose:test_evidence_mesh",
+        "schema": "flowguard.effective_intent_owner_binding.v1"
+      }
+    ],
+    "schema": "flowguard.current_effective_intent_view.v1",
+    "subject_lane": "observed_implementation",
+    "system_id": "flowguard",
+    "transitions": [],
+    "verified_source_identities": [
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:behavior_commitment_ledger",
+        "fingerprint": "sha256:3a478540926c85f8ed4d90cf6c635cd5f851da42f10000e8fcb265a7ceb088a7",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority",
+        "fingerprint": "sha256:2e3bc9e8ce2f1b40ae7b6f45fcb14550501cd1123adcf57fd968b21b1bb8e97c",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:fact_revision",
+        "fingerprint": "sha256:0f10ea259d3790e97dc3e9d497f54e99b2c443d51683fed47a88da2c2a902b18",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh",
+        "fingerprint": "sha256:0c9cba12e61499dc0498797848ebb8d5627687031d52f39f7b60df07d1cf3433",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment",
+        "fingerprint": "sha256:f56736943e1be564c70b693c1fe3e1f739101ed60406f204154a9401f7745950",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:task_local_revision",
+        "fingerprint": "sha256:e90ce451322aa4571d53a31713a9f882fbc43863c3900d45c8df9b8913d4a1eb",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection",
+        "fingerprint": "sha256:76a70899ff9a4209fe6bf4cd3c51bd4bf99935c7589ff9797989308c5289a41d",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      },
+      {
+        "authority_kind": "project_file",
+        "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh",
+        "fingerprint": "sha256:3996aa75d5ddb9673c511a7377b2e9caa1a63e3d8241b35d42b5690721ce47cc",
+        "native_owner_id": "",
+        "resolved_project_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "schema": "flowguard.model_intent_source_identity.v1",
+        "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+        "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+        "work_context_artifact_id": "",
+        "work_context_fingerprint": "",
+        "work_context_id": ""
+      }
+    ]
+  },
+  "decision_reason": "",
+  "expected_head_fingerprint": "sha256:8fb171df8030be1b97c7d6112f41451280f965139a125273b6bd0218d1223bf7",
+  "fingerprint": "sha256:8809fa5b40560a61db238468c2814578108c64589614355d14bba19e0baf9f24",
+  "fingerprint_changed_ids": [
+    "behavior_commitment:commitment:worldguard-current-input-authority",
+    "behavior_commitment:commitment:worldguard-fact-revision-authority",
+    "behavior_commitment:commitment:worldguard-template-selection-authority",
+    "coverage:external_surfaces:surface:worldguard-current-contract-model",
+    "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+    "coverage:external_surfaces:surface:worldguard-template-model",
+    "coverage:external_surfaces:surface:worldguard-template-tests",
+    "coverage:universe",
+    "external_surface:surface:worldguard-current-contract-code",
+    "external_surface:surface:worldguard-current-contract-openspec",
+    "external_surface:surface:worldguard-fact-revision-code",
+    "external_surface:surface:worldguard-fact-revision-docs",
+    "external_surface:surface:worldguard-template-code",
+    "external_surface:surface:worldguard-template-docs",
+    "model_instance:model:behavior_commitment_ledger",
+    "model_instance:model:current_input_authority",
+    "model_instance:model:fact_revision",
+    "model_instance:model:task_local_revision",
+    "model_instance:model:template_selection",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:fact_revision",
+    "parent_closure:purpose:task_local_revision",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:system:flowguard:model-regression-manifest",
+    "root:model:behavior_commitment_ledger"
+  ],
+  "implementation_bundle_fingerprint": "",
+  "intent_conflict_ids": [],
+  "intent_contribution_inventory_fingerprint": "sha256:0019c742273f74601efc61b5a643123b74c5d8a7a263b92f064a33d07d537c20",
+  "intent_contributions": [],
+  "intent_dispositions": [],
+  "intent_unresolved_ids": [],
+  "members": [
+    {
+      "base_instance_fingerprint": "sha256:462016844ad1190c361d99d497073146a01485480b4f1fd4f895ccaa55e5a4ed",
+      "candidate_instance_fingerprint": "sha256:2ef803bf49505e6c528aec6a4e5ff8d99ad57b00bb9d96a95e9926c729bd3420",
+      "changed_element_ids": [
+        "model_instance:model:behavior_commitment_ledger"
+      ],
+      "member_id": "behavior_commitment_ledger",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:f6418ba22e9cdd5d3e2d0f0cb5380643f512920480e4f8d1364a5015bcf677e6",
+      "candidate_instance_fingerprint": "sha256:1b0803d7e10195fcc15914a13ce9e1948a260f7a8af663666ab19b062f20e189",
+      "changed_element_ids": [
+        "model_instance:model:current_input_authority"
+      ],
+      "member_id": "current_input_authority",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:a3b604a46f5f5f916ee8a96cca4b683dd4b604befd7b9906dd17ecb28278efd6",
+      "candidate_instance_fingerprint": "sha256:cec35e1019b54cf82c9331cdb87ecebb95ec60ab3876427148276c92ab8b5d9a",
+      "changed_element_ids": [
+        "model_instance:model:fact_revision"
+      ],
+      "member_id": "fact_revision",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "",
+      "candidate_instance_fingerprint": "sha256:7ed3b0bb23adaa7c9accc4a7ce834ac5a6297010d9f67090f4e4c100bde04d4a",
+      "changed_element_ids": [
+        "model_instance:model:hierarchical_model_mesh"
+      ],
+      "member_id": "hierarchical_model_mesh",
+      "operation": "add",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "",
+      "candidate_instance_fingerprint": "sha256:f40ea3d129f16a9763b7c7b708d2d6d1e209699fd448f4329a528b40caf6282e",
+      "changed_element_ids": [
+        "model_instance:model:model_test_code_alignment"
+      ],
+      "member_id": "model_test_code_alignment",
+      "operation": "add",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:fd49129b5fcbcfe19da5d4010a41069a106b6670237312518ae5d64aba8450d3",
+      "candidate_instance_fingerprint": "sha256:d72173cc20c3ef1053aeb04cead94f407ed5a5d72d948eb0fa87acd827eecc69",
+      "changed_element_ids": [
+        "model_instance:model:task_local_revision"
+      ],
+      "member_id": "task_local_revision",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "sha256:5ee5aaaf25d3c359fc175a1d69f9b3d406200916678f1000ee9eab49b949a760",
+      "candidate_instance_fingerprint": "sha256:6aa5d58217dbde8c0cf203f8bbe60115a17ca7ff6414ddb76c6b3e03c14353e6",
+      "changed_element_ids": [
+        "model_instance:model:template_selection"
+      ],
+      "member_id": "template_selection",
+      "operation": "replace",
+      "schema": "flowguard.model_revision_member.v1"
+    },
+    {
+      "base_instance_fingerprint": "",
+      "candidate_instance_fingerprint": "sha256:1907f1b696f98bcdc10cf2edefd09b13a12719aca3d055ba2607b31059476e53",
+      "changed_element_ids": [
+        "model_instance:model:test_evidence_mesh"
+      ],
+      "member_id": "test_evidence_mesh",
+      "operation": "add",
+      "schema": "flowguard.model_revision_member.v1"
+    }
+  ],
+  "no_declared_intent_evidence_fingerprints": [],
+  "no_declared_intent_rationale": "",
+  "no_declared_intent_rationale_id": "",
+  "originating_activation_receipt_fingerprint": "",
+  "originating_revision_set_fingerprint": "",
+  "path_quality_result_set_fingerprint": "sha256:a4fe048f91e92153d066ea6dc4883a5f18258d85bfbb6ef799ecc9d80f862b0f",
+  "path_quality_results": [],
+  "path_quality_subjects": [],
+  "prediction_replay_refs": [],
+  "removal_dispositions": [
+    {
+      "disposition": "replace",
+      "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+      "removed_id": "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+      "replacement_id": "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "replace",
+      "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+      "removed_id": "coverage:tests_evidence:check:model-regression:current-input-authority",
+      "replacement_id": "coverage:tests_evidence:check:model-regression:current_input_authority",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "replace",
+      "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+      "removed_id": "coverage:tests_evidence:check:model-regression:fact-revision",
+      "replacement_id": "coverage:tests_evidence:check:model-regression:fact_revision",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "replace",
+      "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+      "removed_id": "coverage:tests_evidence:check:model-regression:task-local-revision",
+      "replacement_id": "coverage:tests_evidence:check:model-regression:task_local_revision",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "replace",
+      "reason": "The hyphenated coverage identifier is replaced by the canonical underscore model identifier; the regression obligation remains governed under its current name.",
+      "removed_id": "coverage:tests_evidence:check:model-regression:template-selection",
+      "replacement_id": "coverage:tests_evidence:check:model-regression:template_selection",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-current-contract-model",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-current-contract-tests",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-fact-revision-model",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-fact-revision-tests",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This model artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-template-model",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "This test artifact is no longer a direct source surface after the current ledger assigns it delegated coverage; its evidence remains linked through the model owner.",
+      "removed_id": "external_surface:surface:worldguard-template-tests",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated model source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    },
+    {
+      "disposition": "scope_out",
+      "reason": "The relation is retired with the delegated test source surface; direct ownership is removed while the model owner keeps the delegated evidence link.",
+      "removed_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+      "replacement_id": "",
+      "schema": "flowguard.revision_removal_disposition.v1"
+    }
+  ],
+  "removed_ids": [
+    "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+    "coverage:tests_evidence:check:model-regression:current-input-authority",
+    "coverage:tests_evidence:check:model-regression:fact-revision",
+    "coverage:tests_evidence:check:model-regression:task-local-revision",
+    "coverage:tests_evidence:check:model-regression:template-selection",
+    "external_surface:surface:worldguard-current-contract-model",
+    "external_surface:surface:worldguard-current-contract-tests",
+    "external_surface:surface:worldguard-fact-revision-model",
+    "external_surface:surface:worldguard-fact-revision-tests",
+    "external_surface:surface:worldguard-template-model",
+    "external_surface:surface:worldguard-template-tests",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority"
+  ],
+  "required_evidence_refs": [],
+  "required_path_quality_model_ids": [
+    "behavior_commitment_ledger",
+    "current_input_authority",
+    "fact_revision",
+    "hierarchical_model_mesh",
+    "model_test_code_alignment",
+    "task_local_revision",
+    "template_selection",
+    "test_evidence_mesh"
+  ],
+  "revision_set_id": "revision-set:worldguard:blueprint-v1-intent-bootstrap-20260809",
+  "rollback_contract_fingerprint": "",
+  "schema": "flowguard.model_revision_set.v5",
+  "snapshot_diff_fingerprint": "sha256:d66022e6283b7bc9e5059a71f7a503b8da954d7e5cb818908e17f1d93ad9c60e",
+  "status": "proposed",
+  "task_id": "task:worldguard:blueprint-v1-intent-bootstrap"
+}

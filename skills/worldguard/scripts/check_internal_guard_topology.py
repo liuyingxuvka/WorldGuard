@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
+import ast
 import json
 import sys
 import tomllib
@@ -24,10 +24,11 @@ EXPECTED_GUARDS = (
 EXPECTED_TASK_SHAPES = (
     "unit_contract",
     "model_mesh",
+    "world_blueprint",
     "task_local_revision",
     "template_pack",
 )
-EXPECTED_VERSION = "0.7.1"
+EXPECTED_VERSION = "0.7.3"
 PREDICTIVE_GUARDS = {"EventGuard", "CausalGuard"}
 TERMINAL_STATUSES = ("PASS", "FAIL", "GAP", "BOUNDARY_EXCEEDED")
 REQUIRED_ROW_FIELDS = {
@@ -43,7 +44,7 @@ REQUIRED_ROW_FIELDS = {
     "semantic_registry",
     "applicability_semantics",
     "forbidden_semantics",
-    "required_input_fields",
+    "possible_consumed_input_fields",
     "first_native_action",
     "reference_path",
     "conditional_references",
@@ -60,24 +61,145 @@ REQUIRED_TASK_SHAPE_FIELDS = {
     "conditional_references",
     "claim_boundary",
 }
-GOVERNED_RUNTIME_SUFFIXES = {".py", ".json", ".yaml", ".yml"}
-
-
-def _hash(path: Path) -> str:
-    normalized = path.read_text(encoding="utf-8").replace("\r\n", "\n")
-    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
-
-
-def _runtime_inventory(root: Path) -> dict[str, str]:
-    return {
-        path.relative_to(root).as_posix(): _hash(path)
-        for path in root.rglob("*")
-        if path.is_file() and path.suffix.lower() in GOVERNED_RUNTIME_SUFFIXES
-    }
-
-
 def _callable_id(value: Any) -> str:
     return f"{value.__module__}:{value.__name__}"
+
+
+def _semantic_implementation_input_surface(
+    semantic_source: Path,
+    entrypoint_name: str,
+) -> list[str]:
+    """Derive possible input reads from executor code, independently of metadata."""
+
+    module = ast.parse(semantic_source.read_text(encoding="utf-8"))
+    functions = {
+        node.name: node
+        for node in module.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    direct_roots: set[str] = set()
+    expanded_roots: set[str] = set()
+    leaf_paths: set[str] = set()
+    visited: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
+
+    def literal_get_keys(
+        call: ast.AST,
+        symbolic_keys: dict[str, tuple[str, ...]],
+    ) -> tuple[str, ...]:
+        if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Attribute):
+            return ()
+        if call.func.attr != "get" or not call.args:
+            return ()
+        key = call.args[0]
+        if isinstance(key, ast.Constant) and isinstance(key.value, str):
+            return (key.value,)
+        if isinstance(key, ast.Name):
+            return symbolic_keys.get(key.id, ())
+        return ()
+
+    def direct_input_paths(
+        call: ast.AST,
+        symbolic_keys: dict[str, tuple[str, ...]],
+    ) -> tuple[str, ...]:
+        keys = literal_get_keys(call, symbolic_keys)
+        if not keys or not isinstance(call, ast.Call):
+            return ()
+        owner = call.func.value
+        if not isinstance(owner, ast.Attribute) or owner.attr != "inputs":
+            return ()
+        return tuple(
+            "mesh.semantic_coverage"
+            if key == "_semantic_coverage"
+            else f"inputs.{key}"
+            for key in keys
+        )
+
+    def alias_get_paths(
+        call: ast.AST,
+        aliases: dict[str, str],
+        symbolic_keys: dict[str, tuple[str, ...]],
+    ) -> tuple[str, ...]:
+        keys = literal_get_keys(call, symbolic_keys)
+        if not keys or not isinstance(call, ast.Call):
+            return ()
+        owner = call.func.value
+        if not isinstance(owner, ast.Name) or owner.id not in aliases:
+            return ()
+        return tuple(f"{aliases[owner.id]}.{key}" for key in keys)
+
+    def visit(function_name: str, parameter_roots: dict[str, str]) -> None:
+        visit_key = (function_name, tuple(sorted(parameter_roots.items())))
+        if visit_key in visited:
+            return
+        visited.add(visit_key)
+        function = functions.get(function_name)
+        if function is None:
+            return
+
+        aliases = dict(parameter_roots)
+        symbolic_keys: dict[str, tuple[str, ...]] = {}
+        for node in ast.walk(function):
+            if not isinstance(node, ast.comprehension) or not isinstance(
+                node.target, ast.Name
+            ):
+                continue
+            if not isinstance(node.iter, (ast.List, ast.Tuple, ast.Set)):
+                continue
+            values = tuple(
+                str(item.value)
+                for item in node.iter.elts
+                if isinstance(item, ast.Constant) and isinstance(item.value, str)
+            )
+            if len(values) == len(node.iter.elts):
+                symbolic_keys[node.target.id] = values
+        for node in ast.walk(function):
+            if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+                continue
+            value = node.value
+            paths = direct_input_paths(value, symbolic_keys) or alias_get_paths(
+                value, aliases, symbolic_keys
+            )
+            if len(paths) != 1:
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if isinstance(target, ast.Name):
+                    aliases[target.id] = paths[0]
+
+        for node in ast.walk(function):
+            if not isinstance(node, ast.Call):
+                continue
+            direct_roots.update(direct_input_paths(node, symbolic_keys))
+            for leaf in alias_get_paths(node, aliases, symbolic_keys):
+                root_name = leaf.rsplit(".", 1)[0]
+                expanded_roots.add(root_name)
+                leaf_paths.add(leaf)
+
+        for node in ast.walk(function):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                continue
+            callee = functions.get(node.func.id)
+            if callee is None:
+                continue
+            callee_roots: dict[str, str] = {}
+            parameter_names = [argument.arg for argument in callee.args.args]
+            for parameter_name, argument in zip(parameter_names, node.args):
+                if isinstance(argument, ast.Name) and argument.id in aliases:
+                    callee_roots[parameter_name] = aliases[argument.id]
+                    continue
+                paths = direct_input_paths(
+                    argument, symbolic_keys
+                ) or alias_get_paths(argument, aliases, symbolic_keys)
+                if len(paths) == 1:
+                    callee_roots[parameter_name] = paths[0]
+            visit(node.func.id, callee_roots)
+
+    visit(entrypoint_name, {})
+    return sorted((direct_roots - expanded_roots) | leaf_paths)
+
+
+def _declared_path_covers(observed: str, declared: str) -> bool:
+    return observed == declared or observed.startswith(f"{declared}.")
 
 
 def check(
@@ -101,7 +223,7 @@ def check(
     findings: list[dict[str, object]] = []
 
     payload = json.loads(topology_path.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "worldguard.internal_guard_routes.v2":
+    if payload.get("schema_version") != "worldguard.internal_guard_routes.v3":
         findings.append(
             {
                 "code": "topology_schema_mismatch",
@@ -110,9 +232,9 @@ def check(
         )
     selection = payload.get("selection_authority", {})
     expected_selection = {
-        "task_shape_rule": "exactly_one_from_typed_task_facts",
+        "task_shape_rule": "one_required_current_task_shape_field",
         "guard_coverage_rule": "complete_set_from_structured_claim_semantics",
-        "guard_derivation_owner": "worldguard.contracts:derive_required_guards",
+        "guard_derivation_owner": "worldguard.contracts:derive_guard_requirements",
         "caller_target_guards_authoritative": False,
         "keyword_scoring_authoritative": False,
         "failure_retry_to_another_guard": False,
@@ -227,13 +349,29 @@ def check(
     if tuple(payload.get("terminal_statuses", ())) != TERMINAL_STATUSES:
         findings.append({"code": "declared_terminal_status_mismatch"})
 
+    task_fact_schema = payload.get("task_fact_schema", {})
+    if task_fact_schema.get("required_fields") != [
+        "request_source_spans",
+        "task_shape",
+        "claim.requested_semantics_or_atoms",
+    ]:
+        findings.append(
+            {
+                "code": "task_fact_schema_mismatch",
+                "observed": task_fact_schema.get("required_fields"),
+            }
+        )
+
     prompt_budget = payload.get("prompt_budget", {})
-    entry_max = prompt_budget.get("entry_shell_max_characters")
-    headroom = prompt_budget.get("minimum_reasoning_headroom_characters")
+    entry_max = prompt_budget.get("entry_shell_max_bytes")
+    route_max = prompt_budget.get("single_route_capsule_max_bytes")
+    blueprint_max = prompt_budget.get("single_blueprint_reference_max_bytes")
+    selected_max = prompt_budget.get("selected_operation_bundle_max_bytes")
+    headroom = prompt_budget.get("minimum_reasoning_headroom_bytes")
     if not isinstance(entry_max, int) or entry_max <= 0:
         findings.append({"code": "entry_prompt_budget_invalid"})
     else:
-        skill_length = len((skill_root / "SKILL.md").read_text(encoding="utf-8"))
+        skill_length = len((skill_root / "SKILL.md").read_bytes())
         if skill_length > entry_max:
             findings.append(
                 {
@@ -242,6 +380,42 @@ def check(
                     "maximum": entry_max,
                 }
             )
+    if not isinstance(route_max, int) or route_max <= 0:
+        findings.append({"code": "route_capsule_budget_invalid"})
+    else:
+        for row in payload.get("routes", []):
+            if not isinstance(row, dict):
+                continue
+            capsule_bytes = len(
+                json.dumps(
+                    row,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            )
+            if capsule_bytes > route_max:
+                findings.append(
+                    {
+                        "code": "route_capsule_budget_exceeded",
+                        "guard_id": row.get("guard_id"),
+                        "observed": capsule_bytes,
+                        "maximum": route_max,
+                    }
+                )
+    blueprint_path = skill_root / "references" / "world-blueprint.md"
+    if not isinstance(blueprint_max, int) or blueprint_max <= 0:
+        findings.append({"code": "blueprint_reference_budget_invalid"})
+    elif blueprint_path.is_file() and len(blueprint_path.read_bytes()) > blueprint_max:
+        findings.append(
+            {
+                "code": "blueprint_reference_budget_exceeded",
+                "observed": len(blueprint_path.read_bytes()),
+                "maximum": blueprint_max,
+            }
+        )
+    if not isinstance(selected_max, int) or selected_max <= 0:
+        findings.append({"code": "selected_operation_bundle_budget_invalid"})
     if not isinstance(headroom, int) or headroom < 12000:
         findings.append(
             {
@@ -332,36 +506,18 @@ def check(
             }
         )
 
-    root_runtime = repository_root / "worldguard"
-    bundled_runtime = skill_root / "runtime" / "worldguard"
-    root_inventory = _runtime_inventory(root_runtime)
-    bundled_inventory = _runtime_inventory(bundled_runtime)
-    if root_inventory != bundled_inventory:
-        findings.append(
-            {
-                "code": "bundled_runtime_parity_mismatch",
-                "missing_from_bundle": sorted(
-                    root_inventory.keys() - bundled_inventory.keys()
-                ),
-                "extra_in_bundle": sorted(
-                    bundled_inventory.keys() - root_inventory.keys()
-                ),
-                "different": sorted(
-                    path
-                    for path in root_inventory.keys() & bundled_inventory.keys()
-                    if root_inventory[path] != bundled_inventory[path]
-                ),
-            }
-        )
-
     added = False
     root_text = str(repository_root)
     if root_text not in sys.path:
         sys.path.insert(0, root_text)
         added = True
+    semantic_input_surfaces: dict[str, dict[str, list[str]]] = {}
     try:
         import worldguard as worldguard_package
-        from worldguard.contracts import SEMANTIC_GUARD_ROUTES
+        from worldguard.contracts import (
+            SEMANTIC_GUARD_ROUTES,
+            derive_guard_requirements,
+        )
         from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES
         from worldguard.guards import GUARD_RUNNERS
         from worldguard.semantic import EXECUTOR_REGISTRY
@@ -377,6 +533,16 @@ def check(
                     "code": "runtime_version_mismatch",
                     "expected": EXPECTED_VERSION,
                     "observed": worldguard_package.__version__,
+                }
+            )
+        if _callable_id(derive_guard_requirements) != selection.get(
+            "guard_derivation_owner"
+        ):
+            findings.append(
+                {
+                    "code": "guard_derivation_owner_mismatch",
+                    "expected": _callable_id(derive_guard_requirements),
+                    "observed": selection.get("guard_derivation_owner"),
                 }
             )
         for inventory_name, observed in (
@@ -404,6 +570,14 @@ def check(
             row = declared.get(guard_id)
             if not isinstance(row, dict):
                 continue
+            if "required_input_fields" in row:
+                findings.append(
+                    {
+                        "code": "retired_internal_route_input_field_present",
+                        "guard_id": guard_id,
+                        "field": "required_input_fields",
+                    }
+                )
             missing_fields = sorted(REQUIRED_ROW_FIELDS - row.keys())
             if missing_fields:
                 findings.append(
@@ -442,8 +616,10 @@ def check(
                     for semantic, guards in SEMANTIC_GUARD_ROUTES.items()
                     if guard_id in guards
                 ],
-                "required_input_fields": list(
-                    EXECUTOR_REGISTRY[guard_id].binding.input_fields
+                "possible_consumed_input_fields": list(
+                    EXECUTOR_REGISTRY[
+                        guard_id
+                    ].binding.possible_consumed_input_fields
                 ),
             }
             for field, expected in expected_values.items():
@@ -481,6 +657,50 @@ def check(
                             "field": field,
                         }
                     )
+            declared_possible_inputs = list(
+                EXECUTOR_REGISTRY[
+                    guard_id
+                ].binding.possible_consumed_input_fields
+            )
+            implementation_inputs = _semantic_implementation_input_surface(
+                repository_root / "worldguard" / "semantic.py",
+                EXECUTOR_REGISTRY[guard_id].execute.__name__,
+            )
+            omitted_inputs = sorted(
+                observed
+                for observed in implementation_inputs
+                if not any(
+                    _declared_path_covers(observed, declared_input)
+                    for declared_input in declared_possible_inputs
+                )
+            )
+            semantic_input_surfaces[guard_id] = {
+                "implementation": implementation_inputs,
+                "binding": declared_possible_inputs,
+                "route": list(row.get("possible_consumed_input_fields", [])),
+            }
+            if omitted_inputs:
+                findings.append(
+                    {
+                        "code": "semantic_input_surface_omitted",
+                        "guard_id": guard_id,
+                        "fields": omitted_inputs,
+                        "implementation_fields": implementation_inputs,
+                        "binding_fields": declared_possible_inputs,
+                    }
+                )
+            route_possible_inputs = row.get("possible_consumed_input_fields")
+            if (
+                not isinstance(route_possible_inputs, list)
+                or not route_possible_inputs
+                or len(route_possible_inputs) != len(set(route_possible_inputs))
+            ):
+                findings.append(
+                    {
+                        "code": "internal_route_possible_input_surface_invalid",
+                        "guard_id": guard_id,
+                    }
+                )
             reference = skill_root / str(row.get("reference_path", ""))
             if not reference.is_file():
                 findings.append(
@@ -522,7 +742,7 @@ def check(
             sys.path.remove(root_text)
 
     return {
-        "schema_version": "worldguard.internal_guard_topology_check.v2",
+        "schema_version": "worldguard.internal_guard_topology_check.v5",
         "status": "pass" if not findings else "fail",
         "ok": not findings,
         "source_version": source_version,
@@ -530,12 +750,14 @@ def check(
         "project_console_ids": sorted(scripts),
         "internal_guard_ids": list(EXPECTED_GUARDS),
         "task_shape_ids": list(EXPECTED_TASK_SHAPES),
+        "semantic_input_surfaces": semantic_input_surfaces,
         "findings": findings,
         "claim_boundary": (
-            "This target-native check proves the current source and bundled "
-            "consumer declare one WorldGuard entrypoint and seven exact internal "
-            "Guard routes. It does not prove a task-specific Guard run, factual "
-            "truth, installation, release, or predictive closure."
+            "This target-native check proves the current source declares one "
+            "WorldGuard entrypoint and seven exact internal Guard routes. Portable "
+            "runtime projection parity belongs to the canonical projection owner "
+            "and is not evaluated here. It does not prove a task-specific Guard "
+            "run, factual truth, installation, release, or predictive closure."
         ),
     }
 

@@ -57,8 +57,11 @@ binding before running the Guard proof.
 files directly to `claim.target_guards` before invoking WorldGuard.
 
 `claim.target_guards` is an execution declaration, not the authority for what
-must be checked. WorldGuard maps structured atom semantics to their owning
-Guards and compares the derived set with the declared set. Missing derived
+must be checked. The sole `worldguard.contracts.derive_guard_requirements`
+owner maps structured atom semantics to their owning Guards and returns the
+canonical denominator, unmapped semantics, and derivation fingerprint. Unit,
+mesh, and prompt routing consume that same result rather than maintaining
+parallel selectors. WorldGuard compares the derived set with the declared set. Missing derived
 routes fail closed. Claims without current `requested_semantics` or structured
 atoms are rejected; the caller's target list is never used as a fallback
 authority.
@@ -113,6 +116,25 @@ Required canonical fields:
 For `FAIL`, `GAP`, and `BOUNDARY_EXCEEDED`, require at least one concrete evidence field: missing slots, boundary trace, errors, or counterexamples.
 
 An aggregate or suite-level result is not proof of an individual WorldGuard obligation. Each obligation must retain its own typed `evidence_ref`, and every content-addressed evidence reference must use the exact lowercase content hash produced by its current native owner.
+
+## GuardedReport qualification
+
+`GuardedReport` is the one current unit and mesh-node qualification surface. `worldguard.qualification` derives the full Guard denominator before execution. An extra caller-declared Guard is a denominator error: qualification records a typed gap and executes no structural or semantic owner. After exact reconciliation, each required owner executes once. Mesh aggregation consumes that report read-only; it does not run a second semantic loop.
+
+The report keeps these axes separate:
+
+- declared, derived, effective, omitted, and unexpected Guard ids plus the canonical Guard-derivation fingerprint;
+- unmapped semantics with affected claim and atom ids;
+- native `GuardResult` rows and semantic execution receipts;
+- structural, semantic, provider, rollout/depth, and final statuses;
+- provider evidence id, provider id/version/capability, content and receipt fingerprints, target id/revision, contract fingerprint, claim boundary, source, and validation state without interpreting the external payload;
+- exact gaps, aggregate read-only ledger, scope limits, target/contract fingerprints, and final qualification fingerprint.
+
+A supplied provider result is one indivisible current envelope. All identity fields are required and must exactly match the active executor, capability, target, revision, contract, and claim boundary; its content and receipt fingerprints must exactly match the current semantic receipt. Missing or mismatched fields produce `STALE` provider evidence and semantic `NOT_RUN`. No field is filled from a native fallback. When no provider result is supplied, the one current native execution receipt derives the evidence identity instead.
+
+A final `PASS` requires every applicable axis to pass and zero gaps. Structural pass may remain visible while missing or stale provider evidence, semantic `NOT_RUN`, an omitted derived Guard, unexpected declaration, unmapped semantics, or unresolved rollout/depth keeps the final result non-pass. Repeated exact inputs and one normalized `QualificationContext` produce one stable result identity for unit and one-node mesh evaluation.
+
+Read `world-blueprint.md` for the separate target-neutral hierarchical blueprint contract. It does not replace `GuardContract`, `GuardedReport`, or `ModelMeshContract`.
 
 ## LedgerEntry
 

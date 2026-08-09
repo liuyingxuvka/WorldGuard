@@ -4,9 +4,9 @@
   "ok": true,
   "execution_count": 0,
   "shard_receipt_hashes": {
-    "input": "sha256:2406d15ab77cc6e3ea4de79d0d6b735cb7909c10baa110b413699bd1da05596a",
-    "template": "sha256:726d3d932f9547a60b41160e2874f7c43a8481f74378a84ee456c85e187a3dfe",
-    "fact": "sha256:e654c0d00ec17a459e437dbfd3dda02119d7911ddfb71f6c5f8b252295741127"
+    "input": "sha256:4af6a5aa8ef98669a1b0928b502ee82152c445b0dcc3fbe455e9a255f1aa868f",
+    "template": "sha256:cb9f31e9428f09bceb9ba1f0e80bc88b7dc0cff0aeb7641ca63dffd3d6e0b71b",
+    "fact": "sha256:a320b9d64f76f3dbddb48cc50ea824d2f5daf47abfbf20026841f3a7566f667b"
   },
   "input_primary_path": {
     "ok": true,

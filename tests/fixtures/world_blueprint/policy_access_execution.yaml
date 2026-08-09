@@ -1,0 +1,563 @@
+schema_version: worldguard.world_blueprint.v1
+blueprint_id: policy-access-execution-two-level
+target_id: policy-access-execution
+target_revision: policy-revision-1
+declared_boundary: field access policy execution revision 1 only
+root_node_id: policy_root
+nodes:
+- node_id: policy_root
+  title: Evaluate one field access policy request
+  depth: 0
+  parent_node_id: ''
+  child_node_ids:
+  - evaluate_access_leaf
+  owned_element_ids:
+  - policy_decision_state
+  input_ports:
+  - port_id: policy_request
+    value_type: access_request
+    schema_id: worldguard.port.access-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: policy_decision
+    value_type: access_decision
+    schema_id: worldguard.port.access-decision
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings:
+  - mapping_id: policy_request_to_evaluation
+    child_node_id: evaluate_access_leaf
+    child_input_port_id: access_request
+    source_kind: parent_input
+    source_id: policy_root
+    source_port_id: policy_request
+  element_input_mappings: []
+  child_output_mappings:
+  - mapping_id: evaluation_to_policy_root
+    child_node_id: evaluate_access_leaf
+    child_output_port_id: access_decision_result
+    disposition: parent_output
+    parent_port_id: policy_decision
+    reason: ''
+  output_derivations:
+  - derivation_id: derive_policy_decision
+    parent_output_port_id: policy_decision
+    sources:
+    - source_kind: child_output
+      source_id: evaluate_access_leaf
+      source_port_id: access_decision_result
+- node_id: evaluate_access_leaf
+  title: Apply the access norm to the field request
+  depth: 1
+  parent_node_id: policy_root
+  child_node_ids: []
+  owned_element_ids:
+  - access_policy_norm
+  - request_actor
+  input_ports:
+  - port_id: access_request
+    value_type: access_request
+    schema_id: worldguard.port.access-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: access_decision_result
+    value_type: access_decision
+    schema_id: worldguard.port.access-decision
+    schema_version: v1
+    refines: []
+    cardinality: one
+  child_input_mappings: []
+  element_input_mappings:
+  - mapping_id: access_request_to_norm
+    element_id: access_policy_norm
+    element_input_port_id: access_policy_norm_in
+    source_kind: node_input
+    source_id: evaluate_access_leaf
+    source_port_id: access_request
+  child_output_mappings: []
+  output_derivations:
+  - derivation_id: derive_access_decision_result
+    parent_output_port_id: access_decision_result
+    sources:
+    - source_kind: owned_element_output
+      source_id: access_policy_norm
+      source_port_id: access_policy_norm_out
+elements:
+- element_id: request_actor
+  kind: agent
+  owner_node_id: evaluate_access_leaf
+  dependencies: []
+  input_ports: []
+  output_ports:
+  - port_id: request_actor_out
+    value_type: policy_subject_identity
+    schema_id: worldguard.port.policy-subject-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: request_actor_out
+    reason: retained as agent identity context
+  native_semantic:
+    semantic_id: semantic:request_actor
+    element_kind: agent
+    native_object_id: native_request_actor
+    native_schema_id: worldguard.native.agent.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: request_actor_native
+    semantic_fields:
+      agent_id: inspector_lee
+      beliefs:
+      - training_record_available
+      desires:
+      - complete_field_inspection
+      intentions:
+      - request_restricted_access
+      conflicting_intentions: []
+    content_fingerprint: sha256:3e0e81a8cd41e8fec6150e10deaa2c5de8ccb7f71e94adebc2f3eaf1c00d257e
+    claim_boundary: field access policy execution revision 1 only
+    task_purpose:
+      declaration_id: purpose:request_actor
+      purpose: Prevent an incomplete or absent BDI actor model from licensing the
+        policy requester claim.
+      boundary: field access policy execution revision 1 only
+      selected_failure_ids:
+      - failure:agent:semantic:sem-agent-missing-model
+      behavior_cases:
+      - case_id: case:request_actor:good
+        case_kind: known_good
+        text: Inspector Lee has one identity-closed BDI record.
+        inputs:
+          beliefs:
+            inspector_lee:
+              agent_id: inspector_lee
+              beliefs:
+              - training_record_available
+              desires:
+              - complete_field_inspection
+              intentions:
+              - request_restricted_access
+          agent_model:
+            conflicting_intentions: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          agent_ids:
+          - inspector_lee
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This bounded BDI check does not model actor state transition.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:AgentGuard:known-good
+        claim_boundary: field access policy execution revision 1 only
+      - case_id: case:request_actor:bad:missing-model
+        case_kind: known_bad
+        text: An absent BDI model cannot license the actor claim.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks absent BDI input.
+        failure_id: failure:agent:semantic:sem-agent-missing-model
+        blocked_claim: Semantic BDI execution cannot pass without agent records.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_AGENT_MISSING_MODEL
+        oracle_id: oracle:worldguard:AgentGuard:semantic:SEM_AGENT_MISSING_MODEL
+        claim_boundary: field access policy execution revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+- element_id: access_policy_norm
+  kind: norm
+  owner_node_id: evaluate_access_leaf
+  dependencies:
+  - dependency_id: dep_access_policy_subject
+    relation: depends_on
+    depends_on_element_id: request_actor
+  input_ports:
+  - port_id: access_policy_norm_in
+    value_type: access_request
+    schema_id: worldguard.port.access-request
+    schema_version: v1
+    refines: []
+    cardinality: one
+  output_ports:
+  - port_id: access_policy_norm_out
+    value_type: access_decision
+    schema_id: worldguard.port.access-decision
+    schema_version: v1
+    refines: []
+    cardinality: one
+  native_semantic:
+    semantic_id: semantic:access_policy_norm
+    element_kind: norm
+    native_object_id: native_access_policy_norm
+    native_schema_id: worldguard.native.norm.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: access_policy_norm_native
+    semantic_fields:
+      modality: permitted
+      subject_id: request_actor
+      action: enter_restricted_zone
+      condition: training_valid
+      facts:
+      - fact_id: training_valid
+        value: true
+    content_fingerprint: sha256:115337bb24d92d4687dc06f446ca450473c35fc2ce2579a0dbd923464ac704a1
+    claim_boundary: field access policy execution revision 1 only
+    task_purpose:
+      declaration_id: purpose:access_policy_norm
+      purpose: Prevent an absent norm model from licensing restricted-area access.
+      boundary: field access policy execution revision 1 only
+      selected_failure_ids:
+      - failure:norm:semantic:sem-norm-missing-model
+      behavior_cases:
+      - case_id: case:access_policy_norm:good
+        case_kind: known_good
+        text: The permission norm has one true matching condition fact.
+        inputs:
+          norms:
+          - norm_id: native_access_policy_norm
+            modality: permitted
+            subject_id: request_actor
+            action: enter_restricted_zone
+            condition: training_valid
+          facts:
+          - fact_id: training_valid
+            value: true
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          evaluated_norms: 1
+          condition_facts: 1
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This bounded norm check performs no world-state transition.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:NormGuard:known-good
+        claim_boundary: field access policy execution revision 1 only
+      - case_id: case:access_policy_norm:bad:missing-model
+        case_kind: known_bad
+        text: An absent norm model cannot license access-policy semantics.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks absent norm input.
+        failure_id: failure:norm:semantic:sem-norm-missing-model
+        blocked_claim: Semantic norm execution cannot pass without norms.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_NORM_MISSING_MODEL
+        oracle_id: oracle:worldguard:NormGuard:semantic:SEM_NORM_MISSING_MODEL
+        claim_boundary: field access policy execution revision 1 only
+  contributes_to_claim: true
+  required_binding_roles:
+  - evidence
+  - native_result
+  - target_material
+  - test_check
+- element_id: policy_decision_state
+  kind: state
+  owner_node_id: policy_root
+  dependencies:
+  - dependency_id: dep_policy_decision_norm
+    relation: caused_by
+    depends_on_element_id: access_policy_norm
+  input_ports: []
+  output_ports:
+  - port_id: policy_decision_state_out
+    value_type: policy_decision_state_identity
+    schema_id: worldguard.port.policy-decision-state-identity
+    schema_version: v1
+    refines: []
+    cardinality: one
+  internal_terminal_outputs:
+  - output_port_id: policy_decision_state_out
+    reason: retained as state identity context
+  native_semantic:
+    semantic_id: semantic:policy_decision_state
+    element_kind: state
+    native_object_id: native_policy_decision_state
+    native_schema_id: worldguard.native.state.v1
+    provider_id: worldguard.fixture.native
+    provider_version: v1
+    observation_binding_id: policy_decision_state_native
+    semantic_fields:
+      state_id: access_approved
+      initial: false
+      terminal: true
+    content_fingerprint: sha256:a50e039070fea9ee97bcc85746ee2542910cb479ac8ff84b694a0adb2fe1d4e4
+    claim_boundary: field access policy execution revision 1 only
+    task_purpose:
+      declaration_id: purpose:policy_decision_state
+      purpose: Prevent a access_approved-state declaration from being accepted without
+        EventGuard semantics.
+      boundary: field access policy execution revision 1 only
+      selected_failure_ids:
+      - failure:event:semantic:sem-event-missing-events
+      behavior_cases:
+      - case_id: case:policy_decision_state:good
+        case_kind: known_good
+        text: The access_approved state is a valid bounded EventGuard declaration.
+        inputs:
+          event_model:
+            states:
+            - state_id: access_approved
+              initial: false
+              terminal: true
+          events: []
+        coverage_context: {}
+        pre_state: {}
+        expected_output:
+          declared_state_ids:
+          - access_approved
+        post_state: {}
+        effects: {}
+        state_effect_disposition: unverified
+        state_effect_reason: A declaration-only state does not prove reachability.
+        failure_id: ''
+        blocked_claim: ''
+        expected_guard_status: PASS
+        expected_semantic_status: PASS
+        expected_status: ''
+        expected_code: ''
+        oracle_id: oracle:worldguard:EventGuard:known-good
+        claim_boundary: field access policy execution revision 1 only
+      - case_id: case:policy_decision_state:bad:missing-events
+        case_kind: known_bad
+        text: Missing EventGuard inputs cannot license semantic execution.
+        inputs: {}
+        coverage_context: {}
+        pre_state: {}
+        expected_output: {}
+        post_state: {}
+        effects: {}
+        state_effect_disposition: not_applicable
+        state_effect_reason: This counterexample checks missing semantic input.
+        failure_id: failure:event:semantic:sem-event-missing-events
+        blocked_claim: Semantic event execution cannot pass without executable events.
+        expected_guard_status: ''
+        expected_semantic_status: ''
+        expected_status: GAP
+        expected_code: SEM_EVENT_MISSING_EVENTS
+        oracle_id: oracle:worldguard:EventGuard:semantic:SEM_EVENT_MISSING_EVENTS
+        claim_boundary: field access policy execution revision 1 only
+  contributes_to_claim: false
+  required_binding_roles:
+  - native_result
+  - target_material
+bindings:
+- binding_id: access_policy_norm_evidence
+  role: evidence
+  subject_element_id: access_policy_norm
+  resource_id: policy_observation
+  owner: policy-evidence-owner
+  locator: support/policy-access-evidence.json#policy_observation
+  provider_id: worldguard.policy-fixture
+  provider_version: v1
+  provider_capability_id: worldguard.policy-fixture.json-selector.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:8903f88e4baa7684c5dec277c4df2f9cf3bc4a4dbb42f8dfce75a138b09fb2b2
+  receipt_fingerprint: sha256:ae566a66884944cca31de98a8db3b2808c3f64cb35b63eb627fd6a4a303c6b01
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: access_policy_norm_material
+  role: target_material
+  subject_element_id: access_policy_norm
+  resource_id: policy_rule
+  owner: policy-source-owner
+  locator: support/policy-access-target-material.json#policy_rule
+  provider_id: worldguard.policy-fixture
+  provider_version: v1
+  provider_capability_id: worldguard.policy-fixture.json-selector.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:7788e45b0f88b6a89a31e74bd694c82a0cde6fcdd136f841b787bde67e03c4f4
+  receipt_fingerprint: sha256:23dff38d51b4c73e49cecca448f85e54a3ae1c01b372d07b07fd677f3ccbdd33
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: access_policy_norm_native
+  role: native_result
+  subject_element_id: access_policy_norm
+  resource_id: native_access_policy_norm
+  owner: NormGuard
+  locator: support/policy-access-native-results.json#native_access_policy_norm
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:115337bb24d92d4687dc06f446ca450473c35fc2ce2579a0dbd923464ac704a1
+  receipt_fingerprint: sha256:7168a3c1e4935a3a04f198f2f226b0a6811abbbde7a17353a03934138e56d5ec
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: access_policy_norm_test
+  role: test_check
+  subject_element_id: access_policy_norm
+  resource_id: policy_check
+  owner: policy-check-owner
+  locator: support/policy-access-tests.json#policy_check
+  provider_id: worldguard.policy-fixture
+  provider_version: v1
+  provider_capability_id: worldguard.policy-fixture.json-selector.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:4bec8e02cf3998b76f18ab92c89d4dcb1fc90ec52e4cab9ae550e5836622e1f0
+  receipt_fingerprint: sha256:e6580014bbd80b3a9795ae92fbb711dbc5369ed5ec6ac90676913b3491b96d6a
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: policy_decision_state_material
+  role: target_material
+  subject_element_id: policy_decision_state
+  resource_id: policy_decision_record
+  owner: policy-source-owner
+  locator: support/policy-access-target-material.json#policy_decision_record
+  provider_id: worldguard.policy-fixture
+  provider_version: v1
+  provider_capability_id: worldguard.policy-fixture.json-selector.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:df4ef5b316d41bd1fcb796f5b5659c70b3b8e9f2969f8aa72ca4b20c87e6db41
+  receipt_fingerprint: sha256:933b8311042939928fe042630d5502e77b2d33ef644aaf7d4bd9cde450cbd1cf
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: policy_decision_state_native
+  role: native_result
+  subject_element_id: policy_decision_state
+  resource_id: native_policy_decision_state
+  owner: EventGuard
+  locator: support/policy-access-native-results.json#native_policy_decision_state
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:a50e039070fea9ee97bcc85746ee2542910cb479ac8ff84b694a0adb2fe1d4e4
+  receipt_fingerprint: sha256:53fa038914cf379ae26d3e038fd08872f0da5061360967902c22e1be1751dba4
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: request_actor_material
+  role: target_material
+  subject_element_id: request_actor
+  resource_id: policy_subject
+  owner: policy-source-owner
+  locator: support/policy-access-target-material.json#policy_subject
+  provider_id: worldguard.policy-fixture
+  provider_version: v1
+  provider_capability_id: worldguard.policy-fixture.json-selector.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:709aa3ee4e5ff6c77f0251d256c8b39eeefdc2cfa0d99d2b892a299b85b75c93
+  receipt_fingerprint: sha256:99a8d6917d4f68f2d3a7461816039a5e46a7c359a95af8bfc87a32d5c5fa2680
+  claim_boundary: field access policy execution revision 1 only
+- binding_id: request_actor_native
+  role: native_result
+  subject_element_id: request_actor
+  resource_id: native_request_actor
+  owner: AgentGuard
+  locator: support/policy-access-native-results.json#native_request_actor
+  provider_id: worldguard.fixture.native
+  provider_version: v1
+  provider_capability_id: worldguard.native-result.v1
+  observation_mode: local_content
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  freshness_status: current
+  content_fingerprint: sha256:3e0e81a8cd41e8fec6150e10deaa2c5de8ccb7f71e94adebc2f3eaf1c00d257e
+  receipt_fingerprint: sha256:87c6a6798ce85b8101e795990221f300d805796be6e6af67d70478f9da692e86
+  claim_boundary: field access policy execution revision 1 only
+declared_inputs:
+- input_id: external_policy_request
+  node_id: policy_root
+  port_id: policy_request
+declared_outputs:
+- output_id: declared_policy_decision
+  node_id: policy_root
+  port_id: policy_decision
+commitment_inventory:
+  inventory_id: policy-access-execution:commitments:policy-revision-1
+  authority_owner_id: policy-request-contract-owner
+  locator: support/policy-access-behavior-commitments.json
+  adapter_id: worldguard.request-contract.commitment-adapter
+  adapter_version: v2
+  adapter_capability_id: worldguard.behavior-commitment.replay.v2
+  target_id: policy-access-execution
+  target_revision: policy-revision-1
+  input_refs:
+  - input_id: object-census-source:policy-access-execution:policy-revision-1
+    input_kind: target_object_census_source
+    observation_mode: local_content
+    locator: support/policy-access-target-object-census-source.json
+    target_id: policy-access-execution
+    target_revision: policy-revision-1
+    content_fingerprint: sha256:376d1c67ece0cd84c8e9c9b5fef6ef351e8408a3fabc055a135eb4140a2cb01a
+  - input_id: object-census:policy-access-execution:policy-revision-1
+    input_kind: target_object_census_authority
+    observation_mode: local_content
+    locator: support/policy-access-target-object-census-authority.json
+    target_id: policy-access-execution
+    target_revision: policy-revision-1
+    content_fingerprint: sha256:2bb8f5f289b08412225213499ab345f1ccb6357634feddbf665b24d24e830a39
+  - input_id: request:policy-access-execution:policy-revision-1
+    input_kind: request_contract
+    observation_mode: local_content
+    locator: support/policy-access-behavior-request-contract.json
+    target_id: policy-access-execution
+    target_revision: policy-revision-1
+    content_fingerprint: sha256:9bd589563d9407bae4aa3a6b364920186d047e91d409381a3f06404aa82cc102
+  - input_id: target-material:policy-access-execution:policy-revision-1
+    input_kind: target_material
+    observation_mode: local_content
+    locator: support/policy-access-target-material.json
+    target_id: policy-access-execution
+    target_revision: policy-revision-1
+    content_fingerprint: sha256:d675225db7d5fbae0f856674eeae016fcd939babb087452948d87c5913320077
+  - input_id: target-semantics:policy-access-execution:policy-revision-1
+    input_kind: target_semantic_authority
+    observation_mode: local_content
+    locator: support/policy-access-target-semantic-authority.json
+    target_id: policy-access-execution
+    target_revision: policy-revision-1
+    content_fingerprint: sha256:cf588e692ca177029748073d6a14f1d780df6161ce5654eb879c2d747283aa55
+  claim_boundary: field access policy execution revision 1 only
+declared_gaps: []
+blueprint_fingerprint: ddd32e8f423b6ac391fe4a64c9f3b5483d1870f5d49eceefa7373714fa0f9541

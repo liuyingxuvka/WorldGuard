@@ -67,16 +67,16 @@ def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
         for code in codes
     }
     declared = [(case.guard, case.layer, case.code) for case in PROTECTED_FAILURE_CLASSES]
-    assert len(declared) == len(set(declared)) == len(expected) == 43
+    assert len(declared) == len(set(declared)) == len(expected) == 81
     assert set(declared) == expected
-    assert report["protected_failure_count"] == report["known_bad_count"] == 43
-    assert report["candidate_binding_count"] == 50
+    assert report["protected_failure_count"] == report["known_bad_count"] == 81
+    assert report["candidate_binding_count"] == 88
     assert {
         item["family_contract_fingerprint"] for item in report["observations"]
     } == {guard_family_purpose_contract_fingerprint()}
 
     bad_observations = [item for item in report["observations"] if "failure_id" in item]
-    assert len(bad_observations) == 43
+    assert len(bad_observations) == 81
     assert all(item["observed_status"] == item["expected_status"] for item in bad_observations)
     assert all(item["observed_codes"] == [item["expected_code"]] for item in bad_observations)
 
@@ -144,7 +144,7 @@ def test_guard_model_contract_exhaustion_is_exact_and_oracle_bound():
     assert report.ok is True
     assert report.decision == "contract_exhaustion_ready"
     assert report.confidence == "full"
-    assert len(report.generated_cases) == len(expected_ids) == 43
+    assert len(report.generated_cases) == len(expected_ids) == 81
     assert generated_ids == expected_ids
     assert not report.findings
 

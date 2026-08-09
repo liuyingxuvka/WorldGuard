@@ -16,6 +16,7 @@ from .contracts import (
 )
 from .ledgers import LedgerEntry, ledger_entry
 from .kernel import run_worldguard
+from .qualification import QualificationContext
 from .reports import GuardedReport
 from .semantic import (
     NativeDepthReceipt,
@@ -24,7 +25,6 @@ from .semantic import (
     SemanticStatus,
     aggregate_provider_status,
     aggregate_semantic_status,
-    execute_semantic,
     fingerprint_mesh,
 )
 from .status import GuardStatus, aggregate_statuses, coerce_status
@@ -56,6 +56,43 @@ CYCLE_RELATIONS = {
     "consumes_output_of",
     "supersedes",
 }
+TRANSFER_RELATIONS = {"parent_child", "consumes_output_of"}
+PORT_CARDINALITIES = {"one", "optional", "many"}
+
+PREDICTIVE_AXIS_IDS = (
+    "state",
+    "transition",
+    "event",
+    "fluent",
+    "branch",
+    "perturbation",
+    "intervention",
+    "counterfactual",
+)
+PREDICTIVE_AXIS_EXPECTED_FIELDS = {
+    "state": "state_ids",
+    "transition": "transition_ids",
+    "event": "event_ids",
+    "fluent": "fluent_ids",
+    "branch": "branch_ids",
+    "perturbation": "perturbation_ids",
+    "intervention": "intervention_ids",
+    "counterfactual": "counterfactual_ids",
+}
+PREDICTIVE_AXIS_OBSERVATION_FIELDS = {
+    "state": ("executed_state_ids",),
+    "transition": ("executed_transition_ids",),
+    "event": ("executed_event_ids",),
+    "fluent": (
+        "reached_fluent_ids",
+        "active_fluent_ids",
+        "final_fluent_ids_by_scenario",
+    ),
+    "branch": ("executed_branch_ids",),
+    "perturbation": ("executed_perturbation_ids",),
+    "intervention": ("executed_intervention_ids",),
+    "counterfactual": ("executed_counterfactual_ids",),
+}
 
 
 @dataclass(frozen=True)
@@ -82,12 +119,47 @@ class ModelAuthority:
 
 
 @dataclass(frozen=True)
+class ModelPort:
+    port_id: str
+    value_type: str
+    cardinality: str = "one"
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "ModelPort":
+        allowed = {"port_id", "value_type", "cardinality"}
+        unknown = sorted(set(data).difference(allowed))
+        if unknown:
+            raise ValueError("model port has unknown fields: " + ", ".join(unknown))
+        port_id = str(data.get("port_id", "")).strip()
+        value_type = str(data.get("value_type", "")).strip()
+        cardinality = str(data.get("cardinality", "one")).strip()
+        if not port_id or not value_type:
+            raise ValueError("model port requires port_id and value_type")
+        if cardinality not in PORT_CARDINALITIES:
+            raise ValueError(f"unknown model port cardinality: {cardinality}")
+        return cls(
+            port_id=port_id,
+            value_type=value_type,
+            cardinality=cardinality,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "port_id": self.port_id,
+            "value_type": self.value_type,
+            "cardinality": self.cardinality,
+        }
+
+
+@dataclass(frozen=True)
 class ModelNode:
     model_id: str
     model_version: str = ""
     model_kind: str = "world_model"
     authority: ModelAuthority = field(default_factory=ModelAuthority)
     freshness_status: str = "current"
+    input_ports: list[ModelPort] = field(default_factory=list)
+    output_ports: list[ModelPort] = field(default_factory=list)
     contract: GuardContract | None = None
 
     @classmethod
@@ -96,12 +168,21 @@ class ModelNode:
         freshness_status = str(data.get("freshness_status", "current"))
         if freshness_status not in FRESHNESS_STATUSES:
             freshness_status = "unknown"
+        input_ports = [ModelPort.from_dict(item) for item in data.get("input_ports", [])]
+        output_ports = [ModelPort.from_dict(item) for item in data.get("output_ports", [])]
+        all_port_ids = [port.port_id for port in [*input_ports, *output_ports]]
+        if len(all_port_ids) != len(set(all_port_ids)):
+            raise ValueError(
+                f"model node {data.get('model_id', '')} has duplicate port ids"
+            )
         return cls(
             model_id=str(data.get("model_id", "")),
             model_version=str(data.get("model_version", "")),
             model_kind=str(data.get("model_kind", "world_model")),
             authority=ModelAuthority.from_dict(data.get("authority")),
             freshness_status=freshness_status,
+            input_ports=input_ports,
+            output_ports=output_ports,
             contract=GuardContract.from_dict(contract_data) if contract_data else None,
         )
 
@@ -112,6 +193,8 @@ class ModelNode:
             "model_kind": self.model_kind,
             "authority": self.authority.to_dict(),
             "freshness_status": self.freshness_status,
+            "input_ports": [port.to_dict() for port in self.input_ports],
+            "output_ports": [port.to_dict() for port in self.output_ports],
         }
         if self.contract:
             data["contract"] = self.contract.to_dict()
@@ -119,12 +202,43 @@ class ModelNode:
 
 
 @dataclass(frozen=True)
+class ModelPortMapping:
+    mapping_id: str
+    source_port_id: str
+    target_port_id: str
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "ModelPortMapping":
+        allowed = {"mapping_id", "source_port_id", "target_port_id"}
+        unknown = sorted(set(data).difference(allowed))
+        if unknown:
+            raise ValueError(
+                "model port mapping has unknown fields: " + ", ".join(unknown)
+            )
+        mapping_id = str(data.get("mapping_id", "")).strip()
+        source_port_id = str(data.get("source_port_id", "")).strip()
+        target_port_id = str(data.get("target_port_id", "")).strip()
+        if not mapping_id or not source_port_id or not target_port_id:
+            raise ValueError(
+                "model port mapping requires mapping_id, source_port_id, and target_port_id"
+            )
+        return cls(mapping_id, source_port_id, target_port_id)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "mapping_id": self.mapping_id,
+            "source_port_id": self.source_port_id,
+            "target_port_id": self.target_port_id,
+        }
+
+
+@dataclass(frozen=True)
 class ModelEdge:
     edge_id: str
     source_model_id: str
     target_model_id: str
-    relation: str = "depends_on"
-    output_refs: list[str] = field(default_factory=list)
+    relation: str
+    port_mappings: list[ModelPortMapping] = field(default_factory=list)
     allowed_use: list[str] = field(default_factory=list)
     forbidden_use: list[str] = field(default_factory=list)
     read_only: bool = True
@@ -132,15 +246,43 @@ class ModelEdge:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "ModelEdge":
-        relation = str(data.get("relation", "depends_on"))
+        if "output_refs" in data:
+            raise ValueError(
+                "model edge output_refs is retired; use exact port_mappings"
+            )
+        relation = str(data.get("relation", "")).strip()
         if relation not in EDGE_RELATIONS:
-            relation = "depends_on"
+            raise ValueError(
+                f"unknown model edge relation for {data.get('edge_id', '')}: {relation or '<missing>'}"
+            )
+        port_mappings = [
+            ModelPortMapping.from_dict(item) for item in data.get("port_mappings", [])
+        ]
+        mapping_ids = [mapping.mapping_id for mapping in port_mappings]
+        mapping_pairs = [
+            (mapping.source_port_id, mapping.target_port_id)
+            for mapping in port_mappings
+        ]
+        if len(mapping_ids) != len(set(mapping_ids)) or len(mapping_pairs) != len(
+            set(mapping_pairs)
+        ):
+            raise ValueError(
+                f"model edge {data.get('edge_id', '')} has duplicate port mappings"
+            )
+        if relation in TRANSFER_RELATIONS and not port_mappings:
+            raise ValueError(
+                f"model edge {data.get('edge_id', '')} relation {relation} requires port_mappings"
+            )
+        if relation not in TRANSFER_RELATIONS and port_mappings:
+            raise ValueError(
+                f"model edge {data.get('edge_id', '')} relation {relation} does not transfer ports"
+            )
         return cls(
             edge_id=str(data.get("edge_id", "")),
             source_model_id=str(data.get("source_model_id", "")),
             target_model_id=str(data.get("target_model_id", "")),
             relation=relation,
-            output_refs=list(data.get("output_refs", [])),
+            port_mappings=port_mappings,
             allowed_use=list(data.get("allowed_use", [])),
             forbidden_use=list(data.get("forbidden_use", [])),
             read_only=bool(data.get("read_only", True)),
@@ -153,7 +295,7 @@ class ModelEdge:
             "source_model_id": self.source_model_id,
             "target_model_id": self.target_model_id,
             "relation": self.relation,
-            "output_refs": self.output_refs,
+            "port_mappings": [mapping.to_dict() for mapping in self.port_mappings],
             "allowed_use": self.allowed_use,
             "forbidden_use": self.forbidden_use,
             "read_only": self.read_only,
@@ -209,6 +351,50 @@ def _time_strata_from_value(value: Any) -> dict[str, list[str]]:
 
 
 @dataclass(frozen=True)
+class PredictiveAxisDisposition:
+    axis_id: str
+    disposition: str
+    observation_field: str = ""
+    reason: str = ""
+    claim_boundary: str = ""
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "PredictiveAxisDisposition":
+        allowed = {
+            "axis_id",
+            "disposition",
+            "observation_field",
+            "reason",
+            "claim_boundary",
+        }
+        unknown = sorted(set(data).difference(allowed))
+        if unknown:
+            raise ValueError(
+                "predictive axis disposition has unknown fields: "
+                + ", ".join(unknown)
+            )
+        return cls(
+            axis_id=str(data.get("axis_id", "")).strip(),
+            disposition=str(data.get("disposition", "")).strip(),
+            observation_field=str(data.get("observation_field", "")).strip(),
+            reason=str(data.get("reason", "")).strip(),
+            claim_boundary=str(data.get("claim_boundary", "")).strip(),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        result = {
+            "axis_id": self.axis_id,
+            "disposition": self.disposition,
+            "claim_boundary": self.claim_boundary,
+        }
+        if self.observation_field:
+            result["observation_field"] = self.observation_field
+        if self.reason:
+            result["reason"] = self.reason
+        return result
+
+
+@dataclass(frozen=True)
 class SemanticCoverageContract:
     profile: str = "bounded"
     expected_model_node_ids: list[str] = field(default_factory=list)
@@ -219,6 +405,8 @@ class SemanticCoverageContract:
     holdout_scenario_ids: list[str] = field(default_factory=list)
     state_ids: list[str] = field(default_factory=list)
     transition_ids: list[str] = field(default_factory=list)
+    event_ids: list[str] = field(default_factory=list)
+    fluent_ids: list[str] = field(default_factory=list)
     branch_ids: list[str] = field(default_factory=list)
     perturbation_ids: list[str] = field(default_factory=list)
     intervention_ids: list[str] = field(default_factory=list)
@@ -228,6 +416,7 @@ class SemanticCoverageContract:
     time_strata: dict[str, list[str]] = field(default_factory=dict)
     minimum_timepoint_count: Any = 0
     minimum_timepoint_coverage: Any = 0.0
+    axis_dispositions: list[PredictiveAxisDisposition] = field(default_factory=list)
     per_model_node: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
@@ -282,6 +471,78 @@ class SemanticCoverageContract:
         raw_per_model_node = data.get("per_model_node", {})
         if not isinstance(raw_per_model_node, Mapping):
             raw_per_model_node = {}
+        raw_axis_dispositions = data.get("axis_dispositions", [])
+        if not isinstance(raw_axis_dispositions, (list, tuple)):
+            raise ValueError("axis_dispositions must be a list of current row objects")
+        axis_dispositions: list[PredictiveAxisDisposition] = []
+        for raw_disposition in raw_axis_dispositions:
+            if not isinstance(raw_disposition, Mapping):
+                raise ValueError(
+                    "axis_dispositions entries must be current row objects"
+                )
+            axis_dispositions.append(
+                PredictiveAxisDisposition.from_dict(raw_disposition)
+            )
+        axis_ids = [row.axis_id for row in axis_dispositions]
+        if profile == "predictive":
+            missing_axes = sorted(set(PREDICTIVE_AXIS_IDS).difference(axis_ids))
+            extra_axes = sorted(set(axis_ids).difference(PREDICTIVE_AXIS_IDS))
+            duplicate_axes = sorted(
+                axis_id for axis_id in set(axis_ids) if axis_ids.count(axis_id) > 1
+            )
+            if missing_axes or extra_axes or duplicate_axes:
+                raise ValueError(
+                    "predictive axis dispositions must contain exactly one current row "
+                    f"per axis; missing={missing_axes}, extra={extra_axes}, "
+                    f"duplicates={duplicate_axes}"
+                )
+            for row in axis_dispositions:
+                if row.disposition not in {"required", "not_applicable"}:
+                    raise ValueError(
+                        f"predictive axis {row.axis_id} has invalid disposition: "
+                        f"{row.disposition or '<missing>'}"
+                    )
+                if not row.claim_boundary:
+                    raise ValueError(
+                        f"predictive axis {row.axis_id} requires claim_boundary"
+                    )
+                expected_field = PREDICTIVE_AXIS_EXPECTED_FIELDS[row.axis_id]
+                expected_ids = data.get(expected_field, [])
+                if not isinstance(expected_ids, (list, tuple)):
+                    raise ValueError(f"{expected_field} must be a list")
+                if row.disposition == "required":
+                    allowed_observations = PREDICTIVE_AXIS_OBSERVATION_FIELDS[
+                        row.axis_id
+                    ]
+                    if row.observation_field not in allowed_observations:
+                        raise ValueError(
+                            f"predictive axis {row.axis_id} observation_field must be one of "
+                            f"{list(allowed_observations)}"
+                        )
+                    if row.reason:
+                        raise ValueError(
+                            f"required predictive axis {row.axis_id} must not carry reason"
+                        )
+                    if not expected_ids:
+                        raise ValueError(
+                            f"required predictive axis {row.axis_id} has empty "
+                            f"{expected_field}"
+                        )
+                else:
+                    if row.observation_field:
+                        raise ValueError(
+                            f"not_applicable predictive axis {row.axis_id} must not carry "
+                            "observation_field"
+                        )
+                    if not row.reason:
+                        raise ValueError(
+                            f"not_applicable predictive axis {row.axis_id} requires reason"
+                        )
+                    if expected_ids:
+                        raise ValueError(
+                            f"not_applicable predictive axis {row.axis_id} must not carry "
+                            f"{expected_field}"
+                        )
         return cls(
             profile=profile,
             expected_model_node_ids=[str(item) for item in expected_nodes],
@@ -297,6 +558,8 @@ class SemanticCoverageContract:
             ],
             state_ids=[str(item) for item in data.get("state_ids", [])],
             transition_ids=[str(item) for item in data.get("transition_ids", [])],
+            event_ids=[str(item) for item in data.get("event_ids", [])],
+            fluent_ids=[str(item) for item in data.get("fluent_ids", [])],
             branch_ids=[str(item) for item in data.get("branch_ids", [])],
             perturbation_ids=[str(item) for item in data.get("perturbation_ids", [])],
             intervention_ids=[str(item) for item in data.get("intervention_ids", [])],
@@ -309,6 +572,7 @@ class SemanticCoverageContract:
             time_strata=_time_strata_from_value(data.get("time_strata", {})),
             minimum_timepoint_count=data.get("minimum_timepoint_count", 0),
             minimum_timepoint_coverage=data.get("minimum_timepoint_coverage", 0.0),
+            axis_dispositions=axis_dispositions,
             per_model_node={
                 str(node_id): dict(policy)
                 for node_id, policy in raw_per_model_node.items()
@@ -327,6 +591,8 @@ class SemanticCoverageContract:
             "holdout_scenario_ids": self.holdout_scenario_ids,
             "state_ids": self.state_ids,
             "transition_ids": self.transition_ids,
+            "event_ids": self.event_ids,
+            "fluent_ids": self.fluent_ids,
             "branch_ids": self.branch_ids,
             "perturbation_ids": self.perturbation_ids,
             "intervention_ids": self.intervention_ids,
@@ -336,6 +602,9 @@ class SemanticCoverageContract:
             "time_strata": self.time_strata,
             "minimum_timepoint_count": self.minimum_timepoint_count,
             "minimum_timepoint_coverage": self.minimum_timepoint_coverage,
+            "axis_dispositions": [
+                row.to_dict() for row in self.axis_dispositions
+            ],
             "per_model_node": self.per_model_node,
         }
 
@@ -349,6 +618,7 @@ class ModelMeshContract:
     edges: list[ModelEdge] = field(default_factory=list)
     snapshots: list[WorldStateSnapshot] = field(default_factory=list)
     provider_availability: dict[str, bool] = field(default_factory=dict)
+    provider_results: dict[str, dict[str, Any]] = field(default_factory=dict)
     semantic_coverage: SemanticCoverageContract = field(
         default_factory=SemanticCoverageContract
     )
@@ -381,6 +651,11 @@ class ModelMeshContract:
                 str(key): bool(value)
                 for key, value in dict(data.get("provider_availability", {})).items()
             },
+            provider_results={
+                str(key): dict(value)
+                for key, value in dict(data.get("provider_results", {})).items()
+                if isinstance(value, Mapping)
+            },
             semantic_coverage=SemanticCoverageContract.from_dict(
                 coverage_data,
                 default_model_node_ids=[node.model_id for node in nodes],
@@ -396,6 +671,7 @@ class ModelMeshContract:
             "edges": [edge.to_dict() for edge in self.edges],
             "snapshots": [snapshot.to_dict() for snapshot in self.snapshots],
             "provider_availability": self.provider_availability,
+            "provider_results": self.provider_results,
             "semantic_coverage": self.semantic_coverage.to_dict(),
         }
 
@@ -723,6 +999,124 @@ def _output_ids(
         for receipt in receipts
         for item in receipt.outputs.get(output_field, [])
     }
+
+
+def _output_field_ids(
+    receipts: list[SemanticExecutionReceipt],
+    output_field: str,
+) -> set[str]:
+    if output_field != "final_fluent_ids_by_scenario":
+        return _output_ids(receipts, output_field)
+    observed: set[str] = set()
+    for receipt in receipts:
+        per_scenario = receipt.outputs.get(output_field, {})
+        if not isinstance(per_scenario, Mapping):
+            continue
+        for values in per_scenario.values():
+            if isinstance(values, (list, tuple, set)):
+                observed.update(str(value) for value in values)
+    return observed
+
+
+def _predictive_axis_observed_ids(
+    receipts: list[SemanticExecutionReceipt],
+    axis_id: str,
+    observation_field: str,
+) -> set[str]:
+    fields = (
+        (observation_field,)
+        if observation_field
+        else PREDICTIVE_AXIS_OBSERVATION_FIELDS[axis_id]
+    )
+    observed: set[str] = set()
+    for output_field in fields:
+        observed.update(_output_field_ids(receipts, output_field))
+    return observed
+
+
+def _predictive_axis_assessment(
+    coverage: SemanticCoverageContract,
+    receipts: list[SemanticExecutionReceipt],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    dispositions = {row.axis_id: row for row in coverage.axis_dispositions}
+    gaps: list[str] = []
+    results: list[dict[str, Any]] = []
+    for axis_id in PREDICTIVE_AXIS_IDS:
+        expected_field = PREDICTIVE_AXIS_EXPECTED_FIELDS[axis_id]
+        expected_ids = set(getattr(coverage, expected_field))
+        row = dispositions.get(axis_id)
+        if row is None:
+            gaps.append(f"predictive_axis_disposition_missing:{axis_id}")
+            results.append(
+                {
+                    "axis_id": axis_id,
+                    "disposition": "invalid",
+                    "expected_field": expected_field,
+                    "observation_field": "",
+                    "observation_fields_checked": list(
+                        PREDICTIVE_AXIS_OBSERVATION_FIELDS[axis_id]
+                    ),
+                    "reason": "predictive axis disposition is missing",
+                    "claim_boundary": "",
+                    "expected_ids": sorted(expected_ids),
+                    "observed_ids": [],
+                    "missing_ids": sorted(expected_ids),
+                    "outside_declared_ids": [],
+                    "passed": False,
+                    "status": "blocked",
+                }
+            )
+            continue
+        observed_ids = _predictive_axis_observed_ids(
+            receipts,
+            axis_id,
+            row.observation_field,
+        )
+        missing_ids: list[str] = []
+        outside_declared_ids: list[str] = []
+        if row.disposition == "required":
+            missing_ids = sorted(expected_ids.difference(observed_ids))
+            outside_declared_ids = sorted(observed_ids.difference(expected_ids))
+            gaps.extend(
+                f"predictive_{expected_field}_not_executed:{item_id}"
+                for item_id in missing_ids
+            )
+            gaps.extend(
+                f"predictive_{expected_field}_outside_declared:{item_id}"
+                for item_id in outside_declared_ids
+            )
+            passed = not missing_ids and not outside_declared_ids
+            status = "validated" if passed else "blocked"
+        else:
+            outside_declared_ids = sorted(observed_ids)
+            gaps.extend(
+                f"predictive_{axis_id}_not_applicable_observed:{item_id}"
+                for item_id in outside_declared_ids
+            )
+            passed = not expected_ids and not observed_ids
+            status = "not_applicable" if passed else "blocked"
+        results.append(
+            {
+                "axis_id": axis_id,
+                "disposition": row.disposition,
+                "expected_field": expected_field,
+                "observation_field": row.observation_field,
+                "observation_fields_checked": (
+                    [row.observation_field]
+                    if row.observation_field
+                    else list(PREDICTIVE_AXIS_OBSERVATION_FIELDS[axis_id])
+                ),
+                "reason": row.reason,
+                "claim_boundary": row.claim_boundary,
+                "expected_ids": sorted(expected_ids),
+                "observed_ids": sorted(observed_ids),
+                "missing_ids": missing_ids,
+                "outside_declared_ids": outside_declared_ids,
+                "passed": passed,
+                "status": status,
+            }
+        )
+    return gaps, results
 
 
 _NUMERIC_TIME_RE = re.compile(r"^(.*?)([-+]?\d+(?:\.\d+)?)$")
@@ -1073,20 +1467,15 @@ def _predictive_assessment(
         if child_id in executed_children
     )
 
-    expected_to_output = {
+    scenario_expected_to_output = {
         "scenario_ids": "executed_scenario_ids",
         "holdout_scenario_ids": "executed_holdout_scenario_ids",
-        "state_ids": "executed_state_ids",
-        "transition_ids": "executed_transition_ids",
-        "branch_ids": "executed_branch_ids",
-        "perturbation_ids": "executed_perturbation_ids",
-        "intervention_ids": "executed_intervention_ids",
-        "counterfactual_ids": "executed_counterfactual_ids",
     }
     actual: dict[str, set[str]] = {
         expected_field: _output_ids(receipts, output_field)
-        for expected_field, output_field in expected_to_output.items()
+        for expected_field, output_field in scenario_expected_to_output.items()
     }
+    predictive_axis_results: list[dict[str, Any]] = []
     per_model_node_results: list[dict[str, Any]] = []
     horizon_steps = 0
     time_quantitative: dict[str, Any] = {
@@ -1132,25 +1521,18 @@ def _predictive_assessment(
             horizon_steps,
         )
         gaps.extend(time_gaps)
-        required_nonempty = (
-            "scenario_ids",
-            "holdout_scenario_ids",
-            "state_ids",
-            "transition_ids",
-            "branch_ids",
-            "perturbation_ids",
-            "intervention_ids",
-            "counterfactual_ids",
-        )
-        for field_id in required_nonempty:
+        for field_id in scenario_expected_to_output:
             expected = set(getattr(coverage, field_id))
             if not expected:
                 gaps.append(f"predictive_{field_id}_missing")
                 continue
             for missing_id in sorted(expected.difference(actual[field_id])):
                 gaps.append(f"predictive_{field_id}_not_executed:{missing_id}")
-        if len(coverage.state_ids) < 2:
-            gaps.append("predictive_state_depth_insufficient")
+        axis_gaps, predictive_axis_results = _predictive_axis_assessment(
+            coverage,
+            receipts,
+        )
+        gaps.extend(axis_gaps)
         for guard in ("EventGuard", "CausalGuard"):
             guard_receipts = [
                 receipt
@@ -1190,7 +1572,7 @@ def _predictive_assessment(
             ]
             node_actual = {
                 expected_field: _output_ids(node_receipts, output_field)
-                for expected_field, output_field in expected_to_output.items()
+                for expected_field, output_field in scenario_expected_to_output.items()
             }
             try:
                 node_horizon_steps = int(node_coverage.horizon.get("steps", 0))
@@ -1238,15 +1620,18 @@ def _predictive_assessment(
                         "timepoint_coverage": variable_quantitative,
                     }
                 )
-            for field_id in required_nonempty:
+            for field_id in scenario_expected_to_output:
                 expected = set(getattr(node_coverage, field_id))
                 if not expected:
                     node_gaps.append(f"predictive_{field_id}_missing")
                     continue
                 for missing_id in sorted(expected.difference(node_actual[field_id])):
                     node_gaps.append(f"predictive_{field_id}_not_executed:{missing_id}")
-            if len(node_coverage.state_ids) < 2:
-                node_gaps.append("predictive_state_depth_insufficient")
+            node_axis_gaps, node_axis_results = _predictive_axis_assessment(
+                node_coverage,
+                node_receipts,
+            )
+            node_gaps.extend(node_axis_gaps)
             required_node_guards = set(
                 coverage_state["required_guards"].get(node_id, [])
             )
@@ -1284,13 +1669,14 @@ def _predictive_assessment(
                         variable_timepoint_results
                     ),
                     "expected_axis_counts": {
-                        field_id: len(getattr(node_coverage, field_id))
-                        for field_id in required_nonempty
+                        row["axis_id"]: len(row["expected_ids"])
+                        for row in node_axis_results
                     },
                     "executed_axis_counts": {
-                        field_id: len(node_actual[field_id])
-                        for field_id in required_nonempty
+                        row["axis_id"]: len(row["observed_ids"])
+                        for row in node_axis_results
                     },
+                    "axis_results": node_axis_results,
                 }
             )
 
@@ -1307,18 +1693,68 @@ def _predictive_assessment(
         ),
         "horizon": dict(coverage.horizon),
         "per_model_node_results": per_model_node_results,
+        "predictive_axis_results": predictive_axis_results,
         **time_quantitative,
     }
-    for field_id in expected_to_output:
+    for field_id in scenario_expected_to_output:
         quantitative[f"expected_{field_id.removesuffix('_ids')}_count"] = len(
             getattr(coverage, field_id)
         )
         quantitative[f"executed_{field_id.removesuffix('_ids')}_count"] = len(
             actual[field_id]
         )
+    for row in predictive_axis_results:
+        axis_id = str(row["axis_id"])
+        quantitative[f"expected_{axis_id}_count"] = len(row["expected_ids"])
+        quantitative[f"executed_{axis_id}_count"] = len(row["observed_ids"])
+        quantitative[f"{axis_id}_axis_disposition"] = row["disposition"]
     gaps = list(dict.fromkeys(gaps))
     licensed = bool(requested and not gaps and expected_children <= passed_children)
     return gaps, licensed, quantitative
+
+
+def _qualification_rollout_inputs(mesh: ModelMeshContract) -> dict[str, Any]:
+    coverage = mesh.semantic_coverage
+    meaningful = bool(
+        coverage.profile == "predictive"
+        or coverage.expected_model_node_ids_explicit
+        or coverage.excluded_model_nodes
+        or coverage.expected_semantic_child_ids
+        or coverage.scenario_ids
+        or coverage.holdout_scenario_ids
+        or coverage.state_ids
+        or coverage.transition_ids
+        or coverage.event_ids
+        or coverage.fluent_ids
+        or coverage.branch_ids
+        or coverage.perturbation_ids
+        or coverage.intervention_ids
+        or coverage.counterfactual_ids
+        or coverage.horizon
+        or coverage.timepoint_ids
+        or coverage.time_strata
+        or coverage.minimum_timepoint_count
+        or coverage.minimum_timepoint_coverage
+        or coverage.axis_dispositions
+        or coverage.per_model_node
+    )
+    return coverage.to_dict() if meaningful else {}
+
+
+def qualification_context_for_node(
+    mesh: ModelMeshContract,
+    node: ModelNode,
+) -> QualificationContext:
+    if node.contract is None:
+        raise ValueError(f"model node {node.model_id} lacks a Guard contract")
+    return QualificationContext(
+        node_id=node.model_id,
+        target_id=node.contract.world_model.model_id or node.model_id,
+        target_revision=node.contract.world_model.model_version or node.model_version,
+        provider_availability=mesh.provider_availability,
+        provider_results=mesh.provider_results,
+        rollout_inputs=_qualification_rollout_inputs(mesh),
+    )
 
 
 def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
@@ -1343,7 +1779,10 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
             continue
         findings.extend(_authority_findings(mesh, node))
         if node.contract is not None:
-            report = run_worldguard(node.contract)
+            report = run_worldguard(
+                node.contract,
+                context=qualification_context_for_node(mesh, node),
+            )
             node_reports[node.model_id] = report
             aggregate_ledger.extend(report.aggregate_ledger)
 
@@ -1374,27 +1813,16 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
         )
 
     aggregate_ledger.extend(_finding_ledgers(mesh, findings))
-    statuses = [report.status for report in node_reports.values()]
+    statuses = [report.structural_status for report in node_reports.values()]
     statuses.extend(finding.status for finding in findings)
     structural_status = aggregate_statuses(statuses) if statuses else GuardStatus.GAP
 
-    semantic_receipts: list[SemanticExecutionReceipt] = []
+    semantic_receipts = [
+        receipt
+        for node_id in sorted(node_reports)
+        for receipt in node_reports[node_id].semantic_receipts
+    ]
     semantic_required = True
-    for node in mesh.nodes:
-        if node.model_id in excluded_model_ids:
-            continue
-        if node.contract is None:
-            continue
-        for guard in node.contract.claim.target_guards:
-            semantic_receipts.append(
-                execute_semantic(
-                    node_id=node.model_id,
-                    guard=guard,
-                    contract=node.contract.for_guard(guard),
-                    provider_available=mesh.provider_availability.get(guard, True),
-                    coverage_context=mesh.semantic_coverage.to_dict(),
-                )
-            )
     semantic_status = aggregate_semantic_status(semantic_receipts)
     predictive_gaps, predictive_licensed, quantitative_coverage = _predictive_assessment(
         mesh,
@@ -1422,7 +1850,6 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
         semantic_receipts,
         required=semantic_required,
     )
-    aggregate_ledger.extend(_semantic_ledgers(mesh, semantic_receipts))
     status = aggregate_statuses(
         [structural_status, _semantic_guard_status(rollout_status)]
     )
@@ -1468,40 +1895,6 @@ def _semantic_guard_status(status: SemanticStatus) -> GuardStatus:
     if status == SemanticStatus.BOUNDARY_ONLY:
         return GuardStatus.BOUNDARY_EXCEEDED
     return GuardStatus.GAP
-
-
-def _semantic_ledgers(
-    mesh: ModelMeshContract,
-    receipts: list[SemanticExecutionReceipt],
-) -> list[LedgerEntry]:
-    entries: list[LedgerEntry] = []
-    for receipt in receipts:
-        impact = {
-            SemanticStatus.PASS: "supports_pass",
-            SemanticStatus.FAIL: "supports_fail",
-            SemanticStatus.GAP: "creates_gap",
-            SemanticStatus.BOUNDARY_ONLY: "marks_boundary",
-            SemanticStatus.NOT_RUN: "creates_gap",
-        }[receipt.status]
-        channel = {
-            SemanticStatus.PASS: "aggregate",
-            SemanticStatus.FAIL: "aggregate",
-            SemanticStatus.GAP: "gap",
-            SemanticStatus.BOUNDARY_ONLY: "boundary",
-            SemanticStatus.NOT_RUN: "gap",
-        }[receipt.status]
-        entries.append(
-            ledger_entry(
-                run_id=mesh.run_id,
-                claim_id=mesh.mesh_id,
-                guard=receipt.guard,
-                channel=channel,
-                status_impact=impact,
-                payload=receipt.to_dict(),
-                step=f"semantic:{receipt.node_id}:{receipt.guard}",
-            )
-        )
-    return entries
 
 
 def _native_obligation_observations(
@@ -1592,6 +1985,8 @@ def _native_obligation_observations(
             for token in (
                 "state",
                 "transition",
+                "event",
+                "fluent",
                 "branch",
                 "perturbation",
                 "intervention",
@@ -1864,7 +2259,10 @@ def _edge_findings(
                 evidence=edge.to_dict(),
             )
         )
-    forbidden = sorted(set(edge.output_refs).intersection(edge.forbidden_use))
+    transferred_source_ports = {
+        mapping.source_port_id for mapping in edge.port_mappings
+    }
+    forbidden = sorted(transferred_source_ports.intersection(edge.forbidden_use))
     if forbidden:
         findings.append(
             _finding(
@@ -1877,7 +2275,7 @@ def _edge_findings(
             )
         )
     if edge.allowed_use:
-        unallowed = sorted(set(edge.output_refs).difference(edge.allowed_use))
+        unallowed = sorted(transferred_source_ports.difference(edge.allowed_use))
         if unallowed:
             findings.append(
                 _finding(
@@ -1890,6 +2288,61 @@ def _edge_findings(
                 )
             )
     source = nodes_by_id.get(edge.source_model_id)
+    target = nodes_by_id.get(edge.target_model_id)
+    if source and target and edge.relation in TRANSFER_RELATIONS:
+        source_ports = {port.port_id: port for port in source.output_ports}
+        target_ports = {port.port_id: port for port in target.input_ports}
+        for mapping in edge.port_mappings:
+            source_port = source_ports.get(mapping.source_port_id)
+            target_port = target_ports.get(mapping.target_port_id)
+            if source_port is None:
+                findings.append(
+                    _finding(
+                        mesh,
+                        GuardStatus.FAIL,
+                        "MESH_UNKNOWN_SOURCE_PORT",
+                        "Port mapping names an undeclared producer output.",
+                        edge_id=edge.edge_id,
+                        evidence={
+                            "mapping": mapping.to_dict(),
+                            "declared_source_ports": sorted(source_ports),
+                        },
+                    )
+                )
+                continue
+            if target_port is None:
+                findings.append(
+                    _finding(
+                        mesh,
+                        GuardStatus.FAIL,
+                        "MESH_UNKNOWN_TARGET_PORT",
+                        "Port mapping names an undeclared consumer input.",
+                        edge_id=edge.edge_id,
+                        evidence={
+                            "mapping": mapping.to_dict(),
+                            "declared_target_ports": sorted(target_ports),
+                        },
+                    )
+                )
+                continue
+            if (
+                source_port.value_type != target_port.value_type
+                or source_port.cardinality != target_port.cardinality
+            ):
+                findings.append(
+                    _finding(
+                        mesh,
+                        GuardStatus.FAIL,
+                        "MESH_INCOMPATIBLE_PORT_MAPPING",
+                        "Producer and consumer ports have incompatible type or cardinality.",
+                        edge_id=edge.edge_id,
+                        evidence={
+                            "mapping": mapping.to_dict(),
+                            "source_port": source_port.to_dict(),
+                            "target_port": target_port.to_dict(),
+                        },
+                    )
+                )
     if edge.requires_current_source and source and source.freshness_status != "current":
         findings.append(
             _finding(

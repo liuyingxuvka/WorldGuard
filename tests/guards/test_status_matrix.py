@@ -18,7 +18,7 @@ CASES = [
     (
         "AgentGuard",
         {
-            GuardStatus.PASS: {"inputs": {"beliefs": {"agent": {"beliefs": ["b"]}}}},
+            GuardStatus.PASS: {"inputs": {"beliefs": {"agent": {"agent_id": "agent", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}}},
             GuardStatus.FAIL: {"inputs": {"beliefs": {"agent": {}}, "agent_model": {"conflicting_intentions": ["i1", "i2"]}}},
             GuardStatus.GAP: {"inputs": {"agent_model": {"missing_beliefs": ["b_missing"]}}},
             GuardStatus.BOUNDARY_EXCEEDED: {"text": "payoff equilibrium claim"},
@@ -80,7 +80,7 @@ CASES = [
     (
         "CausalGuard",
         {
-            GuardStatus.PASS: {"inputs": {"causal_model": {"variables": ["x"], "equations": {"x": "f(u)"}}}},
+            GuardStatus.PASS: {"inputs": {"causal_model": {"variables": ["x"], "equations": {"x": 1}, "scenarios": {"s1": {}}}}},
             GuardStatus.FAIL: {"inputs": {"causal_model": {"variables": ["x"], "equations": {"x": "f(y)"}, "graph": [["x", "y"], ["y", "x"]]}}},
             GuardStatus.GAP: {"inputs": {"causal_model": {"variables": ["x"], "equations": {}}}},
             GuardStatus.BOUNDARY_EXCEEDED: {"text": "temporal story only"},
@@ -89,7 +89,7 @@ CASES = [
     (
         "ConflictGuard",
         {
-            GuardStatus.PASS: {"inputs": {"game_model": {"payoffs": [{"state": "s", "reward": {"a": 1}}]}}},
+            GuardStatus.PASS: {"inputs": {"game_model": {"players": ["a"], "actions": ["hold"], "states": ["s"], "transitions": [{"from": "s", "to": "s", "probabilities": [1.0]}], "payoffs": [{"state": "s", "reward": {"a": 1}}]}}},
             GuardStatus.FAIL: {"inputs": {"game_model": {"transitions": [{"probabilities": [0.7, 0.7]}], "payoffs": [{"state": "s"}]}}},
             GuardStatus.GAP: {"inputs": {"game_model": {"payoffs": []}}},
             GuardStatus.BOUNDARY_EXCEEDED: {"text": "deontic obligation"},
@@ -98,7 +98,7 @@ CASES = [
     (
         "NormGuard",
         {
-            GuardStatus.PASS: {"text": "operator may start", "inputs": {"norms": [{"modality": "permitted", "action": "start"}]}},
+            GuardStatus.PASS: {"text": "operator may start", "inputs": {"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}},
             GuardStatus.FAIL: {
                 "text": "Company A may share the full membrane recipe",
                 "inputs": {"norms": [{"modality": "forbidden", "action": "share_membrane_recipe"}]},
@@ -110,11 +110,33 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("guard,cases", CASES)
-def test_guard_status_matrix(guard, cases):
-    runner = GUARD_RUNNERS[guard]
-    for expected_status, kwargs in cases.items():
-        contract = make_contract(guard, **kwargs)
-        result = runner(contract)
-        assert result.status == expected_status
-        assert result.ledgers
+def test_guard_status_matrix():
+    """Exercise the explicit finite matrix without a dynamic pytest marker."""
+
+    for guard, cases in CASES:
+        runner = GUARD_RUNNERS[guard]
+        for expected_status, kwargs in cases.items():
+            contract = make_contract(guard, **kwargs)
+            result = runner(contract)
+            assert result.status == expected_status
+            assert result.ledgers
+
+
+def test_event_guard_treats_scalar_fluent_ids_as_whole_identities() -> None:
+    contract = make_contract(
+        "EventGuard",
+        inputs={
+            "events": [
+                {
+                    "event_id": "e1",
+                    "at": "t1",
+                    "terminates": "ready",
+                    "initiates": "running",
+                }
+            ]
+        },
+    )
+
+    result = GUARD_RUNNERS["EventGuard"](contract)
+
+    assert result.status == GuardStatus.PASS

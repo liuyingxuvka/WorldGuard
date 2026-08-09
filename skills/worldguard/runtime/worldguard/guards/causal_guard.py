@@ -38,6 +38,7 @@ def run(contract: GuardContract):
     variables = causal_model.get("variables", [])
     equations = causal_model.get("equations", {})
     graph = causal_model.get("graph", [])
+    claim_scope = causal_model.get("claim_scope", "equation_model")
 
     if any(word in text for word in ["then", "after", "temporal story", "because story"]):
         return result(
@@ -61,6 +62,46 @@ def run(contract: GuardContract):
             counterexamples=[{"kind": "model_conflict", "steps": graph}],
         )
 
+    if claim_scope == "graph_only":
+        malformed_edges = [
+            edge
+            for edge in graph
+            if not isinstance(edge, (list, tuple)) or len(edge) != 2
+        ]
+        graph_ids = {
+            str(value)
+            for edge in graph
+            if isinstance(edge, (list, tuple)) and len(edge) == 2
+            for value in edge
+        }
+        if not variables or not graph or malformed_edges or not graph_ids.issubset(
+            {str(value) for value in variables}
+        ):
+            return result(
+                contract,
+                guard,
+                GuardStatus.GAP,
+                channel="gap",
+                impact="creates_gap",
+                missing_slots=[{"needed": "complete declared variable graph"}],
+                errors=[
+                    error(
+                        "CAUSAL_MISSING_STRUCTURAL_EQUATION",
+                        "Graph-only evaluation requires declared variables and exact edges.",
+                    )
+                ],
+            )
+        return result(
+            contract,
+            guard,
+            GuardStatus.PASS,
+            channel="causal",
+            impact="supports_pass",
+            payload={"variables": variables, "evaluated_graph_edges": len(graph)},
+            supported=True,
+            consumed_inputs={"causal_model": causal_model},
+        )
+
     missing_equations = [var for var in variables if var not in equations]
     if not variables or not equations or missing_equations:
         return result(
@@ -73,13 +114,43 @@ def run(contract: GuardContract):
             errors=[error("CAUSAL_MISSING_STRUCTURAL_EQUATION", "Required SCM equation is missing.")],
         )
 
+    declared_behavior = {
+        name: causal_model.get(name)
+        for name in (
+            "scenarios",
+            "holdout_scenarios",
+            "interventions",
+            "counterfactuals",
+        )
+        if causal_model.get(name)
+    }
+    if not declared_behavior:
+        return result(
+            contract,
+            guard,
+            GuardStatus.GAP,
+            channel="gap",
+            impact="creates_gap",
+            missing_slots=[
+                {
+                    "needed": "scenario, holdout_scenario, intervention, or counterfactual obligation"
+                }
+            ],
+            errors=[
+                error(
+                    "CAUSAL_MISSING_BEHAVIOR_OBLIGATION",
+                    "An equation-model claim needs at least one declared behavior that can be executed.",
+                )
+            ],
+        )
+
     return result(
         contract,
         guard,
         GuardStatus.PASS,
         channel="causal",
         impact="supports_pass",
-        payload={"variables": variables},
+        payload={"variables": variables, "declared_behavior_kinds": sorted(declared_behavior)},
         supported=True,
         consumed_inputs={"causal_model": causal_model},
     )

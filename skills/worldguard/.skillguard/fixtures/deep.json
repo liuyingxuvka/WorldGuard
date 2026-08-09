@@ -3,7 +3,7 @@
   "release_gate_binding": {
     "schema_version": "worldguard.release_gate_binding.v1",
     "target_skill_id": "worldguard",
-    "release_version": "0.7.1",
+    "release_version": "0.7.3",
     "gate_id": "skillguard-final-validation",
     "execution_owner_id": "owner:worldguard:native-depth"
   },
@@ -355,7 +355,12 @@
                     "exogenous": [
                       "x"
                     ],
-                    "graph": []
+                    "graph": [],
+                    "scenarios": {
+                      "s-good": {
+                        "x": 1
+                      }
+                    }
                   }
                 },
                 "coverage_context": {},
@@ -385,6 +390,56 @@
     ],
     "run_id": "skillguard-world-depth",
     "semantic_coverage": {
+      "axis_dispositions": [
+        {
+          "axis_id": "state",
+          "disposition": "not_applicable",
+          "reason": "the static EventGuard rollout does not execute a state-machine",
+          "claim_boundary": "no state-machine state execution is claimed"
+        },
+        {
+          "axis_id": "transition",
+          "disposition": "not_applicable",
+          "reason": "the static EventGuard rollout does not execute transition specifications",
+          "claim_boundary": "no state-machine transition execution is claimed"
+        },
+        {
+          "axis_id": "event",
+          "disposition": "required",
+          "observation_field": "executed_event_ids",
+          "claim_boundary": "exact event identities executed by EventGuard"
+        },
+        {
+          "axis_id": "fluent",
+          "disposition": "required",
+          "observation_field": "reached_fluent_ids",
+          "claim_boundary": "exact fluent identities reached by EventGuard"
+        },
+        {
+          "axis_id": "branch",
+          "disposition": "required",
+          "observation_field": "executed_branch_ids",
+          "claim_boundary": "exact branch identities exercised"
+        },
+        {
+          "axis_id": "perturbation",
+          "disposition": "required",
+          "observation_field": "executed_perturbation_ids",
+          "claim_boundary": "exact perturbation identities exercised"
+        },
+        {
+          "axis_id": "intervention",
+          "disposition": "required",
+          "observation_field": "executed_intervention_ids",
+          "claim_boundary": "exact intervention identities evaluated"
+        },
+        {
+          "axis_id": "counterfactual",
+          "disposition": "required",
+          "observation_field": "executed_counterfactual_ids",
+          "claim_boundary": "exact counterfactual identities evaluated"
+        }
+      ],
       "branch_ids": [
         "b0"
       ],
@@ -412,10 +467,11 @@
       "scenario_ids": [
         "s-base"
       ],
-      "state_ids": [
+      "fluent_ids": [
         "ready",
         "running"
       ],
+      "state_ids": [],
       "timepoint_ids": [
         "t0",
         "t32",
@@ -450,7 +506,7 @@
         "t967",
         "t999"
       ],
-      "transition_ids": [
+      "event_ids": [
         "e0",
         "e1",
         "e2",
@@ -483,7 +539,8 @@
         "e29",
         "e30",
         "e31"
-      ]
+      ],
+      "transition_ids": []
     }
   }
 }

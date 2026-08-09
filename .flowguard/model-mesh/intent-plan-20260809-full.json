@@ -1,0 +1,1201 @@
+{
+  "accepted_revision_fingerprint": "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+  "accepted_revision_schema": "flowguard.model_revision_set.v4",
+  "added_model_ids": [
+    "hierarchical_model_mesh",
+    "model_test_code_alignment",
+    "test_evidence_mesh"
+  ],
+  "affected_closure": {
+    "affected_ids": [
+      "behavior_commitment:commitment:worldguard-current-input-authority",
+      "behavior_commitment:commitment:worldguard-fact-revision-authority",
+      "behavior_commitment:commitment:worldguard-template-selection-authority",
+      "code_contract:contract:contract:worldguard-fact-revision",
+      "code_contract:contract:contract:worldguard-template-selection",
+      "code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+      "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+      "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+      "coverage:external_surfaces:surface:worldguard-current-contract-model",
+      "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+      "coverage:external_surfaces:surface:worldguard-template-model",
+      "coverage:external_surfaces:surface:worldguard-template-tests",
+      "coverage:model_instances:hierarchical_model_mesh",
+      "coverage:model_instances:model_test_code_alignment",
+      "coverage:model_instances:test_evidence_mesh",
+      "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+      "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+      "coverage:tests_evidence:check:model-regression:current-input-authority",
+      "coverage:tests_evidence:check:model-regression:current_input_authority",
+      "coverage:tests_evidence:check:model-regression:fact-revision",
+      "coverage:tests_evidence:check:model-regression:fact_revision",
+      "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+      "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+      "coverage:tests_evidence:check:model-regression:task-local-revision",
+      "coverage:tests_evidence:check:model-regression:task_local_revision",
+      "coverage:tests_evidence:check:model-regression:template-selection",
+      "coverage:tests_evidence:check:model-regression:template_selection",
+      "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+      "coverage:universe",
+      "external_surface:surface:worldguard-current-contract-code",
+      "external_surface:surface:worldguard-current-contract-model",
+      "external_surface:surface:worldguard-current-contract-openspec",
+      "external_surface:surface:worldguard-current-contract-tests",
+      "external_surface:surface:worldguard-fact-revision-code",
+      "external_surface:surface:worldguard-fact-revision-docs",
+      "external_surface:surface:worldguard-fact-revision-model",
+      "external_surface:surface:worldguard-fact-revision-tests",
+      "external_surface:surface:worldguard-template-code",
+      "external_surface:surface:worldguard-template-docs",
+      "external_surface:surface:worldguard-template-model",
+      "external_surface:surface:worldguard-template-tests",
+      "model_instance:model:behavior_commitment_ledger",
+      "model_instance:model:current_input_authority",
+      "model_instance:model:fact_revision",
+      "model_instance:model:hierarchical_model_mesh",
+      "model_instance:model:model_test_code_alignment",
+      "model_instance:model:task_local_revision",
+      "model_instance:model:template_selection",
+      "model_instance:model:test_evidence_mesh",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+      "model_relation:relation:model-realizes-purpose:current_input_authority",
+      "model_relation:relation:model-realizes-purpose:fact_revision",
+      "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+      "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+      "model_relation:relation:model-realizes-purpose:task_local_revision",
+      "model_relation:relation:model-realizes-purpose:template_selection",
+      "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:system-contains:behavior_commitment_ledger",
+      "model_relation:relation:system-contains:current_input_authority",
+      "model_relation:relation:system-contains:fact_revision",
+      "model_relation:relation:system-contains:hierarchical_model_mesh",
+      "model_relation:relation:system-contains:model_test_code_alignment",
+      "model_relation:relation:system-contains:task_local_revision",
+      "model_relation:relation:system-contains:template_selection",
+      "model_relation:relation:system-contains:test_evidence_mesh",
+      "parent_closure:purpose:behavior_commitment_ledger",
+      "parent_closure:purpose:current_input_authority",
+      "parent_closure:purpose:fact_revision",
+      "parent_closure:purpose:hierarchical_model_mesh",
+      "parent_closure:purpose:model_test_code_alignment",
+      "parent_closure:purpose:task_local_revision",
+      "parent_closure:purpose:template_selection",
+      "parent_closure:purpose:test_evidence_mesh",
+      "parent_closure:system:flowguard:model-regression-manifest",
+      "root:model:behavior_commitment_ledger",
+      "system_property:subject_revision",
+      "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "test_evidence:test:tests/test_contracts.py",
+      "test_evidence:test:tests/test_fact_revision.py",
+      "test_evidence:test:tests/test_guard_model_contract.py",
+      "test_evidence:test:tests/test_template_packs.py",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests"
+    ],
+    "edge_ids": [
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+      "model_relation:relation:model-realizes-purpose:current_input_authority",
+      "model_relation:relation:model-realizes-purpose:fact_revision",
+      "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+      "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+      "model_relation:relation:model-realizes-purpose:task_local_revision",
+      "model_relation:relation:model-realizes-purpose:template_selection",
+      "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:system-contains:behavior_commitment_ledger",
+      "model_relation:relation:system-contains:current_input_authority",
+      "model_relation:relation:system-contains:fact_revision",
+      "model_relation:relation:system-contains:hierarchical_model_mesh",
+      "model_relation:relation:system-contains:model_test_code_alignment",
+      "model_relation:relation:system-contains:task_local_revision",
+      "model_relation:relation:system-contains:template_selection",
+      "model_relation:relation:system-contains:test_evidence_mesh"
+    ],
+    "fingerprint": "sha256:5eb2d6100c2b8885da9b12aac5826bc309b42b788868329a8f849dc4603e50bd",
+    "owner_bindings": [
+      {
+        "affected_id": "behavior_commitment:commitment:worldguard-current-input-authority",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "behavior_commitment:commitment:worldguard-fact-revision-authority",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "behavior_commitment:commitment:worldguard-template-selection-authority",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "code_contract:contract:contract:worldguard-fact-revision",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "code_contract:contract:contract:worldguard-template-selection",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-current-contract-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-template-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:external_surfaces:surface:worldguard-template-tests",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:model_instances:hierarchical_model_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:model_instances:model_test_code_alignment",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:model_instances:test_evidence_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:current_input_authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:fact-revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:fact_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:task-local-revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:task_local_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:template-selection",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:template_selection",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "coverage:universe",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-current-contract-code",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-current-contract-model",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-current-contract-openspec",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-current-contract-tests",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-fact-revision-code",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-fact-revision-docs",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-fact-revision-model",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-fact-revision-tests",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-template-code",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-template-docs",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-template-model",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "external_surface:surface:worldguard-template-tests",
+        "owner_route": "behavior_commitment_ledger"
+      },
+      {
+        "affected_id": "model_instance:model:behavior_commitment_ledger",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:current_input_authority",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:fact_revision",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:hierarchical_model_mesh",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:model_test_code_alignment",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:task_local_revision",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:template_selection",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_instance:model:test_evidence_mesh",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:current_input_authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:fact_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:task_local_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:template_selection",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:behavior_commitment_ledger",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:current_input_authority",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:fact_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:hierarchical_model_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:model_test_code_alignment",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:task_local_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:template_selection",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "model_relation:relation:system-contains:test_evidence_mesh",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "parent_closure:purpose:behavior_commitment_ledger",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:current_input_authority",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:fact_revision",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:hierarchical_model_mesh",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:model_test_code_alignment",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:task_local_revision",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:template_selection",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:purpose:test_evidence_mesh",
+        "owner_route": "model_test_alignment"
+      },
+      {
+        "affected_id": "parent_closure:system:flowguard:model-regression-manifest",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "root:model:behavior_commitment_ledger",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "system_property:subject_revision",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "owner_route": "test_mesh_maintenance"
+      },
+      {
+        "affected_id": "test_evidence:test:tests/test_contracts.py",
+        "owner_route": "test_mesh_maintenance"
+      },
+      {
+        "affected_id": "test_evidence:test:tests/test_fact_revision.py",
+        "owner_route": "test_mesh_maintenance"
+      },
+      {
+        "affected_id": "test_evidence:test:tests/test_guard_model_contract.py",
+        "owner_route": "test_mesh_maintenance"
+      },
+      {
+        "affected_id": "test_evidence:test:tests/test_template_packs.py",
+        "owner_route": "test_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+        "owner_route": "model_mesh_maintenance"
+      },
+      {
+        "affected_id": "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests",
+        "owner_route": "model_mesh_maintenance"
+      }
+    ]
+  },
+  "affected_closure_fingerprint": "sha256:5eb2d6100c2b8885da9b12aac5826bc309b42b788868329a8f849dc4603e50bd",
+  "base_effective_intent_view_fingerprint": "",
+  "base_model_count": 5,
+  "base_model_ids": [
+    "behavior_commitment_ledger",
+    "current_input_authority",
+    "fact_revision",
+    "task_local_revision",
+    "template_selection"
+  ],
+  "base_snapshot_fingerprint": "sha256:cec0551af5b0d746008e24896e4ad1b0a2764838a6b733fbb0930cd8abccd14f",
+  "base_snapshot_id": "snapshot:worldguard:blueprint-v1-preimplementation",
+  "blockers": [],
+  "candidate_model_count": 8,
+  "candidate_model_ids": [
+    "behavior_commitment_ledger",
+    "current_input_authority",
+    "fact_revision",
+    "hierarchical_model_mesh",
+    "model_test_code_alignment",
+    "task_local_revision",
+    "template_selection",
+    "test_evidence_mesh"
+  ],
+  "candidate_model_owner_count": 8,
+  "candidate_model_owner_ids": [
+    "model-obligation:behavior_commitment_ledger",
+    "model-obligation:current_input_authority",
+    "model-obligation:fact_revision",
+    "model-obligation:hierarchical_model_mesh",
+    "model-obligation:model_test_code_alignment",
+    "model-obligation:task_local_revision",
+    "model-obligation:template_selection",
+    "model-obligation:test_evidence_mesh"
+  ],
+  "candidate_model_owner_inventory_fingerprint": "sha256:d958613c6945c0154b0c8e2d275bd8f99ea8cc1ec0e97a75148c7aa198795233",
+  "candidate_model_owners": [
+    {
+      "logical_model_id": "behavior_commitment_ledger",
+      "model_owner_id": "model-obligation:behavior_commitment_ledger",
+      "realization_relation_fingerprint": "sha256:fe47b454f6a341d51bb4a9c343110442cf77b14939ad8ffcffaf339a4e308d32",
+      "realization_relation_id": "relation:model-realizes-purpose:behavior_commitment_ledger"
+    },
+    {
+      "logical_model_id": "current_input_authority",
+      "model_owner_id": "model-obligation:current_input_authority",
+      "realization_relation_fingerprint": "sha256:7efd80c42e27a872dcefc0ba6dd9cc3cd1fd15fe480e833a63a4293280145da2",
+      "realization_relation_id": "relation:model-realizes-purpose:current_input_authority"
+    },
+    {
+      "logical_model_id": "fact_revision",
+      "model_owner_id": "model-obligation:fact_revision",
+      "realization_relation_fingerprint": "sha256:92d85ba65961f456f5ebd66aa9c928b322a7dfd3be8b8678f9479a9b3e002293",
+      "realization_relation_id": "relation:model-realizes-purpose:fact_revision"
+    },
+    {
+      "logical_model_id": "hierarchical_model_mesh",
+      "model_owner_id": "model-obligation:hierarchical_model_mesh",
+      "realization_relation_fingerprint": "sha256:9a508e67932b8382cb131f6fa129762738be9179be5e271a0b21e990f690132c",
+      "realization_relation_id": "relation:model-realizes-purpose:hierarchical_model_mesh"
+    },
+    {
+      "logical_model_id": "model_test_code_alignment",
+      "model_owner_id": "model-obligation:model_test_code_alignment",
+      "realization_relation_fingerprint": "sha256:8b513a163f334f4297a378611028f35e94d6e8e3fe5acf725684916e300d7eca",
+      "realization_relation_id": "relation:model-realizes-purpose:model_test_code_alignment"
+    },
+    {
+      "logical_model_id": "task_local_revision",
+      "model_owner_id": "model-obligation:task_local_revision",
+      "realization_relation_fingerprint": "sha256:1eb9e878521b41a8f7a5adb99733156fb121131b9e672839ef0263a45c4c0fe6",
+      "realization_relation_id": "relation:model-realizes-purpose:task_local_revision"
+    },
+    {
+      "logical_model_id": "template_selection",
+      "model_owner_id": "model-obligation:template_selection",
+      "realization_relation_fingerprint": "sha256:6a2f094b59bab3c8b6ad44ce6171432f5298d1c331904165c7e99f246e14fded",
+      "realization_relation_id": "relation:model-realizes-purpose:template_selection"
+    },
+    {
+      "logical_model_id": "test_evidence_mesh",
+      "model_owner_id": "model-obligation:test_evidence_mesh",
+      "realization_relation_fingerprint": "sha256:bfb64b3e0b71dd2ebf951bf3d6710fa8c77ee6bcd60c25c0e72952c01f8a5c8c",
+      "realization_relation_id": "relation:model-realizes-purpose:test_evidence_mesh"
+    }
+  ],
+  "candidate_snapshot_fingerprint": "sha256:a5cead9ca730227d14ff7028ab9faf4db1c663a37a53e9e50f1c8c9fd60b8561",
+  "candidate_snapshot_id": "worldguard-model-system-intent-bootstrap-20260809",
+  "change_present": true,
+  "changed_entity_ids": [
+    "behavior_commitment:commitment:worldguard-current-input-authority",
+    "behavior_commitment:commitment:worldguard-fact-revision-authority",
+    "behavior_commitment:commitment:worldguard-template-selection-authority",
+    "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+    "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+    "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+    "coverage:external_surfaces:surface:worldguard-current-contract-model",
+    "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+    "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+    "coverage:external_surfaces:surface:worldguard-template-model",
+    "coverage:external_surfaces:surface:worldguard-template-tests",
+    "coverage:model_instances:hierarchical_model_mesh",
+    "coverage:model_instances:model_test_code_alignment",
+    "coverage:model_instances:test_evidence_mesh",
+    "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+    "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+    "coverage:tests_evidence:check:model-regression:current-input-authority",
+    "coverage:tests_evidence:check:model-regression:current_input_authority",
+    "coverage:tests_evidence:check:model-regression:fact-revision",
+    "coverage:tests_evidence:check:model-regression:fact_revision",
+    "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+    "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+    "coverage:tests_evidence:check:model-regression:task-local-revision",
+    "coverage:tests_evidence:check:model-regression:task_local_revision",
+    "coverage:tests_evidence:check:model-regression:template-selection",
+    "coverage:tests_evidence:check:model-regression:template_selection",
+    "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+    "coverage:universe",
+    "external_surface:surface:worldguard-current-contract-code",
+    "external_surface:surface:worldguard-current-contract-model",
+    "external_surface:surface:worldguard-current-contract-openspec",
+    "external_surface:surface:worldguard-current-contract-tests",
+    "external_surface:surface:worldguard-fact-revision-code",
+    "external_surface:surface:worldguard-fact-revision-docs",
+    "external_surface:surface:worldguard-fact-revision-model",
+    "external_surface:surface:worldguard-fact-revision-tests",
+    "external_surface:surface:worldguard-template-code",
+    "external_surface:surface:worldguard-template-docs",
+    "external_surface:surface:worldguard-template-model",
+    "external_surface:surface:worldguard-template-tests",
+    "model_instance:model:behavior_commitment_ledger",
+    "model_instance:model:current_input_authority",
+    "model_instance:model:fact_revision",
+    "model_instance:model:hierarchical_model_mesh",
+    "model_instance:model:model_test_code_alignment",
+    "model_instance:model:task_local_revision",
+    "model_instance:model:template_selection",
+    "model_instance:model:test_evidence_mesh",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+    "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+    "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+    "model_relation:relation:model-realizes-purpose:current_input_authority",
+    "model_relation:relation:model-realizes-purpose:fact_revision",
+    "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+    "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+    "model_relation:relation:model-realizes-purpose:task_local_revision",
+    "model_relation:relation:model-realizes-purpose:template_selection",
+    "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+    "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+    "model_relation:relation:system-contains:behavior_commitment_ledger",
+    "model_relation:relation:system-contains:current_input_authority",
+    "model_relation:relation:system-contains:fact_revision",
+    "model_relation:relation:system-contains:hierarchical_model_mesh",
+    "model_relation:relation:system-contains:model_test_code_alignment",
+    "model_relation:relation:system-contains:task_local_revision",
+    "model_relation:relation:system-contains:template_selection",
+    "model_relation:relation:system-contains:test_evidence_mesh",
+    "parent_closure:purpose:behavior_commitment_ledger",
+    "parent_closure:purpose:current_input_authority",
+    "parent_closure:purpose:fact_revision",
+    "parent_closure:purpose:hierarchical_model_mesh",
+    "parent_closure:purpose:model_test_code_alignment",
+    "parent_closure:purpose:task_local_revision",
+    "parent_closure:purpose:template_selection",
+    "parent_closure:purpose:test_evidence_mesh",
+    "parent_closure:system:flowguard:model-regression-manifest",
+    "root:model:behavior_commitment_ledger",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+    "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests"
+  ],
+  "changed_model_ids": [
+    "behavior_commitment_ledger",
+    "current_input_authority",
+    "fact_revision",
+    "hierarchical_model_mesh",
+    "model_test_code_alignment",
+    "task_local_revision",
+    "template_selection",
+    "test_evidence_mesh"
+  ],
+  "claim_boundary": "This is a read-only preview derived from the sole observed authority and one stable live manifest candidate. It writes no snapshot, receipt, revision set, lease, lock, or pointer; runs no model or validation owner; and supplies no acceptance, activation, release, or completion evidence.",
+  "intent_input_identity_fingerprint": "sha256:068f29b19cfa0556f285a615f105847e07d768fe1e4ae8242f4e16af6fa2bfa3",
+  "intent_mode": "bootstrap_required",
+  "models_executed": false,
+  "observed_head_fingerprint": "sha256:8fb171df8030be1b97c7d6112f41451280f965139a125273b6bd0218d1223bf7",
+  "ok": true,
+  "removed_model_ids": [],
+  "replaced_model_ids": [
+    "behavior_commitment_ledger",
+    "current_input_authority",
+    "fact_revision",
+    "task_local_revision",
+    "template_selection"
+  ],
+  "requested_snapshot_id": "worldguard-model-system-intent-bootstrap-20260809",
+  "required_command": "model-revision-intent-bootstrap",
+  "required_intent_input_kinds": [
+    "receipt_id",
+    "rationale",
+    "claim_boundary",
+    "current_design_contributions",
+    "legacy_entry_dispositions"
+  ],
+  "required_legacy_intent_entries": [
+    {
+      "contribution_fingerprint": "sha256:75904dda10240dd581ede992257c094e20ffe590a3e260d4cc6a4a133d2b58ec",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:preimplementation",
+      "generation": 7,
+      "revision_set_fingerprint": "sha256:d6afb8885cfb4169e399bfbea7815948a64580af9c88c4d1f50a990110b629aa",
+      "schema": "flowguard.legacy_intent_audit_entry.v1"
+    }
+  ],
+  "required_legacy_intent_entry_count": 1,
+  "required_legacy_intent_entry_inventory_fingerprint": "sha256:fa740302f810fd903da803e4d7daf9364fdc6b728aa7c019da5c69905eb3f37e",
+  "required_owner_routes": [
+    "behavior_commitment_ledger",
+    "model_mesh_maintenance",
+    "model_test_alignment",
+    "test_mesh_maintenance"
+  ],
+  "required_transition_predecessor_count": 0,
+  "required_transition_predecessor_inventory_fingerprint": "",
+  "required_transition_predecessors": [],
+  "root": "C:\\Users\\liu_y\\Documents\\WorldGuard",
+  "schema": "flowguard.model_revision_plan.v2",
+  "snapshot_diff": {
+    "added_ids": [
+      "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+      "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+      "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+      "coverage:model_instances:hierarchical_model_mesh",
+      "coverage:model_instances:model_test_code_alignment",
+      "coverage:model_instances:test_evidence_mesh",
+      "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+      "coverage:tests_evidence:check:model-regression:current_input_authority",
+      "coverage:tests_evidence:check:model-regression:fact_revision",
+      "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+      "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+      "coverage:tests_evidence:check:model-regression:task_local_revision",
+      "coverage:tests_evidence:check:model-regression:template_selection",
+      "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+      "model_instance:model:hierarchical_model_mesh",
+      "model_instance:model:model_test_code_alignment",
+      "model_instance:model:test_evidence_mesh",
+      "model_relation:relation:model-realizes-purpose:hierarchical_model_mesh",
+      "model_relation:relation:model-realizes-purpose:model_test_code_alignment",
+      "model_relation:relation:model-realizes-purpose:test_evidence_mesh",
+      "model_relation:relation:system-contains:hierarchical_model_mesh",
+      "model_relation:relation:system-contains:model_test_code_alignment",
+      "model_relation:relation:system-contains:test_evidence_mesh",
+      "parent_closure:purpose:hierarchical_model_mesh",
+      "parent_closure:purpose:model_test_code_alignment",
+      "parent_closure:purpose:test_evidence_mesh",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-current-contract-tests",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-fact-revision-tests",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-template-model",
+      "unresolved_gap:gap:external_surfaces:surface:worldguard-template-tests"
+    ],
+    "changed_commitment_ids": [
+      "commitment:worldguard-current-input-authority",
+      "commitment:worldguard-fact-revision-authority",
+      "commitment:worldguard-template-selection-authority"
+    ],
+    "changed_contract_ids": [],
+    "changed_coverage_ids": [
+      "coverage:code_contracts:contract:purpose:hierarchical_model_mesh",
+      "coverage:code_contracts:contract:purpose:model_test_code_alignment",
+      "coverage:code_contracts:contract:purpose:test_evidence_mesh",
+      "coverage:external_surfaces:surface:worldguard-current-contract-model",
+      "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+      "coverage:external_surfaces:surface:worldguard-template-model",
+      "coverage:external_surfaces:surface:worldguard-template-tests",
+      "coverage:model_instances:hierarchical_model_mesh",
+      "coverage:model_instances:model_test_code_alignment",
+      "coverage:model_instances:test_evidence_mesh",
+      "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+      "coverage:tests_evidence:check:model-regression:behavior_commitment_ledger",
+      "coverage:tests_evidence:check:model-regression:current-input-authority",
+      "coverage:tests_evidence:check:model-regression:current_input_authority",
+      "coverage:tests_evidence:check:model-regression:fact-revision",
+      "coverage:tests_evidence:check:model-regression:fact_revision",
+      "coverage:tests_evidence:check:model-regression:hierarchical_model_mesh",
+      "coverage:tests_evidence:check:model-regression:model_test_code_alignment",
+      "coverage:tests_evidence:check:model-regression:task-local-revision",
+      "coverage:tests_evidence:check:model-regression:task_local_revision",
+      "coverage:tests_evidence:check:model-regression:template-selection",
+      "coverage:tests_evidence:check:model-regression:template_selection",
+      "coverage:tests_evidence:check:model-regression:test_evidence_mesh",
+      "coverage:universe"
+    ],
+    "changed_field_ids": [],
+    "changed_gap_ids": [
+      "gap:external_surfaces:surface:worldguard-current-contract-model",
+      "gap:external_surfaces:surface:worldguard-current-contract-tests",
+      "gap:external_surfaces:surface:worldguard-fact-revision-model",
+      "gap:external_surfaces:surface:worldguard-fact-revision-tests",
+      "gap:external_surfaces:surface:worldguard-template-model",
+      "gap:external_surfaces:surface:worldguard-template-tests"
+    ],
+    "changed_owner_artifact_ids": [
+      "behavior_commitment:commitment:worldguard-current-input-authority",
+      "behavior_commitment:commitment:worldguard-fact-revision-authority",
+      "behavior_commitment:commitment:worldguard-template-selection-authority",
+      "external_surface:surface:worldguard-current-contract-code",
+      "external_surface:surface:worldguard-current-contract-model",
+      "external_surface:surface:worldguard-current-contract-openspec",
+      "external_surface:surface:worldguard-current-contract-tests",
+      "external_surface:surface:worldguard-fact-revision-code",
+      "external_surface:surface:worldguard-fact-revision-docs",
+      "external_surface:surface:worldguard-fact-revision-model",
+      "external_surface:surface:worldguard-fact-revision-tests",
+      "external_surface:surface:worldguard-template-code",
+      "external_surface:surface:worldguard-template-docs",
+      "external_surface:surface:worldguard-template-model",
+      "external_surface:surface:worldguard-template-tests",
+      "parent_closure:purpose:behavior_commitment_ledger",
+      "parent_closure:purpose:current_input_authority",
+      "parent_closure:purpose:fact_revision",
+      "parent_closure:purpose:hierarchical_model_mesh",
+      "parent_closure:purpose:model_test_code_alignment",
+      "parent_closure:purpose:task_local_revision",
+      "parent_closure:purpose:template_selection",
+      "parent_closure:purpose:test_evidence_mesh",
+      "parent_closure:system:flowguard:model-regression-manifest"
+    ],
+    "changed_relation_ids": [
+      "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "relation:model-realizes-purpose:behavior_commitment_ledger",
+      "relation:model-realizes-purpose:current_input_authority",
+      "relation:model-realizes-purpose:fact_revision",
+      "relation:model-realizes-purpose:hierarchical_model_mesh",
+      "relation:model-realizes-purpose:model_test_code_alignment",
+      "relation:model-realizes-purpose:task_local_revision",
+      "relation:model-realizes-purpose:template_selection",
+      "relation:model-realizes-purpose:test_evidence_mesh",
+      "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority",
+      "relation:system-contains:behavior_commitment_ledger",
+      "relation:system-contains:current_input_authority",
+      "relation:system-contains:fact_revision",
+      "relation:system-contains:hierarchical_model_mesh",
+      "relation:system-contains:model_test_code_alignment",
+      "relation:system-contains:task_local_revision",
+      "relation:system-contains:template_selection",
+      "relation:system-contains:test_evidence_mesh"
+    ],
+    "changed_root_ids": [
+      "root:model:behavior_commitment_ledger"
+    ],
+    "changed_side_effect_ids": [],
+    "changed_source_surface_ids": [
+      "surface:worldguard-current-contract-code",
+      "surface:worldguard-current-contract-model",
+      "surface:worldguard-current-contract-openspec",
+      "surface:worldguard-current-contract-tests",
+      "surface:worldguard-fact-revision-code",
+      "surface:worldguard-fact-revision-docs",
+      "surface:worldguard-fact-revision-model",
+      "surface:worldguard-fact-revision-tests",
+      "surface:worldguard-template-code",
+      "surface:worldguard-template-docs",
+      "surface:worldguard-template-model",
+      "surface:worldguard-template-tests"
+    ],
+    "changed_system_property_ids": [
+      "system_property:subject_revision"
+    ],
+    "changed_test_ids": [],
+    "fingerprint_changed_ids": [
+      "behavior_commitment:commitment:worldguard-current-input-authority",
+      "behavior_commitment:commitment:worldguard-fact-revision-authority",
+      "behavior_commitment:commitment:worldguard-template-selection-authority",
+      "coverage:external_surfaces:surface:worldguard-current-contract-model",
+      "coverage:external_surfaces:surface:worldguard-current-contract-tests",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-model",
+      "coverage:external_surfaces:surface:worldguard-fact-revision-tests",
+      "coverage:external_surfaces:surface:worldguard-template-model",
+      "coverage:external_surfaces:surface:worldguard-template-tests",
+      "coverage:universe",
+      "external_surface:surface:worldguard-current-contract-code",
+      "external_surface:surface:worldguard-current-contract-openspec",
+      "external_surface:surface:worldguard-fact-revision-code",
+      "external_surface:surface:worldguard-fact-revision-docs",
+      "external_surface:surface:worldguard-template-code",
+      "external_surface:surface:worldguard-template-docs",
+      "model_instance:model:behavior_commitment_ledger",
+      "model_instance:model:current_input_authority",
+      "model_instance:model:fact_revision",
+      "model_instance:model:task_local_revision",
+      "model_instance:model:template_selection",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+      "model_relation:relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+      "model_relation:relation:model-realizes-purpose:behavior_commitment_ledger",
+      "model_relation:relation:model-realizes-purpose:current_input_authority",
+      "model_relation:relation:model-realizes-purpose:fact_revision",
+      "model_relation:relation:model-realizes-purpose:task_local_revision",
+      "model_relation:relation:model-realizes-purpose:template_selection",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+      "model_relation:relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:system-contains:behavior_commitment_ledger",
+      "model_relation:relation:system-contains:current_input_authority",
+      "model_relation:relation:system-contains:fact_revision",
+      "model_relation:relation:system-contains:task_local_revision",
+      "model_relation:relation:system-contains:template_selection",
+      "parent_closure:purpose:behavior_commitment_ledger",
+      "parent_closure:purpose:current_input_authority",
+      "parent_closure:purpose:fact_revision",
+      "parent_closure:purpose:task_local_revision",
+      "parent_closure:purpose:template_selection",
+      "parent_closure:system:flowguard:model-regression-manifest",
+      "root:model:behavior_commitment_ledger"
+    ],
+    "members": [
+      {
+        "base_instance_fingerprint": "sha256:462016844ad1190c361d99d497073146a01485480b4f1fd4f895ccaa55e5a4ed",
+        "candidate_instance_fingerprint": "sha256:2ef803bf49505e6c528aec6a4e5ff8d99ad57b00bb9d96a95e9926c729bd3420",
+        "changed_element_ids": [
+          "model_instance:model:behavior_commitment_ledger"
+        ],
+        "member_id": "behavior_commitment_ledger",
+        "operation": "replace",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "sha256:f6418ba22e9cdd5d3e2d0f0cb5380643f512920480e4f8d1364a5015bcf677e6",
+        "candidate_instance_fingerprint": "sha256:1b0803d7e10195fcc15914a13ce9e1948a260f7a8af663666ab19b062f20e189",
+        "changed_element_ids": [
+          "model_instance:model:current_input_authority"
+        ],
+        "member_id": "current_input_authority",
+        "operation": "replace",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "sha256:a3b604a46f5f5f916ee8a96cca4b683dd4b604befd7b9906dd17ecb28278efd6",
+        "candidate_instance_fingerprint": "sha256:cec35e1019b54cf82c9331cdb87ecebb95ec60ab3876427148276c92ab8b5d9a",
+        "changed_element_ids": [
+          "model_instance:model:fact_revision"
+        ],
+        "member_id": "fact_revision",
+        "operation": "replace",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "",
+        "candidate_instance_fingerprint": "sha256:7ed3b0bb23adaa7c9accc4a7ce834ac5a6297010d9f67090f4e4c100bde04d4a",
+        "changed_element_ids": [
+          "model_instance:model:hierarchical_model_mesh"
+        ],
+        "member_id": "hierarchical_model_mesh",
+        "operation": "add",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "",
+        "candidate_instance_fingerprint": "sha256:f40ea3d129f16a9763b7c7b708d2d6d1e209699fd448f4329a528b40caf6282e",
+        "changed_element_ids": [
+          "model_instance:model:model_test_code_alignment"
+        ],
+        "member_id": "model_test_code_alignment",
+        "operation": "add",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "sha256:fd49129b5fcbcfe19da5d4010a41069a106b6670237312518ae5d64aba8450d3",
+        "candidate_instance_fingerprint": "sha256:d72173cc20c3ef1053aeb04cead94f407ed5a5d72d948eb0fa87acd827eecc69",
+        "changed_element_ids": [
+          "model_instance:model:task_local_revision"
+        ],
+        "member_id": "task_local_revision",
+        "operation": "replace",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "sha256:5ee5aaaf25d3c359fc175a1d69f9b3d406200916678f1000ee9eab49b949a760",
+        "candidate_instance_fingerprint": "sha256:6aa5d58217dbde8c0cf203f8bbe60115a17ca7ff6414ddb76c6b3e03c14353e6",
+        "changed_element_ids": [
+          "model_instance:model:template_selection"
+        ],
+        "member_id": "template_selection",
+        "operation": "replace",
+        "schema": "flowguard.model_revision_member.v1"
+      },
+      {
+        "base_instance_fingerprint": "",
+        "candidate_instance_fingerprint": "sha256:1907f1b696f98bcdc10cf2edefd09b13a12719aca3d055ba2607b31059476e53",
+        "changed_element_ids": [
+          "model_instance:model:test_evidence_mesh"
+        ],
+        "member_id": "test_evidence_mesh",
+        "operation": "add",
+        "schema": "flowguard.model_revision_member.v1"
+      }
+    ],
+    "removed_ids": [
+      "coverage:tests_evidence:check:model-regression:behavior-commitment-ledger",
+      "coverage:tests_evidence:check:model-regression:current-input-authority",
+      "coverage:tests_evidence:check:model-regression:fact-revision",
+      "coverage:tests_evidence:check:model-regression:task-local-revision",
+      "coverage:tests_evidence:check:model-regression:template-selection",
+      "external_surface:surface:worldguard-current-contract-model",
+      "external_surface:surface:worldguard-current-contract-tests",
+      "external_surface:surface:worldguard-fact-revision-model",
+      "external_surface:surface:worldguard-fact-revision-tests",
+      "external_surface:surface:worldguard-template-model",
+      "external_surface:surface:worldguard-template-tests",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-model--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-current-contract-tests--commitment:worldguard-current-input-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-model--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-fact-revision-tests--commitment:worldguard-fact-revision-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-model--commitment:worldguard-template-selection-authority",
+      "model_relation:relation:surface-produces-for-commitment:surface:worldguard-template-tests--commitment:worldguard-template-selection-authority"
+    ]
+  },
+  "snapshot_diff_fingerprint": "sha256:d66022e6283b7bc9e5059a71f7a503b8da954d7e5cb818908e17f1d93ad9c60e",
+  "status": "pass",
+  "writes_performed": false
+}
