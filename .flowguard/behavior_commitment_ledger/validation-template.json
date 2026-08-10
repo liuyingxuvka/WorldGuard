@@ -5,10 +5,10 @@
   "command": "python -m pytest -q tests/test_template_packs.py",
   "status": "passed",
   "exit_code": 0,
-  "started_at": "2026-08-09T18:29:16.730340+00:00",
-  "finished_at": "2026-08-09T18:29:18.954611+00:00",
+  "started_at": "2026-08-10T09:00:48.809048+00:00",
+  "finished_at": "2026-08-10T09:00:49.858894+00:00",
   "artifact_fingerprints": {
-    ".flowguard/behavior_commitment_ledger/ledger.json": "sha256:caa44c747a4bef489497c0302cddb7539d0f2c62dccaa98dbd876e24c684d20e",
+    ".flowguard/behavior_commitment_ledger/ledger.json": "sha256:5d29bde43e36263538324c8a7d3256e754d2c1a0f37e09f60e40648f3961d1e9",
     ".flowguard/behavior_commitment_ledger/model.py": "sha256:74cb7891116f4ea5f2f93807f5f61fa2e04d0485cd499fed8d700267e2c044f9",
     ".flowguard/behavior_commitment_ledger/run_checks.py": "sha256:dfa33a800b62e53e622528e67921e6b200e90f011e6784cab0ec9b6f7c27c582",
     "worldguard/template_packs.py": "sha256:93f014bccaa6403b63046fe017d5080707e2070ce6f98386cfb8b3cd2c0554bf",
@@ -27,7 +27,7 @@
     ],
     "pytest_version": "9.0.3"
   },
-  "stdout": "......................                                                   [100%]\n22 passed in 1.06s\n",
+  "stdout": "......................                                                   [100%]\n22 passed in 0.47s\n",
   "stderr": "",
-  "receipt_hash": "sha256:b174be823bb25f5e8d62e3e0e0d503e56b731b47b55d576540c11ff984ee2814"
+  "receipt_hash": "sha256:5d0d28d338ab92d6ae93f9e21fa0a8b12e40e40eac73d9853801ee307a18ceab"
 }

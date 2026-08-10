@@ -66,24 +66,36 @@
       "model_sync_state": "owner_model_current",
       "miss_origin_state": "no_miss",
       "path_authority": {
-        "path_sensitive": false,
+        "path_sensitive": true,
         "business_intent": "",
-        "business_intent_id": "",
-        "behavior_commitment_id": "",
-        "ppa_report_id": "",
-        "ppa_decision": "",
-        "ppa_confidence": "",
-        "ppa_ok": null,
-        "primary_path_id": "",
+        "business_intent_id": "intent:worldguard-current-input-authority",
+        "behavior_commitment_id": "commitment:worldguard-current-input-authority",
+        "ppa_report_id": "report:ppa:worldguard-current-input-authority",
+        "ppa_decision": "primary_path_authority_green",
+        "ppa_confidence": "full",
+        "ppa_ok": true,
+        "primary_path_id": "path:worldguard-current-input-authority",
         "fallback_candidate_ids": [],
-        "ppa_coverage_receipt_ids": [],
-        "ppa_coverage_shard_ids": [],
-        "ppa_risk_gate_ids": [],
+        "ppa_coverage_receipt_ids": [
+          "receipt:worldguard-current-input-authority"
+        ],
+        "ppa_coverage_shard_ids": [
+          "shard:worldguard-current-input-authority"
+        ],
+        "ppa_risk_gate_ids": [
+          "risk_gate:worldguard-current-input-authority"
+        ],
         "scoped_out_reason": "",
-        "evidence_refs": [],
-        "runtime_observation_ids": [],
-        "proof_artifact_ids": [],
-        "evidence_current": false,
+        "evidence_refs": [
+          "C:\\Users\\liu_y\\Documents\\WorldGuard\\.flowguard\\behavior_commitment_ledger\\validation-input.json"
+        ],
+        "runtime_observation_ids": [
+          "observation:worldguard-current-input-targeted-tests"
+        ],
+        "proof_artifact_ids": [
+          "proof:worldguard-current-input-authority"
+        ],
+        "evidence_current": true,
         "metadata": {}
       },
       "evidence": {
@@ -188,24 +200,36 @@
       "model_sync_state": "owner_model_current",
       "miss_origin_state": "no_miss",
       "path_authority": {
-        "path_sensitive": false,
+        "path_sensitive": true,
         "business_intent": "",
-        "business_intent_id": "",
-        "behavior_commitment_id": "",
-        "ppa_report_id": "",
-        "ppa_decision": "",
-        "ppa_confidence": "",
-        "ppa_ok": null,
-        "primary_path_id": "",
+        "business_intent_id": "intent:worldguard-template-selection-authority",
+        "behavior_commitment_id": "commitment:worldguard-template-selection-authority",
+        "ppa_report_id": "report:ppa:worldguard-template-selection-authority",
+        "ppa_decision": "primary_path_authority_green",
+        "ppa_confidence": "full",
+        "ppa_ok": true,
+        "primary_path_id": "path:worldguard-template-selection-authority",
         "fallback_candidate_ids": [],
-        "ppa_coverage_receipt_ids": [],
-        "ppa_coverage_shard_ids": [],
-        "ppa_risk_gate_ids": [],
+        "ppa_coverage_receipt_ids": [
+          "receipt:worldguard-template-selection-authority"
+        ],
+        "ppa_coverage_shard_ids": [
+          "shard:worldguard-template-selection-authority"
+        ],
+        "ppa_risk_gate_ids": [
+          "risk_gate:worldguard-template-selection-authority"
+        ],
         "scoped_out_reason": "",
-        "evidence_refs": [],
-        "runtime_observation_ids": [],
-        "proof_artifact_ids": [],
-        "evidence_current": false,
+        "evidence_refs": [
+          "C:\\Users\\liu_y\\Documents\\WorldGuard\\.flowguard\\behavior_commitment_ledger\\validation-template.json"
+        ],
+        "runtime_observation_ids": [
+          "observation:worldguard-template-targeted-tests"
+        ],
+        "proof_artifact_ids": [
+          "proof:worldguard-template-selection-authority"
+        ],
+        "evidence_current": true,
         "metadata": {}
       },
       "evidence": {
@@ -313,24 +337,36 @@
       "model_sync_state": "owner_model_current",
       "miss_origin_state": "no_miss",
       "path_authority": {
-        "path_sensitive": false,
+        "path_sensitive": true,
         "business_intent": "",
-        "business_intent_id": "",
-        "behavior_commitment_id": "",
-        "ppa_report_id": "",
-        "ppa_decision": "",
-        "ppa_confidence": "",
-        "ppa_ok": null,
-        "primary_path_id": "",
+        "business_intent_id": "intent:worldguard-fact-revision-authority",
+        "behavior_commitment_id": "commitment:worldguard-fact-revision-authority",
+        "ppa_report_id": "report:ppa:worldguard-fact-revision-authority",
+        "ppa_decision": "primary_path_authority_green",
+        "ppa_confidence": "full",
+        "ppa_ok": true,
+        "primary_path_id": "path:worldguard-fact-revision-authority",
         "fallback_candidate_ids": [],
-        "ppa_coverage_receipt_ids": [],
-        "ppa_coverage_shard_ids": [],
-        "ppa_risk_gate_ids": [],
+        "ppa_coverage_receipt_ids": [
+          "receipt:worldguard-fact-revision-authority"
+        ],
+        "ppa_coverage_shard_ids": [
+          "shard:worldguard-fact-revision-authority"
+        ],
+        "ppa_risk_gate_ids": [
+          "risk_gate:worldguard-fact-revision-authority"
+        ],
         "scoped_out_reason": "",
-        "evidence_refs": [],
-        "runtime_observation_ids": [],
-        "proof_artifact_ids": [],
-        "evidence_current": false,
+        "evidence_refs": [
+          "C:\\Users\\liu_y\\Documents\\WorldGuard\\.flowguard\\behavior_commitment_ledger\\validation-fact.json"
+        ],
+        "runtime_observation_ids": [
+          "observation:worldguard-fact-revision-targeted-tests"
+        ],
+        "proof_artifact_ids": [
+          "proof:worldguard-fact-revision-authority"
+        ],
+        "evidence_current": true,
         "metadata": {}
       },
       "evidence": {
@@ -383,10 +419,10 @@
       "source_ref": "worldguard/contracts.py; worldguard/semantic.py; worldguard/guard_model_contract.py; worldguard/guards/*.py; skills/worldguard/runtime/worldguard/*.py",
       "source_system_id": "worldguard-runtime",
       "native_artifact_id": "artifact:worldguard-current-contract-runtime",
-      "content_fingerprint": "sha256:c8f2719dc2bd3f283367e1b27a70021a0eb81ec6403e0c79172b15fff9d8f781",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "content_fingerprint": "sha256:955f3f65c705b5a80923660ca5fe38f0e0657870ea7052abb47145559800557e",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "observed",
       "source_classification": "observed_external_behavior",
@@ -462,9 +498,9 @@
       "source_system_id": "worldguard-tests",
       "native_artifact_id": "artifact:worldguard-current-contract-tests",
       "content_fingerprint": "sha256:4875886018bd1d2f0e7216de60873fd70b69787b9583e99a6bab2b4e5dffa1ce",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "test",
@@ -510,9 +546,9 @@
       "source_system_id": "worldguard-flowguard",
       "native_artifact_id": "artifact:worldguard-current-contract-models",
       "content_fingerprint": "sha256:d563ea89ff724ef83818acd9284b262b2c55ffb535b09686dd120f3f46f4a462",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "implementation",
@@ -558,9 +594,9 @@
       "source_system_id": "worldguard-openspec",
       "native_artifact_id": "openspec:guard-simulation-readiness",
       "content_fingerprint": "sha256:87340a980b264d9400001d7251f76ff173381c1da336bc703f9ae7ab9a27a543",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "normative",
       "source_classification": "external_normative_contract",
@@ -604,9 +640,9 @@
       "source_system_id": "worldguard-runtime",
       "native_artifact_id": "artifact:worldguard-template-runtime",
       "content_fingerprint": "sha256:3375bace17b96559106b943df9286db588af1f1ad3a04d4c5d42e17f6d51fa4c",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "observed",
       "source_classification": "observed_external_behavior",
@@ -651,9 +687,9 @@
       "source_system_id": "worldguard-tests",
       "native_artifact_id": "artifact:worldguard-template-tests",
       "content_fingerprint": "sha256:43236438b30f8c6e77d36bd9a48337913508b806443f9499cd20e6056ca68301",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "test",
@@ -697,9 +733,9 @@
       "source_system_id": "worldguard-flowguard",
       "native_artifact_id": "artifact:worldguard-template-models",
       "content_fingerprint": "sha256:f17a9cc001beee9d5f06b11e24a394b7d3a40dd1da6d8e14f6babf5ca07add3c",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "implementation",
@@ -744,10 +780,10 @@
       "source_ref": "openspec/specs/worldguard-template-pack-builder/spec.md; skills/worldguard/references/template-packs.md; README.md",
       "source_system_id": "worldguard-openspec",
       "native_artifact_id": "openspec:worldguard-template-pack-builder",
-      "content_fingerprint": "sha256:359e78b0f031bfb1c0bd8ff05a4bb1ce8fdb5957afea582a57ebf7638dc6424b",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "content_fingerprint": "sha256:a7f096cfa677a342bb1f4acb40fc112103689e0379483aa723bf400cd5acebaa",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "normative",
       "source_classification": "external_normative_contract",
@@ -793,9 +829,9 @@
       "source_system_id": "worldguard-runtime",
       "native_artifact_id": "artifact:worldguard-fact-revision-runtime",
       "content_fingerprint": "sha256:26643785223c64074653f9f808862c1c337e58c2c9a110234e8fa4bb6fadc5be",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "observed",
       "source_classification": "observed_external_behavior",
@@ -840,9 +876,9 @@
       "source_system_id": "worldguard-tests",
       "native_artifact_id": "artifact:worldguard-fact-revision-tests",
       "content_fingerprint": "sha256:14cf2cdbae5921eb8ccc2d0233baa0cbb60e70238ddebf6b0819858e4212f524",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "test",
@@ -887,9 +923,9 @@
       "source_system_id": "worldguard-flowguard",
       "native_artifact_id": "artifact:worldguard-fact-revision-model",
       "content_fingerprint": "sha256:fe0c6ae8bb01195fc414830a5d15f144160a6ab92231ed2199ad2f5901d396ec",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "supporting",
       "source_classification": "implementation",
@@ -933,10 +969,10 @@
       "source_ref": "openspec/changes/add-fact-level-world-revision/specs/fact-level-world-revision/spec.md; skills/worldguard/references/fact-revision.md; skills/worldguard/SKILL.md; README.md",
       "source_system_id": "worldguard-openspec",
       "native_artifact_id": "openspec:fact-level-world-revision",
-      "content_fingerprint": "sha256:45434e32505a6430e49ebcc55fa5d69e1426624e48b3b6065489f368182f0e51",
-      "inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+      "content_fingerprint": "sha256:2001e3f6689ffb2d5ede0fc4097663c363ef2c476684c98af697e537e1b99216",
+      "inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
       "discovery_evidence_ids": [
-        "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+        "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
       ],
       "source_authority_role": "normative",
       "source_classification": "external_normative_contract",
@@ -991,10 +1027,10 @@
     "surface:worldguard-fact-revision-model",
     "surface:worldguard-fact-revision-docs"
   ],
-  "source_inventory_revision": "source-inventory:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
-  "source_inventory_fingerprint": "sha256:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c",
+  "source_inventory_revision": "source-inventory:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
+  "source_inventory_fingerprint": "sha256:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8",
   "source_inventory_evidence_ids": [
-    "source-inventory-discovery:4307e751ad87b10daa0da706d2dff6469a176b42a9e8ed0abf42ecff8c3ec56c"
+    "source-inventory-discovery:1aa991d7ac9b1b49fd75eb66154066a0f06098b1ce0dd18ea8923c94d8ac2cf8"
   ],
   "require_complete_source_inventory": true,
   "expected_commitment_ids": [

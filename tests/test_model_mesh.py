@@ -87,7 +87,9 @@ def pass_mesh():
                                 "condition": "precheck_complete",
                             }
                         ],
-                        "facts": ["precheck_complete"],
+                    "facts": [
+                        {"fact_id": "precheck_complete", "value": True}
+                    ],
                     },
                 },
             },

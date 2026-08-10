@@ -28,7 +28,7 @@ def _release_gate_binding() -> dict:
     return {
         "schema_version": "worldguard.release_gate_binding.v1",
         "target_skill_id": "worldguard",
-        "release_version": "0.7.3",
+        "release_version": "0.7.4",
         "gate_id": "skillguard-final-validation",
         "execution_owner_id": "owner:worldguard:native-depth",
     }

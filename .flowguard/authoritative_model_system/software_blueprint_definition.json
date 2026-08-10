@@ -95,27 +95,37 @@
   "dynamic_allowances": [
     {
       "surface_key": "scripts/refresh_world_blueprint_external_dna_fixtures.py#_refresh_external_object_census",
-      "operations": ["runpy.run_path"],
+      "operations": [
+        "runpy.run_path"
+      ],
       "rationale": "The fixture compiler loads only the explicitly named current fixture helper through one bounded author-side path; the loaded path is not a runtime or external-AI reconstruction route."
     },
     {
       "surface_key": "scripts/verify_guard_simulation_readiness.py#_check_package_identity",
-      "operations": ["importlib.import_module"],
+      "operations": [
+        "importlib.import_module"
+      ],
       "rationale": "Readiness checks import exactly the declared installed WorldGuard package identity for source-versus-install evidence; an unavailable or malformed package remains a visible blocker."
     },
     {
       "surface_key": "worldguard/guard_model_contract.py#discover_guard_owned_failure_codes",
-      "operations": ["importlib.import_module"],
+      "operations": [
+        "importlib.import_module"
+      ],
       "rationale": "Failure-code discovery imports the explicitly selected current guard module to bind its native failure vocabulary; it is bounded to the declared guard contract and never a fallback route."
     },
     {
       "surface_key": "worldguard/mesh.py#_predictive_axis_assessment",
-      "operations": ["getattr"],
+      "operations": [
+        "getattr"
+      ],
       "rationale": "Axis assessment reads the declared predictive-axis attribute from one current model node; missing or malformed attributes remain visible evidence gaps."
     },
     {
       "surface_key": "worldguard/semantic.py#_safe_scalar_eval",
-      "operations": ["eval"],
+      "operations": [
+        "eval"
+      ],
       "rationale": "Scalar semantic evaluation is restricted to the current bounded expression evaluator and its declared environment; it is not a general execution or reconstruction path."
     }
   ],
@@ -183,8 +193,8 @@
         "model_source_fingerprint": "sha256:dca76bc35d021a65bfd520fc264d3d4d315275fb782f0bc481ae4cea9e607a9a",
         "runner_path": ".flowguard/task_local_revision/run_checks.py",
         "runner_source_fingerprint": "sha256:6318e4cf7cdacca7abfe3e3effd6f9f9915c29cdc959f9d31ceae2af67740923",
-        "purpose_declaration_fingerprint": "sha256:622beaced2af1ad190197b000fca0018490eb5bd0b63238239cfe140a95eeeb7",
-        "purpose_closure_fingerprint": "sha256:f3261cddb8938f9c431afb19375659f6094273b01b35dacc6dee6787a1f9ed75"
+        "purpose_declaration_fingerprint": "sha256:243753167481081fc2b1940cfc040aa36e8d0346942649e639eb5ea96bbd004b",
+        "purpose_closure_fingerprint": "sha256:80913e183c5efcb593508abac46b7540cbb8e5d103da53e4239eec5a883aa979"
       }
     },
     {
@@ -205,8 +215,8 @@
         "model_source_fingerprint": "sha256:d0e25f54a0cc2d0197bc5327af58c4fed4ef628720931ea7683ee57035514103",
         "runner_path": ".flowguard/fact_revision/run_checks.py",
         "runner_source_fingerprint": "sha256:89cd62bde9cbc83b5692a1c8be7d2ed6521d5ee5e07d0a4fded48171b2d05298",
-        "purpose_declaration_fingerprint": "sha256:6c2746eff342a06a3723db6022fe19e00e03559a6725815ac29ac476ffa0fdd1",
-        "purpose_closure_fingerprint": "sha256:e2cd2e02aa720aa4ceb76ffb6c641f3ceafe4d152c26d6afd586ccceb76ed115"
+        "purpose_declaration_fingerprint": "sha256:c8653ea9433e670cdf4cb246f4f617cf5d08737781bf9130975af8693af7dd20",
+        "purpose_closure_fingerprint": "sha256:ffce76ef62b7b5236e37c929e08e7b8b4c3669b072833fbc3b7acf09ef2ba010"
       }
     },
     {

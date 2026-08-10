@@ -1,0 +1,670 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:compositional_verification_kernel",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:232154829ef2ad22273b950d6836788d54c9ec0a4f0c4c39cf09f26ddf41e3b9"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:current_input_authority",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:9431fdfb2f017db4ee83f199be623713822799e23ddbae4984b8ef04f5494a53"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:hierarchical_model_mesh",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:b8168ed88439af714f01d715a69036a49b2c68a5ba6c6edbcdc19bd74197c2ab"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:model_test_code_alignment",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:043ded3ac0c74fc1ebfa06a62644a8b5663d4ddb678f9730b4d2ecc05c107ad8"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:template_selection",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:788b04c6f239c0b44b58dd9ccd7ecc32a67fe3db5bf041d23bd8309ec4c2c856"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:test_evidence_mesh",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:2ab4c79b2da51843835cf6e87bd5685cd032ee37740240a3506a67df3044100c"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:blueprint-contracts-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3-blueprint-contracts",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:4e500f9811bfa59d48c559380e571288724e4fde4b03cf26c4311977a4afd627"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:behavior_commitment_ledger",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:bcl-refresh-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3-bcl-refresh",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:8cdb5249aaa300c283701137d73f5197dfd9b050fcd8936fd3ab5e2e00fa76c7"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:fact_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:e177ca01f52a0cda5a4fa56cb5047f9e6a3a68c7037dbbc0f6988cae837ef72b"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.4-20260810",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:task_local_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-software-dna-release-0.7.3",
+      "rationale": "Refresh the current WorldGuard model owner identity for release 0.7.4 while preserving the accepted domain behavior and intent lineage.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:42c79507feef09617a6e0e4465d09d6310629d4fa455164f0ce2f14523484db2"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:232154829ef2ad22273b950d6836788d54c9ec0a4f0c4c39cf09f26ddf41e3b9",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:compositional_verification_kernel"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:f9451393f9d403c1a4bec4eb5bb281cb9122ee4c0f9e8103646f5d24ba62fe25"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:9431fdfb2f017db4ee83f199be623713822799e23ddbae4984b8ef04f5494a53",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:current_input_authority"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:f131cce9c23f7f4199b9704eb514849f7791703a158cf7e3425d6d8e56f877ba"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:b8168ed88439af714f01d715a69036a49b2c68a5ba6c6edbcdc19bd74197c2ab",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:hierarchical_model_mesh"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:93a41883783079dba024964ac28b9b987128a76c695b2903390e68d55fd0af0f"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:043ded3ac0c74fc1ebfa06a62644a8b5663d4ddb678f9730b4d2ecc05c107ad8",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:model_test_code_alignment"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:78f179826c2eeb3cdc866d0cf53c054661277e51429c1c60ca8801a93b3781fd"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:788b04c6f239c0b44b58dd9ccd7ecc32a67fe3db5bf041d23bd8309ec4c2c856",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:template_selection"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:caec6a11aa33e77bddb80f0d029f6fa5dd726ae342c3cf3a21bf7aff9958fc57"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:2ab4c79b2da51843835cf6e87bd5685cd032ee37740240a3506a67df3044100c",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:system-contains:test_evidence_mesh"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:812eb57bce455491cadd660ec9b7b5213665b21f6efdd9cc17f382365ab33fd3"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:4e500f9811bfa59d48c559380e571288724e4fde4b03cf26c4311977a4afd627",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:43335f44f7699eb5d736f4bce5e5f01851623f98948848a60a2d8ebeafa1e023"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:8cdb5249aaa300c283701137d73f5197dfd9b050fcd8936fd3ab5e2e00fa76c7",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:7e1feddaca5116ca8885e4c9d888139373db6e56ae39390a243a495285a8fc00"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:e177ca01f52a0cda5a4fa56cb5047f9e6a3a68c7037dbbc0f6988cae837ef72b",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:fact_revision"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:b171da061221c9645903b2a45a43aecde9918a2f441be3040cc68345fc2c7173"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.4-20260810",
+      "contribution_fingerprint": "sha256:42c79507feef09617a6e0e4465d09d6310629d4fa455164f0ce2f14523484db2",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision",
+        "relation:system-contains:task_local_revision"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
+      "fingerprint": "sha256:39ea53ec7c0b4f1e4bd2fc8d7b17eb6d81661cf810bec72d88551e1f67d515ce"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:self-dna-20260810",
+      "prior_contribution_fingerprint": "sha256:2bc78b660469257d1262c884c7c1a52f315000f8301a7c3876544916310c5947",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:f99e27ccf0734a8c545aab7eb1b8593fd3e40d0ea4cf15dcb38c2f218f8fe9b8"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:3df0d116783354130bf3ec2b774513b72edeb674111b6e8d8ad184cc68f5edae",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:current_input_authority:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:1497626ae84b2119e8761a6aa9f589323104a19c743667ff8996ad1f12976907"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:7ca394899a4fa7b462a4a79406fb555728002bd2e26706c5b45104f335ca4bcb",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:64fa9ced005ff117a2e3fdfe2b7d930c897314b2b2e39e86ca30d785ca459d4d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b8aee8b08d55a4efe6d52818d83b908c31bdc62c5a646545fdc4cf38aed215ef",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:7bcb1f62a49910ea7dcf01db0faa3424ca5107dc6c1531ac42c13560ebbac42c"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:b69d94adb1462a22757b73d952219787e886e688405f229efae73fc0894775d7",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:template_selection:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:1876de6d7ccc40a006fd7a38d3efcbaa44c0bbc9f2411cb8f7ce353d35c84ee7"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:source-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:f864c65243d435383e63c4aa0856565cec370c86391757243e440490229b42c6",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:065388c6daf265cf98242cbb14863a34bfc1c9f9d8176e10d69fc1ec20094d83"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:blueprint-contracts-20260809",
+      "prior_contribution_fingerprint": "sha256:ca8af9793227c0854c9bb508ba4567c9eccae0d8b26bbee0549f9cd5da79606a",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:9eea5e903f9803c3eb333f163d517d5658d8548dde64bbc14c2b241c7d63f65e"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:bcl-refresh-20260809",
+      "prior_contribution_fingerprint": "sha256:901b5e5f66dbd7420cd05c04190bdc5b8478e5ac6a2d59d9ed83bd93a1b6433e",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:cd50c4ac9eb29d992011fd610fb4575139aede6478a0b3a64fe23e9b117af8fe"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-0.7.3-currentness-20260809",
+      "prior_contribution_fingerprint": "sha256:a45277b947bbeca5d4d8908f5664e15892706abd2ac5ed1d4c3c754006ca2daa",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:a3d1244856a3cfec42b211ad10798e475a1847bcfce8b82045252f73eb4d6156"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-0.7.3-currentness-20260809",
+      "prior_contribution_fingerprint": "sha256:745a9629d1be340cb142ceec8af537f6078ab6ca2c8a0d80a413ad351aa396e4",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.4-20260810"
+      ],
+      "reason": "Replace the prior model-owner identity with the exact current release evidence while retaining its intent lineage.",
+      "fingerprint": "sha256:0e38250ce44c7ae6ed4cc173d38f67f8e2f583858832cada6c41789bfa8d191a"
+    }
+  ]
+}
