@@ -1,0 +1,96 @@
+{
+  "contributions": [],
+  "dispositions": [],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:b33b15663c9e75a2ce4da159d7f926f8994d9ea00db7f3a396530f8d4ca71235",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:314597ede9403eea7fad06d5e448d47e6a987b1166576d4cba7b49d1063af8cf"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:ade21a2ce1cb3ebaf7f1227c6ef000321f7761fd852448c524a467b31ade2a5d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:58509d311ed5023e254bfc71b031871d5bdaed271f02c31f5c7f4dbd9a91419d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:e3246601b1cf1ae3b5cffbe051915fc820eca9c63ee507a9f1123ece3e7ba477",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:b3742827b61161d83d0b9d93831d0901ac03bdae69c4060ed39b0c0c97be0a7e"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:648010b2d4bda3072bc3686b51c8e5a9f2772852a63b166ddf94e8579a6d2cac",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:649c83121fe812a2222e05611fef35a603b5f50e2c5492a269f2bab687312ccf"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:db2f6d98c806574b5bbcfc1845809fdf37d77688bf9c87acf65a7aa340f0feb3",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:96c85bfca3a57f935ea1e021785714fc6118401867dafda00ad1e5a7efcbd825"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:43659599083140bee710d7279c40b0f2513b6b56e38ddb2cd7d433693eca2c6d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:aa94428f03aa4b0b9effee290677727f1e3e03dc33af124c99e478f178b67d68"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074i",
+      "prior_contribution_fingerprint": "sha256:e91902183b37882b4ce101579fd0cbc74be4ea295f53b90ef3b915ca2625e58d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:a9818a8868ba0d1e6ddf40da23529dea15102a6fdeaaa4ab09c630dacdfaeab4"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j",
+      "prior_contribution_fingerprint": "sha256:9f0d56e8fd6d75e2e51ec2b0baa8da32204961f926811f3371d15b5292f899e0",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:732513cbaa1aae858f61d0b66dae3b6771ced2ffb7578c9f5754e5a8e7abf8a8"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:7b5d9f78c4b2578c44d4767167c1d4bfde4bd89ec0f34a229d2822e5085a48d4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:ec1ef7f87214839d9773d97cc716fd5d7d0773d0553b39777797d42d8c1f5749"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:9968c5a05e246bd5d2d7e3b4efe94206ccea34cf4b29a0b5eb4e558721fe0199",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current intent contribution; this patch changes package and evidence identities only, not declared product intent.",
+      "fingerprint": "sha256:2076417453bfc9e0b79aef45ced203297bd55b57aad8008499e6ed033aa00dca"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "worldguard"
-version = "0.7.4"
+version = "0.7.5"
 description = "Model-first guard framework for auditable world-claim checks."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.5 - 2026-08-10
+- Synchronize the WorldGuard package and portable consumer projection to the
+  patch release without rewriting the parallel model-mesh work.
+- Preserve the current ten-model DNA authority and its explicit coverage gaps;
+  historical model receipts remain immutable.
+
 ## v0.7.4 - 2026-08-10
 
 - Refresh the WorldGuard package, portable runtime, and model-regression identities.
