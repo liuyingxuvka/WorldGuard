@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.7 - 2026-08-11
+
+- Keep WorldGuard DNA in its native directory: model files, code bindings, and
+  test evidence remain first-class and no standalone transport bundle is
+  emitted.
+- Refresh the native self-model and consumer projection after the FlowGuard
+  0.68.11 upgrade.
+
 ## v0.7.6 - 2026-08-10
 - Synchronize the WorldGuard package and portable consumer projection with
   the provider-neutral FlowGuard software-DNA boundary.

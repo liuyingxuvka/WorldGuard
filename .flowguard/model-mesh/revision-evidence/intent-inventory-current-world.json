@@ -5,7 +5,7 @@
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -29,14 +29,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:232154829ef2ad22273b950d6836788d54c9ec0a4f0c4c39cf09f26ddf41e3b9"
+      "fingerprint": "sha256:73fc0b9586611bfc975dd944063a01dc6aad14fdd91a979b738f16b29846b647"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -60,14 +60,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:9431fdfb2f017db4ee83f199be623713822799e23ddbae4984b8ef04f5494a53"
+      "fingerprint": "sha256:1f86135fdfa4d140b6302858f588855281ab79cd8df5e00d676dc29a27b7f959"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -91,14 +91,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:b8168ed88439af714f01d715a69036a49b2c68a5ba6c6edbcdc19bd74197c2ab"
+      "fingerprint": "sha256:232e67698e60fe664526ae7e8f7ca7c956b5e480aff3504ce6b6082519b211c9"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -122,14 +122,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:043ded3ac0c74fc1ebfa06a62644a8b5663d4ddb678f9730b4d2ecc05c107ad8"
+      "fingerprint": "sha256:b7d3363c0b6bbcb7afafb65c136498c4ccd0b06c39484bef728985fd5375e5a7"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -153,14 +153,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:788b04c6f239c0b44b58dd9ccd7ecc32a67fe3db5bf041d23bd8309ec4c2c856"
+      "fingerprint": "sha256:e10a54e08d12bc138b8d90df66760a578ba7597a92c2ddaf31d3c7b53c23f30a"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -184,14 +184,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:2ab4c79b2da51843835cf6e87bd5685cd032ee37740240a3506a67df3044100c"
+      "fingerprint": "sha256:9ec180ec173d0066a83c8b79e217742d2e302c607c80053e376fb247a8cb7a4a"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -218,14 +218,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:4e500f9811bfa59d48c559380e571288724e4fde4b03cf26c4311977a4afd627"
+      "fingerprint": "sha256:61532ce5677d37cf1b5cb90451c8880c0627d8feb0eacba6c4403a52552b8c38"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -269,14 +269,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:8cdb5249aaa300c283701137d73f5197dfd9b050fcd8936fd3ab5e2e00fa76c7"
+      "fingerprint": "sha256:c59a06963a9d1f383475d327c3bf2013d24c03b1b065d2b1fac3ac55fe01617d"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -306,14 +306,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:e177ca01f52a0cda5a4fa56cb5047f9e6a3a68c7037dbbc0f6988cae837ef72b"
+      "fingerprint": "sha256:38c348be87b0b4b26796ff2327cff723034509fe30fe414b6f5497b7da8a4a47"
     },
     {
       "schema": "flowguard.model_intent_contribution.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.4-20260810",
       "source_kind": "design",
       "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
-      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "source_fingerprint": "sha256:58a2a79dff5c3f3bad6fc175f17bee5f27e94b57a4e0bdb00ff982c312b1a939",
       "subject_lane": "normative_target",
       "subject_role": "design",
       "lifecycle_state": "candidate",
@@ -339,14 +339,14 @@
       "work_context_id": "",
       "work_context_fingerprint": "",
       "native_owner_id": "",
-      "fingerprint": "sha256:42c79507feef09617a6e0e4465d09d6310629d4fa455164f0ce2f14523484db2"
+      "fingerprint": "sha256:5e3b005fca56f72460d3863ff1785a48ae1ae4a59c548a3460fb831ffe03059f"
     }
   ],
   "dispositions": [
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:232154829ef2ad22273b950d6836788d54c9ec0a4f0c4c39cf09f26ddf41e3b9",
+      "contribution_fingerprint": "sha256:73fc0b9586611bfc975dd944063a01dc6aad14fdd91a979b738f16b29846b647",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -361,12 +361,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:f9451393f9d403c1a4bec4eb5bb281cb9122ee4c0f9e8103646f5d24ba62fe25"
+      "fingerprint": "sha256:a9f4ab9623633d9343851257d0ee9a7e6cea1146907f425c3e87bd50721cbadc"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:9431fdfb2f017db4ee83f199be623713822799e23ddbae4984b8ef04f5494a53",
+      "contribution_fingerprint": "sha256:1f86135fdfa4d140b6302858f588855281ab79cd8df5e00d676dc29a27b7f959",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -381,12 +381,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:f131cce9c23f7f4199b9704eb514849f7791703a158cf7e3425d6d8e56f877ba"
+      "fingerprint": "sha256:d4923db18f4d37eef8eb838bb581abb683f02afb8293c27b3e306bca17788586"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:b8168ed88439af714f01d715a69036a49b2c68a5ba6c6edbcdc19bd74197c2ab",
+      "contribution_fingerprint": "sha256:232e67698e60fe664526ae7e8f7ca7c956b5e480aff3504ce6b6082519b211c9",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -401,12 +401,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:93a41883783079dba024964ac28b9b987128a76c695b2903390e68d55fd0af0f"
+      "fingerprint": "sha256:a43bc0482a9d0b63d1d5bedff0d5938a7c5e6e8a08a6b015bfe991b8adde24d8"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:043ded3ac0c74fc1ebfa06a62644a8b5663d4ddb678f9730b4d2ecc05c107ad8",
+      "contribution_fingerprint": "sha256:b7d3363c0b6bbcb7afafb65c136498c4ccd0b06c39484bef728985fd5375e5a7",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -421,12 +421,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:78f179826c2eeb3cdc866d0cf53c054661277e51429c1c60ca8801a93b3781fd"
+      "fingerprint": "sha256:7599de82955e114c076014f8528172b2746cf0aea5b47121e2bcdf3cc9308fb9"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:788b04c6f239c0b44b58dd9ccd7ecc32a67fe3db5bf041d23bd8309ec4c2c856",
+      "contribution_fingerprint": "sha256:e10a54e08d12bc138b8d90df66760a578ba7597a92c2ddaf31d3c7b53c23f30a",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -441,12 +441,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:caec6a11aa33e77bddb80f0d029f6fa5dd726ae342c3cf3a21bf7aff9958fc57"
+      "fingerprint": "sha256:da4db7f5095e2b4a2aed6eacf15cb069b35d92237020085ccd18aba87fe7b3a6"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:2ab4c79b2da51843835cf6e87bd5685cd032ee37740240a3506a67df3044100c",
+      "contribution_fingerprint": "sha256:9ec180ec173d0066a83c8b79e217742d2e302c607c80053e376fb247a8cb7a4a",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -461,12 +461,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:812eb57bce455491cadd660ec9b7b5213665b21f6efdd9cc17f382365ab33fd3"
+      "fingerprint": "sha256:3e932e2bcb680aaf2656dfaa22c89a77615958e1000c400accaea2cbbaebdea0"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:4e500f9811bfa59d48c559380e571288724e4fde4b03cf26c4311977a4afd627",
+      "contribution_fingerprint": "sha256:61532ce5677d37cf1b5cb90451c8880c0627d8feb0eacba6c4403a52552b8c38",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -482,12 +482,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:43335f44f7699eb5d736f4bce5e5f01851623f98948848a60a2d8ebeafa1e023"
+      "fingerprint": "sha256:a58c9ac4b5e5f345228c4542350a3e4e01a51f13997a7145952cdf64032b9adc"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:8cdb5249aaa300c283701137d73f5197dfd9b050fcd8936fd3ab5e2e00fa76c7",
+      "contribution_fingerprint": "sha256:c59a06963a9d1f383475d327c3bf2013d24c03b1b065d2b1fac3ac55fe01617d",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -506,12 +506,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:7e1feddaca5116ca8885e4c9d888139373db6e56ae39390a243a495285a8fc00"
+      "fingerprint": "sha256:89cdff2a6f38afdbbd8e4dc0290f29186cd61c862722e4ce343196bbe1cb6102"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:e177ca01f52a0cda5a4fa56cb5047f9e6a3a68c7037dbbc0f6988cae837ef72b",
+      "contribution_fingerprint": "sha256:38c348be87b0b4b26796ff2327cff723034509fe30fe414b6f5497b7da8a4a47",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -531,12 +531,12 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:b171da061221c9645903b2a45a43aecde9918a2f441be3040cc68345fc2c7173"
+      "fingerprint": "sha256:4d8df6c645912fc5390c6acc47440d6d5b4efdf66d65bb01fc9f0e1c9bf0f5bd"
     },
     {
       "schema": "flowguard.model_intent_disposition.v1",
       "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.4-20260810",
-      "contribution_fingerprint": "sha256:42c79507feef09617a6e0e4465d09d6310629d4fa455164f0ce2f14523484db2",
+      "contribution_fingerprint": "sha256:5e3b005fca56f72460d3863ff1785a48ae1ae4a59c548a3460fb831ffe03059f",
       "disposition": "accepted",
       "changed_obligation_ids": [],
       "changed_state_ids": [],
@@ -552,7 +552,7 @@
       "unreachable_terminal_state_ids": [],
       "unconsumed_output_ids": [],
       "reason": "Accept the release refresh as current evidence maintenance; no product intent or external behavior boundary changes.",
-      "fingerprint": "sha256:39ea53ec7c0b4f1e4bd2fc8d7b17eb6d81661cf810bec72d88551e1f67d515ce"
+      "fingerprint": "sha256:3c3fcf05bcaebfad50b1cdf31621ec1c730b32825a01ee38f379d5910af3dfaf"
     }
   ],
   "effective_intent_transitions": [

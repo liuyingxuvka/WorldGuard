@@ -5,8 +5,8 @@
   "command": "python -m pytest -q tests/test_fact_revision.py",
   "status": "passed",
   "exit_code": 0,
-  "started_at": "2026-08-11T09:19:27.649653+00:00",
-  "finished_at": "2026-08-11T09:19:28.612585+00:00",
+  "started_at": "2026-08-11T13:10:35.006656+00:00",
+  "finished_at": "2026-08-11T13:10:35.961302+00:00",
   "artifact_fingerprints": {
     ".flowguard/behavior_commitment_ledger/ledger.json": "sha256:5d29bde43e36263538324c8a7d3256e754d2c1a0f37e09f60e40648f3961d1e9",
     ".flowguard/behavior_commitment_ledger/model.py": "sha256:74cb7891116f4ea5f2f93807f5f61fa2e04d0485cd499fed8d700267e2c044f9",
