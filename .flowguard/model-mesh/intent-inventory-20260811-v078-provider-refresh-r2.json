@@ -1,0 +1,277 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.8-20260811",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:f3190591f206e75fa5e2a0ebf33502e8ae70f0b3a6664b4ac3b48a6ce3bfdc0c",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074i:source-refresh-0.7.7-20260811"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard software-DNA owner identity for release 0.7.8 and FlowGuard 0.68.12 while preserving accepted domain behavior and exact relation ownership for authoritative_model_system.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:f52451b24cd9efe333525595e2cda47a58c7e251fec9c1a7b0ac6d9ba396b11c"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.8-20260811",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:f3190591f206e75fa5e2a0ebf33502e8ae70f0b3a6664b4ac3b48a6ce3bfdc0c",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:fact_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:fact_revision"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard software-DNA owner identity for release 0.7.8 and FlowGuard 0.68.12 while preserving accepted domain behavior and exact relation ownership for fact_revision.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:1acec7b06201feaf8017750a2ccb6f571128170ba6ba9f1509ed4dbdd9825cc5"
+    },
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.8-20260811",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:f3190591f206e75fa5e2a0ebf33502e8ae70f0b3a6664b4ac3b48a6ce3bfdc0c",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:task_local_revision",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision",
+        "relation:system-contains:task_local_revision"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the current WorldGuard software-DNA owner identity for release 0.7.8 and FlowGuard 0.68.12 while preserving accepted domain behavior and exact relation ownership for task_local_revision.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:ef26f5001949ec5b9ddcdeba92a3bde3e41802bc8bf7e6d69322d012f842799e"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.8-20260811",
+      "contribution_fingerprint": "sha256:f52451b24cd9efe333525595e2cda47a58c7e251fec9c1a7b0ac6d9ba396b11c",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the current 0.7.8 model and evidence refresh for authoritative_model_system, mapping each exact changed semantic relation without changing declared product behavior.",
+      "fingerprint": "sha256:c06af2dfdcef522e14fcfe3abc6a13e11d71b47fcfae5d57915c8f42fe21809a"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.8-20260811",
+      "contribution_fingerprint": "sha256:1acec7b06201feaf8017750a2ccb6f571128170ba6ba9f1509ed4dbdd9825cc5",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:fact_revision"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the current 0.7.8 model and evidence refresh for fact_revision, mapping each exact changed semantic relation without changing declared product behavior.",
+      "fingerprint": "sha256:ff5d30a089fc2e1875b0bbd35f89811ad8edb0d2041a13da01fc99ff15ed17f1"
+    },
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.8-20260811",
+      "contribution_fingerprint": "sha256:ef26f5001949ec5b9ddcdeba92a3bde3e41802bc8bf7e6d69322d012f842799e",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision",
+        "relation:system-contains:task_local_revision"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the current 0.7.8 model and evidence refresh for task_local_revision, mapping each exact changed semantic relation without changing declared product behavior.",
+      "fingerprint": "sha256:f8be123f02ec0c744f4ea9dbc486a3c14539ee4a68e893a3362daa59da9c3a7f"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:89db7b85cadd1098611b26c87d94b84c5629bf9c6cf82aa7cb37cf9f786e350b",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:49a90b7e6cd4e45f3717829c15496174a5b8c79850d5c5523c58c12ffcea5585"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:ebfe6e95fc0bcc35f7ab8e235b00e1729a0417f5a721c38e8be9a3f34d03774e",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:8ae10b27c6adaba0c7303659dcc61526618dd8cf25ce4d1a9698666e57aff126"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:79ab9c6cda065376b79b981ec372071bdbfcc4c69b0a49eb212e5e5c7b5c7908",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:cdccbf315f019470805798fb3018a07cfc83faed80df7a53e278fb02812b1d78"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:c8d696bddf14c06c20b92c7c792f41085f9d5de6320254fb2dc0e904f7cdfb13",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:599018a2455746480ac89593aa84fadec40cf919dfd476a9d9179f0b0d8f7e0d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:b25f1952a0f98b64219607245bdb1c251bc10e2ae4b52a66cc0e44d7e1b5d520",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:ab12427179a6210f69f088a4abd818fb96781928cb3c22605ba2c05096e69e64"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:41dca012ed50e2658d6d3101b2f79ab9d871d51056aa7fb988ed191231d23804",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:918ea4a962f3346097cb7ca0b2c8942d5b3fe20a442110e0d1b5cbcc92251b58"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074i:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:1864af2538da5ee7af4e336213842b1ee306a69dd57357528e2bab254b0ff63b",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.8-20260811"
+      ],
+      "reason": "Supersede the prior WorldGuard owner identity with exact current 0.7.8 model, code, test, and evidence bindings.",
+      "fingerprint": "sha256:9d16e4e2f57aee41566cca2e04e5ed6a44df355030a77420b7ce6e6055f66b53"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811:native-delegated-surface-binding-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:b8560a49343c7b0a6ee7f96b2ff2386dadac5d0eca4332b42cdeed2355b3f4ae",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the accepted current WorldGuard intent; this revision refreshes only current model authority and evidence.",
+      "fingerprint": "sha256:b49cda51c1a038b28fa530c96d1976b6fc7f29f6a0daecf1e6ee04166569b696"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:331e658732a371eb41f13f8b0e14c87908071b32bf9d674dc71485bb3df11ea6",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:fact_revision:release-refresh-0.7.8-20260811"
+      ],
+      "reason": "Supersede the prior WorldGuard owner identity with exact current 0.7.8 model, code, test, and evidence bindings.",
+      "fingerprint": "sha256:86741e059207a289008c3e00d2a41e0a7d90c075022bdb8d0b0c633bde68c27f"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:5b5c37d5d11c782b2ec8c67d2007685111540895490ec4153ebf1ed2479b63b8",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:task_local_revision:release-refresh-0.7.8-20260811"
+      ],
+      "reason": "Supersede the prior WorldGuard owner identity with exact current 0.7.8 model, code, test, and evidence bindings.",
+      "fingerprint": "sha256:a9c47b16f1f69da9620add69bb9e81998a85c5cca535eb7b6c8fc181fa056995"
+    }
+  ]
+}

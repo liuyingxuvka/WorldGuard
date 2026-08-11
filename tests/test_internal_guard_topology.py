@@ -45,7 +45,7 @@ def test_current_worldguard_has_one_entry_and_seven_internal_routes():
     assert not hasattr(MODULE, "_hash")
     assert report["public_skill_ids"] == ["worldguard"]
     assert report["project_console_ids"] == ["worldguard"]
-    assert report["source_version"] == "0.7.7"
+    assert report["source_version"] == "0.7.8"
     assert len(report["internal_guard_ids"]) == 7
     assert report["semantic_input_surfaces"]["EventGuard"]["implementation"] == sorted(
         report["semantic_input_surfaces"]["EventGuard"]["binding"]

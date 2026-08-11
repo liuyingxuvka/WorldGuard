@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.8 - 2026-08-11
+
+- Keep the native WorldGuard directory as the DNA authority, including models,
+  code/test bindings, and current evidence; no standalone DNA transport file
+  is produced.
+- Refresh the self-model, object-DNA qualification, and internal guard
+  topology for the current provider and patch identity.
+- Synchronize the source package and consumer projection without touching
+  parallel model-mesh work.
+
 ## v0.7.7 - 2026-08-11
 
 - Keep WorldGuard DNA in its native directory: model files, code bindings, and

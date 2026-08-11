@@ -648,4 +648,4 @@ def test_bundled_task_local_runtime_matches_source_and_version() -> None:
     bundled_root = ROOT / "skills" / "worldguard" / "runtime" / "worldguard"
     for relative_path in ("task_local_revision.py", "fact_revision.py", "cli.py", "__init__.py"):
         assert (ROOT / "worldguard" / relative_path).read_bytes() == (bundled_root / relative_path).read_bytes()
-    assert '__version__ = "0.7.7"' in (bundled_root / "__init__.py").read_text(encoding="utf-8")
+    assert '__version__ = "0.7.8"' in (bundled_root / "__init__.py").read_text(encoding="utf-8")

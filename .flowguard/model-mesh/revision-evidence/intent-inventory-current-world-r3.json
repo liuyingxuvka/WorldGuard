@@ -1,0 +1,188 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811:native-delegated-surface-binding-0.7.7-20260811",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:f3190591f206e75fa5e2a0ebf33502e8ae70f0b3a6664b4ac3b48a6ce3bfdc0c",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:behavior_commitment_ledger",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-model:.flowguard/current_input_authority/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-tests:tests/test_contracts.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-tests:tests/test_guard_model_contract.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-fact-revision-model:.flowguard/fact_revision/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-fact-revision-tests:tests/test_fact_revision.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-template-model:.flowguard/template_selection/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-template-tests:tests/test_template_packs.py",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-current-contract-model--model-regression:current_input_authority",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-current-contract-tests--model-regression:current_input_authority",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-fact-revision-model--model-regression:fact_revision",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-fact-revision-tests--model-regression:fact_revision",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-template-model--model-regression:template_selection",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-template-tests--model-regression:template_selection",
+        "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:worldguard-0.7.7-native-dna",
+      "rationale": "Record the current delegated model and test surfaces in the model-system DNA through their native owner and evidence bindings; preserve the no-fallback commitment boundary.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:b8560a49343c7b0a6ee7f96b2ff2386dadac5d0eca4332b42cdeed2355b3f4ae"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811:native-delegated-surface-binding-0.7.7-20260811",
+      "contribution_fingerprint": "sha256:b8560a49343c7b0a6ee7f96b2ff2386dadac5d0eca4332b42cdeed2355b3f4ae",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-model:.flowguard/current_input_authority/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-tests:tests/test_contracts.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-current-contract-tests:tests/test_guard_model_contract.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-fact-revision-model:.flowguard/fact_revision/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-fact-revision-tests:tests/test_fact_revision.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-template-model:.flowguard/template_selection/model.py",
+        "relation:delegated-evidence-validates-surface:surface:worldguard-template-tests:tests/test_template_packs.py",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-current-contract-model--model-regression:current_input_authority",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-current-contract-tests--model-regression:current_input_authority",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-fact-revision-model--model-regression:fact_revision",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-fact-revision-tests--model-regression:fact_revision",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-template-model--model-regression:template_selection",
+        "relation:external-surface-delegates-to-owner:surface:worldguard-template-tests--model-regression:template_selection",
+        "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "scoped_gap_ids": [
+        "gap:external_surfaces:surface:worldguard-current-contract-model",
+        "gap:external_surfaces:surface:worldguard-current-contract-tests",
+        "gap:external_surfaces:surface:worldguard-fact-revision-model",
+        "gap:external_surfaces:surface:worldguard-fact-revision-tests",
+        "gap:external_surfaces:surface:worldguard-template-model",
+        "gap:external_surfaces:surface:worldguard-template-tests"
+      ],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact current delegated surface bindings and close the six previously explicit coverage gaps without changing product behavior.",
+      "fingerprint": "sha256:3b487704ef42f52ac9a1df7c308bc8c3c04c522d7c635340062d106d4cc3c0c4"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:89db7b85cadd1098611b26c87d94b84c5629bf9c6cf82aa7cb37cf9f786e350b",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:6ea021cc984b8ec0e75ba872538863c32cac1a9bd9699f6221c002d0120eba56"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:ebfe6e95fc0bcc35f7ab8e235b00e1729a0417f5a721c38e8be9a3f34d03774e",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:705d231edd8e43d35f1d28571046eaab2c684ee8f91bfc370b9a1968c5ad1da5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:79ab9c6cda065376b79b981ec372071bdbfcc4c69b0a49eb212e5e5c7b5c7908",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:e28daacc5051b889a4818fe4db173211bc94904e33196b9f7022d5ece6f778df"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:c8d696bddf14c06c20b92c7c792f41085f9d5de6320254fb2dc0e904f7cdfb13",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:b959ad27ab0e0161be9ff6a46f5e6de42721d13c13876e0cff64ba7fce317a90"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:b25f1952a0f98b64219607245bdb1c251bc10e2ae4b52a66cc0e44d7e1b5d520",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:48ab040548ed7cd142807b55d1dfa25e69e179ae0a9a24d08bdd1e133679ab10"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:41dca012ed50e2658d6d3101b2f79ab9d871d51056aa7fb988ed191231d23804",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:58a82a7897175a7c51386ef0cb9c176373a9f900f6f6671d45aa4680b2806cee"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074i:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:1864af2538da5ee7af4e336213842b1ee306a69dd57357528e2bab254b0ff63b",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:f107c492948472afe8e89f8d8ea84d952797ad5ba784b495e688eacd73008199"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:257086fb78c84017f35e8d962427acf939bad1deea4e4ae00c65054ba3114cba",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j:source-refresh-0.7.7-20260811:native-delegated-surface-binding-0.7.7-20260811"
+      ],
+      "reason": "Supersede the prior behavior-ledger intent with the exact current delegated native-surface binding.",
+      "fingerprint": "sha256:8313dfc3f6fc9af79a1591f7ceb610f7f15ca60921eb0c93bbbf937e73b29b63"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:331e658732a371eb41f13f8b0e14c87908071b32bf9d674dc71485bb3df11ea6",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:119528d51da6a695befc6ba6f34800a28d500ff3586fd840a2444dda51357ce7"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810:source-refresh-0.7.7-20260811",
+      "prior_contribution_fingerprint": "sha256:5b5c37d5d11c782b2ec8c67d2007685111540895490ec4153ebf1ed2479b63b8",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the exact current effective design binding; this revision changes only delegated native surface coverage.",
+      "fingerprint": "sha256:a2123698a5f167c0dd42fa4d09a04f6f1bfc6f8cdf4e4ee66eb638ff7dbb58da"
+    }
+  ]
+}
