@@ -282,7 +282,7 @@ def test_package_identity_rejects_source_version_drift(
     version_file.write_text("0.7.2\n", encoding="utf-8")
     pyproject_file = tmp_path / "pyproject.toml"
     pyproject_file.write_text(
-        '[project]\nname = "worldguard"\nversion = "0.7.5"\n',
+        '[project]\nname = "worldguard"\nversion = "0.7.6"\n',
         encoding="utf-8",
     )
     imported = type(
@@ -301,7 +301,7 @@ def test_package_identity_rejects_source_version_drift(
     status = audit._check_package_identity()
 
     assert status["ok"] is False
-    assert status["pyproject_version"] == "0.7.5"
+    assert status["pyproject_version"] == "0.7.6"
 
 
 def test_package_identity_reports_import_failure_without_traceback(

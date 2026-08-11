@@ -40,6 +40,12 @@ Planning and policy are bounded integrated-target fixtures. The seven-Guard matr
 
 `native_semantic` binds exact ids/fields/hash/boundary and, where a Guard applies, one purpose with a known-good and one known-bad per selected failure. Each case freezes `Input x PreState -> Output x PostState`, effects, failure, and oracle. `admission_bad` proves parser rejection only. Execution is parent declaration -> `for_guard` -> frozen-purpose proof -> owner. `worldguard.blueprint_native_execution.v2` accounts every field; ownerless containers are `NOT_APPLICABLE`. Event ids appear only as `executed_event_ids`; fluent and state identities remain separate. Consumed input never proves reachability, effects, factual truth, resolution, or mechanism truth; causal receipts keep requested/evaluated/licensed scope separate.
 
+This object-DNA result is not WorldGuard's own software DNA. WorldGuard's
+repository self-DNA is a separate FlowGuard-owned model and qualification
+surface. A cross-artifact projection is explicit and receipt-bound; it does
+not run during ordinary blueprint checks and it never turns a native-domain
+pass into an object-DNA or full-projection pass.
+
 ## Typed interfaces
 
 Ports bind stable id, canonical schema/version/refinement, and `one`/`optional`/`many`; display labels prove nothing. Every node input has one compatible producer and at least one consumer. Every element input maps from its owner-node input or a declared dependency output. Missing, duplicate, cross-wired, incompatible, decorative, or implicitly external ports block.

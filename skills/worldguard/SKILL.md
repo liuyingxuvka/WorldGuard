@@ -78,6 +78,14 @@ Keep `native_domain_qualified` (candidate consistency) separate from `object_dna
 
 Portable export/verify/query prove packaging, bounded replay, and retrieval—not behavior, truth, or completeness. Keep native, object-DNA, and full-cross-artifact handoff separate. Replay preserves the census source/discovery, test/evidence receipts, trust roots, and gaps. The single codec has no compatibility reader or fallback; full projection needs a registered independent producer receipt.
 
+DNA has two boundaries: WorldBlueprint is the target-neutral DNA of an external
+world/workflow/experiment/policy, while FlowGuard owns WorldGuard's software-DNA
+root. Native qualification is not object-DNA qualification; the latter still
+needs an independent census, current target evidence, aligned tests, and trusted
+authority. FlowGuard projection is on-demand and receipt-bound; ordinary
+blueprint operations do not load it, and a stale provider reports a boundary
+without disabling native WorldGuard operations.
+
 For prediction, freeze before observation and follow [references/task-local-model-deepening.md](references/task-local-model-deepening.md). For templates, require the target's current native route receipt and reconcile zero/one/many without ranking.
 
 ## Terminals

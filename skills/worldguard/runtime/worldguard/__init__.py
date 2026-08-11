@@ -102,6 +102,17 @@ from .fact_revision import (
     preview_fact_revision,
 )
 from .kernel import run_worldguard
+from .flowguard_projection import (
+    EXECUTION_OWNER_ID as FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID,
+    EXECUTION_OWNER_VERSION as FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION,
+    PROVIDER_CAPABILITY_ID as FLOWGUARD_PROJECTION_CAPABILITY_ID,
+    PROVIDER_ID as FLOWGUARD_PROJECTION_PROVIDER_ID,
+    PROVIDER_VERSION as FLOWGUARD_PROJECTION_PROVIDER_VERSION,
+    FlowGuardProjectionError,
+    build_flowguard_projection,
+    build_flowguard_provider_profile,
+    require_flowguard_toolchain,
+)
 from .mesh import (
     ModelMeshContract,
     MeshReport,
@@ -178,7 +189,7 @@ from .template_packs import (
     validate_target_template_interchange,
 )
 
-__version__ = "0.7.5"
+__version__ = "0.7.6"
 
 __all__ = [
     "__version__",
@@ -266,6 +277,15 @@ __all__ = [
     "run_model_mesh",
     "qualification_context_for_node",
     "run_worldguard",
+    "build_flowguard_projection",
+    "build_flowguard_provider_profile",
+    "require_flowguard_toolchain",
+    "FlowGuardProjectionError",
+    "FLOWGUARD_PROJECTION_PROVIDER_ID",
+    "FLOWGUARD_PROJECTION_PROVIDER_VERSION",
+    "FLOWGUARD_PROJECTION_CAPABILITY_ID",
+    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID",
+    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION",
     "qualify_guard_contract",
     "CandidateWorldModelRevision",
     "TASK_LOCAL_REVISION_OWNER_ID",

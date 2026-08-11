@@ -6224,7 +6224,26 @@ def _execute_blueprint_native_semantic(
 
 _CROSS_ARTIFACT_PROJECTION_CAPABILITIES: dict[
     tuple[str, str, str], dict[str, str]
-] = {}
+] = {
+    (
+        "worldguard.flowguard.blueprint-projection",
+        "v1",
+        "worldguard.flowguard.target-blueprint.v1",
+    ): {
+        "execution_owner_id": "worldguard.flowguard.blueprint-projection-owner",
+        "execution_owner_version": "v1",
+        "producer_identity_fingerprint": "sha256:"
+        + fingerprint_mesh(
+            {
+                "provider_id": "worldguard.flowguard.blueprint-projection",
+                "provider_version": "v1",
+                "provider_capability_id": "worldguard.flowguard.target-blueprint.v1",
+                "execution_owner_id": "worldguard.flowguard.blueprint-projection-owner",
+                "execution_owner_version": "v1",
+            }
+        ),
+    }
+}
 
 
 def _cross_artifact_required_source_ids(

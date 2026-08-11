@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.6 - 2026-08-10
+- Synchronize the WorldGuard package and portable consumer projection with
+  the provider-neutral FlowGuard software-DNA boundary.
+- Refresh WorldGuard self-DNA, external-object qualification, code/test
+  bindings, model mesh, and regression identities for this patch release.
+
 ## v0.7.5 - 2026-08-10
 - Synchronize the WorldGuard package and portable consumer projection to the
   patch release without rewriting the parallel model-mesh work.

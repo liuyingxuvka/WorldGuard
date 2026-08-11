@@ -91,7 +91,9 @@
         ".flowguard/model-regression-manifest.json",
         "worldguard/**/*.py",
         "scripts/**/*.py",
-        "tests/**/*"
+      "tests/**/*.py",
+      "tests/**/*.json",
+      "tests/**/*.yaml"
       ],
       "intent_source_inputs": [
         "openspec/changes/add-worldguard-blueprint-v1/design.md"

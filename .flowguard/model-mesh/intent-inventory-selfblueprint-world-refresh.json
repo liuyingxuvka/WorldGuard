@@ -1,0 +1,155 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074f2",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:authoritative_model_system",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:selfblueprint-refresh-0.7.4-20260810"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the authoritative WorldGuard self-DNA binding to the exact current 0.7.4 model manifest and preserve its direct intent source, owner, and relation scope.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:eb432df9453f8cd2ee6792355a99d21a2149d12b408f046aca7dfb7d95ed3d31"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074f2",
+      "contribution_fingerprint": "sha256:eb432df9453f8cd2ee6792355a99d21a2149d12b408f046aca7dfb7d95ed3d31",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact-current authoritative model intent replacement; only its direct realization and containment relations change in this model refresh.",
+      "fingerprint": "sha256:a68240235fb56ceb36607182bbe8a4c29ccb446ae05206cea43a046c6eedea13"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:b33b15663c9e75a2ce4da159d7f926f8994d9ea00db7f3a396530f8d4ca71235",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:6793b70ba60d87e237843f697291c97623bc88b58188283767a2b0bf191f2741"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:ade21a2ce1cb3ebaf7f1227c6ef000321f7761fd852448c524a467b31ade2a5d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:6c3c4eba34e1466a07a3ec1106d73d439335202cb0cd1ee4a785880d43167945"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:e3246601b1cf1ae3b5cffbe051915fc820eca9c63ee507a9f1123ece3e7ba477",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:f8bc1bb2c4169d3623ba446446f47403d542c39e7f0aaf531949197a60854a5d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:648010b2d4bda3072bc3686b51c8e5a9f2772852a63b166ddf94e8579a6d2cac",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:f6e061c991af5a532e2f8ad3b5e91d894482af38cbd7fcda04bfe5aa9ae4c680"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:db2f6d98c806574b5bbcfc1845809fdf37d77688bf9c87acf65a7aa340f0feb3",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:58307db443c40b8bfd1c75f4896d11bcb486cea4dd98b9c26ab8594e2355e40f"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:43659599083140bee710d7279c40b0f2513b6b56e38ddb2cd7d433693eca2c6d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:fc7a76357f84c3b82bbfbef031e0cbc4d52b8fdb93948c5c1b42d47e6c2b7f44"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:f10690e680849a4fc4b85e991611263820d5dfa1bf515021d019e9bdf30947f6",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074f2"
+      ],
+      "reason": "Replace the prior authoritative self-DNA binding with the exact-current 0.7.4 model-owner contribution.",
+      "fingerprint": "sha256:d73f5e1a1d147327fa94a9e1871be4b964bb22966fa3f2418537971b8d0e7041"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:15903274f75f8d9da29c63f8ee120bd51908a1ba5bfbbf3467ef3ba33beb2997",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:f5838315c32cebc4ef8f82f6f2c317919468875e2e66c76dcc1133b7026a6d17"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:7b5d9f78c4b2578c44d4767167c1d4bfde4bd89ec0f34a229d2822e5085a48d4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:6bd996caa57c93b5e5a43fa49cee0126f7aaae2f032c87bd77d9dcfc739ff5b5"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:9968c5a05e246bd5d2d7e3b4efe94206ccea34cf4b29a0b5eb4e558721fe0199",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the authoritative model owner.",
+      "fingerprint": "sha256:679e9b466703341e160137c3d989a44984c292217fa5b94db37c766f23eafc8a"
+    }
+  ]
+}

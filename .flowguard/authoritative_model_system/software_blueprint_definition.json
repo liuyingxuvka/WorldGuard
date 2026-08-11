@@ -115,6 +115,20 @@
       "rationale": "Failure-code discovery imports the explicitly selected current guard module to bind its native failure vocabulary; it is bounded to the declared guard contract and never a fallback route."
     },
     {
+      "surface_key": "worldguard/flowguard_projection.py#require_flowguard_toolchain",
+      "operations": [
+        "importlib.import_module"
+      ],
+      "rationale": "The explicit FlowGuard projection boundary imports only the installed current provider module to verify the declared provider surface; an unavailable or incompatible provider remains a visible projection gap."
+    },
+    {
+      "surface_key": "worldguard/flowguard_projection.py#build_flowguard_provider_profile",
+      "operations": [
+        "importlib.import_module"
+      ],
+      "rationale": "Provider-profile construction imports the same installed current FlowGuard provider module after the explicit boundary check and instantiates the declared provider-profile type; it is not a fallback or reconstruction path."
+    },
+    {
       "surface_key": "worldguard/mesh.py#_predictive_axis_assessment",
       "operations": [
         "getattr"
@@ -375,6 +389,7 @@
     "worldguard/blueprint_bundle.py": "hierarchical_model_mesh",
     "worldguard/blueprint_census.py": "hierarchical_model_mesh",
     "worldguard/blueprint.py": "hierarchical_model_mesh",
+    "worldguard/flowguard_projection.py": "authoritative_model_system",
     "worldguard/cli.py": "authoritative_model_system",
     "worldguard/contracts.py": "current_input_authority",
     "worldguard/execution_depth.py": "test_evidence_mesh",
