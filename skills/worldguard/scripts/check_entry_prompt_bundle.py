@@ -21,24 +21,12 @@ BLUEPRINT_OPERATIONS = {
     "check",
     "impact",
     "trace",
-    "bundle-export",
-    "bundle-verify",
-    "bundle-query",
 }
 BLUEPRINT_IDENTITY_OPERATIONS = {
     "update",
     "check",
     "impact",
     "trace",
-    "bundle-export",
-}
-BUNDLE_QUERY_KINDS = {
-    "node",
-    "element",
-    "behavior-case",
-    "binding",
-    "impact",
-    "reverse",
 }
 CLAIM_REQUIRED_SHAPES = {"unit_contract", "model_mesh", "task_local_revision"}
 RETIRED_PROMPT_FACT_FIELDS = {
@@ -171,7 +159,7 @@ def compose_prompt_bundle(
                     "fields": ["request_source_spans"],
                 }
             )
-        target_identity_required = operation not in {"bundle-verify", "bundle-query"}
+        target_identity_required = True
         common_missing = (
             [
                 field_name
@@ -245,25 +233,6 @@ def compose_prompt_bundle(
                 facts.get("trace_target_id", "")
             ).strip():
                 operation_missing.append("trace_target_id")
-        elif operation == "bundle-export":
-            if not isinstance(facts.get("bundle_destination"), str) or not str(
-                facts.get("bundle_destination", "")
-            ).strip():
-                operation_missing.append("bundle_destination")
-        elif operation in {"bundle-verify", "bundle-query"}:
-            for field_name in ("bundle_identity", "materialization_root"):
-                if not isinstance(facts.get(field_name), str) or not str(
-                    facts.get(field_name, "")
-                ).strip():
-                    operation_missing.append(field_name)
-            if operation == "bundle-query":
-                query_kind = str(facts.get("bundle_query_kind", "")).strip()
-                if query_kind not in BUNDLE_QUERY_KINDS:
-                    operation_missing.append("bundle_query_kind")
-                if not isinstance(facts.get("bundle_member_id"), str) or not str(
-                    facts.get("bundle_member_id", "")
-                ).strip():
-                    operation_missing.append("bundle_member_id")
         if operation_missing:
             findings.append(
                 {
@@ -444,20 +413,7 @@ def compose_prompt_bundle(
             }
         )
 
-    operation_claim_boundaries = {
-        "bundle-export": (
-            "Bundle export proves deterministic packaging of one already checked blueprint; "
-            "it does not independently prove target behavior, semantic truth, or factual truth."
-        ),
-        "bundle-verify": (
-            "Bundle verification proves package integrity and deterministic replay only within "
-            "the bundled target boundary; it does not independently prove semantic truth or factual truth."
-        ),
-        "bundle-query": (
-            "Bundle query returns one identity-bound stored or derived slice; retrieval does not "
-            "prove qualification, target behavior, semantic truth, or factual truth."
-        ),
-    }
+    operation_claim_boundaries = {}
     return {
         "schema_version": "worldguard.prompt_bundle_check.v1",
         "status": "pass" if not findings else "blocked",

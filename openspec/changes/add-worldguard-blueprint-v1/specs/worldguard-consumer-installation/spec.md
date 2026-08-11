@@ -52,12 +52,12 @@ The consumer projection and installation audit SHALL contain exactly one externa
 
 ### Requirement: Release assets and installation authority remain separate
 
-The frozen release manifest SHALL assign separate identities and roles to the package or source artifact, clean consumer skill distribution, canonical external self-DNA materialization, checksums, and release notes. Installation currentness SHALL consume only the clean consumer projection and its delegated SkillGuard audit. Release verification SHALL independently bind every declared public asset to the same version and frozen candidate. Author-only SkillGuard state, historical validation-plan entries, private receipts, caches, local absolute paths, and transient validation payloads MUST NOT enter the consumer projection or public self-DNA asset and MUST NOT become evidence merely because they are published nearby. Materialization, installation, Git/tag/GitHub Release, and release-asset success MUST NOT increase or substitute for the seven-layer static self-DNA depth.
+The frozen release manifest SHALL assign separate identities and roles to the package or source artifact, clean consumer skill distribution, checksums, and release notes. Installation currentness SHALL consume only the clean consumer projection and its delegated SkillGuard audit. Release verification SHALL independently bind every declared public asset to the same version and frozen candidate. Native-directory self-DNA remains an in-memory audit result and is not a public asset or installation input; author-only SkillGuard state, historical validation-plan entries, private receipts, caches, local absolute paths, and transient validation payloads MUST NOT enter the consumer projection or become evidence merely because they are published nearby. Installation, Git/tag/GitHub Release, and release-asset success MUST NOT increase or substitute for the seven-layer static self-DNA depth.
 
-#### Scenario: External self-DNA asset is current but installation is stale
+#### Scenario: Native self-DNA is current but installation is stale
 
-- **WHEN** the canonical self-DNA export matches the frozen release candidate but the installed consumer inventory differs
-- **THEN** the materialization/asset check may pass while installation currentness remains blocked, neither result substitutes for the other, and the static deepest layer remains unchanged
+- **WHEN** the in-memory native-directory self-DNA report matches the frozen source while the installed consumer inventory differs
+- **THEN** the self-DNA report may be current while installation currentness remains blocked, neither result substitutes for the other, and the static deepest layer remains unchanged
 
 #### Scenario: Historical validation entry names a removed owner
 
@@ -66,7 +66,7 @@ The frozen release manifest SHALL assign separate identities and roles to the pa
 
 ### Requirement: Validation evidence subjects remain independently owned
 
-Domain behavior, public-entry conformance, portable source-to-bundle projection, static self-DNA readiness, external materialization equivalence, test execution, external-resource availability, installation currentness, Git/tag/GitHub Release, and release-asset integrity SHALL retain distinct evidence subjects and execution owners. Similar commands, shared inputs, or one passing parent receipt MUST NOT merge those subjects, authorize cross-substitution, or promote static understanding depth.
+Domain behavior, public-entry conformance, portable source-to-bundle projection, static native-directory self-DNA readiness, test execution, external-resource availability, installation currentness, Git/tag/GitHub Release, and release-asset integrity SHALL retain distinct evidence subjects and execution owners. Similar commands, shared inputs, or one passing parent receipt MUST NOT merge those subjects, authorize cross-substitution, or promote static understanding depth.
 
 #### Scenario: Projection parity and helper conformance both pass
 

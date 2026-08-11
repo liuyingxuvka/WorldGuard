@@ -3243,11 +3243,10 @@ class CrossArtifactProjectionResult:
     normalized_payload: dict[str, Any]
     normalized_payload_fingerprint: str
     status: str
-    receipt_locator: str
-    receipt_content_fingerprint: str
     producer_identity_fingerprint: str
+    terminal_receipt_payload: dict[str, Any]
     terminal_receipt_fingerprint: str
-    schema_version: str = "worldguard.cross_artifact_projection.v1"
+    schema_version: str = "worldguard.cross_artifact_projection.v2"
 
     @classmethod
     def from_dict(
@@ -3274,9 +3273,8 @@ class CrossArtifactProjectionResult:
                 "normalized_payload",
                 "normalized_payload_fingerprint",
                 "status",
-                "receipt_locator",
-                "receipt_content_fingerprint",
                 "producer_identity_fingerprint",
+                "terminal_receipt_payload",
                 "terminal_receipt_fingerprint",
             },
             "cross-artifact projection result",
@@ -3284,7 +3282,7 @@ class CrossArtifactProjectionResult:
         schema_version = _required_text(
             data.get("schema_version"), "cross_artifact_projection.schema_version"
         )
-        if schema_version != "worldguard.cross_artifact_projection.v1":
+        if schema_version != "worldguard.cross_artifact_projection.v2":
             raise BlueprintError(
                 "WORLD_BLUEPRINT_CROSS_ARTIFACT_SCHEMA_INVALID",
                 "Cross-artifact projection result schema is not current.",
@@ -3322,6 +3320,12 @@ class CrossArtifactProjectionResult:
             raise BlueprintError(
                 "WORLD_BLUEPRINT_CROSS_ARTIFACT_PAYLOAD_INVALID",
                 "Cross-artifact normalized payload must be an object.",
+            )
+        terminal_receipt_payload = data.get("terminal_receipt_payload")
+        if not isinstance(terminal_receipt_payload, Mapping):
+            raise BlueprintError(
+                "WORLD_BLUEPRINT_CROSS_ARTIFACT_RECEIPT_INVALID",
+                "Cross-artifact terminal receipt must remain an in-memory object.",
             )
         return cls(
             schema_version=schema_version,
@@ -3375,18 +3379,11 @@ class CrossArtifactProjectionResult:
                 "cross_artifact_projection.normalized_payload_fingerprint",
             ),
             status=status,
-            receipt_locator=_required_text(
-                data.get("receipt_locator"),
-                "cross_artifact_projection.receipt_locator",
-            ),
-            receipt_content_fingerprint=_required_sha256(
-                data.get("receipt_content_fingerprint"),
-                "cross_artifact_projection.receipt_content_fingerprint",
-            ),
             producer_identity_fingerprint=_required_sha256(
                 data.get("producer_identity_fingerprint"),
                 "cross_artifact_projection.producer_identity_fingerprint",
             ),
+            terminal_receipt_payload=dict(terminal_receipt_payload),
             terminal_receipt_fingerprint=_required_sha256(
                 data.get("terminal_receipt_fingerprint"),
                 "cross_artifact_projection.terminal_receipt_fingerprint",
@@ -3418,9 +3415,9 @@ class CrossArtifactProjectionResult:
     def fingerprint_payload(self) -> dict[str, Any]:
         return {
             **self.evidence_payload(),
-            "receipt_locator": self.receipt_locator,
-            "receipt_content_fingerprint": self.receipt_content_fingerprint,
             "producer_identity_fingerprint": self.producer_identity_fingerprint,
+            "terminal_receipt_payload": self.terminal_receipt_payload,
+            "terminal_receipt_fingerprint": self.terminal_receipt_fingerprint,
         }
 
     def to_dict(self) -> dict[str, Any]:
@@ -3740,6 +3737,16 @@ def _validate_external_evidence_observation(
             "expected": "non-empty",
             "observed": payload.get("observation"),
         }
+    else:
+        expected_observation = (
+            f"Observed support for {element.element_id} within "
+            f"{blueprint.declared_boundary}."
+        )
+        if payload.get("observation") != expected_observation:
+            mismatches["observation"] = {
+                "expected": expected_observation,
+                "observed": payload.get("observation"),
+            }
     if mismatches:
         return None, "external_evidence_semantic_mismatch", {
             "mismatches": mismatches
@@ -6414,39 +6421,50 @@ def _validate_cross_artifact_projection(
                 ),
             }
         )
-    projection_items = projection.normalized_payload.get("projection_items")
-    payload_ids: list[str] = []
-    payload_shape_valid = isinstance(projection_items, list)
-    if payload_shape_valid:
-        for item in projection_items:
-            if (
-                not isinstance(item, Mapping)
-                or set(item) != {"source_id", "target_ids"}
-                or not isinstance(item.get("source_id"), str)
-                or not item.get("source_id")
-                or not isinstance(item.get("target_ids"), list)
-                or not item.get("target_ids")
-                or any(
-                    not isinstance(target_id, str) or not target_id
-                    for target_id in item.get("target_ids", [])
-                )
-                or len(item.get("target_ids", []))
-                != len(set(item.get("target_ids", [])))
-            ):
-                payload_shape_valid = False
-                break
-            payload_ids.append(str(item["source_id"]))
-    if (
-        set(projection.normalized_payload) != {"projection_items"}
-        or not payload_shape_valid
-        or len(payload_ids) != len(set(payload_ids))
-        or set(payload_ids) != projected
-    ):
+    # The target-object projection is an in-memory audit composition, not a
+    # transport envelope.  Keep the complete current blueprint payload and a
+    # closed disposition for every source id; a source-id-only projection can
+    # be re-signed after silently dropping target semantics.
+    expected_dispositions = [
+        {
+            "source_id": source_id,
+            "status": "projected" if source_id in projected else "unresolved",
+        }
+        for source_id in expected_required
+    ]
+    expected_normalized_payload = {
+        "schema_version": "worldguard.flowguard.blueprint_projection_payload.v2",
+        "blueprint": blueprint.fingerprint_payload(),
+        "source_dispositions": expected_dispositions,
+    }
+    payload_shape_valid = (
+        set(projection.normalized_payload)
+        == set(expected_normalized_payload)
+        and projection.normalized_payload.get("schema_version")
+        == expected_normalized_payload["schema_version"]
+        and projection.normalized_payload.get("blueprint")
+        == expected_normalized_payload["blueprint"]
+    )
+    observed_dispositions = projection.normalized_payload.get("source_dispositions")
+    if not isinstance(observed_dispositions, list):
+        payload_shape_valid = False
+        observed_dispositions = []
+    if observed_dispositions != expected_dispositions:
+        payload_shape_valid = False
+    if not payload_shape_valid:
         errors.append(
             {
-                "reason": "normalized_payload_projection_set_mismatch",
-                "payload_source_ids": sorted(set(payload_ids)),
-                "projected_source_ids": sorted(projected),
+                "reason": "normalized_payload_lossless_blueprint_mismatch",
+                "expected_blueprint_fingerprint": "sha256:"
+                + blueprint.current_fingerprint(),
+                "observed_blueprint_fingerprint": (
+                    "sha256:"
+                    + fingerprint_mesh(projection.normalized_payload.get("blueprint"))
+                    if isinstance(projection.normalized_payload.get("blueprint"), Mapping)
+                    else ""
+                ),
+                "expected_source_dispositions": expected_dispositions,
+                "observed_source_dispositions": observed_dispositions,
             }
         )
     expected_payload_fingerprint = "sha256:" + fingerprint_mesh(
@@ -6460,44 +6478,8 @@ def _validate_cross_artifact_projection(
                 "observed": projection.normalized_payload_fingerprint,
             }
         )
-    receipt_evidence: dict[str, Any] = {}
-    receipt_error = ""
-    if not blueprint.source_root:
-        receipt_error = "source_root_missing"
-    else:
-        receipt_relative = Path(projection.receipt_locator)
-        receipt_root = Path(blueprint.source_root).resolve()
-        receipt_candidate = (receipt_root / receipt_relative).resolve()
-        if (
-            receipt_relative.is_absolute()
-            or ".." in receipt_relative.parts
-            or not receipt_candidate.is_relative_to(receipt_root)
-        ):
-            receipt_error = "receipt_locator_unsafe"
-        elif not receipt_candidate.is_file():
-            receipt_error = "receipt_missing"
-        else:
-            receipt_bytes = receipt_candidate.read_bytes()
-            observed_receipt_content_fingerprint = (
-                "sha256:" + hashlib.sha256(receipt_bytes).hexdigest()
-            )
-            if (
-                observed_receipt_content_fingerprint
-                != projection.receipt_content_fingerprint
-            ):
-                receipt_error = "receipt_content_fingerprint_mismatch"
-            else:
-                try:
-                    parsed_receipt = json.loads(receipt_bytes.decode("utf-8"))
-                except (UnicodeDecodeError, json.JSONDecodeError):
-                    receipt_error = "receipt_invalid_json"
-                else:
-                    if not isinstance(parsed_receipt, Mapping):
-                        receipt_error = "receipt_not_object"
-                    else:
-                        receipt_evidence = dict(parsed_receipt)
     expected_receipt_payload = {
-        "schema_version": "worldguard.cross_artifact_projection_receipt.v1",
+        "schema_version": "worldguard.cross_artifact_projection_receipt.v2",
         "projection_id": projection.projection_id,
         "provider_id": projection.provider_id,
         "provider_version": projection.provider_version,
@@ -6514,12 +6496,12 @@ def _validate_cross_artifact_projection(
     expected_receipt_fingerprint = "sha256:" + fingerprint_mesh(
         expected_receipt_payload
     )
-    if receipt_error or receipt_evidence != expected_receipt_payload:
+    if projection.terminal_receipt_payload != expected_receipt_payload:
         errors.append(
             {
-                "reason": receipt_error or "terminal_receipt_payload_mismatch",
+                "reason": "terminal_receipt_payload_mismatch",
                 "expected": expected_receipt_payload,
-                "observed": receipt_evidence,
+                "observed": projection.terminal_receipt_payload,
             }
         )
     if projection.terminal_receipt_fingerprint != expected_receipt_fingerprint:

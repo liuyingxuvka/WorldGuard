@@ -26,11 +26,6 @@ from worldguard.blueprint import (
     compile_behavior_commitment_inventory_cache,
     load_world_blueprint,
 )
-from worldguard.blueprint_bundle import (
-    build_world_blueprint_bundle,
-    query_world_blueprint_bundle,
-    verify_world_blueprint_bundle,
-)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -346,7 +341,9 @@ def test_external_test_bytes_cannot_pass_without_exact_executable_contract(
     assert report.object_dna_qualified is False
 
 
-@pytest.mark.parametrize("mutation", ["observed_false", "foreign_supports"])
+@pytest.mark.parametrize(
+    "mutation", ["observed_false", "foreign_supports", "wrong_observation"]
+)
 def test_external_evidence_bytes_require_semantic_alignment(
     tmp_path: Path,
     mutation: str,
@@ -361,8 +358,10 @@ def test_external_evidence_bytes_require_semantic_alignment(
     observation = evidence["evidence_assignment"]
     if mutation == "observed_false":
         observation["observed"] = False
-    else:
+    elif mutation == "foreign_supports":
         observation["supports"] = "foreign_element"
+    else:
+        observation["observation"] = "Support was observed somewhere else."
     _write_json(evidence_path, evidence)
     _refresh_binding_receipt(
         payload,
@@ -666,89 +665,30 @@ def test_semantic_derivation_cannot_cross_owners_or_reuse_another_element_id(
     assert report.object_dna_qualified is False
 
 
-def test_bundle_and_query_project_object_census_claim_boundary(
-    tmp_path: Path,
-) -> None:
+def test_in_memory_object_census_claim_boundary() -> None:
     blueprint = load_world_blueprint(PLANNING_FIXTURE)
     trusted = [OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT]
-    bundle = build_world_blueprint_bundle(
+    report = check_world_blueprint(
         blueprint,
         trusted_object_census_producer_descriptor_fingerprints=trusted,
     )
-    result = query_world_blueprint_bundle(
-        bundle,
-        materialization_root=tmp_path / "query-replay",
-        query_kind="impact",
-        member_id="assignment_transition",
-        trusted_object_census_producer_descriptor_fingerprints=trusted,
-    )
 
-    assert bundle["reproducibility_manifest"]["status"][
-        "object_dna_handoff_qualified"
-    ] is True
-    assert result["object_dna_qualified"] is True
-    assert result["object_census"]["authority_licensed"] is True
-    assert result["object_census"]["coverage_complete"] is True
-    assert result["object_census"]["first_gap"] is None
-
-    embedded = {
-        row["relative_path"]: row for row in bundle["replay_resources"]
-    }
-
-    def decoded_json(relative_path: str) -> dict:
-        return json.loads(
-            zlib.decompress(
-                base64.b64decode(
-                    embedded[relative_path]["content_zlib_base64"],
-                    validate=True,
-                )
-            ).decode("utf-8")
-        )
-
-    embedded_source = decoded_json("support/target-object-census-source.json")
-    embedded_authority = decoded_json(
-        "support/target-object-census-authority.json"
-    )
-    receipt = embedded_authority["authority"]["discovery_receipt"]
-    assert embedded_source["source_id"] == receipt["source_id"]
-    assert receipt["source_content_fingerprint"] == embedded[
-        "support/target-object-census-source.json"
-    ]["content_sha256"]
-    assert receipt["request_contract_fingerprint"] == embedded[
-        "support/behavior-request-contract.json"
-    ]["content_sha256"]
-    assert receipt["target_material_fingerprint"] == embedded[
-        "support/target-material.json"
-    ]["content_sha256"]
-    assert result["object_census"]["discovery_receipt_fingerprint"] == receipt[
-        "receipt_fingerprint"
-    ]
+    assert report.object_dna_qualified is True
+    assert report.object_census["authority_licensed"] is True
+    assert report.object_census["coverage_complete"] is True
+    assert report.object_census["first_gap"] is None
 
 
-def test_bundle_replay_must_receive_the_same_caller_trust_context(
-    tmp_path: Path,
-) -> None:
+def test_transport_replay_is_retired_even_with_a_trust_context() -> None:
     trusted = [OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT]
-    bundle = build_world_blueprint_bundle(
-        load_world_blueprint(PLANNING_FIXTURE),
-        trusted_object_census_producer_descriptor_fingerprints=trusted,
-    )
+    import worldguard.blueprint_bundle as bundle_module
 
     with pytest.raises(BlueprintError) as caught:
-        verify_world_blueprint_bundle(
-            bundle,
-            materialization_root=tmp_path / "untrusted-replay",
+        bundle_module.verify_world_blueprint_bundle(
+            load_world_blueprint(PLANNING_FIXTURE),
+            trusted_object_census_producer_descriptor_fingerprints=trusted,
         )
-    verified = verify_world_blueprint_bundle(
-        bundle,
-        materialization_root=tmp_path / "trusted-replay",
-        trusted_object_census_producer_descriptor_fingerprints=trusted,
-    )
-
-    assert caught.value.code == "WORLD_BLUEPRINT_BUNDLE_MANIFEST_MISMATCH"
-    assert verified["status"] == "PASS"
-    assert verified["object_dna_handoff_qualified"] is True
-    assert verified["object_census"]["authority_licensed"] is True
+    assert caught.value.code == "WORLD_BLUEPRINT_NATIVE_DIRECTORY_ONLY"
 
 
 def test_runtime_and_portable_projection_do_not_contain_test_private_key() -> None:

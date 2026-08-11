@@ -255,7 +255,7 @@ def test_world_blueprint_route_blocks_minimal_unbound_facts():
         }
 
 
-def test_world_blueprint_all_eight_operations_are_exact():
+def test_world_blueprint_all_five_in_memory_operations_are_exact():
     cases = {
         "create": {"target_material_refs": ["request:user-request"]},
         "update": {
@@ -265,17 +265,6 @@ def test_world_blueprint_all_eight_operations_are_exact():
         "check": {},
         "impact": {"changed_ids": ["schedule_transition"]},
         "trace": {"trace_target_id": "root_plan_outcome"},
-        "bundle-export": {"bundle_destination": "exports/planning.bundle.json"},
-        "bundle-verify": {
-            "bundle_identity": "sha256:bundle",
-            "materialization_root": "empty/verify",
-        },
-        "bundle-query": {
-            "bundle_identity": "sha256:bundle",
-            "materialization_root": "empty/query",
-            "bundle_query_kind": "node",
-            "bundle_member_id": "plan_root",
-        },
     }
 
     for operation, extra in cases.items():
@@ -283,8 +272,6 @@ def test_world_blueprint_all_eight_operations_are_exact():
         assert report["ok"], (operation, report["findings"])
         assert report["blueprint_operation"] == operation
         assert "references/world-blueprint.md" in report["bundle_paths"]
-        if operation.startswith("bundle-"):
-            assert "semantic truth" in report["blueprint_operation_claim_boundary"]
 
 
 def test_world_blueprint_reference_has_maintainable_headroom_and_one_route() -> None:
@@ -323,26 +310,11 @@ def test_world_blueprint_operation_specific_identity_is_required():
     missing_trace = _compose(**_blueprint_facts("trace", trace_target_id=""))
     missing_create = _compose(**_blueprint_facts("create"))
     missing_update = _compose(**_blueprint_facts("update", changed_ids=[]))
-    missing_export = _compose(**_blueprint_facts("bundle-export"))
-    missing_verify = _compose(**_blueprint_facts("bundle-verify"))
-    missing_query = _compose(
-        **_blueprint_facts(
-            "bundle-query",
-            bundle_identity="sha256:bundle",
-            materialization_root="empty/query",
-            bundle_query_kind="unknown",
-            bundle_member_id="",
-        )
-    )
-
     for report in (
         missing_impact,
         missing_trace,
         missing_create,
         missing_update,
-        missing_export,
-        missing_verify,
-        missing_query,
     ):
         assert not report["ok"]
         assert "blueprint_operation_input_missing" in {
@@ -350,30 +322,10 @@ def test_world_blueprint_operation_specific_identity_is_required():
         }
 
 
-def test_bundle_verify_and_query_do_not_require_external_target_identity() -> None:
-    common = {
-        "task_shape": "world_blueprint",
-        "request_source_spans": [
-            {
-                "source_id": "user-request",
-                "start": 0,
-                "end": 18,
-                "text": "inspect this bundle",
-            }
-        ],
-        "affected_guard_ids": [],
-        "bundle_identity": "sha256:bundle",
-        "materialization_root": "empty/materialization",
-    }
-    verify = _compose(**common, blueprint_operation="bundle-verify")
-    query = _compose(
-        **common,
-        blueprint_operation="bundle-query",
-        bundle_query_kind="binding",
-        bundle_member_id="assignment_native",
-    )
-
-    assert verify["ok"], verify["findings"]
-    assert query["ok"], query["findings"]
-    assert "semantic truth" in verify["blueprint_operation_claim_boundary"]
-    assert "semantic truth" in query["blueprint_operation_claim_boundary"]
+def test_retired_transport_operations_are_rejected() -> None:
+    for operation in ("bundle-export", "bundle-verify", "bundle-query"):
+        report = _compose(**_blueprint_facts(operation))
+        assert not report["ok"]
+        assert "blueprint_operation_not_exact" in {
+            item["code"] for item in report["findings"]
+        }

@@ -14,11 +14,6 @@ from .blueprint import (
     check_world_blueprint,
     load_world_blueprint,
 )
-from .blueprint_bundle import (
-    query_world_blueprint_bundle,
-    verify_world_blueprint_bundle,
-    write_world_blueprint_bundle,
-)
 from .contracts import GuardContract
 from .fact_revision import (
     FactRevisionActivationRequest,
@@ -93,23 +88,9 @@ def main(argv: list[str] | None = None) -> int:
     blueprint_trace_command.add_argument("--request-fingerprint", required=True)
     blueprint_trace_command.add_argument("--target-id", required=True)
     _add_object_census_trust_arguments(blueprint_trace_command)
-    blueprint_bundle_export = blueprint_commands.add_parser("bundle-export")
-    blueprint_bundle_export.add_argument("--blueprint", required=True)
-    blueprint_bundle_export.add_argument("--destination", required=True)
-    _add_object_census_trust_arguments(blueprint_bundle_export)
-    blueprint_bundle_verify = blueprint_commands.add_parser("bundle-verify")
-    blueprint_bundle_verify.add_argument("--bundle", required=True)
-    blueprint_bundle_verify.add_argument("--materialization-root", required=True)
-    _add_object_census_trust_arguments(blueprint_bundle_verify)
-    blueprint_bundle_query = blueprint_commands.add_parser("bundle-query")
-    blueprint_bundle_query.add_argument("--bundle", required=True)
-    blueprint_bundle_query.add_argument("--materialization-root", required=True)
-    blueprint_bundle_query.add_argument("--kind", required=True)
-    blueprint_bundle_query.add_argument("--id", required=True)
-    _add_object_census_trust_arguments(blueprint_bundle_query)
     self_dna = subparsers.add_parser(
         "self-dna",
-        help="explicitly audit or export the FlowGuard-owned WorldGuard software DNA",
+        help="audit the exact native WorldGuard directory and in-memory software model",
     )
     self_dna_commands = self_dna.add_subparsers(
         dest="self_dna_command",
@@ -120,11 +101,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     self_dna_check.add_argument("--root", default=".")
     self_dna_check.add_argument("--compact", action="store_true")
-    self_dna_export = self_dna_commands.add_parser(
-        "export", help="materialize self-DNA only to an external destination"
-    )
-    self_dna_export.add_argument("--root", default=".")
-    self_dna_export.add_argument("--output", required=True)
     task_model = subparsers.add_parser(
         "task-model",
         help="freeze, compare, and reversibly evaluate one task-local world model",
@@ -208,46 +184,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "self-dna":
         from .self_dna import check as self_dna_check_run
-        from .self_dna import export as self_dna_export_run
-
-        payload, code = (
-            self_dna_check_run(args.root, compact=args.compact)
-            if args.self_dna_command == "check"
-            else self_dna_export_run(args.root, args.output)
-        )
+        payload, code = self_dna_check_run(args.root, compact=args.compact)
         print(dump_json(payload))
         return code
     if args.command == "blueprint":
         operation = args.blueprint_command
         try:
-            if operation == "bundle-verify":
-                result = verify_world_blueprint_bundle(
-                    args.bundle,
-                    materialization_root=args.materialization_root,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
-                print(dump_json(result))
-                return 0 if result["native_handoff_qualified"] else 1
-            if operation == "bundle-query":
-                result = query_world_blueprint_bundle(
-                    args.bundle,
-                    materialization_root=args.materialization_root,
-                    query_kind=args.kind,
-                    member_id=args.id,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
-                print(dump_json(result))
-                return 0
             current_blueprint = load_world_blueprint(args.blueprint)
             if operation == "check":
                 report = check_world_blueprint(
@@ -329,66 +271,6 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 print(dump_json(report.to_dict()))
                 return 0 if report.status.value == "PASS" else 1
-            if operation == "bundle-export":
-                bundle = write_world_blueprint_bundle(
-                    current_blueprint,
-                    args.destination,
-                    source_blueprint_path=args.blueprint,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
-                manifest = bundle["reproducibility_manifest"]
-                status = manifest["status"]
-                print(
-                    dump_json(
-                        {
-                            "operation": operation,
-                            "status": "PASS",
-                            "destination": str(Path(args.destination).resolve()),
-                            "logical_bundle_fingerprint": bundle[
-                                "logical_bundle_fingerprint"
-                            ],
-                            "native_handoff_qualified": status[
-                                "native_handoff_qualified"
-                            ],
-                            "object_dna_handoff_qualified": status[
-                                "object_dna_handoff_qualified"
-                            ],
-                            "object_census_authority_status": status[
-                                "object_census_authority_status"
-                            ],
-                            "object_census_authority_licensed": status[
-                                "object_census_authority_licensed"
-                            ],
-                            "object_census_coverage_complete": status[
-                                "object_census_coverage_complete"
-                            ],
-                            "object_claim_kind": status["object_claim_kind"],
-                            "object_census_first_gap": status[
-                                "object_census_first_gap"
-                            ],
-                            "full_cross_artifact_handoff_qualified": status[
-                                "full_cross_artifact_handoff_qualified"
-                            ],
-                            "cross_artifact_projection_status": status[
-                                "cross_artifact_projection"
-                            ],
-                            "claim_boundary": manifest["claim_boundary"],
-                            "bundle_utf8_bytes": len(
-                                Path(args.destination).read_bytes()
-                            ),
-                        }
-                    )
-                )
-                return (
-                    0
-                    if status["native_handoff_qualified"]
-                    else 1
-                )
             raise BlueprintError(
                 "WORLD_BLUEPRINT_OPERATION_UNKNOWN",
                 f"Unknown blueprint operation: {operation}.",
@@ -419,10 +301,7 @@ def main(argv: list[str] | None = None) -> int:
                             "code": "WORLD_BLUEPRINT_INPUT_INVALID",
                             "message": "Blueprint input could not be loaded or parsed.",
                             "details": {
-                                "input_path": str(
-                                    getattr(args, "blueprint", "")
-                                    or getattr(args, "bundle", "")
-                                ),
+                                "input_path": str(getattr(args, "blueprint", "")),
                                 "error_type": type(exc).__name__,
                             },
                         },

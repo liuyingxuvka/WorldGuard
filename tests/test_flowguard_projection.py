@@ -60,7 +60,9 @@ def test_flowguard_projection_is_explicit_receipt_bound_and_closes_projection_la
     assert projection.unresolved_source_ids == ()
     assert closed.full_domain_qualified is True
     assert closed.cross_artifact_projection is not None
-    assert (tmp_path / projection.receipt_locator).is_file()
+    assert not (tmp_path / "support" / "flowguard-blueprint-projection-receipt.json").exists()
+    assert projection.normalized_payload["blueprint"] == blueprint.fingerprint_payload()
+    assert projection.terminal_receipt_payload["terminal_status"] == "proven"
 
 
 def test_flowguard_projection_keeps_full_denominator_unresolved_when_native_model_is_not_ready(
