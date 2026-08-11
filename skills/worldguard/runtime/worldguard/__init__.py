@@ -51,14 +51,6 @@ from .blueprint import (
     compile_behavior_commitment_inventory_cache,
     load_world_blueprint,
 )
-from .blueprint_bundle import (
-    WORLD_BLUEPRINT_BUNDLE_SCHEMA_VERSION,
-    build_world_blueprint_bundle,
-    load_world_blueprint_bundle,
-    query_world_blueprint_bundle,
-    verify_world_blueprint_bundle,
-    write_world_blueprint_bundle,
-)
 from .blueprint_census import (
     EXTERNAL_OBJECT_CENSUS_SCHEMA,
     EXTERNAL_OBJECT_CENSUS_SIGNATURE_SCHEMA,
@@ -102,6 +94,17 @@ from .fact_revision import (
     preview_fact_revision,
 )
 from .kernel import run_worldguard
+from .flowguard_projection import (
+    EXECUTION_OWNER_ID as FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID,
+    EXECUTION_OWNER_VERSION as FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION,
+    PROVIDER_CAPABILITY_ID as FLOWGUARD_PROJECTION_CAPABILITY_ID,
+    PROVIDER_ID as FLOWGUARD_PROJECTION_PROVIDER_ID,
+    PROVIDER_VERSION as FLOWGUARD_PROJECTION_PROVIDER_VERSION,
+    FlowGuardProjectionError,
+    build_flowguard_projection,
+    build_flowguard_provider_profile,
+    require_flowguard_toolchain,
+)
 from .mesh import (
     ModelMeshContract,
     MeshReport,
@@ -178,7 +181,7 @@ from .template_packs import (
     validate_target_template_interchange,
 )
 
-__version__ = "0.7.3"
+__version__ = "0.7.6"
 
 __all__ = [
     "__version__",
@@ -231,12 +234,6 @@ __all__ = [
     "check_world_blueprint",
     "compile_behavior_commitment_inventory_cache",
     "load_world_blueprint",
-    "WORLD_BLUEPRINT_BUNDLE_SCHEMA_VERSION",
-    "build_world_blueprint_bundle",
-    "load_world_blueprint_bundle",
-    "query_world_blueprint_bundle",
-    "verify_world_blueprint_bundle",
-    "write_world_blueprint_bundle",
     "EXTERNAL_OBJECT_CENSUS_SCHEMA",
     "EXTERNAL_OBJECT_CENSUS_SIGNATURE_SCHEMA",
     "OBJECT_CENSUS_INPUT_KINDS",
@@ -266,6 +263,15 @@ __all__ = [
     "run_model_mesh",
     "qualification_context_for_node",
     "run_worldguard",
+    "build_flowguard_projection",
+    "build_flowguard_provider_profile",
+    "require_flowguard_toolchain",
+    "FlowGuardProjectionError",
+    "FLOWGUARD_PROJECTION_PROVIDER_ID",
+    "FLOWGUARD_PROJECTION_PROVIDER_VERSION",
+    "FLOWGUARD_PROJECTION_CAPABILITY_ID",
+    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID",
+    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION",
     "qualify_guard_contract",
     "CandidateWorldModelRevision",
     "TASK_LOCAL_REVISION_OWNER_ID",

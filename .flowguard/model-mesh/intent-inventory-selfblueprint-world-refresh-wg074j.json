@@ -1,0 +1,189 @@
+{
+  "contributions": [
+    {
+      "schema": "flowguard.model_intent_contribution.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "source_fingerprint": "sha256:c80678d038f7ef9ad200b01c2c0f47066fc5c3b62c2ea6718b2a6af73b35bffa",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "lifecycle_state": "candidate",
+      "decision_state": "accepted",
+      "logical_model_id": "model:behavior_commitment_ledger",
+      "unresolved_owner_id": "",
+      "supersedes_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074i"
+      ],
+      "conflicts_with_contribution_ids": [],
+      "target_obligation_ids": [],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "target_invariant_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "desired_terminal_state_ids": [],
+      "target_output_ids": [],
+      "declared_consumer_ids": [],
+      "effective_revision": "change:add-worldguard-blueprint-v1",
+      "rationale": "Refresh the WorldGuard behavior-commitment ledger binding to the exact current 0.7.4 source inventory, fresh native evidence, and current model snapshot while preserving its three primary behavior authorities.",
+      "work_context_id": "",
+      "work_context_fingerprint": "",
+      "native_owner_id": "",
+      "fingerprint": "sha256:9f0d56e8fd6d75e2e51ec2b0baa8da32204961f926811f3371d15b5292f899e0"
+    }
+  ],
+  "dispositions": [
+    {
+      "schema": "flowguard.model_intent_disposition.v1",
+      "contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j",
+      "contribution_fingerprint": "sha256:9f0d56e8fd6d75e2e51ec2b0baa8da32204961f926811f3371d15b5292f899e0",
+      "disposition": "accepted",
+      "changed_obligation_ids": [],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "changed_invariant_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:current_input_authority--code_contract:contract:contract:worldguard-v0.4-input-authority",
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-code_contract:model_instance:model:template_selection--code_contract:contract:contract:worldguard-template-selection",
+        "relation:model-realizes-commitment:commitment:worldguard-current-input-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-commitment:commitment:worldguard-template-selection-authority",
+        "relation:model-realizes-purpose:behavior_commitment_ledger",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_contracts.py",
+        "relation:model-validates-test_evidence:model_instance:model:current_input_authority--test_evidence:test:tests/test_guard_model_contract.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:template_selection--test_evidence:test:tests/test_template_packs.py",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-code--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-current-contract-openspec--commitment:worldguard-current-input-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-code--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-fact-revision-docs--commitment:worldguard-fact-revision-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-code--commitment:worldguard-template-selection-authority",
+        "relation:surface-produces-for-commitment:surface:worldguard-template-docs--commitment:worldguard-template-selection-authority",
+        "relation:system-contains:behavior_commitment_ledger"
+      ],
+      "scoped_gap_ids": [],
+      "conflict_ids": [],
+      "unresolved_effect_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unconsumed_output_ids": [],
+      "reason": "Accept the exact-current behavior-commitment ledger replacement; its relations are refreshed to the current source inventory and native validation evidence without adding a second behavior owner.",
+      "fingerprint": "sha256:1570ab1bb714e7ddaca82e690e7c2feab9a5651c302e453d75f2ebb5b86f5100"
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:compositional_verification_kernel:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:b33b15663c9e75a2ce4da159d7f926f8994d9ea00db7f3a396530f8d4ca71235",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:6bb09dde4a56e5075c7e8062274f235828effe55523693fb8c82dfedada55d72"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:current_input_authority:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:ade21a2ce1cb3ebaf7f1227c6ef000321f7761fd852448c524a467b31ade2a5d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:61f28bb55ddd932e03be3a3e7a9daa89721e6f923bb33b9f6778851e4c7c651a"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:hierarchical_model_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:e3246601b1cf1ae3b5cffbe051915fc820eca9c63ee507a9f1123ece3e7ba477",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:be6435fde8d8c03f7afe7b6d9bd66f11d292f8ba78d28e7c6f0d0887faca761d"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:model_test_code_alignment:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:648010b2d4bda3072bc3686b51c8e5a9f2772852a63b166ddf94e8579a6d2cac",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:a58d5f7742ade59fb73a43806e7c2107f751f4625bbb7dff746eff36da65e538"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:template_selection:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:db2f6d98c806574b5bbcfc1845809fdf37d77688bf9c87acf65a7aa340f0feb3",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:f707c06ed7c5730a2bb905a955cf9f48a9ff0b71d368dd1fc0a9f5079ffdc7e7"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:add-worldguard-blueprint-v1:model:test_evidence_mesh:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:43659599083140bee710d7279c40b0f2513b6b56e38ddb2cd7d433693eca2c6d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:106cc6d20381d508ecd93496962e18007a82f85f8b15d6ce2d9a93b65775b82c"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:authoritative_model_system:release-refresh-0.7.4-20260810-wg074i",
+      "prior_contribution_fingerprint": "sha256:e91902183b37882b4ce101579fd0cbc74be4ea295f53b90ef3b915ca2625e58d",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the current authoritative model-system intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:f17be7a6016c5ca2c00c4d4fc555b3503f5580b552edf47fd368bb5199a4f131"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074i",
+      "prior_contribution_fingerprint": "sha256:0716a8dc317ad034b41c31670f36e1c84b551b9312e6fc62005276839a931447",
+      "action": "supersede",
+      "replacement_contribution_ids": [
+        "intent:worldguard-blueprint-v1:model:behavior_commitment_ledger:release-refresh-0.7.4-20260810-wg074j"
+      ],
+      "reason": "Supersede the prior behavior-commitment ledger intent contribution with the current source-inventory and evidence-bound replacement.",
+      "fingerprint": "sha256:15496369d059e8340a8e91f119540ebf7610caacf5b08816222a52d89d2e6837"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:fact_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:7b5d9f78c4b2578c44d4767167c1d4bfde4bd89ec0f34a229d2822e5085a48d4",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:523674422ea16848271110c950242ef549195fd531993f585a17ba36bdec7c64"
+    },
+    {
+      "schema": "flowguard.effective_intent_transition.v1",
+      "prior_contribution_id": "intent:worldguard-blueprint-v1:model:task_local_revision:selfblueprint-refresh-0.7.4-20260810",
+      "prior_contribution_fingerprint": "sha256:9968c5a05e246bd5d2d7e3b4efe94206ccea34cf4b29a0b5eb4e558721fe0199",
+      "action": "retain",
+      "replacement_contribution_ids": [],
+      "reason": "Retain the unaffected current intent contribution while refreshing only the behavior-commitment ledger owner.",
+      "fingerprint": "sha256:5dd15d840595f2bb461db790f8c0b47ef4655c41b49402505b855eeb169fc83f"
+    }
+  ]
+}

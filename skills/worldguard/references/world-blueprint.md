@@ -13,9 +13,6 @@ Do not infer an operation from keywords. Every operation needs preserved request
 | `check` | current identity; qualify the complete denominator and report continuous depth/gaps |
 | `impact` | current identity/fingerprint, request fingerprint, changed ids; return the exact affected closure |
 | `trace` | current identity/fingerprint, request fingerprint, one target; reverse-trace exact support |
-| `bundle-export` | one native-qualified blueprint and destination; export one deterministic portable handoff bundle |
-| `bundle-verify` | one bundle and empty materialization root; replay using bundled resources and return compact identity/status/count evidence only |
-| `bundle-query` | one bundle, empty materialization root, exact kind, and stable id; return one node/element/behavior-case/binding/impact/reverse slice |
 
 Missing, stale, unknown, or mixed identity blocks without widening or retry. `affected_guard_ids` may name only current Event/Agent/Space/Resource/Causal/Conflict/Norm Guard ids and controls conditional prompt loading only; it is not impact evidence. Load the shared Guard contract reference once only when this set is non-empty, never all Guard material merely because several element kinds exist.
 
@@ -40,6 +37,12 @@ Planning and policy are bounded integrated-target fixtures. The seven-Guard matr
 
 `native_semantic` binds exact ids/fields/hash/boundary and, where a Guard applies, one purpose with a known-good and one known-bad per selected failure. Each case freezes `Input x PreState -> Output x PostState`, effects, failure, and oracle. `admission_bad` proves parser rejection only. Execution is parent declaration -> `for_guard` -> frozen-purpose proof -> owner. `worldguard.blueprint_native_execution.v2` accounts every field; ownerless containers are `NOT_APPLICABLE`. Event ids appear only as `executed_event_ids`; fluent and state identities remain separate. Consumed input never proves reachability, effects, factual truth, resolution, or mechanism truth; causal receipts keep requested/evaluated/licensed scope separate.
 
+This object-DNA result is not WorldGuard's own software DNA. WorldGuard's
+repository self-DNA is a separate FlowGuard-owned model and qualification
+surface. A cross-artifact projection is explicit and receipt-bound; it does
+not run during ordinary blueprint checks and it never turns a native-domain
+pass into an object-DNA or full-projection pass.
+
 ## Typed interfaces
 
 Ports bind stable id, canonical schema/version/refinement, and `one`/`optional`/`many`; display labels prove nothing. Every node input has one compatible producer and at least one consumer. Every element input maps from its owner-node input or a declared dependency output. Missing, duplicate, cross-wired, incompatible, decorative, or implicitly external ports block.
@@ -60,7 +63,7 @@ These rules are provider- and language-neutral. WorldGuard checks identity/conte
 
 ## Understanding depth
 
-`check` reports inventory, hierarchy, interfaces, semantics, bindings, native checks, and cross-artifact projection separately as `proven`, `gap`, `boundary`, or `not_run`. Projection needs a registered independent producer, exact source/payload partition, and immutable receipt; none is currently registered.
+`check` reports inventory, hierarchy, interfaces, semantics, bindings, native checks, and cross-artifact projection separately as `proven`, `gap`, `boundary`, or `not_run`. Projection needs a registered independent producer, exact lossless in-memory source/payload partition, and an in-memory terminal receipt; no disk artifact is produced.
 
 `deepest_continuously_proven_layer` is the uninterrupted root-to-leaf prefix; `first_unresolved_layer` stops the continuous claim and makes deeper layers `not_run` for it. Native, object-DNA, and full projection qualification remain separate. `partial_model_usable` may name a sound prefix, but no parent claim borrows unproven child depth.
 
@@ -70,12 +73,9 @@ These rules are provider- and language-neutral. WorldGuard checks identity/conte
 worldguard blueprint check --blueprint <blueprint> [--trust-object-census-authority <sha256> | --trust-object-census-producer <sha256>]
 worldguard blueprint impact --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --changed-id <id>
 worldguard blueprint trace --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --target-id <id>
-python <skill-root>/scripts/run_worldguard.py blueprint bundle-export --blueprint <blueprint.yaml> --destination <bundle.json>
-python <skill-root>/scripts/run_worldguard.py blueprint bundle-verify --bundle <bundle.json> --materialization-root <empty-directory>
-python <skill-root>/scripts/run_worldguard.py blueprint bundle-query --bundle <bundle.json> --materialization-root <another-empty-directory> --kind <node|element|behavior-case|binding|impact|reverse> --id <stable-id>
 ```
 
-`blueprint_query_request_fingerprint` binds query and census-trust identities. Unreadable input/query errors exit 2; a valid trace with gaps exits 1. Bundle operations run only when requested. The compact manifest stores fingerprints, denominators, statuses, first gaps, boundary, and sizes; verification rematerializes resources and regenerates cache/catalog/qualification. The sole zlib/base64 codec has a 16 MiB decoded ceiling and no alternate reader. Paths never enter logical identity. Native, object-DNA, and full projection handoff remain separate.
+`blueprint_query_request_fingerprint` binds impact/trace requests and census-trust identities. Unreadable input/query errors exit 2; a valid trace with gaps exits 1. Target-object composition and cross-artifact projection stay in memory under the native directory; no export, bundle, materialization root, copied resource, or standalone package exists. Native, object-DNA, and full projection qualification remain separate.
 
 ## Impact semantics
 

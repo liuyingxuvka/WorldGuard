@@ -1,0 +1,12 @@
+{
+  "candidate_snapshot_fingerprint": "sha256:b48daf672a893088160133c2a21dc6e79b8d3dec6e50890339f839967e8c7e86",
+  "expected_head_fingerprint": "sha256:e1460408f544697f1f3363d1a434a8fb9fe0235423ea9184ac8d2e0db0fe89d1",
+  "fingerprint": "sha256:a5c44b94990c04bc9caef712d6e824b9b16e1bd340315427c3e7af4bbcc75026",
+  "next_generation": 41,
+  "previous_snapshot_fingerprint": "sha256:8893e871df6e99a601f200b4335b93f170396600e00bf1e8d76b867217662783",
+  "receipt_id": "receipt:model-revision-activate:worldguard:self-dna-0.7.4-20260810-wg074i",
+  "revision_set_fingerprint": "sha256:ae6026c8bb3b08054d115859f35bc7de14e9edf6f11dc65660b93d7a16db109d",
+  "schema": "flowguard.model_activation_receipt.v1",
+  "subject_revision": "source-inventory:13063b449c76a43aade75873da1bdf527dab8ff22a2859dd4ee1f858a5250845",
+  "system_id": "flowguard"
+}

@@ -47,7 +47,7 @@ Missing facts remain missing. Do not invent them, use a keyword score as authori
 2. Select exactly one public task shape from typed facts:
    - `unit_contract` for one claim and one explicit world-model boundary;
    - `model_mesh` for multi-node authority, freshness, handoff, coverage, or closure;
-   - `world_blueprint` for exactly one typed `create`, `update`, `check`, `impact`, `trace`, `bundle-export`, `bundle-verify`, or `bundle-query` operation over a hierarchical target-neutral domain blueprint;
+   - `world_blueprint` for exactly one typed in-memory `create`, `update`, `check`, `impact`, or `trace` operation over a hierarchical target-neutral domain blueprint;
    - `task_local_revision` for prediction/observation comparison and finite model revision;
    - `template_pack` for reusable WorldGuard scaffolding.
 3. For unit, mesh, or task-local work, pass the claim to `worldguard.contracts.derive_guard_requirements`; consume its full denominator, unmapped semantics, and fingerprint. Never rederive from prompt metadata. Prediction requires EventGuard plus CausalGuard. Blueprint affected Guards remain explicit and never widen to all.
@@ -72,11 +72,19 @@ Zero matching task shapes, several matching task shapes, unmapped semantics, inc
 
 For unit work, derive the complete Guard set, freeze each Guard's task-local purpose, then run its registered native and semantic owners. For mesh work, first inspect all nodes, edges, owners, freshness, handoffs, expected children, and component statuses. The shared launcher accepts `--contract <path>` or `--mesh <path>`.
 
-For `world_blueprint`, preserve request spans and select one current operation. Create/update/check/impact/trace bind target/revision/boundary; bundle verify/query bind the bundle and an empty materialization root. `create` structures supplied material—it does not discover truth. Check replays exact request/material/semantics, a census source derived without the candidate from frozen raw inputs, and a signed census with its matching discovery receipt. It validates hierarchy, interfaces, bindings, cases, Guard execution, external-test execution, evidence alignment, derivations, and continuous depth. Fixtures, candidate-derived censuses, caller hashes, and identity-only test/evidence labels are not target evidence. See [references/world-blueprint.md](references/world-blueprint.md).
+For `world_blueprint`, preserve request spans and select one current in-memory operation. `create`/`update`/`check`/`impact`/`trace` bind target/revision/boundary and never write a transport artifact. `create` structures supplied material—it does not discover truth. Check replays exact request/material/semantics, a census source derived without the candidate from frozen raw inputs, and a signed census with its matching discovery receipt. It validates hierarchy, interfaces, bindings, cases, Guard execution, external-test execution, evidence alignment, derivations, and continuous depth. Fixtures, candidate-derived censuses, caller hashes, and identity-only test/evidence labels are not target evidence. See [references/world-blueprint.md](references/world-blueprint.md).
 
 Keep `native_domain_qualified` (candidate consistency) separate from `object_dna_qualified`. Object DNA also requires independent census discovery, a current matching receipt, exact integrated-target coverage, real external-test execution, aligned evidence, and caller trust. Exact-authority trust freezes one revision; producer trust allows its producer, but every revision still needs its own receipt bound to frozen raw inputs. Missing any gate leaves only native modeling. The seven-Guard matrix is a capability fixture, never an integrated object.
 
 Portable export/verify/query prove packaging, bounded replay, and retrieval—not behavior, truth, or completeness. Keep native, object-DNA, and full-cross-artifact handoff separate. Replay preserves the census source/discovery, test/evidence receipts, trust roots, and gaps. The single codec has no compatibility reader or fallback; full projection needs a registered independent producer receipt.
+
+DNA has two boundaries: WorldBlueprint is the target-neutral DNA of an external
+world/workflow/experiment/policy, while FlowGuard owns WorldGuard's software-DNA
+root. Native qualification is not object-DNA qualification; the latter still
+needs an independent census, current target evidence, aligned tests, and trusted
+authority. FlowGuard projection is on-demand and receipt-bound; ordinary
+blueprint operations do not load it, and a stale provider reports a boundary
+without disabling native WorldGuard operations.
 
 For prediction, freeze before observation and follow [references/task-local-model-deepening.md](references/task-local-model-deepening.md). For templates, require the target's current native route receipt and reconcile zero/one/many without ranking.
 

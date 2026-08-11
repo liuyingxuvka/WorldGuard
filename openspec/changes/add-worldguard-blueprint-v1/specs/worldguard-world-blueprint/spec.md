@@ -141,7 +141,7 @@ WorldGuard SHALL resolve one exact behavior-commitment adapter id/version/capabi
 
 The same sole registered adapter SHALL also replay one exact target-semantic authority input and emit the target-specific semantic candidate. That candidate SHALL name the exact required node and element ids, element kinds and owners, applicable Guard-owner set, actual registered executor identities, native provider identities, binding/source responsibilities, claim boundary, and every task behavior as `Input x PreState -> Output x PostState` with effects and protected failures. It SHALL retain locator/value provenance into the observed target inputs and exhaust every required target-material leaf. The blueprint element/native-semantic/purpose/binding declarations SHALL exact-match that owner output in both directions. Content hashes establish input identity only; neither candidate fields, caller subsets, recomputed caches/receipts, nor blueprint-local fingerprints may define or shrink the denominator.
 
-Object-DNA completeness SHALL have a separate authority boundary. The adapter SHALL require one portable external-object census record produced and signed outside the WorldGuard runtime. Its signed authority SHALL freeze the exact target/revision/boundary, target claim kind, required nodes, per-element kind/owner/Guard/support-mode/four-role applicability/derivation identities, applicable Guard set, and exact request-contract, target-material, and target-semantic-authority content fingerprints. Runtime and bundled resources SHALL contain no private signing key and no built-in trusted producer. Signature validation proves only record integrity; object-DNA qualification additionally requires the caller to trust the exact census-authority fingerprint or exact producer-descriptor fingerprint. Missing, invalid, untrusted, incomplete, or non-integrated census state SHALL remain directly queryable as candidate consistency but MUST NOT be reported as object-DNA qualified.
+Object-DNA completeness SHALL have a separate authority boundary. The adapter SHALL require one external object-census record produced and signed outside the WorldGuard runtime. Its signed authority SHALL freeze the exact target/revision/boundary, target claim kind, required nodes, per-element kind/owner/Guard/support-mode/four-role applicability/derivation identities, applicable Guard set, and exact request-contract, target-material, and target-semantic-authority content fingerprints. Runtime resources SHALL contain no private signing key and no built-in trusted producer. Signature validation proves only record integrity; object-DNA qualification additionally requires the caller to trust the exact census-authority fingerprint or exact producer-descriptor fingerprint. Missing, invalid, untrusted, incomplete, or non-integrated census state SHALL remain directly queryable as candidate consistency but MUST NOT be reported as object-DNA qualified.
 
 For every independently required target semantic element, the target-semantic authority SHALL also declare an exact four-role closure matrix. Each of `target_material`, `evidence`, `test_check`, and `native_result` SHALL have exactly one disposition: either one exact binding responsibility or typed `not_applicable` with a non-empty target-specific reason. A role MUST NOT be both bound and not applicable, and the candidate binding set MUST exact-match every applicable authority responsibility. Parent, summary, aggregate, and state elements SHALL NOT be exempt merely because they do not directly contribute to the selected root output. If their meaning is derived, the applicable authority responsibility SHALL identify the exact child output or parent-output derivation that supports it; remaining roles MAY be reasoned not applicable. Missing, duplicate, unknown, or candidate-only responsibilities block qualification.
 
@@ -155,7 +155,7 @@ For every independently required target semantic element, the target-semantic au
 
 #### Scenario: Candidate rewrites its semantic authority and census together
 - **WHEN** a caller removes an element or changes a role to `not_applicable`, regenerates the semantic authority and census content, and recomputes all public hashes without the independently trusted signing key
-- **THEN** signature or trust validation fails and object-DNA qualification remains false; no candidate-carried producer descriptor becomes trusted merely by being bundled
+- **THEN** signature or trust validation fails and object-DNA qualification remains false; no candidate-carried producer descriptor becomes trusted merely by being carried in the candidate
 
 #### Scenario: Binding owner is relabelled away from the native owner
 - **WHEN** a CausalGuard-owned target semantic keeps its actual CausalGuard receipt but its blueprint binding owner is changed to EventGuard
@@ -167,7 +167,7 @@ For every independently required target semantic element, the target-semantic au
 
 #### Scenario: Normal target revision changes model consistently
 - **WHEN** target material and its independent semantic authority advance together and the blueprint updates every affected semantic, behavior, owner, binding, and provenance row consistently
-- **THEN** replay and qualification may pass only under a new input, adapter-result, blueprint, native-receipt, and bundle identity
+- **THEN** replay and qualification may pass only under a new input, adapter-result, blueprint, and native-receipt identity
 
 #### Scenario: Leaf has complete support bindings
 - **WHEN** a leaf transition binds its source material, empirical or declared evidence, test or executable check, and applicable native Guard result
@@ -194,8 +194,8 @@ For every independently required target semantic element, the target-semantic au
 - **THEN** qualification reports the exact owner/element/port/source mismatch and cross-element reuse instead of accepting the matching derivation text
 
 #### Scenario: A different policy-enforcement target uses the same route
-- **WHEN** raw policy-enforcement material and its independent semantic authority are authored through the current compiler and then checked, impacted, traced, bundled, isolated-verified, and queried
-- **THEN** the same target-neutral owners succeed under distinct target/input/blueprint/bundle identities without claiming that the model generated factual truth automatically
+- **WHEN** raw policy-enforcement material and its independent semantic authority are authored through the current compiler and then checked, impacted, traced, and queried in memory
+- **THEN** the same target-neutral owners succeed under distinct target/input/blueprint identities without claiming that the model generated factual truth automatically
 
 #### Scenario: Test reference is replaced by narrative evidence
 - **WHEN** an executable-check role is required but the element contains only a prose evidence reference
@@ -259,42 +259,20 @@ The native target `WorldBlueprint` report SHALL record its declared domain layer
 - **WHEN** native blueprint qualification runs without an external projection input
 - **THEN** the projection layer is `not_run`, native results remain usable within their boundary, and no gap is fabricated merely because optional projection did not run
 
-### Requirement: A deterministic portable bundle supports bundle-only independent handoff
-WorldGuard SHALL export one canonical portable blueprint bundle containing the normalized blueprint, its complete task-purpose and behavior-case contracts, all exact authoritative target/evidence/test/native resources required for replay, any supplied cross-artifact projection input, and one compact verification manifest. A deterministic commitment-inventory cache SHALL NOT be transported as a replay-resource body: the bundle SHALL retain its declared identity plus one expected regenerated-cache fingerprint, and isolated verification SHALL recompile it from the exact request, target-material, and target-semantic-authority inputs before ordinary qualification. The manifest SHALL bind fingerprints, exact counts, qualification status, first gap, and claim boundary for the reproducible qualification report, query indexes, impact/reverse answers, handoff projection, regenerated cache, and catalog. Deterministically recoverable catalog member arrays and complete duplicate derived payloads MUST NOT be stored; verification and query SHALL rebuild them from the qualified blueprint and compare their fingerprints. Authoritative replay resources SHALL use only `worldguard.replay-resource.zlib-rfc1950-base64.v1`, with frozen RFC1950/level-9/window-bits-15/RFC4648 parameters and a 16 MiB decoded-resource ceiling. Compressed bytes SHALL be transport-only; decoded byte length and decoded-byte SHA-256 SHALL define resource identity. The reader MUST reject any other codec, old uncompressed shape, malformed/truncated stream, length/hash mismatch, or decompression overflow without compatibility or fallback. The logical bundle fingerprint SHALL exclude the destination path and temporary materialization path.
+### Requirement: Target-object DNA remains a native-directory in-memory audit
+WorldGuard SHALL compose and validate the complete target-neutral model, exact authoritative source bindings, external object census, native execution, external-test execution, evidence alignment, and optional FlowGuard projection in memory under the current native directory. It MUST NOT export a target-object bundle, copy replay resources, create a materialization root, write a standalone package, or expose a transport/retrieval route. The native directory and its source/resource locators remain the only authority; a terminal receipt SHALL be an in-memory typed value whose payload and fingerprint are validated directly.
 
-A bundle-only verifier in an isolated directory SHALL validate every embedded resource hash, reconstruct the same blueprint identity, rerun native qualification through the standard purpose gate, recompute every governed derived projection, and match it against the compact manifest without consulting the source checkout. Its default machine output SHALL contain only identity, status, counts, first gap, claim boundary, and verification fingerprints. One exact query route SHALL return a requested node, element, behavior case, binding, impact seed, or reverse target slice by stable id after the same source qualification; it MUST NOT return every handoff answer by default or introduce an alternate parser/qualification path. The frozen three-level fixture bundle SHALL remain at or below 262,144 UTF-8 bytes and its default verification output at or below 12,288 UTF-8 bytes. A larger real target SHALL report its measured size and preserve exact by-id access rather than truncating required semantics. This release qualification is explicit and optional; ordinary WorldGuard use SHALL NOT export or reconstruct a target merely to prove routine understanding.
+#### Scenario: Audit is complete without a transport artifact
+- **WHEN** a qualified target blueprint is checked and an optional FlowGuard projection closes every required source id
+- **THEN** WorldGuard reports native/object/projection status and exact in-memory identities while the source directory has no new receipt, bundle, copied resource, or materialized directory
 
-#### Scenario: Internal verifier receives only the portable bundle
-- **WHEN** a fresh verifier process has the bundle but no source checkout, original absolute paths, cache, or private receipt store
-- **THEN** compact verification reproduces the canonical logical fingerprint and the verifier can retrieve the exact hierarchy, interfaces, cases, oracles, bindings, first gap, affected closure, and reverse support identities through stable by-id queries without external-agent input
+#### Scenario: A retired transport route is requested
+- **WHEN** a caller requests bundle export, bundle loading, bundle verification, bundle query, or self-DNA materialization
+- **THEN** the route fails closed with `WORLD_BLUEPRINT_NATIVE_DIRECTORY_ONLY`, leaves the destination and native directory unchanged, and directs the caller to in-memory composition and validation
 
-#### Scenario: All seven semantics cross the same portable boundary
-- **WHEN** one native-qualified target contains Event, Agent, Space, Resource, Causal, Conflict, and Norm task-local good/bad cases plus applicable admission cases
-- **THEN** one bundle route replays every owner/parser oracle and a source-read-denied internal verifier recovers each case, boundary, observation, and receipt by stable id
-
-#### Scenario: Default handoff stays token-conscious
-- **WHEN** the frozen three-level bundle is exported and verified without a detail selector
-- **THEN** the bundle and verification output satisfy their byte budgets with explicit safety margin, the commitment cache body and catalog arrays are absent, derived report/query/handoff/cache/catalog payloads are represented once by reproducible fingerprints and counts, and no complete all-details answer is emitted
-
-#### Scenario: Deterministic cache body is omitted
-- **WHEN** an isolated verifier receives the three exact adapter inputs but no commitment-cache replay resource
-- **THEN** it recompiles the cache through the sole current adapter, matches the declared regenerated-cache fingerprint, supplies that exact regenerated cache to ordinary qualification, and does not consult a compatibility reader or fallback
-
-#### Scenario: Catalog list or cache identity is tampered
-- **WHEN** a caller injects a retired catalog list, changes the regenerated-cache fingerprint, removes one authoritative input, or changes one input while retaining the bundle identity
-- **THEN** envelope or isolated replay blocks before query success with the exact shape, fingerprint, resource-denominator, or cache-replay mismatch
-
-#### Scenario: Replay codec is stale or hostile
-- **WHEN** a bundle names another codec, uses the retired uncompressed resource shape, truncates or changes compressed content, declares a false decoded length, or expands beyond the decoded-resource ceiling
-- **THEN** current-only verification blocks on codec, shape, encoding, decoded-size/hash, or decompression-limit evidence before material is accepted as authoritative
-
-#### Scenario: One deep slice is requested
-- **WHEN** a qualified consumer asks for one existing behavior-case, binding, impact, or reverse id
-- **THEN** WorldGuard returns only that exact slice with the blueprint, qualification, request, and result identities and does not load an unrelated sibling answer into the result
-
-#### Scenario: Embedded test resource changes
-- **WHEN** one bundled test/check resource byte changes while the declared resource hash and bundle fingerprint are retained
-- **THEN** isolated verification blocks before native or handoff qualification and reports the changed resource id
+#### Scenario: Projection payload is semantically narrowed
+- **WHEN** a projection omits or changes one node, port, element, binding, declared input/output, commitment, or source disposition while retaining a refreshed payload hash
+- **THEN** projection validation reports a lossless-payload mismatch and does not close the cross-artifact layer
 
 ### Requirement: Blueprint identity is deterministic and current
 A blueprint and its qualification report SHALL have canonical content fingerprints bound to the target id/revision/boundary, independent commitment reference, complete elements/nodes, schema-bound interfaces, output dispositions/derivations, bindings, and qualification inputs. Any governed change SHALL change the affected identity or be rejected as stale.

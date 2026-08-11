@@ -61,15 +61,15 @@
     },
     {
       "shape_id": "world_blueprint",
-      "applicability_facts": ["the task supplies or requests a hierarchical world or workflow blueprint and exactly one typed operation: create, update, check, impact, trace, bundle-export, bundle-verify, or bundle-query"],
+      "applicability_facts": ["the task supplies or requests a hierarchical world or workflow blueprint and exactly one typed in-memory operation: create, update, check, impact, or trace"],
       "forbidden_facts": ["no explicit blueprint operation is supplied", "the request expects WorldGuard to execute, repair, or mutate the target while answering a blueprint query"],
       "required_input_fields": ["request_source_spans", "blueprint_operation", "target_id", "target_revision", "declared_boundary", "affected_guard_ids", "operation_specific_inputs"],
-      "first_native_action": "run exactly one selected WorldBlueprint operation through its current native create, update, check, impact, trace, bundle-export, bundle-verify, or bundle-query owner with the operation's exact identities",
+      "first_native_action": "run exactly one selected WorldBlueprint operation through its current native in-memory create, update, check, impact, or trace owner with the operation's exact identities",
       "reference_path": "references/world-blueprint.md",
       "conditional_references": [
         {"trigger": "affected_guard_ids is non-empty", "path": "references/guard-model-contract.md"}
       ],
-      "claim_boundary": "Create and update author only the blueprint model and require a following native check; checks qualify only the declared target revision and boundary; impact and trace are read-only identity queries; bundle export proves packaging only, verification proves package integrity and bounded replay only, and query proves retrieval only. No bundle operation independently proves target behavior, semantic truth, or factual truth."
+      "claim_boundary": "Create and update author only the blueprint model and require a following native check; checks qualify only the declared target revision and boundary; impact and trace are read-only identity queries. Target-object composition and qualification stay in memory under the native directory; no export, bundle, materialization, copied directory, or standalone package independently proves target behavior, semantic truth, or factual truth."
     },
     {
       "shape_id": "task_local_revision",

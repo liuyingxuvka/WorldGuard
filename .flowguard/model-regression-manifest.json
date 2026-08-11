@@ -83,16 +83,18 @@
       "timeout_seconds": 120,
       "shard_safe": true,
       "mutation_policy": "none",
-    "input_globs": [
-      ".flowguard/authoritative_model_system/model.py",
-      ".flowguard/authoritative_model_system/run_checks.py",
-      ".flowguard/authoritative_model_system/software_blueprint_definition.json",
-      ".flowguard/authoritative_model_system/semantic_model_mesh.json",
-      ".flowguard/model-regression-manifest.json",
-      "worldguard/**/*.py",
-      "scripts/**/*.py",
-      "tests/**/*"
-    ],
+      "input_globs": [
+        ".flowguard/authoritative_model_system/model.py",
+        ".flowguard/authoritative_model_system/run_checks.py",
+        ".flowguard/authoritative_model_system/software_blueprint_definition.json",
+        ".flowguard/authoritative_model_system/semantic_model_mesh.json",
+        ".flowguard/model-regression-manifest.json",
+        "worldguard/**/*.py",
+        "scripts/**/*.py",
+      "tests/**/*.py",
+      "tests/**/*.json",
+      "tests/**/*.yaml"
+      ],
       "intent_source_inputs": [
         "openspec/changes/add-worldguard-blueprint-v1/design.md"
       ],
@@ -261,7 +263,7 @@
       "model_kind": "executable_workflow",
       "purpose_closure": {
         "schema_version": "flowguard.model_purpose_closure.v1",
-        "model_instance_id": "regression:task_local_revision:0.7.3",
+        "model_instance_id": "regression:task_local_revision:0.7.4",
         "reusable_model_type_id": "task_local_revision",
         "task_intent_id": "worldguard-regression:strict-task-local-predictive-depth",
         "declaration_phase": "before_candidate",
@@ -321,8 +323,8 @@
         ],
         "model_sha256": "sha256:dca76bc35d021a65bfd520fc264d3d4d315275fb782f0bc481ae4cea9e607a9a",
         "runner_sha256": "sha256:6318e4cf7cdacca7abfe3e3effd6f9f9915c29cdc959f9d31ceae2af67740923",
-        "declaration_fingerprint": "sha256:622beaced2af1ad190197b000fca0018490eb5bd0b63238239cfe140a95eeeb7",
-        "closure_fingerprint": "sha256:f3261cddb8938f9c431afb19375659f6094273b01b35dacc6dee6787a1f9ed75"
+        "declaration_fingerprint": "sha256:243753167481081fc2b1940cfc040aa36e8d0346942649e639eb5ea96bbd004b",
+        "closure_fingerprint": "sha256:80913e183c5efcb593508abac46b7540cbb8e5d103da53e4239eec5a883aa979"
       }
     },
     {
@@ -360,7 +362,7 @@
       "model_kind": "executable_workflow",
       "purpose_closure": {
         "schema_version": "flowguard.model_purpose_closure.v1",
-        "model_instance_id": "regression:fact_revision:0.7.3",
+        "model_instance_id": "regression:fact_revision:0.7.4",
         "reusable_model_type_id": "fact_revision",
         "task_intent_id": "worldguard-regression:task-local-fact-revision-handoff",
         "declaration_phase": "before_candidate",
@@ -414,8 +416,8 @@
         ],
         "model_sha256": "sha256:d0e25f54a0cc2d0197bc5327af58c4fed4ef628720931ea7683ee57035514103",
         "runner_sha256": "sha256:89cd62bde9cbc83b5692a1c8be7d2ed6521d5ee5e07d0a4fded48171b2d05298",
-        "declaration_fingerprint": "sha256:6c2746eff342a06a3723db6022fe19e00e03559a6725815ac29ac476ffa0fdd1",
-        "closure_fingerprint": "sha256:e2cd2e02aa720aa4ceb76ffb6c641f3ceafe4d152c26d6afd586ccceb76ed115"
+        "declaration_fingerprint": "sha256:c8653ea9433e670cdf4cb246f4f617cf5d08737781bf9130975af8693af7dd20",
+        "closure_fingerprint": "sha256:ffce76ef62b7b5236e37c929e08e7b8b4c3669b072833fbc3b7acf09ef2ba010"
       }
     },
     {

@@ -10,13 +10,17 @@ the released provider is unavailable.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.metadata
 import json
 from pathlib import Path
 from typing import Any
 
+from .semantic import fingerprint_mesh
 
-REPORT_KIND = "worldguard.flowguard_software_self_dna_report.v1"
+
+REPORT_KIND = "worldguard.native_directory_self_dna_report.v2"
+NATIVE_DIRECTORY_SCHEMA = "worldguard.native_directory_dna.v1"
 LAYER_IDS = (
     "evidence_qualification",
     "implementation_inventory",
@@ -60,7 +64,7 @@ def _blocked(root: Path, code: str, message: str, *, exc: Exception | None = Non
         "status": "blocked",
         "ok": False,
         "root": str(root),
-        "claim_boundary": "Only the exact WorldGuard repository boundary is covered; WorldBlueprint remains an external-object/domain model.",
+        "claim_boundary": "Only the exact WorldGuard native directory boundary is covered; no directory copy or transport artifact is produced.",
         "flowguard": _flowguard_identity(),
         "readiness": {
             "layers": [
@@ -72,43 +76,124 @@ def _blocked(root: Path, code: str, message: str, *, exc: Exception | None = Non
             "gap_count": 1,
         },
         "gap": {"code": code, "message": message},
+        "dna_qualification": {
+            "status": "blocked",
+            "qualified": False,
+            "reasons": [code],
+        },
     }
     if exc is not None:
         result["gap"]["exception"] = f"{type(exc).__name__}: {exc}"
     return result
 
 
+def _native_directory_snapshot(root: Path) -> dict[str, Any]:
+    """Describe the current repository directory without materializing DNA.
+
+    The snapshot is deliberately an in-memory audit value.  Volatile caches
+    and the shared FlowGuard model-mesh workspace are excluded so a peer's
+    untracked evidence cannot be deleted or silently become source authority.
+    """
+
+    root = root.resolve()
+    if not root.is_dir():
+        raise OSError(f"native directory does not exist: {root}")
+    excluded_prefixes = (
+        (".git",),
+        (".codex",),
+        (".flowguard",),
+        (".flowguard", "model-mesh"),
+        (".pytest_cache",),
+        ("__pycache__",),
+        ("build",),
+        ("dist",),
+        ("coverage",),
+        ("work",),
+        ("worldguard.egg-info",),
+    )
+    excluded_suffixes = (".pyc", ".pyo")
+    files: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
+        if not path.is_file() or path.is_symlink():
+            continue
+        relative = path.relative_to(root)
+        parts = tuple(relative.parts)
+        if any(parts[: len(prefix)] == prefix for prefix in excluded_prefixes):
+            continue
+        if path.suffix.lower() in excluded_suffixes:
+            continue
+        content = path.read_bytes()
+        files.append(
+            {
+                "relative_path": relative.as_posix(),
+                "bytes": len(content),
+                "sha256": "sha256:" + hashlib.sha256(content).hexdigest(),
+            }
+        )
+    identity = {
+        "schema_version": NATIVE_DIRECTORY_SCHEMA,
+        "files": files,
+    }
+    return {
+        **identity,
+        "root": str(root),
+        "file_count": len(files),
+        "content_fingerprint": "sha256:" + fingerprint_mesh(identity),
+        "excluded_prefixes": ["/".join(prefix) for prefix in excluded_prefixes],
+        "excluded_suffixes": list(excluded_suffixes),
+    }
+
+
 def _build(root: Path) -> tuple[dict[str, Any], Any | None]:
+    try:
+        native_directory = _native_directory_snapshot(root)
+    except (OSError, UnicodeError) as exc:
+        return _blocked(
+            root,
+            "native_directory_unavailable",
+            "The current WorldGuard native directory cannot be audited.",
+            exc=exc,
+        ), None
     try:
         from flowguard.self_blueprint import FlowGuardSelfBlueprintError, build_flowguard_self_blueprint
     except (ImportError, AttributeError) as exc:
-        return _blocked(root, "flowguard_toolchain_unavailable", "The current FlowGuard self-blueprint API cannot be imported.", exc=exc), None
+        blocked = _blocked(root, "flowguard_toolchain_unavailable", "The current FlowGuard self-blueprint API cannot be imported.", exc=exc)
+        blocked["native_directory"] = native_directory
+        return blocked, None
     try:
         bundle = build_flowguard_self_blueprint(root)
     except FlowGuardSelfBlueprintError as exc:
-        return _blocked(root, "flowguard_self_blueprint_not_ready", "FlowGuard rejected the current WorldGuard project authority, definition, inventory, or model evidence; no local substitute is used.", exc=exc), None
+        blocked = _blocked(root, "flowguard_self_blueprint_not_ready", "FlowGuard rejected the current WorldGuard project authority, definition, inventory, or model evidence; no local substitute is used.", exc=exc)
+        blocked["native_directory"] = native_directory
+        return blocked, None
     except (OSError, ValueError) as exc:
-        return _blocked(root, "flowguard_self_blueprint_input_invalid", "The current FlowGuard self-blueprint inputs are invalid or unavailable.", exc=exc), None
+        blocked = _blocked(root, "flowguard_self_blueprint_input_invalid", "The current FlowGuard self-blueprint inputs are invalid or unavailable.", exc=exc)
+        blocked["native_directory"] = native_directory
+        return blocked, None
+    qualification = getattr(bundle, "dna_qualification", None)
+    if qualification is None:
+        blocked = _blocked(
+            root,
+            "flowguard_dna_qualification_missing",
+            "The current FlowGuard self-blueprint did not expose its provider-neutral DNA qualification contract.",
+        )
+        blocked["native_directory"] = native_directory
+        return blocked, None
+    qualified = bool(qualification.qualified)
     return {
         "report_kind": REPORT_KIND,
         "software_id": "worldguard",
         "target_kind": "software",
-        "status": "ready" if bundle.ok else "not_ready",
-        "ok": bool(bundle.ok),
+        "status": "ready" if bundle.ok and qualified else "not_ready",
+        "ok": bool(bundle.ok and qualified),
         "root": str(root),
-        "claim_boundary": "This is the FlowGuard repository software-DNA boundary. The seven WorldGuard domain owners and WorldBlueprint remain separate child evidence.",
+        "claim_boundary": "This is the exact WorldGuard native-directory boundary. WorldBlueprint remains a separate in-memory target-object model; no export, bundle, materialization, or copied directory is part of this report.",
+        "native_directory": native_directory,
         "flowguard": _flowguard_identity(),
         "readiness": bundle.readiness_ledger.to_dict(),
+        "dna_qualification": qualification.to_dict(),
         "bundle": bundle.to_dict(),
     }, bundle
-
-
-def _outside(root: Path, output: Path) -> bool:
-    try:
-        output.relative_to(root)
-    except ValueError:
-        return True
-    return False
 
 
 def check(root: str | Path, *, compact: bool = False) -> tuple[dict[str, Any], int]:
@@ -116,12 +201,20 @@ def check(root: str | Path, *, compact: bool = False) -> tuple[dict[str, Any], i
     payload, _bundle = _build(root_path)
     if compact:
         readiness = payload.get("readiness", {})
+        native_directory = payload.get("native_directory")
+        if isinstance(native_directory, dict):
+            native_directory = {
+                key: value
+                for key, value in native_directory.items()
+                if key != "files"
+            }
         payload = {
             "report_kind": payload.get("report_kind"),
             "software_id": payload.get("software_id"),
             "target_kind": payload.get("target_kind"),
             "status": payload.get("status"),
             "ok": payload.get("ok"),
+            "native_directory": native_directory,
             "flowguard": payload.get("flowguard"),
             "readiness": {
                 key: readiness[key]
@@ -132,47 +225,16 @@ def check(root: str | Path, *, compact: bool = False) -> tuple[dict[str, Any], i
     return payload, 0 if payload.get("ok") else 1
 
 
-def export(root: str | Path, output: str | Path) -> tuple[dict[str, Any], int]:
-    root_path = Path(root).resolve()
-    output_path = Path(output).resolve()
-    if not _outside(root_path, output_path):
-        return _blocked(root_path, "self_dna_export_inside_repository", "Canonical self-DNA must be materialized outside the repository it describes."), 1
-    payload, bundle = _build(root_path)
-    if bundle is None or not bundle.ok:
-        return payload, 1
-    try:
-        from flowguard.implementation_blueprint import project_canonical_software_blueprint, verify_materialized_project_blueprint_projection, write_canonical_blueprint_projection
-
-        projection = project_canonical_software_blueprint(bundle)
-        written = write_canonical_blueprint_projection(projection, output_path)
-        verification = verify_materialized_project_blueprint_projection(output_path, bundle)
-        if not verification.ok:
-            return _blocked(root_path, "self_dna_export_materialization_invalid", "FlowGuard did not verify the isolated canonical self-DNA materialization."), 1
-        payload["export"] = {
-            "status": "complete",
-            "output": str(output_path),
-            "projection_fingerprint": projection.fingerprint,
-            "written_paths": [str(path) for path in written],
-            "isolated_import_verified": True,
-        }
-        return payload, 0
-    except (ImportError, AttributeError, OSError, ValueError) as exc:
-        return _blocked(root_path, "self_dna_export_failed", "The current FlowGuard export API could not materialize and verify the external canonical self-DNA.", exc=exc), 1
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="worldguard self-dna")
     sub = parser.add_subparsers(dest="command", required=True)
     check_parser = sub.add_parser("check", help="audit the FlowGuard-owned repository self-DNA")
     check_parser.add_argument("--root", default=".")
     check_parser.add_argument("--compact", action="store_true")
-    export_parser = sub.add_parser("export", help="materialize self-DNA outside the repository")
-    export_parser.add_argument("--root", default=".")
-    export_parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
-    payload, code = check(args.root, compact=args.compact) if args.command == "check" else export(args.root, args.output)
+    payload, code = check(args.root, compact=args.compact)
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2))
     return code
 
 
-__all__ = ["check", "export", "main"]
+__all__ = ["check", "main"]

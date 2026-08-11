@@ -11,11 +11,6 @@ from worldguard.blueprint import (
     check_world_blueprint,
     load_world_blueprint,
 )
-from worldguard.blueprint_bundle import (
-    query_world_blueprint_bundle,
-    verify_world_blueprint_bundle,
-    write_world_blueprint_bundle,
-)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,9 +103,7 @@ def test_policy_target_is_independent_and_every_element_closes_four_roles() -> N
         )
 
 
-def test_policy_target_runs_impact_trace_bundle_verify_and_isolated_queries(
-    tmp_path: Path,
-) -> None:
+def test_policy_target_runs_in_memory_impact_and_reverse_trace() -> None:
     blueprint = load_world_blueprint(FIXTURE)
 
     impact = blueprint_impact(
@@ -142,46 +135,7 @@ def test_policy_target_runs_impact_trace_bundle_verify_and_isolated_queries(
     assert impact["gaps"] == []
     assert reverse["gaps"] == []
 
-    bundle_path = tmp_path / "policy-access.bundle.json"
-    bundle = write_world_blueprint_bundle(blueprint, bundle_path)
-    verification_root = tmp_path / "isolated-verify"
-    verification = verify_world_blueprint_bundle(
-        bundle_path,
-        materialization_root=verification_root,
-    )
-
-    assert verification["status"] == "PASS"
-    assert verification["native_handoff_qualified"] is True
-    assert verification["first_gap"] is None
-    assert verification["logical_bundle_fingerprint"] == bundle[
-        "logical_bundle_fingerprint"
-    ]
-    cache_relative_path = blueprint.commitment_inventory.locator.partition("#")[0]
-    assert (verification_root / cache_relative_path).is_file()
-
-    query_cases = (
-        ("node", "policy_root", "node_id"),
-        ("element", "access_policy_norm", "element_id"),
-        ("binding", "access_policy_norm_test", "binding_id"),
-        ("behavior-case", "case:access_policy_norm:good", "case_id"),
-        ("impact", "access_policy_norm", "operation"),
-        ("reverse", "declared_policy_decision", "operation"),
-    )
-    for index, (query_kind, member_id, identity_field) in enumerate(query_cases):
-        query = query_world_blueprint_bundle(
-            bundle_path,
-            materialization_root=tmp_path / f"isolated-query-{index}",
-            query_kind=query_kind,
-            member_id=member_id,
-        )
-        assert query["status"] == "PASS"
-        assert query["query_kind"] == query_kind
-        assert query["member_id"] == member_id
-        if query_kind == "behavior-case":
-            assert query["slice"]["case"][identity_field] == member_id
-            assert query["slice"]["native_oracle_observation"]["passed"] is True
-        elif query_kind in {"impact", "reverse"}:
-            assert query["slice"][identity_field] in {"impact", "trace"}
-            assert query["slice"]["gaps"] == []
-        else:
-            assert query["slice"][identity_field] == member_id
+    report = check_world_blueprint(blueprint)
+    assert report.status == "PASS"
+    assert report.native_domain_qualified is True
+    assert report.full_domain_qualified is False

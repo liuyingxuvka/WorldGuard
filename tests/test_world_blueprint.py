@@ -73,7 +73,6 @@ def _renew_native_semantic_fingerprint(semantic: dict) -> None:
 def _projection_payload(
     blueprint: WorldBlueprintContract,
     *,
-    receipt_root: Path,
     status: str = "proven",
     unresolved_source_ids: tuple[str, ...] = (),
 ) -> dict:
@@ -84,17 +83,19 @@ def _projection_payload(
         source_id for source_id in required_source_ids if source_id not in unresolved
     )
     normalized_payload = {
-        "projection_items": [
+        "schema_version": "worldguard.flowguard.blueprint_projection_payload.v2",
+        "blueprint": blueprint.fingerprint_payload(),
+        "source_dispositions": [
             {
                 "source_id": source_id,
-                "target_ids": [f"external:{source_id}"],
+                "status": "unresolved" if source_id in unresolved else "projected",
             }
-            for source_id in projected_source_ids
-        ]
+            for source_id in required_source_ids
+        ],
     }
     payload = {
-        "schema_version": "worldguard.cross_artifact_projection.v1",
-        "projection_id": "projection:planning-workflow:external-v1",
+        "schema_version": "worldguard.cross_artifact_projection.v2",
+        "projection_id": "projection:planning-workflow:external-v2",
         "provider_id": "worldguard.fixture.cross-artifact-projection",
         "provider_version": "v1",
         "provider_capability_id": "fixture.cross-artifact-projection.v1",
@@ -114,25 +115,24 @@ def _projection_payload(
         "normalized_payload_fingerprint": "sha256:"
         + fingerprint_mesh(normalized_payload),
         "status": status,
-        "receipt_locator": "support/cross-artifact-projection-receipt.json",
-        "receipt_content_fingerprint": "sha256:" + "0" * 64,
         "producer_identity_fingerprint": "sha256:" + "f" * 64,
+        "terminal_receipt_payload": {},
         "terminal_receipt_fingerprint": "sha256:" + "0" * 64,
     }
-    _renew_projection_receipt(payload, receipt_root)
+    _renew_projection_receipt(payload)
     return payload
 
 
-def _renew_projection_receipt(payload: dict, receipt_root: Path) -> None:
+def _renew_projection_receipt(payload: dict) -> None:
     parsed = CrossArtifactProjectionResult.from_dict(
         {
             **payload,
-            "receipt_content_fingerprint": "sha256:" + "0" * 64,
+            "terminal_receipt_payload": {},
             "terminal_receipt_fingerprint": "sha256:" + "0" * 64,
         }
     )
     receipt = {
-        "schema_version": "worldguard.cross_artifact_projection_receipt.v1",
+        "schema_version": "worldguard.cross_artifact_projection_receipt.v2",
         "projection_id": parsed.projection_id,
         "provider_id": parsed.provider_id,
         "provider_version": parsed.provider_version,
@@ -144,15 +144,7 @@ def _renew_projection_receipt(payload: dict, receipt_root: Path) -> None:
         + fingerprint_mesh(parsed.evidence_payload()),
         "terminal_status": parsed.status,
     }
-    content = json.dumps(
-        receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
-    receipt_path = receipt_root / payload["receipt_locator"]
-    receipt_path.parent.mkdir(parents=True, exist_ok=True)
-    receipt_path.write_bytes(content)
-    payload["receipt_content_fingerprint"] = (
-        "sha256:" + hashlib.sha256(content).hexdigest()
-    )
+    payload["terminal_receipt_payload"] = receipt
     payload["terminal_receipt_fingerprint"] = "sha256:" + fingerprint_mesh(
         receipt
     )
@@ -216,7 +208,7 @@ def test_registered_fixture_projection_closes_only_projection_layer(
     _register_fixture_projection_provider(monkeypatch)
     shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
     blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint, receipt_root=tmp_path)
+    projection = _projection_payload(blueprint)
 
     report = check_world_blueprint(
         blueprint, cross_artifact_projection=projection
@@ -240,7 +232,7 @@ def test_unreleased_cross_artifact_provider_cannot_license_projection(
 ) -> None:
     shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
     blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint, receipt_root=tmp_path)
+    projection = _projection_payload(blueprint)
 
     report = check_world_blueprint(
         blueprint, cross_artifact_projection=projection
@@ -276,26 +268,26 @@ def test_cross_artifact_identity_set_and_payload_tampering_remain_projection_gap
     _register_fixture_projection_provider(monkeypatch)
     shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
     blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint, receipt_root=tmp_path)
+    projection = _projection_payload(blueprint)
     if mutation == "shrunk_denominator":
         removed = projection["required_source_ids"].pop()
         projection["projected_source_ids"].remove(removed)
-        projection["normalized_payload"]["projection_items"] = [
+        projection["normalized_payload"]["source_dispositions"] = [
             row
-            for row in projection["normalized_payload"]["projection_items"]
+            for row in projection["normalized_payload"]["source_dispositions"]
             if row["source_id"] != removed
         ]
         projection["normalized_payload_fingerprint"] = "sha256:" + fingerprint_mesh(
             projection["normalized_payload"]
         )
-        _renew_projection_receipt(projection, tmp_path)
+        _renew_projection_receipt(projection)
     elif mutation == "stale_report":
         projection["source_report_fingerprint"] = "sha256:" + "1" * 64
-        _renew_projection_receipt(projection, tmp_path)
+        _renew_projection_receipt(projection)
     else:
-        projection["normalized_payload"]["projection_items"][0][
-            "target_ids"
-        ] = ["external:tampered"]
+        projection["normalized_payload"]["blueprint"]["declared_boundary"] = (
+            "tampered boundary"
+        )
 
     report = check_world_blueprint(
         blueprint, cross_artifact_projection=projection
@@ -332,7 +324,7 @@ def test_valid_projection_cannot_promote_an_incomplete_native_blueprint(
         if row["binding_id"] != "assignment_test"
     ]
     blueprint = _current_at(payload, tmp_path)
-    projection = _projection_payload(blueprint, receipt_root=tmp_path)
+    projection = _projection_payload(blueprint)
 
     report = check_world_blueprint(
         blueprint, cross_artifact_projection=projection
@@ -366,7 +358,6 @@ def test_registered_projection_boundary_is_preserved_exactly(
     unresolved = required[-1]
     projection = _projection_payload(
         blueprint,
-        receipt_root=tmp_path,
         status="boundary",
         unresolved_source_ids=(unresolved,),
     )
