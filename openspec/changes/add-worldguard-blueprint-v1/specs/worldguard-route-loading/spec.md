@@ -19,9 +19,11 @@ WorldGuard SHALL select the blueprint task shape only from preserved request sou
 - **WHEN** `create` or `update` carries all exact common and operation-specific inputs
 - **THEN** prompt composition selects the single blueprint reference and directs authoring to a following native check without inventing a runtime query alias
 
-#### Scenario: Retired transport operations are rejected
-- **WHEN** a caller selects `bundle-export`, `bundle-verify`, or `bundle-query`
-- **THEN** prompt composition rejects the operation as non-current and leaves the native directory unchanged instead of falling back to `check`, `impact`, `trace`, or a source-checkout read
+#### Scenario: An operation outside the current blueprint surface is rejected
+- **WHEN** a caller supplies an operation other than `create`, `update`,
+  `check`, `impact`, or `trace`
+- **THEN** prompt composition reports a typed no-match and leaves the native
+  directory unchanged instead of selecting another operation or fallback
 
 ### Requirement: Blueprint prompt budgets have fixed enforceable ceilings
 The always-loaded WorldGuard skill SHALL remain at or below 12,000 UTF-8 bytes, one blueprint reference SHALL remain at or below 16,000 UTF-8 bytes with at least 1,000 bytes of maintained headroom, and one selected blueprint operation bundle consisting of the entry, blueprint reference, operation guidance, and affected Guard references SHALL remain at or below 70,000 UTF-8 bytes. Validation SHALL report each included component, reference size, and remaining headroom. It MUST preserve required semantics through structural compression and affected-only conditional loading rather than silent truncation.

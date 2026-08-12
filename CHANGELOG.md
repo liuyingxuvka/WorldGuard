@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.9 - 2026-08-12
+
+- Keep the native WorldGuard directory as the DNA authority, including
+  models, code/test bindings, and current evidence; no standalone self-DNA
+  package is produced.
+- Remove the retired self-bundle route while preserving explicit target-owned
+  object projections for external WorldBlueprint work.
+- Refresh the WorldGuard model authority and portable consumer projection for
+  this patch identity.
+
 ## v0.7.8 - 2026-08-11
 
 - Keep the native WorldGuard directory as the DNA authority, including models,

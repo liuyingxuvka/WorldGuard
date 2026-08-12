@@ -33,7 +33,9 @@ FlowGuard is maintained by a separate owner and may change while this WorldGuard
 - Adding compatibility readers, aliases, dual result schemas, or fallback relation/template behavior.
 - Treating the three-level fixture as proof that every possible world domain is already fully modeled.
 - Treating the native `WorldBlueprint` payload as the WorldGuard repository inventory or self-DNA root.
-- Rebuilding WorldGuard, executing every test, or creating a target/self-DNA transport artifact during ordinary affected-only work unless an explicit completeness or release gate requires it.
+- Rebuilding WorldGuard or executing every test during ordinary affected-only
+  work. The native directory is already the self-DNA authority; ordinary work
+  does not create a target/self-DNA transport artifact.
 - Removing public facades, evidence planes, Guard axes, or source projections merely because files are small, similar, or repeated.
 
 ## Decisions

@@ -11,8 +11,6 @@ from worldguard import (
     run_model_mesh,
     run_worldguard,
 )
-
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "worldguard" / "scripts" / "check_entry_prompt_bundle.py"
 SPEC = importlib.util.spec_from_file_location("worldguard_prompt_bundle", SCRIPT)
@@ -318,14 +316,5 @@ def test_world_blueprint_operation_specific_identity_is_required():
     ):
         assert not report["ok"]
         assert "blueprint_operation_input_missing" in {
-            item["code"] for item in report["findings"]
-        }
-
-
-def test_retired_transport_operations_are_rejected() -> None:
-    for operation in ("bundle-export", "bundle-verify", "bundle-query"):
-        report = _compose(**_blueprint_facts(operation))
-        assert not report["ok"]
-        assert "blueprint_operation_not_exact" in {
             item["code"] for item in report["findings"]
         }

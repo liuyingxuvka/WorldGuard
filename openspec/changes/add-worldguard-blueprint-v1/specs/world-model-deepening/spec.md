@@ -26,8 +26,11 @@ When the target is WorldGuard itself, deepening SHALL measure the continuous pat
 - **THEN** the deepest proven understanding stops at layer six and static blueprint readiness remains the explicit layer-seven gap
 
 #### Scenario: All static layers close before lifecycle work
-- **WHEN** all seven static layers are proven but tests have not executed, external resources were not checked, no external materialization was requested, and installation and release have not run
-- **THEN** static understanding may report layer seven while every execution, availability, materialization, installation, and release gate remains independently `not_run`
+- **WHEN** all seven static layers are proven but tests have not executed,
+  external resources were not checked, and installation and release have not
+  run
+- **THEN** static understanding may report layer seven while every execution,
+  availability, installation, and release gate remains independently `not_run`
 
 #### Scenario: Affected-only review closes one branch
 - **WHEN** an ordinary task proves the complete affected closure for one subtree while unrelated branches were not run

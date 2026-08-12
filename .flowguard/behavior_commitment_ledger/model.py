@@ -19,11 +19,11 @@ from flowguard import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-LEDGER_PATH = Path(__file__).with_name("ledger.json")
+LEDGER_PATH = Path(__file__).resolve().with_name("ledger.json")
 VALIDATION_PATHS = {
-    "input": Path(__file__).with_name("validation-input.json"),
-    "template": Path(__file__).with_name("validation-template.json"),
-    "fact": Path(__file__).with_name("validation-fact.json"),
+    "input": Path(__file__).resolve().with_name("validation-input.json"),
+    "template": Path(__file__).resolve().with_name("validation-template.json"),
+    "fact": Path(__file__).resolve().with_name("validation-fact.json"),
 }
 
 INPUT_COMMITMENT_ID = "commitment:worldguard-current-input-authority"

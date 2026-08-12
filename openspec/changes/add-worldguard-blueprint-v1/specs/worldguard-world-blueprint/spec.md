@@ -266,10 +266,6 @@ WorldGuard SHALL compose and validate the complete target-neutral model, exact a
 - **WHEN** a qualified target blueprint is checked and an optional FlowGuard projection closes every required source id
 - **THEN** WorldGuard reports native/object/projection status and exact in-memory identities while the source directory has no new receipt, bundle, copied resource, or materialized directory
 
-#### Scenario: A retired transport route is requested
-- **WHEN** a caller requests bundle export, bundle loading, bundle verification, bundle query, or self-DNA materialization
-- **THEN** the route fails closed with `WORLD_BLUEPRINT_NATIVE_DIRECTORY_ONLY`, leaves the destination and native directory unchanged, and directs the caller to in-memory composition and validation
-
 #### Scenario: Projection payload is semantically narrowed
 - **WHEN** a projection omits or changes one node, port, element, binding, declared input/output, commitment, or source disposition while retaining a refreshed payload hash
 - **THEN** projection validation reports a lossless-payload mismatch and does not close the cross-artifact layer

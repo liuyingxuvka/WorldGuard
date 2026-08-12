@@ -187,7 +187,7 @@ def _build(root: Path) -> tuple[dict[str, Any], Any | None]:
         "status": "ready" if bundle.ok and qualified else "not_ready",
         "ok": bool(bundle.ok and qualified),
         "root": str(root),
-        "claim_boundary": "This is the exact WorldGuard native-directory boundary. WorldBlueprint remains a separate in-memory target-object model; no export, bundle, materialization, or copied directory is part of this report.",
+        "claim_boundary": "This is the exact WorldGuard native-directory boundary. WorldBlueprint remains a separate in-memory target-object model; the repository directory, models, tests, bindings, and evidence remain the DNA authority.",
         "native_directory": native_directory,
         "flowguard": _flowguard_identity(),
         "readiness": bundle.readiness_ledger.to_dict(),

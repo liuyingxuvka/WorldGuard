@@ -97,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         required=True,
     )
     self_dna_check = self_dna_commands.add_parser(
-        "check", help="audit the repository self-DNA without reconstruction"
+        "check", help="audit the repository self-DNA in its native directory"
     )
     self_dna_check.add_argument("--root", default=".")
     self_dna_check.add_argument("--compact", action="store_true")

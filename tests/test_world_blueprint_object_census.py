@@ -679,18 +679,6 @@ def test_in_memory_object_census_claim_boundary() -> None:
     assert report.object_census["first_gap"] is None
 
 
-def test_transport_replay_is_retired_even_with_a_trust_context() -> None:
-    trusted = [OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT]
-    import worldguard.blueprint_bundle as bundle_module
-
-    with pytest.raises(BlueprintError) as caught:
-        bundle_module.verify_world_blueprint_bundle(
-            load_world_blueprint(PLANNING_FIXTURE),
-            trusted_object_census_producer_descriptor_fingerprints=trusted,
-        )
-    assert caught.value.code == "WORLD_BLUEPRINT_NATIVE_DIRECTORY_ONLY"
-
-
 def test_runtime_and_portable_projection_do_not_contain_test_private_key() -> None:
     marker = "_TEST_CENSUS_PRIVATE_EXPONENT_HEX"
     for package_root in (

@@ -21,7 +21,8 @@ An internal failure never triggers another Guard as a retry. A multi-semantic cl
 
 - A bounded claim covers events, agents, space, resources, causality, conflict, norms, or prediction.
 - Several models need ownership, freshness, handoff, coverage, or closure analysis.
-- A behavior-bearing target needs a hierarchical blueprint, affected-only impact, reverse trace, or portable handoff.
+- A behavior-bearing target needs a hierarchical blueprint, affected-only impact,
+  reverse trace, or a bounded in-memory handoff view.
 - A finite model must be compared with later observation, revised, scaffolded, or audited.
 
 ## Do Not Use When
@@ -76,7 +77,11 @@ For `world_blueprint`, preserve request spans and select one current in-memory o
 
 Keep `native_domain_qualified` (candidate consistency) separate from `object_dna_qualified`. Object DNA also requires independent census discovery, a current matching receipt, exact integrated-target coverage, real external-test execution, aligned evidence, and caller trust. Exact-authority trust freezes one revision; producer trust allows its producer, but every revision still needs its own receipt bound to frozen raw inputs. Missing any gate leaves only native modeling. The seven-Guard matrix is a capability fixture, never an integrated object.
 
-Portable export/verify/query prove packaging, bounded replay, and retrieval—not behavior, truth, or completeness. Keep native, object-DNA, and full-cross-artifact handoff separate. Replay preserves the census source/discovery, test/evidence receipts, trust roots, and gaps. The single codec has no compatibility reader or fallback; full projection needs a registered independent producer receipt.
+Blueprint operations compose bounded in-memory views for queries and replay;
+they do not prove behavior, truth, or completeness. Keep native, object-DNA,
+and cross-artifact handoff separate. Replay preserves census, test/evidence
+receipts, trust roots, and gaps. There is no standalone target-DNA package or
+fallback; full projection needs a registered independent producer receipt.
 
 DNA has two boundaries: WorldBlueprint is the target-neutral DNA of an external
 world/workflow/experiment/policy, while FlowGuard owns WorldGuard's software-DNA

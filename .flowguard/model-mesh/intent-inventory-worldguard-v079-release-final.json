@@ -1,0 +1,277 @@
+{
+  "contributions": [
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "current-design:worldguard-v079-release-final:authoritative_model_system:1",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "current-design:worldguard-v079-release-final",
+      "fingerprint": "sha256:99cffc3ca7e395a2bf43347bdcd2e1384b147a0c9751f80d53b2ab94436588fa",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:authoritative_model_system",
+      "native_owner_id": "",
+      "rationale": "Refresh the exact current source binding for this changed WorldGuard model after the native directory DNA and target-neutral route update.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c977420c5bdad4c56184994c0dab4da3ca9d5e59f8fd38959413091c5181a32f",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [
+        "current-design:worldguard-v079-native-directory-dna-refresh:authoritative_model_system:1"
+      ],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    },
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "current-design:worldguard-v079-release-final:fact_revision:1",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "current-design:worldguard-v079-release-final",
+      "fingerprint": "sha256:a8906e139c08698f3ef87889ac24adf6934d96c79aeb96ded8a20ce732f058dc",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:fact_revision",
+      "native_owner_id": "",
+      "rationale": "Refresh the exact current source binding for this changed WorldGuard model after the native directory DNA and target-neutral route update.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c977420c5bdad4c56184994c0dab4da3ca9d5e59f8fd38959413091c5181a32f",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [
+        "current-design:worldguard-v079-native-directory-dna:fact_revision:1"
+      ],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:fact_revision"
+      ],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    },
+    {
+      "conflicts_with_contribution_ids": [],
+      "contribution_id": "current-design:worldguard-v079-release-final:task_local_revision:1",
+      "decision_state": "accepted",
+      "declared_consumer_ids": [],
+      "desired_terminal_state_ids": [],
+      "effective_revision": "current-design:worldguard-v079-release-final",
+      "fingerprint": "sha256:8e7bcccd6913f3439e76a36da6be40e8d9aa6a34b7b67cac546dca7422c72a4c",
+      "lifecycle_state": "candidate",
+      "logical_model_id": "model:task_local_revision",
+      "native_owner_id": "",
+      "rationale": "Refresh the exact current source binding for this changed WorldGuard model after the native directory DNA and target-neutral route update.",
+      "schema": "flowguard.model_intent_contribution.v1",
+      "source_fingerprint": "sha256:c977420c5bdad4c56184994c0dab4da3ca9d5e59f8fd38959413091c5181a32f",
+      "source_kind": "design",
+      "source_ref": "openspec/changes/add-worldguard-blueprint-v1/design.md",
+      "subject_lane": "normative_target",
+      "subject_role": "design",
+      "supersedes_contribution_ids": [
+        "current-design:worldguard-v079-native-directory-dna:task_local_revision:1"
+      ],
+      "target_invariant_ids": [],
+      "target_obligation_ids": [],
+      "target_output_ids": [],
+      "target_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision",
+        "relation:system-contains:task_local_revision"
+      ],
+      "target_state_ids": [],
+      "target_transition_ids": [],
+      "unresolved_owner_id": "",
+      "work_context_fingerprint": "",
+      "work_context_id": ""
+    }
+  ],
+  "dispositions": [
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:authoritative_model_system",
+        "relation:system-contains:authoritative_model_system"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:99cffc3ca7e395a2bf43347bdcd2e1384b147a0c9751f80d53b2ab94436588fa",
+      "contribution_id": "current-design:worldguard-v079-release-final:authoritative_model_system:1",
+      "disposition": "accepted",
+      "fingerprint": "sha256:e7677f44c076101f42b0ac3344c1e0b15882ec895167f183b429d1ff7e7ec07f",
+      "reason": "Accept the exact changed relation set for this current model owner and bind it to the current source and test evidence.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    },
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-code_contract:model_instance:model:fact_revision--code_contract:contract:contract:worldguard-fact-revision",
+        "relation:model-realizes-commitment:commitment:worldguard-fact-revision-authority",
+        "relation:model-realizes-purpose:fact_revision",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:skills/worldguard/.skillguard/checks/check_fact_revision.py",
+        "relation:model-validates-test_evidence:model_instance:model:fact_revision--test_evidence:test:tests/test_fact_revision.py",
+        "relation:system-contains:fact_revision"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:a8906e139c08698f3ef87889ac24adf6934d96c79aeb96ded8a20ce732f058dc",
+      "contribution_id": "current-design:worldguard-v079-release-final:fact_revision:1",
+      "disposition": "accepted",
+      "fingerprint": "sha256:2a7984aaa5e0ee3a0033ef2b869036e31cc73ef40eef05d78099bc938e963005",
+      "reason": "Accept the exact changed relation set for this current model owner and bind it to the current source and test evidence.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    },
+    {
+      "changed_invariant_ids": [],
+      "changed_obligation_ids": [],
+      "changed_relation_ids": [
+        "relation:model-realizes-purpose:task_local_revision",
+        "relation:system-contains:task_local_revision"
+      ],
+      "changed_state_ids": [],
+      "changed_transition_ids": [],
+      "conflict_ids": [],
+      "contribution_fingerprint": "sha256:8e7bcccd6913f3439e76a36da6be40e8d9aa6a34b7b67cac546dca7422c72a4c",
+      "contribution_id": "current-design:worldguard-v079-release-final:task_local_revision:1",
+      "disposition": "accepted",
+      "fingerprint": "sha256:36f4613e847dcaa29862b4ef8203f0ca60a9cb5794e9f30f06d4696f7a3161d5",
+      "reason": "Accept the exact changed relation set for this current model owner and bind it to the current source and test evidence.",
+      "schema": "flowguard.model_intent_disposition.v1",
+      "scoped_gap_ids": [],
+      "unconsumed_output_ids": [],
+      "unreachable_terminal_state_ids": [],
+      "unresolved_effect_ids": []
+    }
+  ],
+  "effective_intent_transitions": [
+    {
+      "action": "supersede",
+      "fingerprint": "sha256:9861ca631c6ce4a56156e889d96055f8397e000da58cb59773b6e80b818ba787",
+      "prior_contribution_fingerprint": "sha256:150bd3898fc9f34baedad8287fbb7bd8adafbb062e2f87c4e0ff398ce58c593b",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna-refresh:authoritative_model_system:1",
+      "reason": "Supersede the prior active owner with the exact current release contribution.",
+      "replacement_contribution_ids": [
+        "current-design:worldguard-v079-release-final:authoritative_model_system:1"
+      ],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:eaef719dde8f43f087b6a47192ae30dd9d9496508ca748d22eae92a83d054180",
+      "prior_contribution_fingerprint": "sha256:2a2740ce9781544c0d08a62b14853fd33b61cb476a9f5d29c0c627af78d6f3b9",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:behavior_commitment_ledger:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:6109a1198b8787c979af0b338246f9d2b6ca34d3c5add989a7cb1bb5fee80290",
+      "prior_contribution_fingerprint": "sha256:846c4beacd3648f80a9f51575efacefa78d3d42c79f0662a20f8fbe6ad089a94",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:compositional_verification_kernel:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:8fe9fcc1884795c8302793ecd157e196dc8198eab14207b6d012cbc5cfa53841",
+      "prior_contribution_fingerprint": "sha256:915fb5f2cda2afc48499420ccfa15edc769c56a1c46e877c104c43b3ebf11fa8",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:current_input_authority:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "supersede",
+      "fingerprint": "sha256:819e3f87cb93e5009a35b0e1bd6725924a8914183b4a49a30b4d86dcbcf173a3",
+      "prior_contribution_fingerprint": "sha256:66da8f584520193d890d1594337f1742ebb5d410c87fe02aa31c18dce098cacf",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:fact_revision:1",
+      "reason": "Supersede the prior active owner with the exact current release contribution.",
+      "replacement_contribution_ids": [
+        "current-design:worldguard-v079-release-final:fact_revision:1"
+      ],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:7f9a42a05b78a094112488b02fecd46b99f5c01eb781f361d6c2f7def2be139a",
+      "prior_contribution_fingerprint": "sha256:0ae3740838910d07f51cdfa53a9c42208a84a793937002c7ccd20bc53d5a16d9",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:hierarchical_model_mesh:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:42c4c3c1492857ba55c22c3d64d4ef65381d45eb874cdad4713efbe842653c06",
+      "prior_contribution_fingerprint": "sha256:c6835d466ce8f56f4785e3da1c689c781330da26f83658ff9e75693141c171c8",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:model_test_code_alignment:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "supersede",
+      "fingerprint": "sha256:83b54df2826a6dbe776c5fa5a5621f859a2f37744970949fa5048253f30a72be",
+      "prior_contribution_fingerprint": "sha256:8d77beabcb41040ea8ba761537eeac2774d79caaa47339898f2c7b277731590d",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:task_local_revision:1",
+      "reason": "Supersede the prior active owner with the exact current release contribution.",
+      "replacement_contribution_ids": [
+        "current-design:worldguard-v079-release-final:task_local_revision:1"
+      ],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:48aa2ce99ecb54e745aca891c95def317490f06e8bda18d77ecac66c42a25c12",
+      "prior_contribution_fingerprint": "sha256:aaa6500e6a33567858c85eb3b6675e1711c27882cd7947f797fd600a0c4b071c",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:template_selection:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    },
+    {
+      "action": "retain",
+      "fingerprint": "sha256:f167a6b87ff7bc051a548de3a7aab764698a668567afd490ee96bb5dd163a035",
+      "prior_contribution_fingerprint": "sha256:84d36502313ccb0084025863782bf5c900cfdc6ef1f5e5e77481525340011130",
+      "prior_contribution_id": "current-design:worldguard-v079-native-directory-dna:test_evidence_mesh:1",
+      "reason": "Retain the unchanged active owner for this release.",
+      "replacement_contribution_ids": [],
+      "schema": "flowguard.effective_intent_transition.v1"
+    }
+  ]
+}

@@ -248,11 +248,11 @@
         "purpose_source_id": ".flowguard/model-regression-manifest.json#model:behavior_commitment_ledger:purpose-declaration",
         "purpose_source_owner_id": "model-purpose-declaration:behavior_commitment_ledger",
         "model_path": ".flowguard/behavior_commitment_ledger/model.py",
-        "model_source_fingerprint": "sha256:74cb7891116f4ea5f2f93807f5f61fa2e04d0485cd499fed8d700267e2c044f9",
+        "model_source_fingerprint": "sha256:b830952e8f77a929771ec6a5eab2a15178676154aa99748b67b014ee2d4e5141",
         "runner_path": ".flowguard/behavior_commitment_ledger/run_checks.py",
         "runner_source_fingerprint": "sha256:dfa33a800b62e53e622528e67921e6b200e90f011e6784cab0ec9b6f7c27c582",
         "purpose_declaration_fingerprint": "sha256:9f18affdb14dcbc6c1cf8829ef95a03bd568d2322c8e9d41ca96eba45ad278c6",
-        "purpose_closure_fingerprint": "sha256:9d23b40fbc670960abe6c0d4c3fd22ffc45b21ab56357878f5f72f3c3e27f6d5"
+        "purpose_closure_fingerprint": "sha256:c87e86af07bd276c035776bb6300a2ab8243265f66cb31b8e7698cf1c5c14ff5"
       }
     },
     {

@@ -1,8 +1,8 @@
 [flowguard]
 repository = "https://github.com/liuyingxuvka/FlowGuard"
-adopted_package_version = "0.68.12"
+adopted_package_version = "0.68.13"
 schema_version = "1.0"
-last_verified_at = "2026-08-11T12:12:45+00:00"
+last_verified_at = "2026-08-12T07:24:59+00:00"
 last_verified_by = "FlowGuard project-upgrade"
 agents_path = "AGENTS.md"
 
@@ -15,12 +15,12 @@ require_model_update_for_behavior_changes = true
 
 [model_authority]
 system_id = "flowguard"
-observed_snapshot_path = ".flowguard/model-mesh/snapshots/55247cf0eea9b28558a45a28be01924dfe89047b02d04acfb0644c3108670b67.json"
-observed_snapshot_fingerprint = "sha256:55247cf0eea9b28558a45a28be01924dfe89047b02d04acfb0644c3108670b67"
-subject_revision = "source-inventory:dd8a7cf67eb154ac19e7d99bec022aad0c75515e53ab4fd206732563e18779d6"
+observed_snapshot_path = ".flowguard/model-mesh/snapshots/02d848a34983fa93ae7ee61157255d04493af8dd0d78d6cf8164b0468aa4533a.json"
+observed_snapshot_fingerprint = "sha256:02d848a34983fa93ae7ee61157255d04493af8dd0d78d6cf8164b0468aa4533a"
+subject_revision = "source-inventory:f2e13ecb7ff68592a331be05eef1c05293e3ffd8b3be3fae655a42bd9ec50aeb"
 coverage_status = "complete_within_declared_boundary"
-generation = 53
-accepted_revision_set_fingerprint = "sha256:b13a13258817aab567629b67d1740bbafd77ca62a414a795d68d244ff58709a5"
-previous_snapshot_fingerprint = "sha256:2d429c01585fc3e3e017465da7768463b8c25bde5f428dba62c52a8cc5fe69dd"
-activation_receipt_fingerprint = "sha256:0ed7fdecf7d94b9b8304c3ea8f208b65fae11a4c674ea8f1ae794b2c23952535"
-head_fingerprint = "sha256:205214251161e30b31265bea8bd2ef1ff299664e54d46e77b1230808d2eede73"
+generation = 56
+accepted_revision_set_fingerprint = "sha256:1da9eb0b9c6577dc5645777cc251141bec6887fbae4ec5b85a0008a94e98bd61"
+previous_snapshot_fingerprint = "sha256:8f28cb15f7e0f3bccfd7bdf0449801a2c5b2274e05c17972fac690cacdce6090"
+activation_receipt_fingerprint = "sha256:b4dec035adf02b83b6a6e0ad2f562ec625caad1ab7f2028ccbb0b03f304ef359"
+head_fingerprint = "sha256:1d67c281f5e6f64ea69b45fd6fc58d5f3f66cf1e7580ddc238606f17e81b4736"

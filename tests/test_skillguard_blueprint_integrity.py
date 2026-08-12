@@ -45,7 +45,6 @@ BLUEPRINT_CHECK_ARGS = [
     "tests/test_qualification.py",
     "tests/test_blueprint_impact_trace.py",
     "tests/test_blueprint_cli.py",
-    "tests/test_world_blueprint_bundle.py",
     "tests/test_world_blueprint_policy_target.py",
     "tests/test_world_blueprint_seven_guard_matrix.py::test_seven_guard_matrix_uses_independent_domain_oracles",
     "tests/test_world_blueprint_seven_guard_matrix.py::test_owner_inputs_do_not_invent_domain_facts",
@@ -182,7 +181,6 @@ def test_native_skillguard_contract_has_distinct_domain_and_process_owners() -> 
         "tests/test_skillguard_blueprint_integrity.py",
         "tests/test_world_blueprint_seven_guard_matrix.py",
         "tests/test_blueprint_cli.py",
-        "tests/test_world_blueprint_bundle.py",
         "tests/test_world_blueprint_policy_target.py",
         "scripts/refresh_world_blueprint_external_dna_fixtures.py",
     }
