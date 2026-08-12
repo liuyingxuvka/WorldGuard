@@ -1,0 +1,12 @@
+{
+  "candidate_snapshot_fingerprint": "sha256:61f368ea9a95f584506826bde18348236874cf0f4b61bd571057cb2e9aee9f7d",
+  "expected_head_fingerprint": "sha256:205214251161e30b31265bea8bd2ef1ff299664e54d46e77b1230808d2eede73",
+  "fingerprint": "sha256:8d212c4793a2644a6a1c50cf59d50bd1032a7fa20e2a4ae57ae2a27d99162a17",
+  "next_generation": 54,
+  "previous_snapshot_fingerprint": "sha256:55247cf0eea9b28558a45a28be01924dfe89047b02d04acfb0644c3108670b67",
+  "receipt_id": "receipt:model-revision-activate:worldguard-v0710-authority-chain-repair",
+  "revision_set_fingerprint": "sha256:967e14f9df119ac28133f8464171a518970581563f8f53c978302aa47203101b",
+  "schema": "flowguard.model_activation_receipt.v1",
+  "subject_revision": "source-inventory:df2b851d429b1a472cea851a2757cf53f25f6c0c0afa1396152dbef4358636e0",
+  "system_id": "flowguard"
+}

@@ -181,7 +181,7 @@ from .template_packs import (
     validate_target_template_interchange,
 )
 
-__version__ = "0.7.9"
+__version__ = "0.7.10"
 
 __all__ = [
     "__version__",
