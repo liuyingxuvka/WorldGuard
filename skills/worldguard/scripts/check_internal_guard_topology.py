@@ -28,7 +28,7 @@ EXPECTED_TASK_SHAPES = (
     "task_local_revision",
     "template_pack",
 )
-EXPECTED_VERSION = "0.7.10"
+EXPECTED_VERSION = "0.7.11"
 PREDICTIVE_GUARDS = {"EventGuard", "CausalGuard"}
 TERMINAL_STATUSES = ("PASS", "FAIL", "GAP", "BOUNDARY_EXCEEDED")
 REQUIRED_ROW_FIELDS = {
