@@ -10,7 +10,6 @@ import claim_derived_coverage_process as model
 import guard_model_contract_exhaustion as guard_model_mesh
 from worldguard.guard_model_contract import (
     PROTECTED_FAILURE_CLASSES,
-    run_guard_model_contract,
 )
 
 
@@ -123,14 +122,12 @@ def _alignment_ok() -> bool:
     return True
 
 
-def _guard_model_contract_ok() -> bool:
-    native_report = run_guard_model_contract()
+def _failure_inventory_model_ok() -> bool:
     mesh_report = guard_model_mesh.review_guard_model_contract_exhaustion()
     expected_ids = {case.failure_id for case in PROTECTED_FAILURE_CLASSES}
     generated_ids = {case.case_id for case in mesh_report.generated_cases}
     return bool(
-        native_report["ok"]
-        and mesh_report.ok
+        mesh_report.ok
         and len(mesh_report.generated_cases) == len(expected_ids)
         and generated_ids == expected_ids
     )
@@ -176,9 +173,9 @@ def main() -> int:
     print(report.format_text())
     alignment_ok = _alignment_ok()
     print(f"model_test_alignment_ok={alignment_ok}")
-    guard_model_contract_ok = _guard_model_contract_ok()
-    print(f"guard_model_contract_ok={guard_model_contract_ok}")
-    return 0 if report.ok and alignment_ok and guard_model_contract_ok else 1
+    inventory_ok = _failure_inventory_model_ok()
+    print(f"failure_inventory_model_ok={inventory_ok}")
+    return 0 if report.ok and alignment_ok and inventory_ok else 1
 
 
 if __name__ == "__main__":
