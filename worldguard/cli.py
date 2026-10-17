@@ -6,40 +6,7 @@ from pathlib import Path
 
 from yaml import YAMLError
 
-from .blueprint import (
-    BlueprintError,
-    blueprint_impact,
-    blueprint_query_request_fingerprint,
-    blueprint_reverse_trace,
-    check_world_blueprint,
-    load_world_blueprint,
-)
-from .contracts import GuardContract
-from .fact_revision import (
-    FactRevisionActivationRequest,
-    FactRevisionTransaction,
-    FactWorldSnapshot,
-    activate_fact_revision,
-    preview_fact_revision,
-)
-from .examples.fuel_cell import run_check as run_fuel_cell_check
 from .io import dump_json, load_mapping
-from .kernel import run_worldguard
-from .mesh import ModelMeshContract, run_model_mesh
-from .qualification import QualificationContext
-from .task_local_revision import (
-    CandidateWorldModelRevision,
-    ObservedWorldSnapshot,
-    PredictionSnapshot,
-    RevalidationRole,
-    WorldModelIdentity,
-    bind_semantic_rollout_receipt,
-    bind_task_local_native_depth_receipt,
-    bind_world_revalidation_receipt,
-    compare_observed_world,
-    evaluate_candidate_world_revision,
-    freeze_prediction_snapshot,
-)
 
 
 def _add_object_census_trust_arguments(parser: argparse.ArgumentParser) -> None:
@@ -136,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     task_model_revalidation_bind.add_argument("candidate_model")
     task_model_revalidation_bind.add_argument(
         "role",
-        choices=[item.value for item in RevalidationRole],
+        choices=("original_scenario", "real_holdout_observation"),
     )
     task_model_revalidation_bind.add_argument("semantic_result")
     task_model_revalidation_bind.add_argument("comparison")
@@ -165,7 +132,11 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     if args.command == "check":
+        from .contracts import GuardContract
+        from .kernel import run_worldguard
+        from .qualification import QualificationContext
         if args.example == "fuel_cell":
+            from .examples.fuel_cell import run_check as run_fuel_cell_check
             print(dump_json(run_fuel_cell_check()))
             return 0
         if not args.contract:
@@ -179,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
         print(dump_json(run_worldguard(contract, context=context).to_dict()))
         return 0
     if args.command == "mesh-check":
+        from .mesh import ModelMeshContract, run_model_mesh
         mesh = ModelMeshContract.from_dict(load_mapping(args.mesh))
         print(dump_json(run_model_mesh(mesh).to_dict()))
         return 0
@@ -188,6 +160,14 @@ def main(argv: list[str] | None = None) -> int:
         print(dump_json(payload))
         return code
     if args.command == "blueprint":
+        from .blueprint import (
+            BlueprintError,
+            blueprint_impact,
+            blueprint_query_request_fingerprint,
+            blueprint_reverse_trace,
+            check_world_blueprint,
+            load_world_blueprint,
+        )
         operation = args.blueprint_command
         try:
             current_blueprint = load_world_blueprint(args.blueprint)
@@ -310,6 +290,19 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 2
     if args.command == "task-model":
+        from .task_local_revision import (
+            CandidateWorldModelRevision,
+            ObservedWorldSnapshot,
+            PredictionSnapshot,
+            RevalidationRole,
+            WorldModelIdentity,
+            bind_semantic_rollout_receipt,
+            bind_task_local_native_depth_receipt,
+            bind_world_revalidation_receipt,
+            compare_observed_world,
+            evaluate_candidate_world_revision,
+            freeze_prediction_snapshot,
+        )
         if args.task_model_command == "depth-bind":
             prediction_path = Path(args.prediction)
             prediction = PredictionSnapshot.from_dict(load_mapping(prediction_path))
@@ -352,6 +345,13 @@ def main(argv: list[str] | None = None) -> int:
             print(dump_json(receipt))
             return 0
         if args.task_model_command == "fact-revision-preview":
+            from .fact_revision import (
+                FactRevisionActivationRequest,
+                FactRevisionTransaction,
+                FactWorldSnapshot,
+                activate_fact_revision,
+                preview_fact_revision,
+            )
             base = FactWorldSnapshot.from_dict(load_mapping(args.base))
             transaction = FactRevisionTransaction.from_dict(
                 load_mapping(args.transaction)
@@ -360,6 +360,13 @@ def main(argv: list[str] | None = None) -> int:
             print(dump_json(preview.to_dict()))
             return 0 if preview.status == "ready" else 1
         if args.task_model_command == "fact-revision-activate":
+            from .fact_revision import (
+                FactRevisionActivationRequest,
+                FactRevisionTransaction,
+                FactWorldSnapshot,
+                activate_fact_revision,
+                preview_fact_revision,
+            )
             base = FactWorldSnapshot.from_dict(load_mapping(args.base))
             transaction = FactRevisionTransaction.from_dict(
                 load_mapping(args.transaction)
