@@ -43,7 +43,7 @@ def _flowguard_identity() -> dict[str, str]:
         return {
             "package": "flowguard",
             "version": version,
-            "schema_version": str(flowguard.SCHEMA_VERSION),
+            "schema_version": "flowguard.map.v1",
             "module": str(Path(flowguard.__file__).resolve()),
         }
     except (ImportError, AttributeError) as exc:
@@ -148,52 +148,30 @@ def _build(root: Path) -> tuple[dict[str, Any], Any | None]:
     try:
         native_directory = _native_directory_snapshot(root)
     except (OSError, UnicodeError) as exc:
-        return _blocked(
-            root,
-            "native_directory_unavailable",
-            "The current WorldGuard native directory cannot be audited.",
-            exc=exc,
-        ), None
+        return _blocked(root, "native_directory_unavailable", "The native directory could not be read.", exc=exc), None
     try:
-        from flowguard.self_blueprint import FlowGuardSelfBlueprintError, build_flowguard_self_blueprint
-    except (ImportError, AttributeError) as exc:
-        blocked = _blocked(root, "flowguard_toolchain_unavailable", "The current FlowGuard self-blueprint API cannot be imported.", exc=exc)
-        blocked["native_directory"] = native_directory
-        return blocked, None
-    try:
-        bundle = build_flowguard_self_blueprint(root)
-    except FlowGuardSelfBlueprintError as exc:
-        blocked = _blocked(root, "flowguard_self_blueprint_not_ready", "FlowGuard rejected the current WorldGuard project authority, definition, inventory, or model evidence; no local substitute is used.", exc=exc)
-        blocked["native_directory"] = native_directory
-        return blocked, None
-    except (OSError, ValueError) as exc:
-        blocked = _blocked(root, "flowguard_self_blueprint_input_invalid", "The current FlowGuard self-blueprint inputs are invalid or unavailable.", exc=exc)
-        blocked["native_directory"] = native_directory
-        return blocked, None
-    qualification = getattr(bundle, "dna_qualification", None)
-    if qualification is None:
-        blocked = _blocked(
-            root,
-            "flowguard_dna_qualification_missing",
-            "The current FlowGuard self-blueprint did not expose its provider-neutral DNA qualification contract.",
-        )
-        blocked["native_directory"] = native_directory
-        return blocked, None
-    qualified = bool(qualification.qualified)
+        from flowguard.map.mapfile import load_map
+        from flowguard.map.inventory import build_inventory
+        from flowguard.map.check import run_check
+        data = load_map(root)
+        findings = run_check(root, data, build_inventory(root, data.get("ignore", [])), strict=True)
+    except Exception as exc:
+        return _blocked(root, "current_map_unavailable", "The current FlowGuard map could not be audited.", exc=exc), None
+    errors = [{"code": f.code, "message": f.message} for f in findings if f.level == "error"]
     return {
         "report_kind": REPORT_KIND,
         "software_id": "worldguard",
         "target_kind": "software",
-        "status": "ready" if bundle.ok and qualified else "not_ready",
-        "ok": bool(bundle.ok and qualified),
+        "status": "ready" if not errors else "not_ready",
+        "ok": not errors,
         "root": str(root),
-        "claim_boundary": "This is the exact WorldGuard native-directory boundary. WorldBlueprint remains a separate in-memory target-object model; the repository directory, models, tests, bindings, and evidence remain the DNA authority.",
         "native_directory": native_directory,
         "flowguard": _flowguard_identity(),
-        "readiness": bundle.readiness_ledger.to_dict(),
-        "dna_qualification": qualification.to_dict(),
-        "bundle": bundle.to_dict(),
-    }, bundle
+        "readiness": {"status": "ready" if not errors else "blocked", "gap_count": len(errors),
+                      "first_gap": errors[0] if errors else None, "rows": errors},
+        "map_components": len(data["components"]),
+        "claim_boundary": "Current directory inventory and confirmed map/code/test bindings only. Models and tests are not executed; full semantic equivalence and release are not licensed.",
+    }, data
 
 
 def check(root: str | Path, *, compact: bool = False) -> tuple[dict[str, Any], int]:

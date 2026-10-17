@@ -19,6 +19,7 @@ def run_model() -> None:
         candidate[broken] = False
         if all(candidate.values()):
             raise AssertionError(f"unbound alignment was accepted: {broken}")
+    return {"ok": True, "model": 'model_test_code_alignment'}
 
 
 if __name__ == "__main__":

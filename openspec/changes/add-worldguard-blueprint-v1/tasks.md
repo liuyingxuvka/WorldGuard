@@ -1,3 +1,5 @@
+> Historical implementation task list. Author-supervision/compiled-contract/receipt steps below are retired in 0.7.12. Current checks are ordinary native/pytest commands in README.md and the living FlowGuard map; historical unchecked boxes do not authorize rerunning retired tooling.
+
 ## 1. Freeze authority, coordination, and toolchain
 
 - [x] 1.1 Record the current WorldGuard source HEAD, branch, worktree status, active peer claims, OpenSpec change identity, installed skill identity, and current `.flowguard/project.toml` package/schema values without modifying peer-owned paths.

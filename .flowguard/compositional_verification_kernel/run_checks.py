@@ -1,14 +1,8 @@
-"""Run the worldguard composition kernel checks."""
+from model import run_model
+from flowguard.map.runner import run_owner
 
-from __future__ import annotations
-
-import model
-
-
-def main() -> int:
-    model.run_model()
-    return 0
-
+def main():
+    return run_model()
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(run_owner(main))

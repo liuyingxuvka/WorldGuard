@@ -19,6 +19,7 @@ def run_model() -> None:
         candidate[broken] = False
         if all(candidate.values()):
             raise AssertionError(f"incomplete evidence was accepted: {broken}")
+    return {"ok": True, "model": 'test_evidence_mesh'}
 
 
 if __name__ == "__main__":

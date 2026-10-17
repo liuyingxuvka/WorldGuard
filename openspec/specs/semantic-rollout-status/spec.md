@@ -47,7 +47,6 @@ WorldGuard SHALL emit a receipt containing structural checks, claim atoms, requi
 - **THEN** the receipt SHALL preserve semantic `PASS` if appropriate but SHALL distinguish it from predictive readiness
 
 ### Requirement: Installed portable native evaluator authority
-Formal WorldGuard depth and calibration checks SHALL load the complete target-native Python runtime bundled under the installed skill's `.skillguard/runtime` tree. Every bundled source SHALL be part of the V2 implementation authority and every depth/calibration input fingerprint. A global package or editable source checkout SHALL NOT satisfy formal closure.
 
 #### Scenario: Installed runtime file is absent from the contract
 - **WHEN** a bundled native runtime source exists but is absent from implementation authority or any depth/calibration input set

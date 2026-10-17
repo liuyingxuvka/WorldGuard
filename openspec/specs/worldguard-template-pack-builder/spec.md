@@ -4,7 +4,6 @@
 TBD - created by archiving change add-worldguard-template-pack-builder. Update Purpose after archive.
 ## Requirements
 ### Requirement: WorldGuard owns validating template-pack manifests
-WorldGuard SHALL define versioned template-pack manifests for `GuardContract` and `ModelMeshContract` construction. Each manifest SHALL declare its contract kind, base-or-candidate role, applicability facts, field-owning fragments, native validator ids, and exact content fingerprint. SkillGuard and callers MUST NOT add or reinterpret Guard purpose, failure, fixture, oracle, or predictive-depth semantics through the manifest.
 
 #### Scenario: Current manifest is admitted
 - **WHEN** a manifest's declared schema, fields, owners, native validator ids, and fingerprint match its current content
@@ -97,7 +96,6 @@ WorldGuard SHALL provide a current base pack for each contract kind and purpose-
 - **THEN** WorldGuard builds and canonically validates the ModelMeshContract scaffold with its exact pack and instance fingerprints
 
 ### Requirement: Template validation integrates without replacing final closure
-Template-pack validation SHALL prove construction integrity only. It MUST NOT replace `run_worldguard`, `run_model_mesh`, target-native depth evaluation, provider readiness, or SkillGuard declared-check supervision required for a broader conclusion.
 
 #### Scenario: Structurally valid base remains bounded
 - **WHEN** a no-match request builds from the base template but lacks semantic evidence for a PASS conclusion
@@ -108,7 +106,6 @@ WorldGuard SHALL expose an adapter for `worldguard.template_pack_builder` whose 
 
 #### Scenario: Current projection is accepted
 - **WHEN** the request binds the current native registry identity, exact route, supported contract kind, and explicit fact ids
-- **THEN** WorldGuard emits one exact unsealed neutral projection that the current central SkillGuard compiler can validate and seal without adding family semantics
 
 #### Scenario: Unknown root field blocks
 - **WHEN** a caller adds any root field outside the declared projection inventory
@@ -123,7 +120,6 @@ For one requested contract kind, WorldGuard SHALL emit an unsealed `skillguard.t
 
 #### Scenario: Native ambiguity remains ambiguity
 - **WHEN** the native selector reports several matching candidate pack ids
-- **THEN** those exact candidates are eligible in the projection and no lexical rank, declaration order, or SkillGuard policy chooses a winner
 
 ### Requirement: Projection freshness stays bound to native identities
 The adapter SHALL call the existing native registry validation, selection, and manifest applicability logic. It SHALL bind the request to the current registry and selection fingerprints, map the native manifest fingerprint into `artifacts[].content_template_hash`, and map native builder and validator implementation fingerprints into their central `content_hash` fields.

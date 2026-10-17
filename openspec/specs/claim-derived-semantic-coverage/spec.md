@@ -33,7 +33,6 @@ WorldGuard SHALL have one current target-native closure behavior in which requir
 - **THEN** WorldGuard SHALL still execute all required Guard semantics and SHALL limit only the claim boundary, not the validation depth
 
 ### Requirement: Router-visible native ownership
-The current WorldGuard SkillGuard contract SHALL expose `native-integrated`, the WorldGuard native owner, one default native route, every existing target-owned native route binding, and every required native check binding at the top level. These bindings MUST equal the target-owned route/check sets and MUST NOT create a SkillGuard-owned domain executor.
 
 #### Scenario: Router compiles the current contract
 - **WHEN** the global router inspects WorldGuard's current contract source
@@ -125,9 +124,6 @@ WorldGuard SHALL combine a native `ceil(sqrt(horizon_steps))` count floor with a
 - **WHEN** the observed set meets the square-root count floor and touches early, middle, and late phases but leaves a normalized temporal hole larger than the native maximum-gap bound
 - **THEN** predictive licensing SHALL remain blocked for that model node or variable/signal child
 
-#### Scenario: SkillGuard supervises the temporal floor
-- **WHEN** SkillGuard consumes a current predictive WorldGuard run
-- **THEN** WorldGuard SHALL provide a content-addressed native dynamic-floor receipt for each model-node and variable/signal child universe, and generic SkillGuard supervision SHALL verify the exact declared native check without adding or applying a competing floor
 
 ### Requirement: Explicit skipped coverage
 WorldGuard SHALL preserve every expected but unexecuted semantic child with a typed skip reason and coverage impact.
@@ -141,12 +137,9 @@ WorldGuard SHALL emit a per-run receipt containing the expected and executed cov
 
 #### Scenario: Static regression is green
 - **WHEN** repository engine-health regressions pass but the current target mesh receipt is absent or stale
-- **THEN** SkillGuard and WorldGuard closure SHALL treat target execution depth as not run or stale rather than passed
 
-#### Scenario: Current generic SkillGuard supervises exact target checks
 - **WHEN** a non-trivial or predictive WorldGuard conclusion is requested
 - **THEN** the exact current target input SHALL produce target-owned dynamic inventories for every horizon step, required Guard scenario/holdout object, predictive axis class, model-node policy, and claim atom
-- **AND** the target-owned Guard-model oracle and native depth check SHALL close through the current compiled generic SkillGuard contract and exact check manifest
 - **AND** the depth receipt SHALL use the target-owned `scheduled_production` evidence domain bound to the current verified installation identity carried inside exactly one current target-owned mesh input; identity-shaped fields present only in the generic supervisor request SHALL NOT be consumed, and repository fixtures SHALL NOT substitute for target execution
 - **AND** an `AGENTS.md` maintenance declaration, repository link, local semantic PASS, or regression suite SHALL NOT substitute for that supervised receipt
 - **AND** the runtime evidence SHALL reconcile discovered, declared, and excluded mesh nodes and SHALL prove that excluded nodes contributed to neither object results nor covered claim scope
@@ -162,11 +155,8 @@ WorldGuard SHALL preserve its exact target-owned selected, evaluated, and valida
 - **WHEN** a native predictive universe has an empty validated set because its floor, phase, object, or scenario requirement failed
 - **THEN** the projection SHALL keep the result empty and blocked and SHALL NOT insert `bridge-health` or any other synthetic success witness
 
-### Requirement: Single current generic SkillGuard authority
-WorldGuard SHALL retain only the current generic contract trio and explicitly referenced target-native checks. The depth profile SHALL use `integration_mode: native-integrated`, SHALL declare exactly one `enforced` closure profile, and SHALL contain no SkillGuard-owned Guard calibration, protected-failure universe, domain dimensions, optional closure modes, or alternate success paths. Former checkers, policies, mutable evidence/reports/ledgers, target-local run outputs, caches, and fallback text MUST be absent from source and installed roots.
 
 #### Scenario: Narrow completion receipt misses old runtime files
-- **WHEN** a retirement receipt scans only `work-contract.json` and `check_manifest.json` while any other former V1 runtime surface remains
 - **THEN** the receipt SHALL be invalid and WorldGuard closure SHALL remain blocked
 
 ### Requirement: Receipt-only OpenSpec verification

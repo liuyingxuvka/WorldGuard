@@ -18,6 +18,7 @@ from worldguard.guard_model_contract import (
 ROOT = Path(__file__).resolve().parents[1]
 
 ALIGNMENT = {
+    "native_depth": ("worldguard/execution_depth.py", "def build_native_depth_evidence", "test_deep_fixture_emits_dynamic_target_owned_execution_depth"),
     "claim_routes": (
         "worldguard/contracts.py",
         "def derive_required_guards",
@@ -83,45 +84,10 @@ ALIGNMENT = {
         "effective_minimum_timepoint_count",
         "test_ten_thousand_step_horizon_raises_native_floor_per_series",
     ),
-    "skillguard_native_floor_receipt": (
-        "worldguard/execution_depth.py",
-        "worldguard.native-sqrt-phase-gap-floor.v1",
-        "test_ten_thousand_step_envelope_carries_native_hundred_point_floor",
-    ),
-    "native_observation_integrity": (
-        "worldguard/execution_depth.py",
-        "Never manufacture a bridge-health witness",
-        "test_shallow_dynamic_bridge_never_invents_transport_health_evidence",
-    ),
     "exact_obligation_evidence": (
         "worldguard/mesh.py",
         "def _native_obligation_observations",
         "test_native_obligation_hash_tracks_exact_semantic_input",
-    ),
-    "exact_obligation_bridge_projection": (
-        "worldguard/execution_depth.py",
-        '"native_obligation_evidence"',
-        "test_current_generic_emitter_binds_each_obligation_to_target_native_receipt",
-    ),
-    "author_skillguard_authority_current": (
-        "scripts/verify_guard_simulation_readiness.py",
-        "def _source_authority_status",
-        "test_source_authority_blocks_former_author_paths",
-    ),
-    "former_author_skillguard_authority_retirement": (
-        "scripts/verify_guard_simulation_readiness.py",
-        "former_author_residuals",
-        "test_source_authority_blocks_former_author_paths",
-    ),
-    "installed_consumer_projection_current": (
-        "scripts/verify_guard_simulation_readiness.py",
-        "def _consumer_projection_status",
-        "test_clean_consumer_projection_is_exact_and_author_control_free",
-    ),
-    "installed_consumer_author_control_absent": (
-        "scripts/verify_guard_simulation_readiness.py",
-        "consumer_author_control_path_present",
-        "test_consumer_projection_rejects_author_control_and_hash_drift",
     ),
     "guard_model_contract": (
         "worldguard/guard_model_contract.py",
@@ -156,8 +122,8 @@ def _alignment_ok() -> bool:
         path.read_text(encoding="utf-8")
         for path in (
             ROOT / "tests" / "test_claim_derived_coverage.py",
-            ROOT / "tests" / "test_skillguard_v2_depth_bridge.py",
-            ROOT / "tests" / "test_skillguard_v2_runtime_authority_audit.py",
+            ROOT / "tests" / "test_execution_depth.py",
+            ROOT / "tests" / "test_runtime_identity.py",
             ROOT / "tests" / "test_guard_model_contract.py",
         )
     )
@@ -199,14 +165,6 @@ def main() -> int:
             "semantic_children_ready",
             "predictive_receipt_ready",
             "claim_atoms_blocked",
-            "author_skillguard_authority_blocked",
-            "former_authority_residual_blocked",
-            "receipt_only_verification_blocked",
-            "release_gate_domain_blocked",
-            "release_gate_binding_blocked",
-            "release_gate_binding_source_blocked",
-            "target_input_inventory_blocked",
-            "fixture_as_release_gate_blocked",
             "derived_guard_blocked",
             "contractless_node_blocked",
             "object_scope_reconciliation_blocked",

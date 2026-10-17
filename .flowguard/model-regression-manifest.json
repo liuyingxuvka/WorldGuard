@@ -10,9 +10,6 @@
     "worldguard/task_local_revision.py",
     "skills/worldguard/runtime/worldguard/task_local_revision.py",
     "skills/worldguard/references/worldguard-contracts.md",
-    "skills/worldguard/.skillguard/checks/check_task_local_model_closure.py",
-    "skills/worldguard/.skillguard/contract-source.json",
-    "skills/worldguard/.skillguard/contract_model.py",
     "tests/test_task_local_revision.py",
     "openspec/specs/world-model-deepening/spec.md",
     ".flowguard/worldguard_field_lifecycle.md",
@@ -38,7 +35,6 @@
     "tests/test_entry_prompt_bundle.py",
     "tests/test_internal_guard_topology.py",
     "skills/worldguard/references/fact-revision.md",
-    "skills/worldguard/.skillguard/checks/check_fact_revision.py",
     "tests/test_fact_revision.py",
     ".flowguard/behavior_commitment_ledger/model.py",
     ".flowguard/behavior_commitment_ledger/run_checks.py",
@@ -91,9 +87,9 @@
         ".flowguard/model-regression-manifest.json",
         "worldguard/**/*.py",
         "scripts/**/*.py",
-      "tests/**/*.py",
-      "tests/**/*.json",
-      "tests/**/*.yaml"
+        "tests/**/*.py",
+        "tests/**/*.json",
+        "tests/**/*.yaml"
       ],
       "intent_source_inputs": [
         "openspec/changes/add-worldguard-blueprint-v1/design.md"
@@ -239,9 +235,6 @@
         "skills/worldguard/scripts/check_internal_guard_topology.py",
         "skills/worldguard/references/worldguard-contracts.md",
         "skills/worldguard/references/fact-revision.md",
-        "skills/worldguard/.skillguard/checks/check_task_local_model_closure.py",
-        "skills/worldguard/.skillguard/contract-source.json",
-        "skills/worldguard/.skillguard/contract_model.py",
         "tests/test_task_local_revision.py",
         "tests/test_fact_revision.py",
         "tests/test_entry_prompt_bundle.py",
@@ -349,7 +342,6 @@
         "skills/worldguard/runtime/worldguard/cli.py",
         "skills/worldguard/SKILL.md",
         "skills/worldguard/references/fact-revision.md",
-        "skills/worldguard/.skillguard/checks/check_fact_revision.py",
         "tests/test_fact_revision.py"
       ],
       "intent_source_inputs": [
@@ -500,10 +492,10 @@
           "check:model-regression:behavior_commitment_ledger",
           "check:worldguard:behavior-commitment-shards"
         ],
-    "model_sha256": "sha256:b830952e8f77a929771ec6a5eab2a15178676154aa99748b67b014ee2d4e5141",
+        "model_sha256": "sha256:b830952e8f77a929771ec6a5eab2a15178676154aa99748b67b014ee2d4e5141",
         "runner_sha256": "sha256:dfa33a800b62e53e622528e67921e6b200e90f011e6784cab0ec9b6f7c27c582",
         "declaration_fingerprint": "sha256:9f18affdb14dcbc6c1cf8829ef95a03bd568d2322c8e9d41ca96eba45ad278c6",
-    "closure_fingerprint": "sha256:c87e86af07bd276c035776bb6300a2ab8243265f66cb31b8e7698cf1c5c14ff5"
+        "closure_fingerprint": "sha256:c87e86af07bd276c035776bb6300a2ab8243265f66cb31b8e7698cf1c5c14ff5"
       }
     },
     {

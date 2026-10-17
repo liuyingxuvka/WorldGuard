@@ -749,54 +749,6 @@ def test_coverage_fingerprint_changes_when_expected_universe_changes() -> None:
     assert second.predictive_claim_licensed is False
 
 
-def test_current_skill_contract_source_supervises_ten_distinct_owners_without_domain_modes() -> None:
-    root = Path(__file__).resolve().parents[1]
-    control = root / "skills" / "worldguard" / ".skillguard"
-    source = json.loads((control / "contract-source.json").read_text(encoding="utf-8"))
-    checks = {item["check_id"]: item for item in source["checks"]}
-    native_ids = set(source["depth_profile"]["native_check_ids"])
-
-    assert native_ids == {
-        "check:worldguard:blueprint-integrity",
-        "check:worldguard:flowguard-contract-model",
-        "check:worldguard:guard-model-contract",
-        "check:worldguard:native-depth",
-        "check:worldguard:template-packs",
-        "check:worldguard:internal-guard-topology",
-        "check:worldguard:fact-revision",
-        "check:worldguard:task-local-model-closure",
-        "check:worldguard:entry-prompt-bundle",
-        "check:worldguard:portable-runtime-projection",
-    }
-    assert set(checks) == native_ids
-    assert source["depth_profile"]["target_skill_id"] == "worldguard"
-    assert source["depth_profile"]["integration_mode"] == "native-integrated"
-    assert source["depth_profile"]["required_closure_profiles"] == ["enforced"]
-    assert source["closure_profiles"][0]["profile_id"] == "enforced"
-    assert len(source["closure_profiles"]) == 1
-    assert source["depth_profile"]["native_route_absent_confirmed"] is False
-    assert source["depth_profile"]["skillguard_adds_domain_route"] is False
-    assert source["integration_mode"] == "native-integrated"
-    assert source["native_route_owner"] == "worldguard"
-    assert source["default_route_id"] == "route:worldguard-claim-derived-depth"
-    assert source["may_define_parallel_execution_route"] is False
-    assert source["may_define_skillguard_runtime_route"] is False
-    assert {row["native_route_id"] for row in source["native_route_bindings"]} == set(
-        source["depth_profile"]["native_route_ids"]
-    )
-    assert {row["native_check_id"] for row in source["native_check_bindings"]} == native_ids
-    assert all(row["required"] is True for row in source["native_check_bindings"])
-    assert all(
-        row["required_before_closure"] is True
-        for row in source["native_route_bindings"]
-    )
-    assert not any("calibration" in check_id for check_id in checks)
-    assert "calibration" not in source
-    assert "coverage_universes" not in source
-    assert "dimensions" not in source
-    assert "v1_runtime_authority" not in source
-    assert not (control / "work-contract.json").exists()
-    assert not (control / "check_manifest.json").exists()
 
 
 def test_expected_node_list_cannot_hide_a_discovered_predictive_node() -> None:

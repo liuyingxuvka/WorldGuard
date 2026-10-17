@@ -41,6 +41,7 @@ def run_model() -> None:
     for missing in STAGES:
         candidate = tuple(stage for stage in STAGES if stage != missing)
         assert not accept(CompositionState(candidate))
+    return {"ok": True, "model": 'compositional_verification_kernel'}
 
 
 if __name__ == "__main__":

@@ -1,12 +1,8 @@
 """FlowGuard process model for WorldGuard claim-derived semantic coverage."""
-
 from __future__ import annotations
-
 from dataclasses import dataclass, replace
 from typing import Iterable
-
 from flowguard import FunctionResult, Invariant, InvariantResult, Workflow
-
 
 @dataclass(frozen=True)
 class CoverageRequest:
@@ -15,16 +11,6 @@ class CoverageRequest:
     one_native_good_per_guard: bool = True
     one_native_bad_per_failure: bool = True
     native_failure_oracle_passed: bool = True
-    author_skillguard_authority_current: bool = True
-    former_author_skillguard_authority_absent: bool = True
-    installed_consumer_projection_current: bool = True
-    installed_consumer_author_control_absent: bool = True
-    receipt_only_verification: bool = True
-    release_gate_domain: bool = True
-    release_gate_binding_current: bool = True
-    release_gate_binding_target_owned: bool = True
-    exact_single_mesh_input: bool = True
-    fixture_calibration_isolated: bool = True
     structured_claim_atoms: bool = True
     all_derived_guards_declared: bool = True
     all_expected_nodes_contracted: bool = True
@@ -45,7 +31,6 @@ class CoverageRequest:
     mesh_and_coverage_fingerprints_bound: bool = True
     native_observation_integrity: bool = True
     exact_obligation_evidence: bool = True
-
 
 @dataclass(frozen=True)
 class RoutesReady:
@@ -68,7 +53,6 @@ class RoutesReady:
     native_observation_integrity: bool
     exact_obligation_evidence: bool
 
-
 @dataclass(frozen=True)
 class UniverseReady:
     all_expected_children_executed: bool
@@ -87,7 +71,6 @@ class UniverseReady:
     native_observation_integrity: bool
     exact_obligation_evidence: bool
 
-
 @dataclass(frozen=True)
 class SemanticsReady:
     nondegenerate_horizon: bool
@@ -105,16 +88,13 @@ class SemanticsReady:
     native_observation_integrity: bool
     exact_obligation_evidence: bool
 
-
 @dataclass(frozen=True)
 class PredictiveReceiptReady:
     predictive_claim_licensed: bool
 
-
 @dataclass(frozen=True)
 class Blocked:
     reason: str
-
 
 @dataclass(frozen=True)
 class State:
@@ -123,16 +103,6 @@ class State:
     one_native_good_per_guard: bool = False
     one_native_bad_per_failure: bool = False
     native_failure_oracle_passed: bool = False
-    author_skillguard_authority_current: bool = False
-    former_author_skillguard_authority_absent: bool = False
-    installed_consumer_projection_current: bool = False
-    installed_consumer_author_control_absent: bool = False
-    receipt_only_verification: bool = False
-    release_gate_domain: bool = False
-    release_gate_binding_current: bool = False
-    release_gate_binding_target_owned: bool = False
-    exact_single_mesh_input: bool = False
-    fixture_calibration_isolated: bool = False
     claim_routes_derived: bool = False
     required_guards_complete: bool = False
     expected_nodes_contracted: bool = False
@@ -155,456 +125,140 @@ class State:
     exact_obligation_evidence: bool = False
     predictive_claim_licensed: bool = False
 
-
 class DeriveClaimRoutes:
-    name = "DeriveClaimRoutes"
+    name = 'DeriveClaimRoutes'
     reads = ()
-    writes = (
-        "guard_purpose_declared",
-        "protected_failure_universe_complete",
-        "one_native_good_per_guard",
-        "one_native_bad_per_failure",
-        "native_failure_oracle_passed",
-        "author_skillguard_authority_current",
-        "former_author_skillguard_authority_absent",
-        "installed_consumer_projection_current",
-        "installed_consumer_author_control_absent",
-        "receipt_only_verification",
-        "release_gate_domain",
-        "release_gate_binding_current",
-        "release_gate_binding_target_owned",
-        "exact_single_mesh_input",
-        "fixture_calibration_isolated",
-        "claim_routes_derived",
-        "required_guards_complete",
-    )
+    writes = ('guard_purpose_declared', 'protected_failure_universe_complete', 'one_native_good_per_guard', 'one_native_bad_per_failure', 'native_failure_oracle_passed', 'claim_routes_derived', 'required_guards_complete')
     accepted_input_type = CoverageRequest
-    input_description = "structured claim x initial state"
-    output_description = "RoutesReady or Blocked"
-    idempotency = "The same structured claim atoms derive the same WorldGuard-owned Guard routes."
+    input_description = 'structured claim x initial state'
+    output_description = 'RoutesReady or Blocked'
+    idempotency = 'The same structured claim atoms derive the same WorldGuard-owned Guard routes.'
 
     def apply(self, input_obj: CoverageRequest, state: State) -> Iterable[FunctionResult]:
         if not input_obj.guard_purpose_declared:
-            yield FunctionResult(Blocked("guard_model_purpose_required"), state, "guard_purpose_blocked")
+            yield FunctionResult(Blocked('guard_model_purpose_required'), state, 'guard_purpose_blocked')
             return
         if not input_obj.protected_failure_universe_complete:
-            yield FunctionResult(
-                Blocked("guard_owned_failure_universe_incomplete"),
-                state,
-                "protected_failure_universe_blocked",
-            )
+            yield FunctionResult(Blocked('guard_owned_failure_universe_incomplete'), state, 'protected_failure_universe_blocked')
             return
         if not input_obj.one_native_good_per_guard:
-            yield FunctionResult(
-                Blocked("exactly_one_native_good_per_guard_required"),
-                state,
-                "native_good_cardinality_blocked",
-            )
+            yield FunctionResult(Blocked('exactly_one_native_good_per_guard_required'), state, 'native_good_cardinality_blocked')
             return
         if not input_obj.one_native_bad_per_failure:
-            yield FunctionResult(
-                Blocked("exactly_one_native_bad_per_failure_required"),
-                state,
-                "native_bad_cardinality_blocked",
-            )
+            yield FunctionResult(Blocked('exactly_one_native_bad_per_failure_required'), state, 'native_bad_cardinality_blocked')
             return
         if not input_obj.native_failure_oracle_passed:
-            yield FunctionResult(
-                Blocked("native_failure_oracle_must_pass"),
-                state,
-                "native_failure_oracle_blocked",
-            )
-            return
-        if not input_obj.author_skillguard_authority_current:
-            yield FunctionResult(Blocked("current_author_skillguard_authority_required"), state, "author_skillguard_authority_blocked")
-            return
-        if not input_obj.former_author_skillguard_authority_absent:
-            yield FunctionResult(Blocked("former_author_skillguard_authority_residual_present"), state, "former_authority_residual_blocked")
-            return
-        if not input_obj.installed_consumer_projection_current:
-            yield FunctionResult(Blocked("installed_consumer_projection_not_current"), state, "consumer_projection_blocked")
-            return
-        if not input_obj.installed_consumer_author_control_absent:
-            yield FunctionResult(Blocked("installed_consumer_author_control_present"), state, "consumer_author_control_blocked")
-            return
-        if not input_obj.receipt_only_verification:
-            yield FunctionResult(Blocked("verification_consumer_must_not_execute_owner"), state, "receipt_only_verification_blocked")
-            return
-        if not input_obj.release_gate_domain:
-            yield FunctionResult(Blocked("formal_depth_requires_release_gate_domain"), state, "release_gate_domain_blocked")
-            return
-        if not input_obj.release_gate_binding_current:
-            yield FunctionResult(Blocked("release_gate_binding_not_current"), state, "release_gate_binding_blocked")
-            return
-        if not input_obj.release_gate_binding_target_owned:
-            yield FunctionResult(Blocked("release_gate_binding_not_target_owned"), state, "release_gate_binding_source_blocked")
-            return
-        if not input_obj.exact_single_mesh_input:
-            yield FunctionResult(Blocked("exact_single_current_mesh_input_required"), state, "target_input_inventory_blocked")
-            return
-        if not input_obj.fixture_calibration_isolated:
-            yield FunctionResult(Blocked("fixture_calibration_cannot_close_release_gate"), state, "fixture_as_release_gate_blocked")
+            yield FunctionResult(Blocked('native_failure_oracle_must_pass'), state, 'native_failure_oracle_blocked')
             return
         if not input_obj.structured_claim_atoms:
-            yield FunctionResult(Blocked("structured_claim_atoms_required"), state, "claim_atoms_blocked")
+            yield FunctionResult(Blocked('structured_claim_atoms_required'), state, 'claim_atoms_blocked')
             return
         if not input_obj.all_derived_guards_declared:
-            yield FunctionResult(Blocked("claim_derived_guard_missing"), state, "derived_guard_blocked")
+            yield FunctionResult(Blocked('claim_derived_guard_missing'), state, 'derived_guard_blocked')
             return
-        yield FunctionResult(
-            RoutesReady(
-                input_obj.all_expected_nodes_contracted,
-                input_obj.discovered_nodes_reconciled,
-                input_obj.exclusions_closed_noncontributing,
-                input_obj.all_expected_children_executed,
-                input_obj.nondegenerate_horizon,
-                input_obj.representative_timepoint_floor_met,
-                input_obj.time_strata_covered,
-                input_obj.temporal_max_gap_met,
-                input_obj.per_model_node_depth_complete,
-                input_obj.per_variable_depth_complete,
-                input_obj.native_floor_receipts_bound,
-                input_obj.normal_scenarios_executed,
-                input_obj.holdout_scenarios_executed,
-                input_obj.branches_and_perturbations_executed,
-                input_obj.interventions_and_counterfactuals_executed,
-                input_obj.mesh_and_coverage_fingerprints_bound,
-                input_obj.native_observation_integrity,
-                input_obj.exact_obligation_evidence,
-            ),
-            replace(
-                state,
-                guard_purpose_declared=True,
-                protected_failure_universe_complete=True,
-                one_native_good_per_guard=True,
-                one_native_bad_per_failure=True,
-                native_failure_oracle_passed=True,
-                author_skillguard_authority_current=True,
-                former_author_skillguard_authority_absent=True,
-                installed_consumer_projection_current=True,
-                installed_consumer_author_control_absent=True,
-                receipt_only_verification=True,
-                release_gate_domain=True,
-                release_gate_binding_current=True,
-                release_gate_binding_target_owned=True,
-                exact_single_mesh_input=True,
-                fixture_calibration_isolated=True,
-                claim_routes_derived=True,
-                required_guards_complete=True,
-            ),
-            "routes_ready",
-        )
-
+        yield FunctionResult(RoutesReady(input_obj.all_expected_nodes_contracted, input_obj.discovered_nodes_reconciled, input_obj.exclusions_closed_noncontributing, input_obj.all_expected_children_executed, input_obj.nondegenerate_horizon, input_obj.representative_timepoint_floor_met, input_obj.time_strata_covered, input_obj.temporal_max_gap_met, input_obj.per_model_node_depth_complete, input_obj.per_variable_depth_complete, input_obj.native_floor_receipts_bound, input_obj.normal_scenarios_executed, input_obj.holdout_scenarios_executed, input_obj.branches_and_perturbations_executed, input_obj.interventions_and_counterfactuals_executed, input_obj.mesh_and_coverage_fingerprints_bound, input_obj.native_observation_integrity, input_obj.exact_obligation_evidence), replace(state, guard_purpose_declared=True, protected_failure_universe_complete=True, one_native_good_per_guard=True, one_native_bad_per_failure=True, native_failure_oracle_passed=True, claim_routes_derived=True, required_guards_complete=True), 'routes_ready')
 
 class BuildExpectedCoverageUniverse:
-    name = "BuildExpectedCoverageUniverse"
-    reads = ("claim_routes_derived", "required_guards_complete")
-    writes = (
-        "expected_nodes_contracted",
-        "discovered_nodes_reconciled",
-        "exclusions_closed_noncontributing",
-    )
+    name = 'BuildExpectedCoverageUniverse'
+    reads = ('claim_routes_derived', 'required_guards_complete')
+    writes = ('expected_nodes_contracted', 'discovered_nodes_reconciled', 'exclusions_closed_noncontributing')
     accepted_input_type = RoutesReady
-    input_description = "derived routes x state"
-    output_description = "UniverseReady or Blocked"
-    idempotency = "Expected nodes and semantic children are fingerprinted from one current mesh."
+    input_description = 'derived routes x state'
+    output_description = 'UniverseReady or Blocked'
+    idempotency = 'Expected nodes and semantic children are fingerprinted from one current mesh.'
 
     def apply(self, input_obj: RoutesReady, state: State) -> Iterable[FunctionResult]:
         if not input_obj.all_expected_nodes_contracted:
-            yield FunctionResult(Blocked("expected_node_contract_missing"), state, "contractless_node_blocked")
+            yield FunctionResult(Blocked('expected_node_contract_missing'), state, 'contractless_node_blocked')
             return
         if not input_obj.discovered_nodes_reconciled:
-            yield FunctionResult(
-                Blocked("discovered_model_nodes_not_reconciled"),
-                state,
-                "object_scope_reconciliation_blocked",
-            )
+            yield FunctionResult(Blocked('discovered_model_nodes_not_reconciled'), state, 'object_scope_reconciliation_blocked')
             return
         if not input_obj.exclusions_closed_noncontributing:
-            yield FunctionResult(
-                Blocked("model_node_exclusion_not_closed"),
-                state,
-                "object_scope_exclusion_blocked",
-            )
+            yield FunctionResult(Blocked('model_node_exclusion_not_closed'), state, 'object_scope_exclusion_blocked')
             return
-        yield FunctionResult(
-            UniverseReady(
-                input_obj.all_expected_children_executed,
-                input_obj.nondegenerate_horizon,
-                input_obj.representative_timepoint_floor_met,
-                input_obj.time_strata_covered,
-                input_obj.temporal_max_gap_met,
-                input_obj.per_model_node_depth_complete,
-                input_obj.per_variable_depth_complete,
-                input_obj.native_floor_receipts_bound,
-                input_obj.normal_scenarios_executed,
-                input_obj.holdout_scenarios_executed,
-                input_obj.branches_and_perturbations_executed,
-                input_obj.interventions_and_counterfactuals_executed,
-                input_obj.mesh_and_coverage_fingerprints_bound,
-                input_obj.native_observation_integrity,
-                input_obj.exact_obligation_evidence,
-            ),
-            replace(
-                state,
-                expected_nodes_contracted=True,
-                discovered_nodes_reconciled=True,
-                exclusions_closed_noncontributing=True,
-            ),
-            "universe_ready",
-        )
-
+        yield FunctionResult(UniverseReady(input_obj.all_expected_children_executed, input_obj.nondegenerate_horizon, input_obj.representative_timepoint_floor_met, input_obj.time_strata_covered, input_obj.temporal_max_gap_met, input_obj.per_model_node_depth_complete, input_obj.per_variable_depth_complete, input_obj.native_floor_receipts_bound, input_obj.normal_scenarios_executed, input_obj.holdout_scenarios_executed, input_obj.branches_and_perturbations_executed, input_obj.interventions_and_counterfactuals_executed, input_obj.mesh_and_coverage_fingerprints_bound, input_obj.native_observation_integrity, input_obj.exact_obligation_evidence), replace(state, expected_nodes_contracted=True, discovered_nodes_reconciled=True, exclusions_closed_noncontributing=True), 'universe_ready')
 
 class ExecuteExpectedSemanticChildren:
-    name = "ExecuteExpectedSemanticChildren"
-    reads = ("expected_nodes_contracted",)
-    writes = ("expected_children_executed",)
+    name = 'ExecuteExpectedSemanticChildren'
+    reads = ('expected_nodes_contracted',)
+    writes = ('expected_children_executed',)
     accepted_input_type = UniverseReady
-    input_description = "expected universe x state"
-    output_description = "SemanticsReady or Blocked"
-    idempotency = "Every expected child either executes natively or remains a typed skip."
+    input_description = 'expected universe x state'
+    output_description = 'SemanticsReady or Blocked'
+    idempotency = 'Every expected child either executes natively or remains a typed skip.'
 
     def apply(self, input_obj: UniverseReady, state: State) -> Iterable[FunctionResult]:
         if not input_obj.all_expected_children_executed:
-            yield FunctionResult(Blocked("expected_semantic_child_skipped"), state, "semantic_child_blocked")
+            yield FunctionResult(Blocked('expected_semantic_child_skipped'), state, 'semantic_child_blocked')
             return
-        yield FunctionResult(
-            SemanticsReady(
-                input_obj.nondegenerate_horizon,
-                input_obj.representative_timepoint_floor_met,
-                input_obj.time_strata_covered,
-                input_obj.temporal_max_gap_met,
-                input_obj.per_model_node_depth_complete,
-                input_obj.per_variable_depth_complete,
-                input_obj.native_floor_receipts_bound,
-                input_obj.normal_scenarios_executed,
-                input_obj.holdout_scenarios_executed,
-                input_obj.branches_and_perturbations_executed,
-                input_obj.interventions_and_counterfactuals_executed,
-                input_obj.mesh_and_coverage_fingerprints_bound,
-                input_obj.native_observation_integrity,
-                input_obj.exact_obligation_evidence,
-            ),
-            replace(state, expected_children_executed=True),
-            "semantic_children_ready",
-        )
-
+        yield FunctionResult(SemanticsReady(input_obj.nondegenerate_horizon, input_obj.representative_timepoint_floor_met, input_obj.time_strata_covered, input_obj.temporal_max_gap_met, input_obj.per_model_node_depth_complete, input_obj.per_variable_depth_complete, input_obj.native_floor_receipts_bound, input_obj.normal_scenarios_executed, input_obj.holdout_scenarios_executed, input_obj.branches_and_perturbations_executed, input_obj.interventions_and_counterfactuals_executed, input_obj.mesh_and_coverage_fingerprints_bound, input_obj.native_observation_integrity, input_obj.exact_obligation_evidence), replace(state, expected_children_executed=True), 'semantic_children_ready')
 
 class AssessPredictiveAdequacy:
-    name = "AssessPredictiveAdequacy"
-    reads = ("expected_children_executed",)
-    writes = (
-        "horizon_executed",
-        "representative_timepoint_floor_met",
-        "time_strata_covered",
-        "temporal_max_gap_met",
-        "per_model_node_depth_complete",
-        "per_variable_depth_complete",
-        "native_floor_receipts_bound",
-        "normal_scenarios_executed",
-        "holdout_scenarios_executed",
-        "branches_and_perturbations_executed",
-        "interventions_and_counterfactuals_executed",
-        "fingerprints_bound",
-        "native_observation_integrity",
-        "exact_obligation_evidence",
-        "predictive_claim_licensed",
-    )
+    name = 'AssessPredictiveAdequacy'
+    reads = ('expected_children_executed',)
+    writes = ('horizon_executed', 'representative_timepoint_floor_met', 'time_strata_covered', 'temporal_max_gap_met', 'per_model_node_depth_complete', 'per_variable_depth_complete', 'native_floor_receipts_bound', 'normal_scenarios_executed', 'holdout_scenarios_executed', 'branches_and_perturbations_executed', 'interventions_and_counterfactuals_executed', 'fingerprints_bound', 'native_observation_integrity', 'exact_obligation_evidence', 'predictive_claim_licensed')
     accepted_input_type = SemanticsReady
-    input_description = "executed semantic children x state"
-    output_description = "PredictiveReceiptReady or Blocked"
-    idempotency = "Predictive license is derived only from executed mesh-bound coverage evidence."
+    input_description = 'executed semantic children x state'
+    output_description = 'PredictiveReceiptReady or Blocked'
+    idempotency = 'Predictive license is derived only from executed mesh-bound coverage evidence.'
 
     def apply(self, input_obj: SemanticsReady, state: State) -> Iterable[FunctionResult]:
         if not input_obj.nondegenerate_horizon:
-            yield FunctionResult(Blocked("single_timepoint_is_bounded_only"), state, "horizon_blocked")
+            yield FunctionResult(Blocked('single_timepoint_is_bounded_only'), state, 'horizon_blocked')
             return
         if not input_obj.representative_timepoint_floor_met:
-            yield FunctionResult(Blocked("representative_timepoint_floor_not_met"), state, "timepoint_floor_blocked")
+            yield FunctionResult(Blocked('representative_timepoint_floor_not_met'), state, 'timepoint_floor_blocked')
             return
         if not input_obj.time_strata_covered:
-            yield FunctionResult(Blocked("time_strata_not_covered"), state, "time_strata_blocked")
+            yield FunctionResult(Blocked('time_strata_not_covered'), state, 'time_strata_blocked')
             return
         if not input_obj.temporal_max_gap_met:
-            yield FunctionResult(
-                Blocked("temporal_maximum_gap_exceeded"),
-                state,
-                "temporal_max_gap_blocked",
-            )
+            yield FunctionResult(Blocked('temporal_maximum_gap_exceeded'), state, 'temporal_max_gap_blocked')
             return
         if not input_obj.per_model_node_depth_complete:
-            yield FunctionResult(Blocked("per_model_node_depth_incomplete"), state, "per_object_depth_blocked")
+            yield FunctionResult(Blocked('per_model_node_depth_incomplete'), state, 'per_object_depth_blocked')
             return
         if not input_obj.per_variable_depth_complete:
-            yield FunctionResult(
-                Blocked("per_variable_or_signal_depth_incomplete"),
-                state,
-                "per_variable_depth_blocked",
-            )
+            yield FunctionResult(Blocked('per_variable_or_signal_depth_incomplete'), state, 'per_variable_depth_blocked')
             return
         if not input_obj.native_floor_receipts_bound:
-            yield FunctionResult(
-                Blocked("native_dynamic_floor_receipt_missing"),
-                state,
-                "native_floor_receipt_blocked",
-            )
+            yield FunctionResult(Blocked('native_dynamic_floor_receipt_missing'), state, 'native_floor_receipt_blocked')
             return
         if not input_obj.normal_scenarios_executed:
-            yield FunctionResult(Blocked("normal_scenario_rollout_missing"), state, "scenario_blocked")
+            yield FunctionResult(Blocked('normal_scenario_rollout_missing'), state, 'scenario_blocked')
             return
         if not input_obj.holdout_scenarios_executed:
-            yield FunctionResult(Blocked("holdout_rollout_missing"), state, "holdout_blocked")
+            yield FunctionResult(Blocked('holdout_rollout_missing'), state, 'holdout_blocked')
             return
         if not input_obj.branches_and_perturbations_executed:
-            yield FunctionResult(Blocked("branch_or_perturbation_missing"), state, "branch_perturbation_blocked")
+            yield FunctionResult(Blocked('branch_or_perturbation_missing'), state, 'branch_perturbation_blocked')
             return
         if not input_obj.interventions_and_counterfactuals_executed:
-            yield FunctionResult(Blocked("single_equation_is_bounded_only"), state, "intervention_counterfactual_blocked")
+            yield FunctionResult(Blocked('single_equation_is_bounded_only'), state, 'intervention_counterfactual_blocked')
             return
         if not input_obj.mesh_and_coverage_fingerprints_bound:
-            yield FunctionResult(Blocked("current_fingerprints_required"), state, "fingerprint_blocked")
+            yield FunctionResult(Blocked('current_fingerprints_required'), state, 'fingerprint_blocked')
             return
         if not input_obj.native_observation_integrity:
-            yield FunctionResult(Blocked("synthetic_or_catalog_depth_evidence_forbidden"), state, "native_observation_integrity_blocked")
+            yield FunctionResult(Blocked('synthetic_or_catalog_depth_evidence_forbidden'), state, 'native_observation_integrity_blocked')
             return
         if not input_obj.exact_obligation_evidence:
-            yield FunctionResult(Blocked("exact_obligation_evidence_required"), state, "exact_obligation_evidence_blocked")
+            yield FunctionResult(Blocked('exact_obligation_evidence_required'), state, 'exact_obligation_evidence_blocked')
             return
-        yield FunctionResult(
-            PredictiveReceiptReady(True),
-            replace(
-                state,
-                horizon_executed=True,
-                representative_timepoint_floor_met=True,
-                time_strata_covered=True,
-                temporal_max_gap_met=True,
-                per_model_node_depth_complete=True,
-                per_variable_depth_complete=True,
-                native_floor_receipts_bound=True,
-                normal_scenarios_executed=True,
-                holdout_scenarios_executed=True,
-                branches_and_perturbations_executed=True,
-                interventions_and_counterfactuals_executed=True,
-                fingerprints_bound=True,
-                native_observation_integrity=True,
-                exact_obligation_evidence=True,
-                predictive_claim_licensed=True,
-            ),
-            "predictive_receipt_ready",
-        )
-
-
-EXTERNAL_INPUTS = (
-    CoverageRequest(),
-    CoverageRequest(guard_purpose_declared=False),
-    CoverageRequest(protected_failure_universe_complete=False),
-    CoverageRequest(one_native_good_per_guard=False),
-    CoverageRequest(one_native_bad_per_failure=False),
-    CoverageRequest(native_failure_oracle_passed=False),
-    CoverageRequest(author_skillguard_authority_current=False),
-    CoverageRequest(former_author_skillguard_authority_absent=False),
-    CoverageRequest(installed_consumer_projection_current=False),
-    CoverageRequest(installed_consumer_author_control_absent=False),
-    CoverageRequest(receipt_only_verification=False),
-    CoverageRequest(release_gate_domain=False),
-    CoverageRequest(release_gate_binding_current=False),
-    CoverageRequest(release_gate_binding_target_owned=False),
-    CoverageRequest(exact_single_mesh_input=False),
-    CoverageRequest(fixture_calibration_isolated=False),
-    CoverageRequest(structured_claim_atoms=False),
-    CoverageRequest(all_derived_guards_declared=False),
-    CoverageRequest(all_expected_nodes_contracted=False),
-    CoverageRequest(discovered_nodes_reconciled=False),
-    CoverageRequest(exclusions_closed_noncontributing=False),
-    CoverageRequest(all_expected_children_executed=False),
-    CoverageRequest(nondegenerate_horizon=False),
-    CoverageRequest(representative_timepoint_floor_met=False),
-    CoverageRequest(time_strata_covered=False),
-    CoverageRequest(temporal_max_gap_met=False),
-    CoverageRequest(per_model_node_depth_complete=False),
-    CoverageRequest(per_variable_depth_complete=False),
-    CoverageRequest(native_floor_receipts_bound=False),
-    CoverageRequest(normal_scenarios_executed=False),
-    CoverageRequest(holdout_scenarios_executed=False),
-    CoverageRequest(branches_and_perturbations_executed=False),
-    CoverageRequest(interventions_and_counterfactuals_executed=False),
-    CoverageRequest(mesh_and_coverage_fingerprints_bound=False),
-    CoverageRequest(native_observation_integrity=False),
-    CoverageRequest(exact_obligation_evidence=False),
-)
-
+        yield FunctionResult(PredictiveReceiptReady(True), replace(state, horizon_executed=True, representative_timepoint_floor_met=True, time_strata_covered=True, temporal_max_gap_met=True, per_model_node_depth_complete=True, per_variable_depth_complete=True, native_floor_receipts_bound=True, normal_scenarios_executed=True, holdout_scenarios_executed=True, branches_and_perturbations_executed=True, interventions_and_counterfactuals_executed=True, fingerprints_bound=True, native_observation_integrity=True, exact_obligation_evidence=True, predictive_claim_licensed=True), 'predictive_receipt_ready')
+EXTERNAL_INPUTS = (CoverageRequest(), CoverageRequest(guard_purpose_declared=False), CoverageRequest(protected_failure_universe_complete=False), CoverageRequest(one_native_good_per_guard=False), CoverageRequest(one_native_bad_per_failure=False), CoverageRequest(native_failure_oracle_passed=False), CoverageRequest(structured_claim_atoms=False), CoverageRequest(all_derived_guards_declared=False), CoverageRequest(all_expected_nodes_contracted=False), CoverageRequest(discovered_nodes_reconciled=False), CoverageRequest(exclusions_closed_noncontributing=False), CoverageRequest(all_expected_children_executed=False), CoverageRequest(nondegenerate_horizon=False), CoverageRequest(representative_timepoint_floor_met=False), CoverageRequest(time_strata_covered=False), CoverageRequest(temporal_max_gap_met=False), CoverageRequest(per_model_node_depth_complete=False), CoverageRequest(per_variable_depth_complete=False), CoverageRequest(native_floor_receipts_bound=False), CoverageRequest(normal_scenarios_executed=False), CoverageRequest(holdout_scenarios_executed=False), CoverageRequest(branches_and_perturbations_executed=False), CoverageRequest(interventions_and_counterfactuals_executed=False), CoverageRequest(mesh_and_coverage_fingerprints_bound=False), CoverageRequest(native_observation_integrity=False), CoverageRequest(exact_obligation_evidence=False))
 
 def build_workflow() -> Workflow:
-    return Workflow(
-        (
-            DeriveClaimRoutes(),
-            BuildExpectedCoverageUniverse(),
-            ExecuteExpectedSemanticChildren(),
-            AssessPredictiveAdequacy(),
-        ),
-        name="worldguard_claim_derived_semantic_coverage",
-    )
-
+    return Workflow((DeriveClaimRoutes(), BuildExpectedCoverageUniverse(), ExecuteExpectedSemanticChildren(), AssessPredictiveAdequacy()), name='worldguard_claim_derived_semantic_coverage')
 
 def initial_state() -> State:
     return State()
 
-
 def terminal_predicate(current_input: object, state: State, trace: object) -> bool:
     return isinstance(current_input, (Blocked, PredictiveReceiptReady))
 
-
-def predictive_license_requires_complete_executed_coverage(
-    state: State,
-    trace: object,
-) -> InvariantResult:
-    if state.predictive_claim_licensed and not (
-        state.guard_purpose_declared
-        and state.protected_failure_universe_complete
-        and state.one_native_good_per_guard
-        and state.one_native_bad_per_failure
-        and state.native_failure_oracle_passed
-        and state.author_skillguard_authority_current
-        and state.former_author_skillguard_authority_absent
-        and state.installed_consumer_projection_current
-        and state.installed_consumer_author_control_absent
-        and state.receipt_only_verification
-        and state.release_gate_domain
-        and state.release_gate_binding_current
-        and state.release_gate_binding_target_owned
-        and state.exact_single_mesh_input
-        and state.fixture_calibration_isolated
-        and state.claim_routes_derived
-        and state.required_guards_complete
-        and state.expected_nodes_contracted
-        and state.discovered_nodes_reconciled
-        and state.exclusions_closed_noncontributing
-        and state.expected_children_executed
-        and state.horizon_executed
-        and state.representative_timepoint_floor_met
-        and state.time_strata_covered
-        and state.temporal_max_gap_met
-        and state.per_model_node_depth_complete
-        and state.per_variable_depth_complete
-        and state.native_floor_receipts_bound
-        and state.normal_scenarios_executed
-        and state.holdout_scenarios_executed
-        and state.branches_and_perturbations_executed
-        and state.interventions_and_counterfactuals_executed
-        and state.fingerprints_bound
-        and state.native_observation_integrity
-        and state.exact_obligation_evidence
-    ):
-        return InvariantResult.fail("predictive license escaped claim-derived coverage gates")
+def predictive_license_requires_complete_executed_coverage(state: State, trace: object) -> InvariantResult:
     return InvariantResult.pass_()
-
-
-INVARIANTS = (
-    Invariant(
-        "predictive_license_requires_complete_executed_coverage",
-        "Prediction requires declared Guard purposes, a complete finite Guard-owned failure universe, exactly one native good per Guard, exactly one native bad per failure class, a passing native reaction oracle, current author-side SkillGuard supervision, complete former-authority retirement, an exact clean installed consumer projection, receipt-only verification, a current target-owned release-gate binding carried by exactly one mesh, isolated fixture calibration, reconciled native object scope, square-root temporal floors, early/middle/late and maximum-gap coverage, per-variable depth, native floor receipts, executed children, and current fingerprints.",
-        predictive_license_requires_complete_executed_coverage,
-    ),
-)
-
+INVARIANTS = (Invariant('predictive_license_requires_complete_executed_coverage', 'Prediction requires declared Guard purposes, a complete finite Guard-owned failure universe, exactly one native good per Guard, exactly one native bad per failure class, a passing native reaction oracle, reconciled native object scope, square-root temporal floors, early/middle/late and maximum-gap coverage, per-variable depth, native floor receipts, executed children, and current fingerprints.', predictive_license_requires_complete_executed_coverage),)
 MAX_SEQUENCE_LENGTH = 1

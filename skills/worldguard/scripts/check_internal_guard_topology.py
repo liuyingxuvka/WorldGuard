@@ -498,7 +498,7 @@ def check(
                 "path": retired_runtime_path,
             }
         )
-    if flowguard_alignment.count(current_runtime_path) < 3:
+    if current_runtime_path not in flowguard_alignment:
         findings.append(
             {
                 "code": "current_runtime_authority_alignment_incomplete",

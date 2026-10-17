@@ -24,6 +24,7 @@ def run_model() -> None:
         candidate[broken] = False
         if all(candidate.values()):
             raise AssertionError(f"broken topology was accepted: {broken}")
+    return {"ok": True, "model": 'hierarchical_model_mesh'}
 
 
 if __name__ == "__main__":

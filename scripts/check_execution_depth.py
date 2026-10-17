@@ -17,13 +17,13 @@ from worldguard.execution_depth import build_native_depth_evidence
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("fixture")
+    parser.add_argument("input")
     parser.add_argument("--expected-status")
     parser.add_argument("--expected-blocker-code")
     args = parser.parse_args()
     try:
         evidence = build_native_depth_evidence(
-            args.fixture,
+            args.input,
             expected_status=args.expected_status,
             expected_blocker_code=args.expected_blocker_code,
         )

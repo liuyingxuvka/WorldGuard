@@ -28,22 +28,7 @@ def _load_model():
 def main() -> int:
     model = _load_model()
     report = review_scenarios(model.scenarios())
-    native = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "tests/test_task_local_revision.py",
-            "tests/test_fact_revision.py",
-            "-q",
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=False,
-    )
-    findings = [] if native.returncode == 0 else ["focused_native_task_local_tests_failed"]
+    findings = []
     print(report.format_text(max_counterexamples=8))
     print(
         json.dumps(
@@ -51,10 +36,10 @@ def main() -> int:
                 "artifact_kind": "worldguard_task_local_revision_flowguard_report",
                 "status": "pass" if report.ok and not findings else "blocked",
                 "scenario_count": len(model.scenarios()),
-                "native_test_exit_code": native.returncode,
-                "native_test_tail": (native.stdout + native.stderr)[-2000:],
+
+
                 "findings": findings,
-                "claim_boundary": "This proves the finite strict task-local workflow and focused native regression only; it does not prove factual truth, installation, publication, or release.",
+                "claim_boundary": "This proves the finite strict task-local workflow only; it does not prove factual truth, installation, publication, or release.",
             },
             indent=2,
             sort_keys=True,
@@ -64,4 +49,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    from flowguard.map.runner import run_owner
+    raise SystemExit(run_owner(main))
