@@ -150,11 +150,13 @@ def _build(root: Path) -> tuple[dict[str, Any], Any | None]:
     except (OSError, UnicodeError) as exc:
         return _blocked(root, "native_directory_unavailable", "The native directory could not be read.", exc=exc), None
     try:
-        from flowguard.map.mapfile import load_map
+        from flowguard.map.mapfile import load_map, ignore_patterns
         from flowguard.map.inventory import build_inventory
         from flowguard.map.check import run_check
         data = load_map(root)
-        findings = run_check(root, data, build_inventory(root, data.get("ignore", [])), strict=True)
+        inventory = build_inventory(root, ignore_patterns(data))
+        inventory.set_explicit_sources([p for c in data["components"] for p in c["files"]])
+        findings = run_check(root, data, inventory, strict=True)
     except Exception as exc:
         return _blocked(root, "current_map_unavailable", "The current FlowGuard map could not be audited.", exc=exc), None
     errors = [{"code": f.code, "message": f.message} for f in findings if f.level == "error"]

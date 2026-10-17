@@ -1,7 +1,7 @@
 {
   "case_id": "worldguard-shallow-single-event-equation",
   "mesh": {
-    "mesh_id": "skillguard-world-shallow",
+    "mesh_id": "native-world-shallow",
     "nodes": [
       {
         "authority": {
@@ -30,7 +30,7 @@
             ],
             "text": "forecast state under declared scenarios"
           },
-          "contract_id": "skillguard-world-shallow-contract",
+          "contract_id": "native-world-shallow-contract",
           "inputs": {
             "causal_model": {
               "counterfactuals": [
@@ -92,7 +92,7 @@
               }
             ]
           },
-          "run_id": "skillguard-world-depth",
+          "run_id": "native-world-depth",
           "world_model": {
             "model_id": "world-model",
             "model_version": "v1"
@@ -101,7 +101,7 @@
         "model_id": "world"
       }
     ],
-    "run_id": "skillguard-world-depth",
+    "run_id": "native-world-depth",
     "semantic_coverage": {
       "axis_dispositions": [
         {

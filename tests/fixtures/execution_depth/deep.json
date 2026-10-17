@@ -1,7 +1,7 @@
 {
   "case_id": "worldguard-deep-predictive",
   "mesh": {
-    "mesh_id": "skillguard-world-deep",
+    "mesh_id": "native-world-deep",
     "nodes": [
       {
         "authority": {
@@ -30,7 +30,7 @@
             ],
             "text": "forecast state under declared scenarios"
           },
-          "contract_id": "skillguard-world-deep-contract",
+          "contract_id": "native-world-deep-contract",
           "inputs": {
             "causal_model": {
               "counterfactuals": [
@@ -272,7 +272,7 @@
               }
             ]
           },
-          "run_id": "skillguard-world-depth",
+          "run_id": "native-world-depth",
           "world_model": {
             "model_id": "world-model",
             "model_version": "v1"
@@ -281,7 +281,7 @@
         "model_id": "world"
       }
     ],
-    "run_id": "skillguard-world-depth",
+    "run_id": "native-world-depth",
     "semantic_coverage": {
       "axis_dispositions": [
         {

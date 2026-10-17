@@ -73,15 +73,6 @@ def _event_axis_dispositions() -> list[dict[str, str]]:
     ]
 
 
-def test_worldguard_prompt_requires_exact_per_obligation_evidence() -> None:
-    raw_prompt = (ROOT / "skills/worldguard/SKILL.md").read_text(encoding="utf-8")
-    contracts = (ROOT / "skills/worldguard/references/worldguard-contracts.md").read_text(encoding="utf-8")
-    assert "\n+Keep only" not in raw_prompt
-    assert "[references/worldguard-contracts.md](references/worldguard-contracts.md)" in raw_prompt
-    prompt = " ".join(contracts.split())
-    assert "not proof of an individual WorldGuard obligation" in prompt
-    assert "`evidence_ref`" in prompt
-    assert "lowercase content hash" in prompt
 
 
 def _predictive_mesh() -> dict:

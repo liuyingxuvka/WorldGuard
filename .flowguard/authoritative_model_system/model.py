@@ -67,12 +67,14 @@ def _load_object(path: Path) -> Mapping[str, Any]:
 
 
 def check_blueprint_inputs(root: str | Path) -> dict[str, Any]:
-    from flowguard.map.mapfile import load_map
+    from flowguard.map.mapfile import load_map, ignore_patterns
     from flowguard.map.inventory import build_inventory
     from flowguard.map.check import run_check
     root_path = Path(root).resolve()
     data = load_map(root_path)
-    findings = run_check(root_path, data, build_inventory(root_path, data.get("ignore", [])))
+    inventory = build_inventory(root_path, ignore_patterns(data))
+    inventory.set_explicit_sources([p for c in data["components"] for p in c["files"]])
+    findings = run_check(root_path, data, inventory, strict=True)
     errors = [item.message for item in findings if item.level == "error"]
     return {"status": "ready" if not errors else "blocked", "ready": not errors,
             "model_count": sum(len(c.get("models", [])) for c in data["components"]),

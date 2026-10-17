@@ -36,7 +36,7 @@ Each `GuardResult` retains `result_id`, `contract_id`, `guard`, exact `status`, 
 
 A supplied provider envelope must exactly match the active executor/capability, target/revision, contract, boundary and current semantic content/receipt fingerprints. Missing or mismatched identity is `STALE` with semantic `NOT_RUN`; no field is invented from a fallback. Without an external envelope, the current native execution supplies its own identity. A final `PASS` requires all applicable axes and zero gaps. Structural pass alone is insufficient.
 
-Ledger entries retain run/claim/Guard, channel, status impact, payload, source refs, step and `read_only_for_downstream`. Each obligation retains its own typed evidence reference and the exact lowercase current-owner content hash; an aggregate pass cannot replace it.
+Ledger entries retain run/claim/Guard, channel, status impact, payload, source refs, step and `read_only_for_downstream`. Each obligation retains its own typed `evidence_ref` and the exact lowercase current-owner content hash; an aggregate pass cannot replace it.
 
 ## Conditional work
 

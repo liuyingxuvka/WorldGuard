@@ -111,16 +111,17 @@ def build_flowguard_projection(
 ) -> CrossArtifactProjectionResult:
     """Build one current projection for the supplied native report.
 
-    A non-qualified native report produces a typed ``gap`` projection with the
-    full source denominator unresolved.  It never shrinks the denominator or
-    silently chooses a partial success path.
+    The current FlowGuard map API provides no independent target-blueprint
+    projection executor. Preserve a typed gap with the complete denominator;
+    native qualification cannot manufacture a separate provider proof.
     """
 
     if report.blueprint_fingerprint != blueprint.blueprint_fingerprint:
         raise ValueError("FlowGuard projection report does not target the blueprint fingerprint")
     required = _cross_artifact_required_source_ids(blueprint)
-    projected = required if report.native_domain_qualified else ()
-    unresolved = () if report.native_domain_qualified else required
+    # This is a local identity diagnostic, not an independent provider execution.
+    projected = ()
+    unresolved = required
     normalized_payload = {
         "schema_version": "worldguard.flowguard.blueprint_projection_payload.v2",
         "blueprint": blueprint.fingerprint_payload(),
@@ -132,7 +133,7 @@ def build_flowguard_projection(
             for source_id in required
         ],
     }
-    status = "proven" if report.native_domain_qualified else "gap"
+    status = "gap"
     projection_id = f"projection:{blueprint.blueprint_id}:flowguard:v2"
     producer_identity_fingerprint = _producer_identity_fingerprint()
     terminal_receipt_payload = {

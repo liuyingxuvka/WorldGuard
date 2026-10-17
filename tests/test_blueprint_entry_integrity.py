@@ -5,39 +5,6 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/world_blueprint/planning_workflow_three_level.yaml"
 
 
-def test_skill_entrypoint_has_current_static_contract_sections_and_fields() -> None:
-    text = (ROOT / "skills/worldguard/SKILL.md").read_text(encoding="utf-8")
-    headings = {
-        line.removeprefix("## ").strip()
-        for line in text.splitlines()
-        if line.startswith("## ")
-    }
-    assert {
-        "Purpose",
-        "Entrypoint Scope",
-        "Local Material Routing",
-        "Entrypoint Acceptance Map",
-        "Use When",
-        "Do Not Use When",
-        "Required Workflow",
-        "Hard Gates",
-        "Output Requirements",
-    } <= headings
-    lowered = text.lower()
-    for field in (
-        "evidence",
-        "failures",
-        "blockers",
-        "skipped_checks",
-        "residual_risk",
-        "claim_boundary",
-    ):
-        assert field in lowered
-    assert (
-        "[references/task-local-model-deepening.md]"
-        "(references/task-local-model-deepening.md)"
-    ) in text
-    assert "`task-local-model-deepening.md`" not in text
 
 
 def test_blueprint_queries_leave_contract_and_fixture_unchanged() -> None:

@@ -5686,15 +5686,25 @@ def _check_blueprint_behavior_cases(purpose: BlueprintTaskPurpose, guard: str, c
         })
         if case.coverage_context:
             contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
-        structural = GUARD_RUNNERS[guard](contract)
-        semantic_status, semantic_findings, _, outputs = EXECUTOR_REGISTRY[guard].execute(contract)
-        status = _blueprint_owner_terminal_status(structural.status, semantic_status)
         mismatches = []
+        outputs = {}
         if case.case_kind == "known_bad":
-            codes = [str(row.get("code", "")) for row in [*structural.errors, *semantic_findings]]
-            if status != case.expected_status or case.expected_code not in codes:
+            # A protected failure belongs to one exact native layer. An unrelated
+            # layer's missing-input gap must not override that layer's oracle.
+            if owned.layer == "guard":
+                structural = GUARD_RUNNERS[guard](contract)
+                status = structural.status.value
+                codes = [str(row.get("code", "")) for row in structural.errors]
+            else:
+                semantic_status, semantic_findings, _, outputs = EXECUTOR_REGISTRY[guard].execute(contract)
+                status = semantic_status.value
+                codes = [str(row.get("code", "")) for row in semantic_findings]
+            if status != case.expected_status or codes != [case.expected_code]:
                 mismatches.append({"path": "failure_oracle", "expected": case.expected_code, "observed": codes})
         else:
+            structural = GUARD_RUNNERS[guard](contract)
+            semantic_status, semantic_findings, _, outputs = EXECUTOR_REGISTRY[guard].execute(contract)
+            status = _blueprint_owner_terminal_status(structural.status, semantic_status)
             if status != "PASS":
                 mismatches.append({"path": "terminal", "expected": "PASS", "observed": status})
             mismatches.extend(_behavior_expected_subset(case.expected_output, outputs, path="output"))

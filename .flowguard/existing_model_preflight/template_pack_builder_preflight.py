@@ -7,14 +7,15 @@ from pathlib import Path
 
 from flowguard.map.check import run_check
 from flowguard.map.inventory import build_inventory
-from flowguard.map.mapfile import load_map
+from flowguard.map.mapfile import load_map, ignore_patterns
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def build_preflight() -> dict:
     data = load_map(ROOT)
-    inventory = build_inventory(ROOT, data.get("ignore", []))
+    inventory = build_inventory(ROOT, ignore_patterns(data))
+    inventory.set_explicit_sources([p for c in data["components"] for p in c["files"]])
     result = run_check(ROOT, data, inventory, strict=True)
     components = data.get("components", [])
     owner = next(item for item in components if item["id"] == "worldguard")

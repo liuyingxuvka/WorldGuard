@@ -45,8 +45,8 @@ Boundary: new runtime dataclass/dict fields, CLI payload fields, reference promp
 | `semantic_coverage.*` | `worldguard.mesh.SemanticCoverageContract` | coverage audit, native executors, receipt | mesh loader | new | expected node/child/scenario/horizon/depth denominator |
 | `semantic_status` | `worldguard.semantic` | report, aggregate projection | semantic executors | preserved | local supported-subset result |
 | `rollout_status` | `worldguard.mesh` | report, aggregate projection | coverage/predictive assessment | changed | fail-closed expected-coverage projection |
-| `depth_receipt.coverage_fingerprint` | `worldguard.mesh` | SkillGuard, closure report | native receipt builder | new | current coverage-universe freshness |
-| `depth_receipt.predictive_claim_licensed` | `worldguard.mesh` | SkillGuard, closure report | predictive assessment | new | predictive claim gate |
+| `depth_receipt.coverage_fingerprint` | `worldguard.mesh` | task-local revision, closure report | native receipt builder | new | current coverage-universe freshness |
+| `depth_receipt.predictive_claim_licensed` | `worldguard.mesh` | task-local revision, closure report | predictive assessment | new | predictive claim gate |
 | `depth_receipt.predictive_gaps` | `worldguard.mesh` | report, closure | predictive assessment | new | explicit missing executed depth |
 | `findings.*` | `worldguard.mesh` | CLI, tests | mesh runner | new | non-pass evidence |
 | `node_reports.*` | `worldguard.mesh` | CLI, tests | mesh runner | new | child report preservation |

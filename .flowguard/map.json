@@ -6,6 +6,30 @@
   "test_command": "",
   "components": [
     {
+      "id": "release",
+      "layer": "",
+      "summary": "Publish one validated source patch identity",
+      "responsibilities": [
+        "Check source/version/changelog identity and frozen main",
+        "Create stable GitHub tag and Release at that same commit"
+      ],
+      "files": [
+        ".github/workflows/publish-release.yml"
+      ],
+      "entrypoints": [],
+      "state": [
+        "Remote tag and Release identity"
+      ],
+      "side_effects": [
+        "Explicit release commit or manual workflow publishes with GitHub token"
+      ],
+      "depends_on": [],
+      "tests": [],
+      "models": [],
+      "status": "confirmed",
+      "fingerprint": "sha256:a4e7b622a2a57e15e9bacfa0ee2eef4f90b152d9d8ea12ea35d5bc03c8635b9f"
+    },
+    {
       "id": "scripts",
       "layer": "",
       "summary": "Author utilities and read-only runtime identity",
@@ -34,7 +58,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:f103e2b743c2e287a54b1b59dd5499fb66f135de550f596bc472224f77b74c93"
+      "fingerprint": "sha256:899e110471f50b592ace2ba0bba36ab931068556afa2b33d8fd9785fa791fccd"
     },
     {
       "id": "skills.worldguard.runtime.worldguard",
@@ -44,7 +68,9 @@
         "Project canonical worldguard source byte-for-byte"
       ],
       "files": [
-        "skills/worldguard/runtime/worldguard/*.py"
+        "skills/worldguard/runtime/worldguard/*.py",
+        "skills/worldguard/runtime/worldguard/guards/*.py",
+        "skills/worldguard/runtime/worldguard/examples/*.py"
       ],
       "entrypoints": [],
       "state": [],
@@ -52,9 +78,7 @@
         "Same explicit native effects as canonical source"
       ],
       "depends_on": [
-        "worldguard",
-        "worldguard.examples",
-        "worldguard.guards"
+        "worldguard"
       ],
       "tests": [
         "tests/guards/test_status_matrix.py",
@@ -65,6 +89,7 @@
         "tests/test_execution_depth.py",
         "tests/test_fact_revision.py",
         "tests/test_flowguard_projection.py",
+        "tests/test_fuel_cell_demo.py",
         "tests/test_guard_model_contract.py",
         "tests/test_kernel_handoff.py",
         "tests/test_ledgers.py",
@@ -76,57 +101,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:06a2c25d5da675fbcf26794ac056b2286d6a484c15a6e4855488dcad2983b95b"
-    },
-    {
-      "id": "skills.worldguard.runtime.worldguard.examples",
-      "layer": "",
-      "summary": "Generated portable example",
-      "responsibilities": [
-        "Project canonical packaged demonstration"
-      ],
-      "files": [
-        "skills/worldguard/runtime/worldguard/examples/*.py"
-      ],
-      "entrypoints": [],
-      "state": [],
-      "side_effects": [
-        "Read the generated example YAML"
-      ],
-      "depends_on": [
-        "worldguard",
-        "worldguard.examples"
-      ],
-      "tests": [
-        "tests/test_fuel_cell_demo.py"
-      ],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:8d6c976ead804b623a7091663abdc5b726d706700b0e74ebb4186235117e3644"
-    },
-    {
-      "id": "skills.worldguard.runtime.worldguard.guards",
-      "layer": "",
-      "summary": "Generated portable Guard runners",
-      "responsibilities": [
-        "Project canonical seven native Guard owners"
-      ],
-      "files": [
-        "skills/worldguard/runtime/worldguard/guards/*.py"
-      ],
-      "entrypoints": [],
-      "state": [],
-      "side_effects": [
-        "Same bounded report effects as canonical runners"
-      ],
-      "depends_on": [
-        "worldguard",
-        "worldguard.guards"
-      ],
-      "tests": [],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:ecc1e38b84881abe915189d62115ec14b6d298ffeb337e7ce47b77bcef6ed79e"
+      "fingerprint": "sha256:f4157f0b3b85baff5cd868d710fd89983eb37fe0317d3bfcc897c1472520a5bd"
     },
     {
       "id": "skills.worldguard.scripts",
@@ -145,34 +120,49 @@
         "Run the selected CLI and emit routing reports"
       ],
       "depends_on": [
-        "worldguard",
-        "worldguard.guards"
+        "scripts",
+        "worldguard"
       ],
       "tests": [
         "tests/test_run_worldguard_check_helper.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:b537bd3b0e5ca0404b71cd10ca77c076a3e071d7da2328d125a1992d4c354f95"
+      "fingerprint": "sha256:082bb261c07ed4840fe22c23b18ae1dae98624ac27f9262102ca43b392a8d841"
     },
     {
       "id": "worldguard",
       "layer": "",
       "summary": "Native world models, qualification, blueprint, revision and templates",
       "responsibilities": [
-        "Parse structured claims and current model identities",
-        "Execute and qualify native bounded semantics",
-        "Bind hierarchical blueprints to real tests and evidence",
-        "Keep empirical task revision separate from fact activation"
+        "Seven named structural Guards and their native semantic owners",
+        "Unit qualification and exact provider/target/currentness boundaries",
+        "Mesh ownership, freshness, handoffs and complete per-node/per-variable predictive depth",
+        "Blueprint hierarchy, actual behavior cases, signed independent census, external tests/evidence, affected impact and reverse trace",
+        "Task-local prediction/observation revision and subordinate four-valued fact transactions",
+        "Native template registry, exact zero/one/many selection, ownership, slots and instance identity"
       ],
       "files": [
-        "worldguard/*.py"
+        "worldguard/*.py",
+        "worldguard/guards/*.py",
+        "worldguard/examples/*.py"
       ],
       "entrypoints": [
         "worldguard/kernel.py:run_worldguard",
         "worldguard/mesh.py:run_model_mesh",
         "worldguard/blueprint.py:check_world_blueprint",
-        "worldguard/cli.py:main"
+        "worldguard/cli.py:main",
+        "worldguard/semantic.py:execute_semantic",
+        "worldguard/task_local_revision.py:evaluate_candidate_world_revision",
+        "worldguard/fact_revision.py:activate_fact_revision",
+        "worldguard/template_packs.py:build_template_instance",
+        "worldguard/guards/event_guard.py:run",
+        "worldguard/guards/agent_guard.py:run",
+        "worldguard/guards/space_guard.py:run",
+        "worldguard/guards/resource_guard.py:run",
+        "worldguard/guards/causal_guard.py:run",
+        "worldguard/guards/conflict_guard.py:run",
+        "worldguard/guards/norm_guard.py:run"
       ],
       "state": [
         "Current model identities and immutable execution evidence"
@@ -180,10 +170,7 @@
       "side_effects": [
         "Read declared model/input files; emit in-memory reports"
       ],
-      "depends_on": [
-        "worldguard.examples",
-        "worldguard.guards"
-      ],
+      "depends_on": [],
       "tests": [
         "tests/guards/test_status_matrix.py",
         "tests/test_behavior_commitment_ledger.py",
@@ -197,6 +184,7 @@
         "tests/test_execution_depth.py",
         "tests/test_fact_revision.py",
         "tests/test_flowguard_projection.py",
+        "tests/test_fuel_cell_demo.py",
         "tests/test_guard_model_contract.py",
         "tests/test_guard_semantic_dna_closure.py",
         "tests/test_internal_guard_topology.py",
@@ -229,59 +217,7 @@
         ".flowguard/test_evidence_mesh/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:b4db1d27ddaa7461bb8f16671609b6040ea2dc735e001c703abe539140bef202"
-    },
-    {
-      "id": "worldguard.examples",
-      "layer": "",
-      "summary": "Bounded fuel-cell demonstration",
-      "responsibilities": [
-        "Demonstrate the native model boundary without factual claims"
-      ],
-      "files": [
-        "worldguard/examples/*.py"
-      ],
-      "entrypoints": [],
-      "state": [],
-      "side_effects": [
-        "Read packaged example YAML"
-      ],
-      "depends_on": [
-        "worldguard"
-      ],
-      "tests": [
-        "tests/test_fuel_cell_demo.py"
-      ],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:a91045ef7eb5c24a201c3c61b0099581c16ce3231d5e7081eb0580b6da35a9ab"
-    },
-    {
-      "id": "worldguard.guards",
-      "layer": "",
-      "summary": "Seven bounded native structural Guard owners",
-      "responsibilities": [
-        "Check event, agent, space, resource, causal, conflict and norm inputs"
-      ],
-      "files": [
-        "worldguard/guards/*.py"
-      ],
-      "entrypoints": [],
-      "state": [],
-      "side_effects": [
-        "Return typed reports and read-only ledgers"
-      ],
-      "depends_on": [
-        "worldguard"
-      ],
-      "tests": [
-        "tests/guards/test_status_matrix.py",
-        "tests/test_guard_model_contract.py",
-        "tests/test_guard_semantic_dna_closure.py"
-      ],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:daf71c087ce3f119b9920c408b84c8372de399dbf087a1363ce7aa0346417651"
+      "fingerprint": "sha256:7952e34606d725687c03940e09a54b2aba97070d50432582803c446022c2fcc2"
     }
   ],
   "flows": [],

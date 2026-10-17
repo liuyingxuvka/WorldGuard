@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.12 - 2026-10-17
+
+- Remove retired SkillGuard supervision, contracts and transport; use plain native checks, current map bindings and ordinary pytest owners.
+- Run existing world models directly without per-task checker-purpose proofs. Preserve all seven Guards, native predictive depth, task/candidate binding, blueprint behavior cases, independent tests and signed census trust.
+- Keep task/fact/blueprint/template details conditional; retire unused neutral template interchange and repeated author-wrapper execution.
+- Load public API owners and CLI features on demand. Preserve portable launcher, native statuses and public object identities.
+- Report the optional FlowGuard target-blueprint projection as a complete-denominator gap until an independent provider exists; native checks remain available.
+- Synchronize the portable runtime from canonical source and publish this patch from the same main/tag/Release commit.
+
 ## v0.7.11 - 2026-08-12
 
 - Keep the native WorldGuard directory, models, code/test bindings, and

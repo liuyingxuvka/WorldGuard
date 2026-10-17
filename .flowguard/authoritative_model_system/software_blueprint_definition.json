@@ -369,7 +369,6 @@
     ".flowguard/claim_derived_coverage_process.py": "authoritative_model_system",
     ".flowguard/existing_model_preflight/execution_depth_preflight.py": "authoritative_model_system",
     ".flowguard/existing_model_preflight/template_pack_builder_preflight.py": "authoritative_model_system",
-    ".flowguard/guard_candidate_purpose_order.py": "authoritative_model_system",
     ".flowguard/guard_model_contract_exhaustion.py": "authoritative_model_system",
     ".flowguard/run_claim_derived_coverage_checks.py": "authoritative_model_system",
     ".flowguard/run_semantic_rollout_checks.py": "current_input_authority",
