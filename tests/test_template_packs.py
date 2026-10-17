@@ -3,10 +3,10 @@ from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 import pytest
-from worldguard import GuardContract, ModelMeshContract, QualificationContext, SemanticStatus, run_worldguard
+from worldguard import (GuardContract, ModelMeshContract, QualificationContext, SemanticStatus, run_worldguard)
 from worldguard.status import GuardStatus
 from worldguard.guard_model_contract import PROTECTED_FAILURE_CLASSES
-from worldguard.template_packs import GUARD_CONTRACT_KIND, MODEL_MESH_CONTRACT_KIND, TARGET_APPLICABILITY_RESULT_FIELDS, TARGET_TEMPLATE_INTERCHANGE_FIELDS, TARGET_TEMPLATE_INTERCHANGE_SCHEMA_VERSION, TARGET_TEMPLATE_CATALOG_FIELDS, TARGET_TEMPLATE_MANIFEST_FIELDS, VALIDATOR_GUARD_SHAPE, WORLDGUARD_TEMPLATE_ROUTE_ID, TemplateFragment, TemplatePackError, TemplatePackManifest, TemplatePackRegistry, build_template_instance, build_target_template_interchange, builtin_template_registry, compose_template_packs, template_slot, validate_target_template_interchange
+from worldguard.template_packs import (GUARD_CONTRACT_KIND, MODEL_MESH_CONTRACT_KIND, VALIDATOR_GUARD_SHAPE, TemplateFragment, TemplatePackError, TemplatePackManifest, TemplatePackRegistry, build_template_instance, builtin_template_registry, compose_template_packs, template_slot)
 ROOT = Path(__file__).resolve().parents[1]
 
 def _event_bindings() -> dict[str, object]:
@@ -158,64 +158,3 @@ def test_source_and_bundled_template_pack_runtime_are_exactly_equal() -> None:
     source = ROOT / 'worldguard' / 'template_packs.py'
     bundled = ROOT / 'skills' / 'worldguard' / 'runtime' / 'worldguard' / 'template_packs.py'
     assert bundled.read_bytes() == source.read_bytes()
-
-def test_target_interchange_good_shape_is_exact_unsealed_and_content_bound() -> None:
-    registry = builtin_template_registry()
-    projection = build_target_template_interchange(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], native_registry_fingerprint=registry.registry_fingerprint)
-    assert projection['schema_version'] == TARGET_TEMPLATE_INTERCHANGE_SCHEMA_VERSION
-    assert set(projection) == set(TARGET_TEMPLATE_INTERCHANGE_FIELDS)
-    assert set(projection['catalog']) == set(TARGET_TEMPLATE_CATALOG_FIELDS)
-    assert 'catalog_digest' not in projection['catalog']
-    assert projection['route_id'] == WORLDGUARD_TEMPLATE_ROUTE_ID
-    assert projection['request_fingerprint'].startswith('sha256:')
-    assert len(projection['request_fingerprint']) == 71
-    native_by_id = {item.pack_id: item for item in registry.manifests if item.contract_kind == GUARD_CONTRACT_KIND}
-    for template in projection['catalog']['templates']:
-        assert set(template) == set(TARGET_TEMPLATE_MANIFEST_FIELDS)
-        assert 'manifest_digest' not in template
-        assert template['parameter_schema']['type'] == 'object'
-        assert template['parameter_schema']['additionalProperties'] is False
-        assert template['artifacts'][0]['content_template_hash'] == f"sha256:{native_by_id[template['template_id']].manifest_fingerprint}"
-        assert template['builder']['content_hash'].startswith('sha256:')
-        assert all((item['content_hash'].startswith('sha256:') for item in template['validators']))
-    assert all((set(item) == set(TARGET_APPLICABILITY_RESULT_FIELDS) for item in projection['applicability_results']))
-    eligibility = {item['template_id']: item['eligible'] for item in projection['applicability_results']}
-    assert eligibility['worldguard.guard-contract.event'] is True
-    assert eligibility['worldguard.guard-contract.base'] is False
-
-def test_target_interchange_unknown_root_field_is_rejected() -> None:
-    registry = builtin_template_registry()
-    projection = build_target_template_interchange(registry, contract_kind=GUARD_CONTRACT_KIND, native_registry_fingerprint=registry.registry_fingerprint)
-    unknown = deepcopy(projection)
-    unknown['family_guess'] = 'forbidden'
-    with pytest.raises(TemplatePackError) as caught:
-        validate_target_template_interchange(unknown)
-    assert caught.value.code == 'TEMPLATE_PROJECTION_ROOT_UNKNOWN_FIELD'
-    assert caught.value.details['unknown_field_ids'] == ['family_guess']
-
-@pytest.mark.parametrize(('contract_kind', 'fact_ids'), [(GUARD_CONTRACT_KIND, ['guard:EventGuard', 'guard:CausalGuard']), (MODEL_MESH_CONTRACT_KIND, ['coverage:bounded'])])
-def test_target_interchange_candidate_inventory_equals_native_registry_once(contract_kind: str, fact_ids: list[str]) -> None:
-    registry = builtin_template_registry()
-    native_selection = registry.select(contract_kind, fact_ids)
-    projection = build_target_template_interchange(registry, contract_kind=contract_kind, fact_ids=fact_ids, native_registry_fingerprint=registry.registry_fingerprint)
-    native_ids = sorted((item.pack_id for item in registry.manifests if item.contract_kind == contract_kind))
-    catalog_ids = [item['template_id'] for item in projection['catalog']['templates']]
-    result_ids = [item['template_id'] for item in projection['applicability_results']]
-    assert catalog_ids == native_ids
-    assert result_ids == native_ids
-    assert len(result_ids) == len(set(result_ids))
-    eligible_candidates = {item['template_id'] for item in projection['applicability_results'] if item['eligible'] and item['template_id'] != projection['catalog']['base_template_id']}
-    assert eligible_candidates == set(native_selection.candidate_pack_ids)
-
-def test_target_interchange_wrong_route_is_rejected_by_worldguard() -> None:
-    registry = builtin_template_registry()
-    with pytest.raises(TemplatePackError) as caught:
-        build_target_template_interchange(registry, contract_kind=GUARD_CONTRACT_KIND, native_registry_fingerprint=registry.registry_fingerprint, route_id='worldguard.not-the-template-route')
-    assert caught.value.code == 'TEMPLATE_PROJECTION_ROUTE_INVALID'
-
-def test_target_interchange_stale_native_identity_is_rejected() -> None:
-    registry = builtin_template_registry()
-    with pytest.raises(TemplatePackError) as caught:
-        build_target_template_interchange(registry, contract_kind=GUARD_CONTRACT_KIND, native_registry_fingerprint='0' * 64)
-    assert caught.value.code == 'TEMPLATE_PROJECTION_NATIVE_IDENTITY_STALE'
-    assert caught.value.details['current_registry_fingerprint'] == registry.registry_fingerprint

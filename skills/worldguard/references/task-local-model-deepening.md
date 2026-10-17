@@ -39,3 +39,81 @@ python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" tas
 ```
 
 This loop proves only bounded task-local model closure under current declared evidence. It does not prove universal factual truth, future accuracy outside the boundary, installation, or release.
+
+## Canonical contract details
+
+## Task-Local Prediction And Revision
+
+`PredictionSnapshot` is the empirical task-local layer. It does not replace a
+`GuardContract`, `ModelMeshContract`, semantic execution, or native predictive
+depth. It freezes:
+
+- one exact base world-model id, version, path, and SHA-256;
+- one prediction sequence;
+- the declared initial state and intervention;
+- finite expected numeric values with absolute tolerances;
+- expected relationships identified by stable ids and exact
+  left/relation/right content; and
+- explicit weakening conditions.
+
+The current 0.7 shape always freezes a non-empty task id and purpose, an
+independently owned coverage-universe id/source/inventory/fingerprint,
+non-empty assumptions and unknowns, a finite iteration budget, and an exact
+predecessor. Iteration zero uses the explicit `root` predecessor; later
+iterations bind a content-addressed predecessor, exact prior gap ids, and the
+latest fingerprint of that exact gap set. Missing
+current fields, former shapes, defaulted empty fields, aliases, and fallback
+readers are rejected.
+
+A current comparison returns content-addressed observation evidence and input
+gaps but never closes the task by itself. It does not accept a gap-transition
+map or progress boolean. Exact external-input rows must name their owner,
+reason, blocked gap ids, and affected claims.
+
+Every expected value or relationship declares one mismatch category:
+`initial_state`, `transition`, `causal_relation`, `resource`, `agent`,
+`observation_mapping`, or `other`. The evaluator retains that declared owner;
+it does not infer an owner from a target name.
+
+`ObservedWorldSnapshot` must name the prediction, use a strictly later sequence,
+retain a non-empty source reference, and carry actual finite values, typed
+relationships, or an exact external-input boundary. Its evidence fingerprint
+is recomputed from that complete payload. Missing declared expectations are
+mismatches; they cannot be silently treated as unobserved success.
+
+`CandidateWorldModelRevision` binds separate current base and candidate
+artifacts. A candidate path or content hash equal to v1 is invalid because it
+cannot be rolled back independently. Acceptance requires an exact declared
+revalidation inventory containing both:
+
+- `original_scenario`; and
+- `real_holdout_observation`.
+
+Candidate evaluation also consumes one
+`worldguard_task_local_native_depth_receipt`. WorldGuard creates this binding
+from the exact native `worldguard.native_depth.v2` receipt plus the task,
+candidate, and independent coverage fingerprint. State, transition, branch,
+perturbation, intervention, counterfactual, and holdout gaps are derived from
+that receipt. Caller-authored remaining-gap lists have no authority, and a
+native receipt with `predictive_claim_licensed: false` remains open even if its
+raw gap list is empty.
+
+Each revalidation binds the exact task/candidate, a typed content-addressed
+semantic receipt, and a sealed `worldguard_observed_world_comparison_receipt`.
+There must be exactly one original and one real holdout. Their observation id,
+source, evidence fingerprint, content fingerprint, and semantic source
+fingerprint must differ, and
+the holdout fingerprint cannot appear in candidate-construction evidence.
+Semantic `PASS` text without the typed source receipt is invalid.
+
+The evaluator computes input, resolved, persisted, introduced, and current gap
+ids. A new gap continues, an unchanged or repeated gap fingerprint stalls, and
+the finite iteration limit blocks. `model_closed_for_task` is emitted only by
+the sole task-local owner after native predictive license, zero current gaps,
+and both independent revalidations pass.
+
+The evaluator is read-only. A passing candidate is `accepted`; a failed
+unapplied candidate is `rejected`; a failed applied candidate is `rolled_back`
+only when its rollback identity exactly equals the still-current v1. These
+dispositions modify no WorldGuard code, core threshold, installed skill, or
+reusable default.

@@ -22,20 +22,10 @@ class BuildRequest:
     field_conflict: bool = False
     native_validators_bound: bool = True
     native_validation_passes: bool = True
-    projection_root_exact: bool = True
-    projection_route_current: bool = True
-    projection_native_identity_current: bool = True
-    projection_candidate_inventory_exact: bool = True
 
 
 @dataclass(frozen=True)
 class SelectionReady:
-    request: BuildRequest
-    outcome: str
-
-
-@dataclass(frozen=True)
-class ProjectionReady:
     request: BuildRequest
     outcome: str
 
@@ -62,7 +52,6 @@ class State:
     selection_outcome: str = "not_run"
     base_selected: bool = False
     candidate_selected: bool = False
-    projection_emitted: bool = False
     composed: bool = False
     native_validated: bool = False
     semantic_authority: str = "worldguard"
@@ -86,7 +75,6 @@ class SelectTemplatePack:
             selection_outcome="not_run",
             base_selected=False,
             candidate_selected=False,
-            projection_emitted=False,
             composed=False,
             native_validated=False,
         )
@@ -124,67 +112,22 @@ class SelectTemplatePack:
         )
 
 
-class ProjectTargetOwnedNeutralCatalog:
-    name = "ProjectTargetOwnedNeutralCatalog"
-    reads = ("selection_outcome", "base_selected", "candidate_selected")
-    writes = ("projection_emitted",)
-    accepted_input_type = SelectionReady
-    input_description = "Current WorldGuard native selection x exact SkillGuard-neutral interchange contract"
-    output_description = "ProjectionReady or Blocked"
-    idempotency = "The same native registry, route, request facts, and selection yield one exact unsealed projection."
-
-    def apply(self, selected: SelectionReady, state: State) -> Iterable[FunctionResult]:
-        request = selected.request
-        if not request.projection_root_exact:
-            yield FunctionResult(
-                Blocked("target_template_projection_unknown_root"),
-                state,
-                "projection_unknown_root_blocked",
-            )
-            return
-        if not request.projection_route_current:
-            yield FunctionResult(
-                Blocked("target_template_projection_wrong_route"),
-                state,
-                "projection_wrong_route_blocked",
-            )
-            return
-        if not request.projection_native_identity_current:
-            yield FunctionResult(
-                Blocked("target_template_projection_native_identity_stale"),
-                state,
-                "projection_stale_native_identity_blocked",
-            )
-            return
-        if not request.projection_candidate_inventory_exact:
-            yield FunctionResult(
-                Blocked("target_template_projection_candidate_inventory_mismatch"),
-                state,
-                "projection_candidate_inventory_mismatch_blocked",
-            )
-            return
-        yield FunctionResult(
-            ProjectionReady(request, selected.outcome),
-            replace(state, projection_emitted=True),
-            "target_owned_projection_emitted",
-        )
 
 
 class ComposeTemplatePack:
     name = "ComposeTemplatePack"
     reads = ("selection_outcome", "base_selected", "candidate_selected")
     writes = ("composed",)
-    accepted_input_type = ProjectionReady
-    input_description = "Selected base/candidate fragments x current target-owned projection state"
+    accepted_input_type = SelectionReady
+    input_description = "Selected base/candidate fragments x current native selection"
     output_description = "CompositionReady or Blocked"
     idempotency = "Canonical disjoint fragments and exact slots yield one composed payload."
 
-    def apply(self, selected: ProjectionReady, state: State) -> Iterable[FunctionResult]:
+    def apply(self, selected: SelectionReady, state: State) -> Iterable[FunctionResult]:
         if (
             selected.outcome != "selected"
             or not state.base_selected
             or not state.candidate_selected
-            or not state.projection_emitted
         ):
             yield FunctionResult(Blocked("selection_not_buildable"), state, "selection_not_buildable_blocked")
             return
@@ -245,7 +188,6 @@ def no_match_never_constructs(state: State, trace: object) -> InvariantResult:
     if state.selection_outcome == "no_match" and (
         state.base_selected
         or state.candidate_selected
-        or state.projection_emitted
         or state.composed
         or state.native_validated
     ):
@@ -257,24 +199,17 @@ def no_match_never_constructs(state: State, trace: object) -> InvariantResult:
 
 def ready_requires_worldguard_native_validation(state: State, trace: object) -> InvariantResult:
     if state.native_validated and not (
-        state.projection_emitted
-        and state.composed
+        state.composed
         and state.base_selected
         and state.candidate_selected
         and state.selection_outcome == "selected"
     ):
-        return InvariantResult.fail("A template instance became ready without current target projection and composition")
+        return InvariantResult.fail("A template instance became ready without current native selection and composition")
     if state.semantic_authority != "worldguard":
-        return InvariantResult.fail("Template or SkillGuard replaced WorldGuard semantic authority")
+        return InvariantResult.fail("Template replaced WorldGuard semantic authority")
     return InvariantResult.pass_()
 
 
-def projection_preserves_native_authority(state: State, trace: object) -> InvariantResult:
-    if state.projection_emitted and state.selection_outcome != "selected":
-        return InvariantResult.fail("A neutral projection escaped a non-buildable native selection")
-    if state.semantic_authority != "worldguard":
-        return InvariantResult.fail("Neutral SkillGuard projection replaced WorldGuard applicability authority")
-    return InvariantResult.pass_()
 
 
 EXTERNAL_INPUTS = (
@@ -288,10 +223,6 @@ EXTERNAL_INPUTS = (
     BuildRequest(field_conflict=True),
     BuildRequest(native_validators_bound=False),
     BuildRequest(native_validation_passes=False),
-    BuildRequest(projection_root_exact=False),
-    BuildRequest(projection_route_current=False),
-    BuildRequest(projection_native_identity_current=False),
-    BuildRequest(projection_candidate_inventory_exact=False),
 )
 
 INVARIANTS = (
@@ -310,21 +241,15 @@ INVARIANTS = (
         "A ready instance is selected, composed, and validated by WorldGuard without transferring semantics.",
         ready_requires_worldguard_native_validation,
     ),
-    Invariant(
-        "projection_preserves_native_authority",
-        "The neutral projection is exact, current, and derived from a buildable WorldGuard selection only.",
-        projection_preserves_native_authority,
-    ),
 )
 
-MAX_SEQUENCE_LENGTH = 4
+MAX_SEQUENCE_LENGTH = 3
 
 
 def build_workflow() -> Workflow:
     return Workflow(
         (
             SelectTemplatePack(),
-            ProjectTargetOwnedNeutralCatalog(),
             ComposeTemplatePack(),
             ValidateTemplateInstance(),
         ),
@@ -354,11 +279,6 @@ def review_template_pack_builder():
             "field_conflict_blocked",
             "native_validator_missing_blocked",
             "native_validation_failed_blocked",
-            "projection_unknown_root_blocked",
-            "projection_wrong_route_blocked",
-            "projection_stale_native_identity_blocked",
-            "projection_candidate_inventory_mismatch_blocked",
-            "target_owned_projection_emitted",
             "template_composed",
             "template_instance_ready",
         ),

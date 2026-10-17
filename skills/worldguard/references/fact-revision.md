@@ -52,3 +52,27 @@ The activation result returns a new immutable task-local snapshot and receipt;
 it never mutates WorldGuard code, installed skills, Guard rules, reusable
 defaults, or a global fact store. It never emits `model_closed_for_task`, even
 when its local fact regression and holdout evidence pass.
+
+## Canonical contract details
+
+### Fact-level transaction
+
+`FactWorldSnapshot` and `FactRevisionTransaction` are a subordinate form of
+the same task-local revision owner. `FactSupport` records one independent
+positive or negative support with stable source and evidence ids.
+`StrictFactRule` derives only one declared signed consequent when every signed
+antecedent has support. The resulting fact state is `true`, `false`, `both`,
+or `neither`; these values are not Guard terminal statuses.
+
+Preview is copy-based and returns the exact base/candidate fingerprints,
+support and rule-chain deltas, contradiction ids, preserved-fact outcomes,
+closure status, and preview fingerprint. Activation requires that fingerprint,
+the exact visible contradiction set, and current `regression` plus `holdout`
+evidence bound to the preview. A stale base, changed preserved fact, missing
+evidence, or prior activation of the transaction remains blocked.
+
+The fact transaction and activation request also bind the same task, the sole
+`worldguard.task_local_world_revision` owner, iteration, predecessor, preview,
+and candidate fingerprint. Successful activation ends only at
+`task_local_revalidation_required`; the task-local owner must rerun prediction,
+native depth, original, and independent holdout evidence before closure.
