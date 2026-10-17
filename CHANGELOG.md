@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.7.13 - 2026-10-17
+
+- Partition the living map into native responsibilities while keeping canonical and generated runtime files together under each logical owner.
+- Preserve all 33 ordinary test-file bindings and 10 existing model runners; explicitly share the runtime-identity regression across every canonical owner so dynamic byte scans remain selected.
+- Narrow template changes to their caller closure and template model without changing domain implementation or removing native checks.
+- Synchronize the portable runtime from the canonical patch-version authority.
+
 ## v0.7.12 - 2026-10-17
 
 - Remove retired SkillGuard supervision, contracts and transport; use plain native checks, current map bindings and ordinary pytest owners.
