@@ -4,7 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-from tests.helpers import attach_task_purpose_declarations
+
 from worldguard import (
     ModelMeshContract,
     qualification_context_for_node,
@@ -151,8 +151,7 @@ def test_prompt_budget_blocks_after_mandatory_paths_are_composed(tmp_path: Path)
 
 def test_unit_mesh_and_prompt_use_same_guard_denominator_and_fingerprint():
     claim = _claim(semantics=["prediction"], target_guards=["EventGuard"])
-    contract = attach_task_purpose_declarations(
-        {
+    contract = {
             "contract_id": "prompt-parity",
             "run_id": "prompt-parity-run",
             "claim": claim,
@@ -172,9 +171,7 @@ def test_unit_mesh_and_prompt_use_same_guard_denominator_and_fingerprint():
                     "counterfactuals": [],
                 },
             },
-        },
-        guards=["EventGuard", "CausalGuard"],
-    )
+        }
     mesh_contract = ModelMeshContract.from_dict(
         {
             "mesh_id": "prompt-parity-mesh",

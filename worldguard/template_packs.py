@@ -28,9 +28,9 @@ MODEL_MESH_CONTRACT_KIND = "model_mesh_contract"
 CONTRACT_KINDS = {GUARD_CONTRACT_KIND, MODEL_MESH_CONTRACT_KIND}
 
 VALIDATOR_GUARD_SHAPE = "worldguard.guard_contract.shape.v1"
-VALIDATOR_GUARD_PURPOSE = "worldguard.guard_contract.task-purpose.v1"
+VALIDATOR_GUARD_ROUTES = "worldguard.guard_contract.routes.v1"
 VALIDATOR_MESH_SHAPE = "worldguard.model_mesh_contract.shape.v1"
-VALIDATOR_MESH_PURPOSE = "worldguard.model_mesh_contract.embedded-purpose.v1"
+VALIDATOR_MESH_ROUTES = "worldguard.model_mesh_contract.routes.v1"
 
 TARGET_TEMPLATE_INTERCHANGE_SCHEMA_VERSION = "worldguard.target_template_interchange.v1"
 TARGET_TEMPLATE_CATALOG_SCHEMA_VERSION = "worldguard.target_template_catalog.v1"
@@ -132,7 +132,6 @@ BUILTIN_TEMPLATE_PARAMETER_TYPES = {
     "claim_atoms": "array",
     "model_id": "string",
     "model_version": "string",
-    "guard_purpose_declarations": "array",
     "event_inputs": "array",
     "agent_inputs": "object",
     "space_inputs": "array",
@@ -758,34 +757,15 @@ def _validate_guard_shape(payload: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _validate_guard_purpose(payload: Mapping[str, Any]) -> dict[str, Any]:
+def _validate_guard_routes(payload: Mapping[str, Any]) -> dict[str, Any]:
     contract = GuardContract.from_dict(dict(payload))
     _require_guard_identity(contract)
     required = tuple(derive_required_guards(contract.claim))
     missing = sorted(set(required).difference(contract.claim.target_guards))
     if missing:
-        raise TemplatePackError(
-            "TEMPLATE_NATIVE_VALIDATION_FAILED",
-            "The template instance omits a claim-derived Guard route.",
-            details={"missing_guard_ids": missing},
-        )
-    bindings = []
-    for guard in required:
-        child = contract.for_guard(guard)
-        binding = child.guard_purpose_contract
-        bindings.append(
-            {
-                "guard": guard,
-                "declaration_fingerprint": binding.declaration_fingerprint if binding else "",
-                "proof_receipt_fingerprint": binding.proof_receipt_fingerprint if binding else "",
-            }
-        )
-    return {
-        "contract_id": contract.contract_id,
-        "derived_guard_ids": list(required),
-        "purpose_bindings": bindings,
-        "claim_boundary": "Task-local purpose construction proof only; semantic execution remains required.",
-    }
+        raise TemplatePackError("TEMPLATE_NATIVE_VALIDATION_FAILED", "Missing claim-derived Guard route.", details={"missing_guard_ids": missing})
+    return {"contract_id": contract.contract_id, "derived_guard_ids": list(required),
+            "claim_boundary": "Construction and route inventory only; no semantic execution."}
 
 
 def _require_mesh_identity(mesh: ModelMeshContract) -> None:
@@ -813,46 +793,23 @@ def _validate_mesh_shape(payload: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _validate_mesh_purpose(payload: Mapping[str, Any]) -> dict[str, Any]:
+def _validate_mesh_routes(payload: Mapping[str, Any]) -> dict[str, Any]:
     mesh = ModelMeshContract.from_dict(dict(payload))
     _require_mesh_identity(mesh)
-    validated: list[dict[str, Any]] = []
+    rows = []
     for node in mesh.nodes:
-        if node.contract is None:
-            continue
-        contract = node.contract
-        required = tuple(derive_required_guards(contract.claim))
-        missing = sorted(set(required).difference(contract.claim.target_guards))
-        if missing:
-            raise TemplatePackError(
-                "TEMPLATE_NATIVE_VALIDATION_FAILED",
-                "An embedded GuardContract omits a claim-derived Guard route.",
-                details={"model_id": node.model_id, "missing_guard_ids": missing},
-            )
-        for guard in required:
-            child = contract.for_guard(guard)
-            binding = child.guard_purpose_contract
-            validated.append(
-                {
-                    "model_id": node.model_id,
-                    "guard": guard,
-                    "declaration_fingerprint": binding.declaration_fingerprint if binding else "",
-                    "proof_receipt_fingerprint": binding.proof_receipt_fingerprint if binding else "",
-                }
-            )
-    return {
-        "mesh_id": mesh.mesh_id,
-        "embedded_purpose_bindings": validated,
-        "claim_boundary": "Embedded task-purpose construction proof only; ModelMesh semantic/depth closure remains required.",
-    }
+        if node.contract is not None:
+            rows.append({"model_id": node.model_id, **_validate_guard_routes(node.contract.to_dict())})
+    return {"mesh_id": mesh.mesh_id, "embedded_route_inventories": rows,
+            "claim_boundary": "Construction only; native mesh and predictive depth remain separate."}
 
 
 NativeValidator = Callable[[Mapping[str, Any]], dict[str, Any]]
 NATIVE_VALIDATORS: dict[str, NativeValidator] = {
     VALIDATOR_GUARD_SHAPE: _validate_guard_shape,
-    VALIDATOR_GUARD_PURPOSE: _validate_guard_purpose,
+    VALIDATOR_GUARD_ROUTES: _validate_guard_routes,
     VALIDATOR_MESH_SHAPE: _validate_mesh_shape,
-    VALIDATOR_MESH_PURPOSE: _validate_mesh_purpose,
+    VALIDATOR_MESH_ROUTES: _validate_mesh_routes,
 }
 
 
@@ -1609,8 +1566,8 @@ def _manifest(
 
 
 def builtin_template_registry() -> TemplatePackRegistry:
-    guard_validators = (VALIDATOR_GUARD_SHAPE, VALIDATOR_GUARD_PURPOSE)
-    mesh_validators = (VALIDATOR_MESH_SHAPE, VALIDATOR_MESH_PURPOSE)
+    guard_validators = (VALIDATOR_GUARD_SHAPE, VALIDATOR_GUARD_ROUTES)
+    mesh_validators = (VALIDATOR_MESH_SHAPE, VALIDATOR_MESH_ROUTES)
     manifests: list[TemplatePackManifest] = [
         _manifest(
             pack_id="worldguard.guard-contract.base",
@@ -1642,7 +1599,6 @@ def builtin_template_registry() -> TemplatePackRegistry:
                     "require_counterexample_for_non_pass": True,
                     "allowed_status": ["PASS", "FAIL", "GAP", "BOUNDARY_EXCEEDED"],
                 },
-                "guard_purpose_declarations": template_slot("guard_purpose_declarations"),
             },
         ),
         _manifest(

@@ -65,7 +65,6 @@ class SemanticExecutionReceipt:
     consumed_inputs: dict[str, Any] = field(default_factory=dict)
     outputs: dict[str, Any] = field(default_factory=dict)
     skipped_reason: str = ""
-    guard_purpose_contract: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -78,7 +77,6 @@ class SemanticExecutionReceipt:
             "consumed_inputs": self.consumed_inputs,
             "outputs": self.outputs,
             "skipped_reason": self.skipped_reason,
-            "guard_purpose_contract": self.guard_purpose_contract,
         }
 
 
@@ -1212,10 +1210,7 @@ def execute_semantic(
     provider_available: bool,
     coverage_context: dict[str, Any] | None = None,
 ) -> SemanticExecutionReceipt:
-    from .guard_model_contract import verify_guard_candidate_purpose_contract
 
-    purpose_binding = verify_guard_candidate_purpose_contract(contract, guard)
-    purpose_binding_payload = purpose_binding.to_dict()
     executor = EXECUTOR_REGISTRY.get(guard)
     if executor is None:
         binding = _binding(guard, (), (), "no WorldGuard-owned semantic executor is registered")
@@ -1227,7 +1222,6 @@ def execute_semantic(
             binding=binding,
             findings=[_finding("SEM_EXECUTOR_UNREGISTERED", "No semantic executor is registered for this guard.")],
             skipped_reason="unregistered_executor",
-            guard_purpose_contract=purpose_binding_payload,
         )
     if not provider_available:
         return SemanticExecutionReceipt(
@@ -1238,7 +1232,6 @@ def execute_semantic(
             binding=executor.binding,
             findings=[_finding("SEM_PROVIDER_UNAVAILABLE", "The required semantic provider was explicitly marked unavailable.")],
             skipped_reason="provider_unavailable",
-            guard_purpose_contract=purpose_binding_payload,
         )
     if coverage_context:
         contract = replace(
@@ -1255,7 +1248,6 @@ def execute_semantic(
         findings=findings,
         consumed_inputs=consumed_inputs,
         outputs=outputs,
-        guard_purpose_contract=purpose_binding_payload,
     )
 
 

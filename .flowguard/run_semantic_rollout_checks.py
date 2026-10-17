@@ -13,9 +13,7 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 
 from semantic_rollout_model import run_checks  # noqa: E402
 from worldguard import SemanticStatus, run_model_mesh  # noqa: E402
-from worldguard.guard_model_contract import (  # noqa: E402
-    build_calibration_task_purpose_declaration,
-)
+
 
 
 def _runtime_probe() -> dict[str, object]:
@@ -40,25 +38,6 @@ def _runtime_probe() -> dict[str, object]:
                     },
                     "world_model": {"model_id": model_instance_id, "model_version": "v1"},
                     "inputs": {"events": [{"event_id": "e1", "at": "t0"}]},
-                    "guard_purpose_declarations": [
-                        build_calibration_task_purpose_declaration(
-                            "EventGuard",
-                            task_contract_id=task_contract_id,
-                            run_id=run_id,
-                            model_instance_id=model_instance_id,
-                            selected_failure_ids=[
-                                "failure:event:semantic:sem-event-missing-axiom"
-                            ],
-                            purpose=(
-                                "Prevent this runtime-probe event model from licensing an "
-                                "event storyline that has no initiation or termination axiom."
-                            ),
-                            boundary=(
-                                "This probe verifies semantic-rollout status propagation only; "
-                                "it does not establish factual truth or predictive readiness."
-                            ),
-                        )
-                    ],
                 },
             }
         ],

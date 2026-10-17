@@ -2112,7 +2112,6 @@ def _depth_receipt(
     bindings = [
         {
             **receipt.binding.to_dict(),
-            "guard_purpose_contract": receipt.guard_purpose_contract,
         }
         for receipt in semantic_receipts
     ]

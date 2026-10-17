@@ -14,7 +14,7 @@ from worldguard import (
     run_model_mesh,
 )
 from worldguard.status import GuardStatus
-from tests.helpers import attach_task_purpose_declarations
+
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -170,10 +170,7 @@ def _predictive_mesh() -> dict:
             }
         ],
     }
-    attach_task_purpose_declarations(
-        mesh["nodes"][0]["contract"],
-        guards=["EventGuard", "CausalGuard"],
-    )
+    mesh["nodes"][0]["contract"]
     return mesh
 
 
@@ -710,9 +707,7 @@ def test_rich_aggregate_cannot_hide_one_shallow_predictive_model_node() -> None:
         deepcopy(deep_node["contract"]["inputs"]["events"][0]),
         deepcopy(deep_node["contract"]["inputs"]["events"][-1]),
     ]
-    attach_task_purpose_declarations(
-        shallow_node["contract"], guards=["EventGuard", "CausalGuard"]
-    )
+    shallow_node["contract"]
     mesh["nodes"].append(shallow_node)
     mesh["semantic_coverage"]["expected_model_node_ids"] = [
         "world",
@@ -758,9 +753,7 @@ def test_expected_node_list_cannot_hide_a_discovered_predictive_node() -> None:
     omitted["contract"]["contract_id"] = "predictive-contract-omitted"
     omitted["contract"]["claim"]["claim_id"] = "forecast-claim-omitted"
     omitted["contract"]["claim"]["atoms"][0]["atom_id"] = "forecast-atom-omitted"
-    attach_task_purpose_declarations(
-        omitted["contract"], guards=["EventGuard", "CausalGuard"]
-    )
+    omitted["contract"]
     mesh["nodes"].append(omitted)
 
     report = run_model_mesh(mesh)

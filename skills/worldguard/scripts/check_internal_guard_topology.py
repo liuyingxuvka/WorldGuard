@@ -39,7 +39,6 @@ REQUIRED_ROW_FIELDS = {
     "prediction_mode",
     "prediction_boundary",
     "response_owner",
-    "purpose_validator",
     "semantic_executor_id",
     "semantic_registry",
     "applicability_semantics",
@@ -603,10 +602,6 @@ def check(
                 ),
                 "prediction_mode": expected_mode,
                 "response_owner": "worldguard.reports:GuardResult",
-                "purpose_validator": (
-                    "worldguard.guard_model_contract:"
-                    "verify_guard_candidate_purpose_contract"
-                ),
                 "semantic_executor_id": (
                     EXECUTOR_REGISTRY[guard_id].binding.executor_id
                 ),

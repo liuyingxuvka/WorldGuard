@@ -11,11 +11,14 @@ import hashlib
 import json
 import re
 import runpy
+import sys
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from worldguard.blueprint import (
     BINDING_ROLES,

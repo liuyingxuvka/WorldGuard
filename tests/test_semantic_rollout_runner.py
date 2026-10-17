@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_semantic_rollout_runner_uses_a_current_task_purpose_declaration() -> None:
+def test_semantic_rollout_runner_uses_the_current_model_input() -> None:
     result = subprocess.run(
         [sys.executable, str(ROOT / ".flowguard" / "run_semantic_rollout_checks.py")],
         cwd=ROOT,

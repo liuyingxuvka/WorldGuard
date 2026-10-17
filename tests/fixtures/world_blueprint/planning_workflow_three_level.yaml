@@ -1520,7 +1520,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:13359f535ac87929f0e8f95a6d6591a8c1e40099a01098af2fcf523a9f9eb66f
-  receipt_fingerprint: sha256:eb34ff89b5435bc9e1b0b98671ecf0c663c3cf8d98fd9171c764da03927a5160
+  receipt_fingerprint: sha256:2c245dd589366a8c297f5f9820d40d2cb5a05575d1ac790f7b2d4ed0c5ac5a47
   claim_boundary: planning workflow revision 1 only
 - binding_id: allocation_summary_native
   role: native_result
@@ -1536,7 +1536,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:38fd01c062d3934b5ef22d7c4642fa27e7faec1ba0b0ca8c0012b8c12293f9e1
-  receipt_fingerprint: sha256:48b2b3cb800831eba5298c54cacbf91e68069759073ed409337ef7cd188912cb
+  receipt_fingerprint: sha256:d008f74f0cd754ef405bfa179be947d0af76610a8f8dcf4ceba6373057b0bc72
   claim_boundary: planning workflow revision 1 only
 - binding_id: assignment_evidence
   role: evidence
@@ -1584,7 +1584,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:c10f537d081a0198dd89e9657561db68ac42c9e105993eae7cb1c0af2e1f5fb5
-  receipt_fingerprint: sha256:3562d6db7b766243694fa1e31adb416a693cacb1bc0220fdd65fd1d03cbe907b
+  receipt_fingerprint: sha256:8bc673bcb079478dd56bd917c9732dc27e93f73d0b0c7647a5b316e67d87027b
   claim_boundary: planning workflow revision 1 only
 - binding_id: assignment_test
   role: test_check
@@ -1616,7 +1616,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:0f5c1d8d5228e9d5471c9710a76d13268daccc9d6b9ac00c00819e4d3fbf9eda
-  receipt_fingerprint: sha256:07db3afaac11eae7db58487c161bf3342cf507eb5e5f6ecff2c3f621f1d948f4
+  receipt_fingerprint: sha256:ee3560f1a9d072154f8f7a8dbad27090da4adefcbe86b682bd55e2838bf08f29
   claim_boundary: planning workflow revision 1 only
 - binding_id: norm_evidence
   role: evidence
@@ -1664,7 +1664,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:eabe737232c9c8fff4f3b7ab3d4bfccc426a24a4e3e05dbce06e0f8de5159a80
-  receipt_fingerprint: sha256:bc888c6eff54e088af7339d8c70b5984ca28e7dec5a50ffb1f24ff413579b07e
+  receipt_fingerprint: sha256:10a97decea6de13d2e508b391c8d46f0fedf42b3e783c164ec811840cdf6b486
   claim_boundary: planning workflow revision 1 only
 - binding_id: norm_test
   role: test_check
@@ -1696,7 +1696,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:b6ff63a135463687ccb0050ea6f757ffe9df0d49ea4a8b6122b5245a23409c03
-  receipt_fingerprint: sha256:1f88b11815460924ede49a64b3d455a8a368559c96766d96b994c186391b057f
+  receipt_fingerprint: sha256:0786f8e7b2811d184820265fc6a68b224150e1749b517931a044dbd9d444a44a
   claim_boundary: planning workflow revision 1 only
 - binding_id: planner_role_material
   role: target_material
@@ -1728,7 +1728,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:562ecc345437449f302a6a60aa4147820a7d0163359a2f851ebba90e36c27031
-  receipt_fingerprint: sha256:8be52a00e42a7cc6628891f88c02f86be1fc88d2ed7c701fb65f54bbe7084ff3
+  receipt_fingerprint: sha256:db602fb53fd56576e9a066c0ef348f6fe85d7a4450ca9deddfa4616d6ec87e1a
   claim_boundary: planning workflow revision 1 only
 - binding_id: resource_evidence
   role: evidence
@@ -1776,7 +1776,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:8b0b380e874d13f875a1c99f4ba154f2ece7a7db7617488bb09b03fd959ad897
-  receipt_fingerprint: sha256:12e40f7b77dfb3f28a941340284660d679bb2eb89683d4f27039ce978838b318
+  receipt_fingerprint: sha256:cc808bf68d4252d5c00d9b7869089b4f59561b2184be2a2579395358a6475494
   claim_boundary: planning workflow revision 1 only
 - binding_id: resource_test
   role: test_check
@@ -1824,7 +1824,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:2f5592eb7ddb2f18f1e4cc0b44ce9068d571ac53ef802edc3c7429d0bed6de98
-  receipt_fingerprint: sha256:1435291fb48ac829eacdd0ffe1d77868007913285aa8275800dcced4b6aba54a
+  receipt_fingerprint: sha256:15e957f66243981b26ca28685f9de0e2a69e9e254a0de13a4d2ec3cae64314dc
   claim_boundary: planning workflow revision 1 only
 - binding_id: schedule_evidence
   role: evidence
@@ -1872,7 +1872,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:440f38fe0f8d78624f07c77599a6416aa7e9f747ea2505782b65e8528a372a54
-  receipt_fingerprint: sha256:6641b07c7ff7d1b6d7d712677a42da4784dfd03ed53ba32661bb2129a93d4377
+  receipt_fingerprint: sha256:6ad8143befbf0fe8ded13162790db999bbdb1dd119afb855bff89ca9927e8512
   claim_boundary: planning workflow revision 1 only
 - binding_id: schedule_test
   role: test_check
@@ -1920,7 +1920,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:41986e0aca37a6f9231f3cdca53797f6afbb6e54fa8ebf29f13c1b818377cbe8
-  receipt_fingerprint: sha256:0563f6b9bf4a9ff862428e0c0036515721dc2e80932d4f99e9d02151f1a15bdf
+  receipt_fingerprint: sha256:67a4716fb66c5abe948e887cf1698cbf0f1d74ed4c7d954d4fa65c6b35fb871b
   claim_boundary: planning workflow revision 1 only
 - binding_id: scheduling_summary_native
   role: native_result
@@ -1936,7 +1936,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:5828beec4a0f16a2d44ac17bd9eb0a99cddec053f5dfa192714a6759c818fb58
-  receipt_fingerprint: sha256:ea749a03875b78340d6c9006ac157207fd4ce09643b085b352cdd7770110f6dc
+  receipt_fingerprint: sha256:8b6922ee3933374c528ff469e96783d1598ee8a5845ffd07c4eaa0446a94d41a
   claim_boundary: planning workflow revision 1 only
 - binding_id: task_prepare_material
   role: target_material
@@ -1968,7 +1968,7 @@ bindings:
   target_revision: revision-1
   freshness_status: current
   content_fingerprint: sha256:21e120d05d13fc83e04506cac58808470336e402be44cc97bf8aa06385c1573c
-  receipt_fingerprint: sha256:d2f3bc5bd35a03632a5904bdf742fa93a7afa6c48997f2c55ae655d53f72ad8d
+  receipt_fingerprint: sha256:529dbb1d2b5eef2460e6cf8a5ab6eb53ee3d5b7eafc4a2babc8b6e2c5746f03b
   claim_boundary: planning workflow revision 1 only
 declared_inputs:
 - input_id: external_plan_request
@@ -1979,4 +1979,4 @@ declared_outputs:
   node_id: plan_root
   port_id: root_plan_outcome
 declared_gaps: []
-blueprint_fingerprint: d018aee1e6eb872ce17ff83bee5f5fbd9b09509f2ad37edadd94b678a8cbf74e
+blueprint_fingerprint: ade8de043d45903e98e197b2adab1cdb7a67beca46da2134788fde58deb3d88c

@@ -6,7 +6,7 @@ import yaml
 from worldguard import ModelMeshContract, MeshReport, run_model_mesh
 from worldguard.cli import main
 from worldguard.status import GuardStatus
-from tests.helpers import attach_task_purpose_declarations
+
 
 
 @pytest.mark.parametrize(
@@ -114,12 +114,8 @@ def pass_mesh():
             }
         ],
     }
-    attach_task_purpose_declarations(
-        mesh["nodes"][0]["contract"], guards=["EventGuard"]
-    )
-    attach_task_purpose_declarations(
-        mesh["nodes"][1]["contract"], guards=["NormGuard"]
-    )
+    mesh["nodes"][0]["contract"]
+    mesh["nodes"][1]["contract"]
     return mesh
 
 

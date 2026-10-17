@@ -17,10 +17,7 @@ from .blueprint_census import (
     validate_external_object_census_record,
     validate_external_object_census_source,
 )
-from .guard_model_contract import (
-    GuardCandidatePurposeError,
-    verify_guard_candidate_purpose_contract,
-)
+from .guard_model_contract import PROTECTED_FAILURE_CLASSES
 from .guards import GUARD_RUNNERS
 from .io import load_mapping
 from .semantic import EXECUTOR_REGISTRY, SemanticStatus, fingerprint_mesh
@@ -833,51 +830,6 @@ class BlueprintTaskPurpose:
     def to_dict(self) -> dict[str, Any]:
         return self.fingerprint_payload()
 
-    def to_guard_declaration(
-        self,
-        *,
-        guard: str,
-        task_contract_id: str,
-        run_id: str,
-        model_instance_id: str,
-    ) -> dict[str, Any]:
-        good = next(row for row in self.behavior_cases if row.case_kind == "known_good")
-        bad = [row for row in self.behavior_cases if row.case_kind == "known_bad"]
-        return {
-            "schema_version": "worldguard.task_guard_purpose.v1",
-            "declaration_id": self.declaration_id,
-            "task_contract_id": task_contract_id,
-            "run_id": run_id,
-            "model_instance_id": model_instance_id,
-            "guard": guard,
-            "purpose": self.purpose,
-            "boundary": self.boundary,
-            "selected_failure_ids": list(self.selected_failure_ids),
-            "known_good": {
-                "case_id": good.case_id,
-                "text": good.text,
-                "inputs": good.inputs,
-                "coverage_context": good.coverage_context,
-                "expected_guard_status": good.expected_guard_status,
-                "expected_semantic_status": good.expected_semantic_status,
-                "native_oracle_id": good.oracle_id,
-            },
-            "known_bad_cases": [
-                {
-                    "case_id": row.case_id,
-                    "failure_id": row.failure_id,
-                    "blocked_claim": row.blocked_claim,
-                    "text": row.text,
-                    "inputs": row.inputs,
-                    "coverage_context": row.coverage_context,
-                    "expected_status": row.expected_status,
-                    "expected_code": row.expected_code,
-                    "native_oracle_id": row.oracle_id,
-                }
-                for row in bad
-            ],
-            "declaration_sequence": 1,
-        }
 
 
 def _unknown_fields(data: Mapping[str, Any], allowed: set[str], owner: str) -> None:
@@ -3885,12 +3837,6 @@ def _execute_external_test_check(
         f"{element.element_id}:{payload['check_id']}"
     )
     run_id = f"world-blueprint-external-test:{blueprint.target_revision}"
-    declaration = task_purpose.to_guard_declaration(
-        guard=owner_guard,
-        task_contract_id=contract_id,
-        run_id=run_id,
-        model_instance_id=blueprint.target_id,
-    )
     parent_contract = GuardContract.from_dict(
         {
             "contract_id": contract_id,
@@ -3911,18 +3857,16 @@ def _execute_external_test_check(
                 "scope_limits": [blueprint.declared_boundary],
             },
             "inputs": dict(payload["inputs"]),
-            "guard_purpose_declarations": [declaration],
         }
     )
     execution_error = ""
     try:
         contract = parent_contract.for_guard(owner_guard)
-        verify_guard_candidate_purpose_contract(contract, owner_guard)
         structural = GUARD_RUNNERS[owner_guard](contract)
         semantic_status, semantic_findings, _, outputs = (
             EXECUTOR_REGISTRY[owner_guard].execute(contract)
         )
-    except (GuardCandidatePurposeError, KeyError, TypeError, ValueError) as exc:
+    except (KeyError, TypeError, ValueError) as exc:
         structural_status = GuardStatus.FAIL
         semantic_status = SemanticStatus.FAIL
         semantic_findings = [
@@ -5710,6 +5654,61 @@ def _prove_blueprint_admission_cases(
     }
 
 
+def _check_blueprint_behavior_cases(purpose: BlueprintTaskPurpose, guard: str, current_inputs: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Validate target-owned oracle identities and execute each other real case once."""
+    catalog = {row.failure_id: row for row in PROTECTED_FAILURE_CLASSES}
+    findings = []
+    for case in purpose.behavior_cases:
+        if case.case_kind == "admission_bad":
+            continue
+        if case.case_kind == "known_good":
+            valid = case.oracle_id == f"oracle:worldguard:{guard}:known-good"
+        else:
+            owned = catalog.get(case.failure_id)
+            valid = bool(owned and owned.guard == guard and case.expected_status == owned.expected_status
+                         and case.expected_code == owned.code
+                         and case.oracle_id == f"oracle:worldguard:{guard}:{owned.layer}:{owned.code}")
+        if not valid:
+            findings.append({"code": "WORLD_BLUEPRINT_BEHAVIOR_ORACLE_INVALID",
+                             "message": "The behavior case names a foreign or mismatched native oracle.",
+                             "evidence": {"case_id": case.case_id, "owner_guard": guard}})
+            continue
+        # The current target case is executed by the native owner below and compared
+        # against its complete expected output/state/effects there.
+        if case.inputs == current_inputs:
+            continue
+        contract = GuardContract.from_dict({
+            "contract_id": f"blueprint-case:{case.case_id}", "run_id": "blueprint-case",
+            "claim": {"claim_id": case.case_id, "text": case.text, "target_guards": [guard],
+                      "requested_semantics": [guard.removesuffix("Guard").lower()]},
+            "world_model": {"model_id": "blueprint-case", "model_version": "current"},
+            "inputs": dict(case.inputs),
+        })
+        if case.coverage_context:
+            contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
+        structural = GUARD_RUNNERS[guard](contract)
+        semantic_status, semantic_findings, _, outputs = EXECUTOR_REGISTRY[guard].execute(contract)
+        status = _blueprint_owner_terminal_status(structural.status, semantic_status)
+        mismatches = []
+        if case.case_kind == "known_bad":
+            codes = [str(row.get("code", "")) for row in [*structural.errors, *semantic_findings]]
+            if status != case.expected_status or case.expected_code not in codes:
+                mismatches.append({"path": "failure_oracle", "expected": case.expected_code, "observed": codes})
+        else:
+            if status != "PASS":
+                mismatches.append({"path": "terminal", "expected": "PASS", "observed": status})
+            mismatches.extend(_behavior_expected_subset(case.expected_output, outputs, path="output"))
+        if case.state_effect_disposition == "applicable":
+            mismatches.extend(_behavior_expected_subset(case.pre_state, case.inputs, path="pre_state"))
+            mismatches.extend(_behavior_expected_subset(case.post_state, outputs, path="post_state"))
+            mismatches.extend(_behavior_expected_subset(case.effects, outputs, path="effects"))
+        if mismatches:
+            findings.append({"code": "WORLD_BLUEPRINT_BEHAVIOR_CASE_MISMATCH",
+                             "message": "The native owner contradicted a target behavior case.",
+                             "evidence": {"case_id": case.case_id, "mismatches": mismatches}})
+    return findings
+
+
 def _execute_blueprint_native_semantic(
     blueprint: WorldBlueprintContract,
     element: WorldElement,
@@ -5806,6 +5805,8 @@ def _execute_blueprint_native_semantic(
                     },
                 }
             )
+    if not findings and owner_guard and task_purpose is not None:
+        findings.extend(_check_blueprint_behavior_cases(task_purpose, owner_guard, owner_inputs))
     field_dispositions = (
         _blueprint_native_field_dispositions(semantic)
         if semantic is not None
@@ -5873,7 +5874,6 @@ def _execute_blueprint_native_semantic(
     licensed_claim_scope = ""
     qualified_subscope = ""
     evaluated_claim_scopes: list[str] = []
-    purpose_contract_result: dict[str, Any] = {}
     admission_case_proof_result: dict[str, Any] = {}
     behavior_case_result: dict[str, Any] = {}
 
@@ -5911,12 +5911,6 @@ def _execute_blueprint_native_semantic(
         contract_id = f"world-blueprint:{blueprint.blueprint_id}:{element.element_id}"
         run_id = f"world-blueprint:{blueprint.target_revision}"
         assert task_purpose is not None
-        declaration = task_purpose.to_guard_declaration(
-            guard=owner_guard,
-            task_contract_id=contract_id,
-            run_id=run_id,
-            model_instance_id=blueprint.target_id,
-        )
         parent_contract = GuardContract.from_dict(
             {
                 "contract_id": contract_id,
@@ -5937,30 +5931,13 @@ def _execute_blueprint_native_semantic(
                     "scope_limits": [blueprint.declared_boundary],
                 },
                 "inputs": owner_inputs,
-                "guard_purpose_declarations": [declaration],
             }
         )
         try:
             contract = parent_contract.for_guard(owner_guard)
-            purpose_binding = verify_guard_candidate_purpose_contract(
-                contract, owner_guard
-            )
-            purpose_contract_result = purpose_binding.to_dict()
             structural = GUARD_RUNNERS[owner_guard](contract)
             semantic_status, semantic_findings, consumed_inputs, outputs = (
                 EXECUTOR_REGISTRY[owner_guard].execute(contract)
-            )
-        except GuardCandidatePurposeError as exc:
-            findings.append(
-                {
-                    "code": exc.code,
-                    "message": str(exc),
-                    "evidence": {
-                        "owner_guard": owner_guard,
-                        "executor_id": executor_id,
-                        **exc.details,
-                    },
-                }
             )
         except (KeyError, TypeError, ValueError) as exc:
             findings.append(
@@ -6162,7 +6139,6 @@ def _execute_blueprint_native_semantic(
         "findings": findings,
         "field_dispositions": field_dispositions,
         "evaluated_claim_scopes": evaluated_claim_scopes,
-        "purpose_contract_result": purpose_contract_result,
         "behavior_case_result": behavior_case_result,
     }
     if admission_case_proof_result:
@@ -6211,7 +6187,6 @@ def _execute_blueprint_native_semantic(
         "findings": findings,
         "field_dispositions": field_dispositions,
         "evaluated_claim_scopes": evaluated_claim_scopes,
-        "purpose_contract_result": purpose_contract_result,
         "behavior_case_result": behavior_case_result,
     }
     if admission_case_proof_result:

@@ -7,7 +7,6 @@ from pathlib import Path
 from flowguard.explorer import Explorer
 
 import claim_derived_coverage_process as model
-import guard_candidate_purpose_order as guard_candidate_order
 import guard_model_contract_exhaustion as guard_model_mesh
 from worldguard.guard_model_contract import (
     PROTECTED_FAILURE_CLASSES,
@@ -104,16 +103,6 @@ ALIGNMENT = {
         "def build_guard_model_contract_exhaustion_plan",
         "test_guard_model_contract_exhaustion_is_exact_and_oracle_bound",
     ),
-    "guard_candidate_purpose_binding": (
-        "worldguard/guard_model_contract.py",
-        "def verify_guard_candidate_purpose_contract",
-        "test_real_kernel_rejects_invalid_candidate_purpose_before_guard_proof",
-    ),
-    "guard_candidate_purpose_order_model": (
-        ".flowguard/guard_candidate_purpose_order.py",
-        "def review_guard_candidate_purpose_order",
-        "test_guard_candidate_purpose_order_model_covers_all_rejections",
-    ),
 }
 
 
@@ -147,8 +136,6 @@ def _guard_model_contract_ok() -> bool:
     )
 
 
-def _guard_candidate_order_ok() -> bool:
-    return bool(guard_candidate_order.review_guard_candidate_purpose_order().ok)
 
 
 def main() -> int:
@@ -184,11 +171,6 @@ def main() -> int:
             "fingerprint_blocked",
             "native_observation_integrity_blocked",
             "exact_obligation_evidence_blocked",
-            "guard_purpose_blocked",
-            "protected_failure_universe_blocked",
-            "native_good_cardinality_blocked",
-            "native_bad_cardinality_blocked",
-            "native_failure_oracle_blocked",
         ),
     ).explore()
     print(report.format_text())
@@ -196,9 +178,7 @@ def main() -> int:
     print(f"model_test_alignment_ok={alignment_ok}")
     guard_model_contract_ok = _guard_model_contract_ok()
     print(f"guard_model_contract_ok={guard_model_contract_ok}")
-    guard_candidate_order_ok = _guard_candidate_order_ok()
-    print(f"guard_candidate_order_ok={guard_candidate_order_ok}")
-    return 0 if report.ok and alignment_ok and guard_model_contract_ok and guard_candidate_order_ok else 1
+    return 0 if report.ok and alignment_ok and guard_model_contract_ok else 1
 
 
 if __name__ == "__main__":

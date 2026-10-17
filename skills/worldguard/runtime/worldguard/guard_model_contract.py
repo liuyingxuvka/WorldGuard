@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
-from .contracts import GuardContract, GuardPurposeContractBinding
+from .contracts import GuardContract
 from .guards import GUARD_RUNNERS
 from .semantic import EXECUTOR_REGISTRY, SemanticStatus, execute_semantic
 from .status import GuardStatus
@@ -85,13 +85,6 @@ class ProtectedFailureClass:
         }
 
 
-class GuardCandidatePurposeError(ValueError):
-    """Stable fail-closed rejection raised before a Guard candidate is proved."""
-
-    def __init__(self, code: str, message: str, *, details: Mapping[str, Any] | None = None):
-        super().__init__(f"{code}: {message}")
-        self.code = code
-        self.details = dict(details or {})
 
 
 GUARD_MODEL_PURPOSES = (
@@ -334,14 +327,6 @@ def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any]) ->
             },
             "world_model": {"model_id": model_instance_id, "model_version": "v1"},
             "inputs": dict(inputs),
-            "guard_purpose_declarations": [
-                build_calibration_task_purpose_declaration(
-                    guard,
-                    task_contract_id=task_contract_id,
-                    run_id=run_id,
-                    model_instance_id=model_instance_id,
-                )
-            ],
         }
     )
 
@@ -390,358 +375,12 @@ def _native_oracle_id(case: ProtectedFailureClass) -> str:
     return f"oracle:worldguard:{case.guard}:{case.layer}:{case.code}"
 
 
-def build_calibration_task_purpose_declaration(
-    guard: str,
-    *,
-    task_contract_id: str,
-    run_id: str,
-    model_instance_id: str,
-    selected_failure_ids: tuple[str, ...] | list[str] | None = None,
-    purpose: str | None = None,
-    boundary: str | None = None,
-) -> dict[str, Any]:
-    """Build an explicit family-fixture declaration for tests and examples only.
-
-    Production callers must supply their own declaration in the target contract;
-    `GuardContract.for_guard` never calls this helper as a fallback.
-    """
-
-    family_purpose = next(
-        (item for item in GUARD_MODEL_PURPOSES if item.guard == guard),
-        None,
-    )
-    if family_purpose is None:
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_GUARD_UNKNOWN",
-            "The requested Guard has no WorldGuard-owned oracle catalog.",
-            details={"guard": guard},
-        )
-    catalog = [item for item in PROTECTED_FAILURE_CLASSES if item.guard == guard]
-    selected = list(selected_failure_ids or [item.failure_id for item in catalog])
-    selected_rows = [item for item in catalog if item.failure_id in selected]
-    good = next(item for item in NATIVE_GOOD_CASES if item.guard == guard)
-    return {
-        "schema_version": "worldguard.task_guard_purpose.v1",
-        "declaration_id": f"declaration:{task_contract_id}:{guard}",
-        "task_contract_id": task_contract_id,
-        "run_id": run_id,
-        "model_instance_id": model_instance_id,
-        "guard": guard,
-        "purpose": purpose or family_purpose.purpose,
-        "boundary": boundary or family_purpose.boundary,
-        "selected_failure_ids": selected,
-        "known_good": {
-            "case_id": f"{task_contract_id}:{good.case_id}",
-            "text": good.text,
-            "inputs": dict(good.inputs),
-            "coverage_context": dict(good.coverage_context),
-            "expected_guard_status": "PASS",
-            "expected_semantic_status": "PASS",
-            "native_oracle_id": f"oracle:worldguard:{guard}:known-good",
-        },
-        "known_bad_cases": [
-            {
-                "case_id": f"{task_contract_id}:bad:{item.failure_id}",
-                "failure_id": item.failure_id,
-                "blocked_claim": item.blocked_claim,
-                "text": item.text or item.blocked_claim,
-                "inputs": dict(item.inputs),
-                "coverage_context": dict(item.coverage_context),
-                "expected_status": item.expected_status,
-                "expected_code": item.code,
-                "native_oracle_id": _native_oracle_id(item),
-            }
-            for item in selected_rows
-        ],
-        "declaration_sequence": 1,
-    }
 
 
-def _normalize_task_purpose_declaration(
-    declaration: Mapping[str, Any],
-    *,
-    guard: str,
-    task_contract_id: str,
-    run_id: str,
-    model_instance_id: str,
-) -> dict[str, Any]:
-    catalog = {
-        item.failure_id: item
-        for item in PROTECTED_FAILURE_CLASSES
-        if item.guard == guard
-    }
-    required_strings = {
-        "declaration_id": declaration.get("declaration_id"),
-        "purpose": declaration.get("purpose"),
-        "boundary": declaration.get("boundary"),
-    }
-    if (
-        declaration.get("schema_version") != "worldguard.task_guard_purpose.v1"
-        or declaration.get("guard") != guard
-        or declaration.get("task_contract_id") != task_contract_id
-        or declaration.get("run_id") != run_id
-        or declaration.get("model_instance_id") != model_instance_id
-        or declaration.get("declaration_sequence") != 1
-        or any(not isinstance(value, str) or not value.strip() for value in required_strings.values())
-    ):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_DECLARATION_INVALID",
-            "The task purpose identity, order, purpose, or boundary is incomplete or mismatched.",
-            details={
-                "guard": guard,
-                "task_contract_id": task_contract_id,
-                "model_instance_id": model_instance_id,
-            },
-        )
-    selected = declaration.get("selected_failure_ids")
-    if (
-        not isinstance(selected, list)
-        or not selected
-        or any(not isinstance(item, str) or not item for item in selected)
-        or len(selected) != len(set(selected))
-    ):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_FAILURE_UNIVERSE_EMPTY_OR_DUPLICATE",
-            "The task must declare one or more unique failures to prevent.",
-            details={"guard": guard},
-        )
-    unknown = [item for item in selected if item not in catalog]
-    if unknown:
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_NATIVE_ORACLE_UNKNOWN",
-            "A selected failure has no WorldGuard-owned native oracle.",
-            details={"guard": guard, "unknown_failure_ids": unknown},
-        )
-    good = declaration.get("known_good")
-    if not isinstance(good, Mapping):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_GOOD_PROOF_MISSING",
-            "The task declaration requires one task-local native known-good case.",
-            details={"guard": guard},
-        )
-    good_required = ("case_id", "text", "native_oracle_id")
-    if (
-        any(not isinstance(good.get(key), str) or not str(good.get(key)).strip() for key in good_required)
-        or not isinstance(good.get("inputs"), Mapping)
-        or not isinstance(good.get("coverage_context", {}), Mapping)
-        or good.get("expected_guard_status") != "PASS"
-        or good.get("expected_semantic_status") != "PASS"
-        or good.get("native_oracle_id") != f"oracle:worldguard:{guard}:known-good"
-    ):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_GOOD_PROOF_INVALID",
-            "The task-local known-good case is incomplete or uses the wrong native oracle.",
-            details={"guard": guard},
-        )
-    bad_rows = declaration.get("known_bad_cases")
-    if not isinstance(bad_rows, list):
-        bad_rows = []
-    by_failure: dict[str, list[Mapping[str, Any]]] = {item: [] for item in selected}
-    extras: list[str] = []
-    for row in bad_rows:
-        if not isinstance(row, Mapping):
-            extras.append("<non-object>")
-            continue
-        failure_id = str(row.get("failure_id", ""))
-        if failure_id not in by_failure:
-            extras.append(failure_id)
-            continue
-        by_failure[failure_id].append(row)
-    if extras or any(len(rows) != 1 for rows in by_failure.values()):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_BAD_PROOF_CARDINALITY_INVALID",
-            "Every selected failure requires exactly one task-local known-bad case and no extras.",
-            details={
-                "guard": guard,
-                "counts": {key: len(value) for key, value in by_failure.items()},
-                "extra_failure_ids": extras,
-            },
-        )
-    normalized_bad: list[dict[str, Any]] = []
-    for failure_id in selected:
-        row = by_failure[failure_id][0]
-        target = catalog[failure_id]
-        if (
-            not isinstance(row.get("case_id"), str)
-            or not str(row.get("case_id")).strip()
-            or not isinstance(row.get("blocked_claim"), str)
-            or not str(row.get("blocked_claim")).strip()
-            or not isinstance(row.get("text"), str)
-            or not str(row.get("text")).strip()
-            or not isinstance(row.get("inputs"), Mapping)
-            or not isinstance(row.get("coverage_context", {}), Mapping)
-            or row.get("expected_status") != target.expected_status
-            or row.get("expected_code") != target.code
-            or row.get("native_oracle_id") != _native_oracle_id(target)
-        ):
-            raise GuardCandidatePurposeError(
-                "GUARD_TASK_PURPOSE_BAD_PROOF_INVALID",
-                "A task-local known-bad case is incomplete or mismatched with its WorldGuard-native oracle.",
-                details={"guard": guard, "failure_id": failure_id},
-            )
-        normalized_bad.append(
-            {
-                "case_id": str(row["case_id"]),
-                "failure_id": failure_id,
-                "blocked_claim": str(row["blocked_claim"]),
-                "text": str(row["text"]),
-                "inputs": dict(row["inputs"]),
-                "coverage_context": dict(row.get("coverage_context", {})),
-                "expected_status": target.expected_status,
-                "expected_code": target.code,
-                "native_oracle_id": _native_oracle_id(target),
-            }
-        )
-    return {
-        "schema_version": "worldguard.task_guard_purpose.v1",
-        "declaration_id": str(declaration["declaration_id"]),
-        "task_contract_id": task_contract_id,
-        "run_id": run_id,
-        "model_instance_id": model_instance_id,
-        "guard": guard,
-        "purpose": str(declaration["purpose"]),
-        "boundary": str(declaration["boundary"]),
-        "selected_failure_ids": list(selected),
-        "known_good": {
-            "case_id": str(good["case_id"]),
-            "text": str(good["text"]),
-            "inputs": dict(good["inputs"]),
-            "coverage_context": dict(good.get("coverage_context", {})),
-            "expected_guard_status": "PASS",
-            "expected_semantic_status": "PASS",
-            "native_oracle_id": f"oracle:worldguard:{guard}:known-good",
-        },
-        "known_bad_cases": normalized_bad,
-        "declaration_sequence": 1,
-    }
 
 
-def _proof_case_contract(
-    declaration: Mapping[str, Any],
-    *,
-    case_id: str,
-    text: str,
-    inputs: Mapping[str, Any],
-    coverage_context: Mapping[str, Any] | None = None,
-) -> GuardContract:
-    merged_inputs = dict(inputs)
-    if coverage_context:
-        merged_inputs["_semantic_coverage"] = dict(coverage_context)
-    guard = str(declaration["guard"])
-    return GuardContract.from_dict(
-        {
-            "contract_id": f"proof:{declaration['declaration_id']}:{case_id}:{guard}",
-            "run_id": str(declaration["run_id"]),
-            "claim": {
-                "claim_id": case_id,
-                "text": text,
-                "target_guards": [guard],
-                "requested_semantics": [guard.removesuffix("Guard").lower()],
-            },
-            "world_model": {
-                "model_id": str(declaration["model_instance_id"]),
-                "model_version": "task-purpose-proof",
-            },
-            "inputs": merged_inputs,
-        }
-    )
 
 
-def prove_task_purpose_declaration(
-    declaration: Mapping[str, Any],
-    *,
-    guard: str,
-    task_contract_id: str,
-    run_id: str,
-    model_instance_id: str,
-) -> dict[str, Any]:
-    normalized = _normalize_task_purpose_declaration(
-        declaration,
-        guard=guard,
-        task_contract_id=task_contract_id,
-        run_id=run_id,
-        model_instance_id=model_instance_id,
-    )
-    observations: list[dict[str, Any]] = []
-    good = normalized["known_good"]
-    good_contract = _proof_case_contract(
-        normalized,
-        case_id=good["case_id"],
-        text=good["text"],
-        inputs=good["inputs"],
-        coverage_context=good["coverage_context"],
-    )
-    good_guard = GUARD_RUNNERS[guard](good_contract)
-    good_semantic_status, good_findings, _, _ = EXECUTOR_REGISTRY[guard].execute(
-        good_contract
-    )
-    good_observation = {
-        "case_id": good["case_id"],
-        "case_kind": "known_good",
-        "guard_status": good_guard.status.value,
-        "semantic_status": good_semantic_status.value,
-        "guard_codes": [str(item.get("code", "")) for item in good_guard.errors],
-        "semantic_codes": [str(item.get("code", "")) for item in good_findings],
-        "passed": (
-            good_guard.status is GuardStatus.PASS
-            and good_semantic_status is SemanticStatus.PASS
-        ),
-    }
-    observations.append(good_observation)
-    catalog = {item.failure_id: item for item in PROTECTED_FAILURE_CLASSES}
-    for bad in normalized["known_bad_cases"]:
-        target = catalog[bad["failure_id"]]
-        bad_contract = _proof_case_contract(
-            normalized,
-            case_id=bad["case_id"],
-            text=bad["text"],
-            inputs=bad["inputs"],
-            coverage_context=bad["coverage_context"],
-        )
-        if target.layer == "guard":
-            result = GUARD_RUNNERS[guard](bad_contract)
-            observed_status = result.status.value
-            observed_codes = [str(item.get("code", "")) for item in result.errors]
-        else:
-            status, findings, _, _ = EXECUTOR_REGISTRY[guard].execute(bad_contract)
-            observed_status = status.value
-            observed_codes = [str(item.get("code", "")) for item in findings]
-        observations.append(
-            {
-                "case_id": bad["case_id"],
-                "case_kind": "known_bad",
-                "failure_id": bad["failure_id"],
-                "native_oracle_id": bad["native_oracle_id"],
-                "expected_status": bad["expected_status"],
-                "observed_status": observed_status,
-                "expected_code": bad["expected_code"],
-                "observed_codes": observed_codes,
-                "passed": (
-                    observed_status == bad["expected_status"]
-                    and observed_codes == [bad["expected_code"]]
-                ),
-            }
-        )
-    passed = bool(observations) and all(item["passed"] for item in observations)
-    receipt = {
-        "schema_version": "worldguard.task_guard_purpose_proof.v1",
-        "status": "pass" if passed else "fail",
-        "declaration_id": normalized["declaration_id"],
-        "declaration_fingerprint": _canonical_fingerprint(normalized),
-        "guard": guard,
-        "model_instance_id": model_instance_id,
-        "selected_failure_ids": list(normalized["selected_failure_ids"]),
-        "known_good_count": 1,
-        "known_bad_count": len(normalized["known_bad_cases"]),
-        "observations": observations,
-    }
-    if not passed:
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_NATIVE_PROOF_FAILED",
-            "The task-local known-good/known-bad proof did not match WorldGuard-native reactions.",
-            details={"guard": guard, "receipt": receipt},
-        )
-    return receipt
 
 
 def guard_family_purpose_contract_payload() -> dict[str, Any]:
@@ -758,166 +397,12 @@ def guard_family_purpose_contract_fingerprint() -> str:
     return _canonical_fingerprint(guard_family_purpose_contract_payload())
 
 
-def _guard_purpose_contract_payload(guard: str) -> dict[str, Any]:
-    purpose = next((item for item in GUARD_MODEL_PURPOSES if item.guard == guard), None)
-    if purpose is None:
-        raise GuardCandidatePurposeError(
-            "GUARD_CANDIDATE_PURPOSE_MISSING",
-            "The requested Guard has no target-owned purpose contract.",
-            details={"guard": guard},
-        )
-    return {
-        "schema_version": "worldguard.guard_purpose_contract.v1",
-        "purpose": purpose.to_dict(),
-        "good_cases": [item.to_dict() for item in NATIVE_GOOD_CASES if item.guard == guard],
-        "failure_classes": [
-            item.to_dict() for item in PROTECTED_FAILURE_CLASSES if item.guard == guard
-        ],
-    }
 
 
-def _current_guard_purpose_contract_binding(
-    guard: str,
-    *,
-    candidate_contract_id: str,
-    task_contract_id: str,
-    run_id: str,
-    model_instance_id: str,
-    declaration: Mapping[str, Any],
-) -> GuardPurposeContractBinding:
-    payload = _guard_purpose_contract_payload(guard)
-    normalized = _normalize_task_purpose_declaration(
-        declaration,
-        guard=guard,
-        task_contract_id=task_contract_id,
-        run_id=run_id,
-        model_instance_id=model_instance_id,
-    )
-    proof_receipt = prove_task_purpose_declaration(
-        normalized,
-        guard=guard,
-        task_contract_id=task_contract_id,
-        run_id=run_id,
-        model_instance_id=model_instance_id,
-    )
-    return GuardPurposeContractBinding(
-        schema_version="worldguard.guard_candidate_purpose_binding.v2",
-        guard=guard,
-        purpose_id=normalized["declaration_id"],
-        purpose=normalized["purpose"],
-        blocked_claims=tuple(
-            item["blocked_claim"] for item in normalized["known_bad_cases"]
-        ),
-        boundary=normalized["boundary"],
-        family_contract_fingerprint=guard_family_purpose_contract_fingerprint(),
-        guard_contract_fingerprint=_canonical_fingerprint(payload),
-        family_guard_ids=tuple(item.guard for item in GUARD_MODEL_PURPOSES),
-        protected_failure_ids=tuple(normalized["selected_failure_ids"]),
-        declaration_id=normalized["declaration_id"],
-        task_contract_id=task_contract_id,
-        run_id=run_id,
-        model_instance_id=model_instance_id,
-        declaration_fingerprint=_canonical_fingerprint(normalized),
-        proof_receipt_fingerprint=_canonical_fingerprint(proof_receipt),
-        declaration_payload=normalized,
-        proof_receipt=proof_receipt,
-        frozen_for_candidate_id=candidate_contract_id,
-        purpose_frozen_sequence=1,
-        candidate_constructed_sequence=2,
-    )
 
 
-def freeze_guard_purpose_contract(
-    guard: str,
-    *,
-    candidate_contract_id: str,
-    task_contract_id: str,
-    run_id: str,
-    model_instance_id: str,
-    declaration: Mapping[str, Any],
-) -> GuardPurposeContractBinding:
-    """Prove and freeze one explicit task-model-instance declaration."""
-
-    return _current_guard_purpose_contract_binding(
-        guard,
-        candidate_contract_id=candidate_contract_id,
-        task_contract_id=task_contract_id,
-        run_id=run_id,
-        model_instance_id=model_instance_id,
-        declaration=declaration,
-    )
 
 
-def verify_guard_candidate_purpose_contract(
-    contract: GuardContract,
-    guard: str,
-) -> GuardPurposeContractBinding:
-    """Reject missing, stale, out-of-order, or shrunken candidate authority."""
-
-    binding = contract.guard_purpose_contract
-    if binding is None:
-        raise GuardCandidatePurposeError(
-            "GUARD_CANDIDATE_PURPOSE_MISSING",
-            "The formal Guard candidate does not carry a frozen purpose contract.",
-            details={"guard": guard, "candidate_contract_id": contract.contract_id},
-        )
-    if (
-        binding.purpose_frozen_sequence >= binding.candidate_constructed_sequence
-        or binding.purpose_frozen_sequence != 1
-        or binding.candidate_constructed_sequence != 2
-        or binding.frozen_for_candidate_id != contract.contract_id
-    ):
-        raise GuardCandidatePurposeError(
-            "GUARD_CANDIDATE_PURPOSE_ORDER_INVALID",
-            "Purpose authority must be frozen for this exact candidate before construction.",
-            details={
-                "guard": guard,
-                "candidate_contract_id": contract.contract_id,
-                "frozen_for_candidate_id": binding.frozen_for_candidate_id,
-                "purpose_frozen_sequence": binding.purpose_frozen_sequence,
-                "candidate_constructed_sequence": binding.candidate_constructed_sequence,
-            },
-        )
-
-    expected_candidate_id = f"{binding.task_contract_id}:{guard}"
-    if (
-        binding.guard != guard
-        or binding.task_contract_id == ""
-        or binding.run_id != contract.run_id
-        or binding.model_instance_id != contract.world_model.model_id
-        or expected_candidate_id != contract.contract_id
-    ):
-        raise GuardCandidatePurposeError(
-            "GUARD_TASK_PURPOSE_INSTANCE_MISMATCH",
-            "The declaration belongs to another task, run, model instance, Guard, or child candidate.",
-            details={
-                "guard": guard,
-                "candidate_contract_id": contract.contract_id,
-                "task_contract_id": binding.task_contract_id,
-                "model_instance_id": binding.model_instance_id,
-            },
-        )
-    # Verification re-normalizes the exact target declaration and reruns its
-    # target-native proof independently of the public candidate constructor.
-    expected = _current_guard_purpose_contract_binding(
-        guard,
-        candidate_contract_id=contract.contract_id,
-        task_contract_id=binding.task_contract_id,
-        run_id=binding.run_id,
-        model_instance_id=binding.model_instance_id,
-        declaration=binding.declaration_payload,
-    )
-    if binding.to_dict() != expected.to_dict():
-        raise GuardCandidatePurposeError(
-            "GUARD_CANDIDATE_PURPOSE_STALE",
-            "The candidate binding does not match the current task declaration, proof, or family oracle catalog.",
-            details={
-                "guard": guard,
-                "expected_family_contract_fingerprint": expected.family_contract_fingerprint,
-                "observed_family_contract_fingerprint": binding.family_contract_fingerprint,
-            },
-        )
-    return binding
 
 
 def _fingerprint() -> str:
@@ -925,126 +410,59 @@ def _fingerprint() -> str:
 
 
 def run_guard_model_contract() -> dict[str, Any]:
+    """Run every catalog case once; never calibrate the checker inside a case."""
     failures: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
-    guards = tuple(purpose.guard for purpose in GUARD_MODEL_PURPOSES)
-
-    if set(guards) != set(GUARD_RUNNERS) or set(guards) != set(EXECUTOR_REGISTRY):
-        failures.append(
-            {
-                "code": "GUARD_PURPOSE_INVENTORY_MISMATCH",
-                "expected": sorted(set(GUARD_RUNNERS) | set(EXECUTOR_REGISTRY)),
-                "observed": sorted(set(guards)),
-            }
-        )
-    if any(not item.purpose or not item.blocked_claims or not item.boundary for item in GUARD_MODEL_PURPOSES):
-        failures.append({"code": "GUARD_PURPOSE_INCOMPLETE"})
-
+    guards = {purpose.guard for purpose in GUARD_MODEL_PURPOSES}
+    if guards != set(GUARD_RUNNERS) or guards != set(EXECUTOR_REGISTRY):
+        failures.append({"code": "GUARD_PURPOSE_INVENTORY_MISMATCH"})
     good_counts = Counter(case.guard for case in NATIVE_GOOD_CASES)
-    if set(good_counts) != set(guards) or any(count != 1 for count in good_counts.values()):
-        failures.append({"code": "NATIVE_GOOD_CARDINALITY_MISMATCH", "counts": dict(good_counts)})
-
+    if set(good_counts) != guards or any(count != 1 for count in good_counts.values()):
+        failures.append({"code": "NATIVE_GOOD_CARDINALITY_MISMATCH"})
+    discovered = discover_guard_owned_failure_codes()
+    expected = {(guard, layer, code) for (guard, layer), codes in discovered.items() for code in codes}
+    declared = [_failure_key(case) for case in PROTECTED_FAILURE_CLASSES]
+    if len(declared) != len(set(declared)) or set(declared) != expected:
+        failures.append({"code": "PROTECTED_FAILURE_UNIVERSE_MISMATCH"})
+    family_fingerprint = guard_family_purpose_contract_fingerprint()
     for case in NATIVE_GOOD_CASES:
         contract = _contract(case.case_id, case.guard, case.text, case.inputs)
-        candidate = contract.for_guard(case.guard)
-        candidate_binding = verify_guard_candidate_purpose_contract(candidate, case.guard)
-        guard_result = GUARD_RUNNERS[case.guard](candidate)
-        semantic_result = execute_semantic(
-            node_id=f"node:{case.guard.lower()}",
-            guard=case.guard,
-            contract=candidate,
-            provider_available=True,
-            coverage_context=dict(case.coverage_context),
-        )
-        observed = {
-            "case_id": case.case_id,
-            "guard": case.guard,
-            "guard_status": guard_result.status.value,
-            "semantic_status": semantic_result.status.value,
-            "family_contract_fingerprint": candidate_binding.family_contract_fingerprint,
-        }
+        if case.coverage_context:
+            contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
+        structural = GUARD_RUNNERS[case.guard](contract)
+        semantic_status, _, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
+        observed = {"case_id": case.case_id, "guard": case.guard,
+                    "guard_status": structural.status.value, "semantic_status": semantic_status.value,
+                    "family_contract_fingerprint": family_fingerprint}
         observations.append(observed)
-        if guard_result.status is not GuardStatus.PASS or semantic_result.status is not SemanticStatus.PASS:
+        if structural.status is not GuardStatus.PASS or semantic_status is not SemanticStatus.PASS:
             failures.append({"code": "NATIVE_GOOD_REJECTED", **observed})
-
-    discovered = discover_guard_owned_failure_codes()
-    expected_keys = {
-        (guard, layer, code)
-        for (guard, layer), codes in discovered.items()
-        for code in codes
-    }
-    declared_keys = [_failure_key(case) for case in PROTECTED_FAILURE_CLASSES]
-    declared_counts = Counter(declared_keys)
-    duplicates = [list(key) for key, count in declared_counts.items() if count != 1]
-    if duplicates:
-        failures.append({"code": "KNOWN_BAD_CARDINALITY_MISMATCH", "duplicates": duplicates})
-    if set(declared_keys) != expected_keys:
-        failures.append(
-            {
-                "code": "PROTECTED_FAILURE_UNIVERSE_MISMATCH",
-                "missing": [list(key) for key in sorted(expected_keys - set(declared_keys))],
-                "extra": [list(key) for key in sorted(set(declared_keys) - expected_keys)],
-            }
-        )
-
     for case in PROTECTED_FAILURE_CLASSES:
         contract = _contract(case.failure_id, case.guard, case.text, case.inputs)
-        candidate = contract.for_guard(case.guard)
-        candidate_binding = verify_guard_candidate_purpose_contract(candidate, case.guard)
+        if case.coverage_context:
+            contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
         if case.layer == "guard":
-            result = GUARD_RUNNERS[case.guard](candidate)
-            observed_status = result.status.value
-            observed_codes = [str(item.get("code", "")) for item in result.errors]
-        elif case.layer == "semantic":
-            receipt = execute_semantic(
-                node_id=f"node:{case.guard.lower()}",
-                guard=case.guard,
-                contract=candidate,
-                provider_available=True,
-                coverage_context=dict(case.coverage_context),
-            )
-            observed_status = receipt.status.value
-            observed_codes = [str(item.get("code", "")) for item in receipt.findings]
+            result = GUARD_RUNNERS[case.guard](contract)
+            status, codes = result.status.value, [str(row.get("code", "")) for row in result.errors]
         else:
-            failures.append({"code": "UNKNOWN_FAILURE_LAYER", "failure_id": case.failure_id})
-            continue
-        observed = {
-            "failure_id": case.failure_id,
-            "guard": case.guard,
-            "layer": case.layer,
-            "expected_status": case.expected_status,
-            "observed_status": observed_status,
-            "expected_code": case.code,
-            "observed_codes": observed_codes,
-            "family_contract_fingerprint": candidate_binding.family_contract_fingerprint,
-        }
+            result, findings, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
+            status, codes = result.value, [str(row.get("code", "")) for row in findings]
+        observed = {"failure_id": case.failure_id, "guard": case.guard, "layer": case.layer,
+                    "expected_status": case.expected_status, "observed_status": status,
+                    "expected_code": case.code, "observed_codes": codes,
+                    "family_contract_fingerprint": family_fingerprint}
         observations.append(observed)
-        if observed_status != case.expected_status or observed_codes != [case.code]:
+        if status != case.expected_status or codes != [case.code]:
             failures.append({"code": "NATIVE_BAD_ORACLE_MISMATCH", **observed})
-
-    status = "pass" if not failures else "fail"
-    return {
-        "schema_version": "worldguard.guard_model_contract_report.v1",
-        "status": status,
-        "ok": not failures,
-        "purpose_count": len(GUARD_MODEL_PURPOSES),
-        "native_good_count": len(NATIVE_GOOD_CASES),
-        "protected_failure_count": len(expected_keys),
-        "known_bad_count": len(PROTECTED_FAILURE_CLASSES),
-        "candidate_binding_count": len(NATIVE_GOOD_CASES) + len(PROTECTED_FAILURE_CLASSES),
-        "universe_fingerprint": _fingerprint(),
-        "purposes": [item.to_dict() for item in GUARD_MODEL_PURPOSES],
-        "protected_failures": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
-        "mesh_runtime_failures": MESH_RUNTIME_FAILURES,
-        "observations": observations,
-        "failures": failures,
-        "claim_boundary": (
-            "This target-native oracle proves that each declared Guard purpose has one native good case "
-            "and every literal Guard-owned failure code has exactly one native bad case with an exact "
-            "status/code reaction. Mesh provider/registration failures, arbitrary bugs, factual truth, "
-            "installation parity, and release closure remain outside this receipt."
-        ),
-    }
+    return {"schema_version": "worldguard.guard_model_contract_report.v1",
+            "status": "pass" if not failures else "fail", "ok": not failures,
+            "purpose_count": len(guards), "native_good_count": len(NATIVE_GOOD_CASES),
+            "protected_failure_count": len(expected), "known_bad_count": len(PROTECTED_FAILURE_CLASSES),
+            "executed_case_count": len(observations), "universe_fingerprint": family_fingerprint,
+            "purposes": [item.to_dict() for item in GUARD_MODEL_PURPOSES],
+            "protected_failures": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
+            "mesh_runtime_failures": MESH_RUNTIME_FAILURES, "observations": observations, "failures": failures,
+            "claim_boundary": "Finite author regression over native Guard-owned reactions only; no task understanding, factual truth, installation or release claim."}
 
 
 def main(argv: list[str] | None = None) -> int:

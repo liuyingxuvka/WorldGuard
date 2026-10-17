@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from scripts.sync_worldguard_portable_runtime import audit_projection
-from tests.helpers import attach_task_purpose_declarations
+
 from worldguard.blueprint import (
     NATIVE_SEMANTIC_FIELDS,
     NATIVE_SEMANTIC_FIELD_DISPOSITIONS,
@@ -391,8 +391,7 @@ def _mixed_event_rollout_outputs(
     releases: str = "fluent:released",
 ) -> dict:
     contract = GuardContract.from_dict(
-        attach_task_purpose_declarations(
-            {
+        {
                 "contract_id": "event-identity-domain-regression",
                 "run_id": "event-identity-domain-regression-run",
                 "claim": {
@@ -434,9 +433,7 @@ def _mixed_event_rollout_outputs(
                         ],
                     },
                 },
-            },
-            guards=["EventGuard"],
-        )
+            }
     )
     status, findings, _, outputs = EXECUTOR_REGISTRY["EventGuard"].execute(contract)
     assert status == SemanticStatus.PASS

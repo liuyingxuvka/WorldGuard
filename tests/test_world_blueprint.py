@@ -28,7 +28,6 @@ from worldguard.blueprint import (
 )
 from worldguard.semantic import fingerprint_mesh
 from worldguard.status import GuardStatus
-from worldguard.guard_model_contract import GuardCandidatePurposeError
 
 from tests.object_census_fixtures import signed_object_census
 
@@ -968,7 +967,7 @@ def test_invalid_counterexample_oracle_blocks_native_owner_execution() -> None:
     assert receipt["execution_disposition"] == "not_run"
     assert receipt["status"] == "GAP"
     assert any(
-        row["code"] == "GUARD_TASK_PURPOSE_BAD_PROOF_INVALID"
+        row["code"] == "WORLD_BLUEPRINT_BEHAVIOR_ORACLE_INVALID"
         for row in receipt["findings"]
     )
     assert report.native_domain_qualified is False
@@ -997,7 +996,7 @@ def test_production_derived_good_oracle_cannot_replace_native_oracle() -> None:
 
     assert receipt["execution_disposition"] == "not_run"
     assert any(
-        row["code"] == "GUARD_TASK_PURPOSE_GOOD_PROOF_INVALID"
+        row["code"] == "WORLD_BLUEPRINT_BEHAVIOR_ORACLE_INVALID"
         for row in receipt["findings"]
     )
 
@@ -1042,10 +1041,7 @@ def test_native_execution_cannot_bypass_for_guard(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def blocked_for_guard(*_args: object, **_kwargs: object) -> object:
-        raise GuardCandidatePurposeError(
-            "TEST_FOR_GUARD_PATH_REQUIRED",
-            "The test intercepted the mandatory child-contract path.",
-        )
+        raise ValueError("The test intercepted the mandatory child-contract path.")
 
     monkeypatch.setattr(
         blueprint_module.GuardContract,
@@ -1063,7 +1059,7 @@ def test_native_execution_cannot_bypass_for_guard(
     assert receipt["structural_result"] == {}
     assert receipt["semantic_result"] == {}
     assert any(
-        row["code"] == "TEST_FOR_GUARD_PATH_REQUIRED"
+        row["code"] == "WORLD_BLUEPRINT_NATIVE_OWNER_EXECUTION_ERROR"
         for row in receipt["findings"]
     )
 

@@ -1,7 +1,7 @@
 from worldguard.contracts import GuardContract
 from worldguard.kernel import run_worldguard
 from worldguard.status import GuardStatus
-from tests.helpers import attach_task_purpose_declarations
+
 
 
 def test_kernel_preserves_upstream_gap_in_aggregate_ledger():
@@ -17,7 +17,7 @@ def test_kernel_preserves_upstream_gap_in_aggregate_ledger():
             "world_model": {"model_id": "m", "model_version": "v"},
             "inputs": {"norms": [{"modality": "permitted", "action": "purge"}]},
         }
-    attach_task_purpose_declarations(data, guards=["EventGuard", "NormGuard"])
+    data
     contract = GuardContract.from_dict(data)
 
     report = run_worldguard(contract)
@@ -44,9 +44,7 @@ def test_kernel_aggregates_fail_before_gap_and_boundary():
                 "norms": [{"modality": "forbidden", "action": "share_membrane_recipe"}],
             },
         }
-    attach_task_purpose_declarations(
-        data, guards=["SpaceGuard", "ConflictGuard", "NormGuard"]
-    )
+    data
     contract = GuardContract.from_dict(data)
 
     report = run_worldguard(contract)

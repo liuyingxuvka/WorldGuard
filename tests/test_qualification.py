@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from tests.helpers import attach_task_purpose_declarations
+
 from worldguard import (
     GuardedReport,
     ModelMeshContract,
@@ -40,7 +40,7 @@ def _event_contract() -> dict:
             ]
         },
     }
-    return attach_task_purpose_declarations(contract, guards=["EventGuard"])
+    return contract
 
 
 def _supplied_provider_result(report) -> dict:
@@ -74,6 +74,7 @@ def test_unit_and_one_node_mesh_share_one_qualification_shape() -> None:
         mesh_contract,
         mesh_contract.nodes[0],
     )
+    assert "guard_purpose_declarations" not in contract
     unit = run_worldguard(contract, context=shared_context)
     mesh = run_model_mesh(mesh_contract)
     node = mesh.node_reports["event-world"]
@@ -128,7 +129,7 @@ def test_unmapped_atom_preserves_claim_and_atom_identity() -> None:
             }
         ],
     }
-    contract["guard_purpose_declarations"] = []
+    assert "guard_purpose_declarations" not in contract
 
     report = run_worldguard(contract)
 
@@ -264,7 +265,7 @@ def test_partial_supplied_provider_result_is_blocked_before_semantic_execution(
 def test_unexpected_declared_guard_blocks_all_execution(monkeypatch) -> None:
     contract = _event_contract()
     contract["claim"]["target_guards"] = ["EventGuard", "AgentGuard"]
-    attach_task_purpose_declarations(contract, guards=["EventGuard", "AgentGuard"])
+    contract
 
     def forbidden_execution(*args, **kwargs):
         raise AssertionError("no owner may execute after an unexpected Guard declaration")

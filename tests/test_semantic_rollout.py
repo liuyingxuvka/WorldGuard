@@ -5,7 +5,7 @@ import pytest
 from worldguard import ProviderStatus, SemanticStatus, run_model_mesh
 from worldguard.cli import main as worldguard_main
 from worldguard.status import GuardStatus
-from tests.helpers import attach_task_purpose_declarations
+
 
 
 def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim") -> dict:
@@ -43,7 +43,7 @@ def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim") -> 
             }
         ],
     }
-    attach_task_purpose_declarations(mesh["nodes"][0]["contract"], guards=[guard])
+    mesh["nodes"][0]["contract"]
     return mesh
 
 

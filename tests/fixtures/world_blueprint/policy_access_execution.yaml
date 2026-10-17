@@ -423,7 +423,7 @@ bindings:
   target_revision: policy-revision-1
   freshness_status: current
   content_fingerprint: sha256:115337bb24d92d4687dc06f446ca450473c35fc2ce2579a0dbd923464ac704a1
-  receipt_fingerprint: sha256:7168a3c1e4935a3a04f198f2f226b0a6811abbbde7a17353a03934138e56d5ec
+  receipt_fingerprint: sha256:1b31416970bcd133c8546045e130a9ebcd48a1e1ad5c6c03479811c41185b162
   claim_boundary: field access policy execution revision 1 only
 - binding_id: access_policy_norm_test
   role: test_check
@@ -471,7 +471,7 @@ bindings:
   target_revision: policy-revision-1
   freshness_status: current
   content_fingerprint: sha256:a50e039070fea9ee97bcc85746ee2542910cb479ac8ff84b694a0adb2fe1d4e4
-  receipt_fingerprint: sha256:53fa038914cf379ae26d3e038fd08872f0da5061360967902c22e1be1751dba4
+  receipt_fingerprint: sha256:98decc9e0feb2db00e8d1dff2b91925bc5cc14ed1cb555265759b36cb13adca0
   claim_boundary: field access policy execution revision 1 only
 - binding_id: request_actor_material
   role: target_material
@@ -503,7 +503,7 @@ bindings:
   target_revision: policy-revision-1
   freshness_status: current
   content_fingerprint: sha256:3e0e81a8cd41e8fec6150e10deaa2c5de8ccb7f71e94adebc2f3eaf1c00d257e
-  receipt_fingerprint: sha256:87c6a6798ce85b8101e795990221f300d805796be6e6af67d70478f9da692e86
+  receipt_fingerprint: sha256:a5c08b36f3c38b70f4ffa509c0978b3ef741a732f93395b24f175ccffc23583c
   claim_boundary: field access policy execution revision 1 only
 declared_inputs:
 - input_id: external_policy_request
@@ -560,4 +560,4 @@ commitment_inventory:
     content_fingerprint: sha256:cf588e692ca177029748073d6a14f1d780df6161ce5654eb879c2d747283aa55
   claim_boundary: field access policy execution revision 1 only
 declared_gaps: []
-blueprint_fingerprint: ddd32e8f423b6ac391fe4a64c9f3b5483d1870f5d49eceefa7373714fa0f9541
+blueprint_fingerprint: c504cc0cbb3a70e254149535c9b6e1b8d90c7600b51264d8b704e05d0d06526a

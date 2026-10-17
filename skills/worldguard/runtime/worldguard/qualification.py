@@ -10,7 +10,6 @@ from .contracts import (
     claim_semantics,
     derive_guard_requirements,
 )
-from .guard_model_contract import verify_guard_candidate_purpose_contract
 from .guards import GUARD_RUNNERS
 from .ledgers import LedgerEntry, ledger_entry
 from .reports import GuardResult, GuardedReport
@@ -212,7 +211,6 @@ def _stale_provider_receipt(
     contract: GuardContract,
     evidence: dict[str, Any],
 ) -> SemanticExecutionReceipt:
-    purpose = verify_guard_candidate_purpose_contract(contract, guard)
     executor = EXECUTOR_REGISTRY[guard]
     return SemanticExecutionReceipt(
         node_id=node_id,
@@ -228,7 +226,6 @@ def _stale_provider_receipt(
             }
         ],
         skipped_reason="stale_provider_evidence",
-        guard_purpose_contract=purpose.to_dict(),
     )
 
 
@@ -426,7 +423,6 @@ def qualify_guard_contract(
             guard,
             upstream_results=[result.to_dict() for result in child_results],
         )
-        verify_guard_candidate_purpose_contract(guard_contract, guard)
         child_results.append(GUARD_RUNNERS[guard](guard_contract))
 
         _execution_owner(
