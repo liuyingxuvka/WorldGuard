@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.15 - 2026-10-18
+
+- Evaluate pending SCM equations without stale endogenous scenario seeds, preserving identity roots, exogenous inputs and explicit do overrides regardless of variable declaration order.
+- Define resource transitions as the existing finite ordered CPN firing trace and make semantic replay carry produced tokens into later consumption; no scheduler or time simulation is inferred.
+- Retain real semantic execution sources in native depth receipts and rederive all nested predictive coverage and license values with the existing native assessment. Task closure rejects unsupported older receipts without these sources, shallow summary overrides and sources from different candidate inputs.
+- Require native semantic receipt bodies for original/holdout revalidation, bound to current candidate inputs and actually executed scopes. A recorded batch covering both scopes may be reused; the two empirical observations must still have independent identities, sources, evidence and content, and construction evidence cannot substitute for a holdout.
+- Preserve seven default models and ordinary native refusal paths; clarify the task-local model runner executes finite scenarios without nesting native tests. Synchronize the portable runtime from canonical source.
+
 ## v0.7.14 - 2026-10-18
 
 - Align ordinary closure instructions with derived Guards and direct native execution while retaining target-local blueprint oracles and SCM gaps.

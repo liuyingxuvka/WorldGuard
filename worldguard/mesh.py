@@ -27,6 +27,7 @@ from .semantic import (
     aggregate_semantic_status,
     fingerprint_mesh,
     _semantic_consumed_inputs,
+    _variable_timepoint_map,
 )
 from .status import GuardStatus, aggregate_statuses, coerce_status
 
@@ -2048,7 +2049,8 @@ def validate_semantic_receipt_for_mesh(source: Mapping[str, Any], mesh: ModelMes
     node = next((node for node in mesh.nodes if node.model_id == receipt.node_id), None)
     if node is None or node.contract is None or receipt.guard not in derive_required_guards(node.contract.claim):
         raise ValueError("semantic source does not belong to a current candidate node/Guard")
-    expected = _semantic_consumed_inputs(receipt.guard, node.contract)
+    variable_timepoints = _variable_timepoint_map(node.contract) if receipt.guard in {"EventGuard", "CausalGuard"} else {}
+    expected = _semantic_consumed_inputs(receipt.guard, node.contract, variable_timepoints=variable_timepoints)
     if receipt.status not in {SemanticStatus.NOT_RUN, SemanticStatus.BOUNDARY_ONLY} and receipt.consumed_inputs != expected:
         raise ValueError("semantic source consumed inputs do not match the current candidate")
     return receipt

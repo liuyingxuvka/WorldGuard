@@ -51,7 +51,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:42371073ea38beef4423a4cdd55c0c56cb147a942ac1d5c9b7ce66d58d2524ca"
+      "fingerprint": "sha256:4c40714b4ee06c1542f1d4f1bf7d1ef8d56b81d682119195a8bb550c5a48af81"
     },
     {
       "id": "worldguard.core",
@@ -98,7 +98,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:0cc80f36813e1087c879657dd3547a232e66565e40486378bf5818fa0fb7efde"
+      "fingerprint": "sha256:2d41e4e8a8fdd4e20a89977ecf86f6cfbe03eeff118a95b3025140537ec312bf"
     },
     {
       "id": "worldguard.guards",
@@ -113,7 +113,8 @@
         "worldguard/guard_model_contract.py",
         "skills/worldguard/runtime/worldguard/guards/*.py",
         "skills/worldguard/runtime/worldguard/guard_model_contract.py",
-        "skills/worldguard/references/guard-boundaries.md"
+        "skills/worldguard/references/guard-boundaries.md",
+        "skills/worldguard/references/guard-model-contract.md"
       ],
       "entrypoints": [
         "worldguard/guard_model_contract.py:run_guard_model_contract",
@@ -141,7 +142,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:71b565c606aa02079b9758f0a85bc4deb7f2eb152a749a6b87ef9b92772491a4"
+      "fingerprint": "sha256:8ec771ba36d3648c6dde3c7847a5639bb17f3bd52b9962ceb55ae2c024ad36a0"
     },
     {
       "id": "worldguard.qualification",
@@ -224,7 +225,7 @@
         ".flowguard/current_input_authority/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:6030c1c04158a49d722f55fc1766edf8b5e36add2e2f91666a028b50f4f89219"
+      "fingerprint": "sha256:aedf3b9d0014e79721f45fb4bab6c302c0fe0663d189059093d20ab17b455112"
     },
     {
       "id": "worldguard.blueprint",
@@ -492,7 +493,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:0fc6d04788239aa82cbccf343b9e49fb97c739b0b44fd32fb8c4bd7c36e0c02f"
+      "fingerprint": "sha256:85c46e4129d2de886aa8946fc8146951ad54bad910c0e5bea9b73c19f613bff0"
     }
   ],
   "flows": [],

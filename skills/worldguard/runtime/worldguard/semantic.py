@@ -283,13 +283,13 @@ def _variable_timepoint_map(contract: GuardContract) -> dict[str, list[str]]:
     }
 
 
-def _semantic_consumed_inputs(guard: str, contract: GuardContract) -> dict[str, Any]:
+def _semantic_consumed_inputs(guard: str, contract: GuardContract, *, variable_timepoints: dict[str, list[str]] | None = None) -> dict[str, Any]:
     """One projection shared by native producers and reusable-source validation."""
     inputs = contract.inputs
     if guard == "EventGuard":
-        return {"event_model": inputs.get("event_model", {}), "events": inputs.get("events", []), "variable_observations": _variable_timepoint_map(contract)}
+        return {"event_model": inputs.get("event_model", {}), "events": inputs.get("events", []), "variable_observations": variable_timepoints or {}}
     if guard == "CausalGuard":
-        return {"causal_model": inputs.get("causal_model", {}), "variable_observations": _variable_timepoint_map(contract)}
+        return {"causal_model": inputs.get("causal_model", {}), "variable_observations": variable_timepoints or {}}
     if guard == "AgentGuard":
         return {"agent_model": inputs.get("agent_model", {}), "agents": inputs.get("beliefs", {})}
     if guard == "NormGuard":
@@ -306,7 +306,7 @@ def _event(contract: GuardContract):
         event_model.get("transitions", []) if isinstance(event_model, dict) else []
     )
     variable_timepoints = _variable_timepoint_map(contract)
-    consumed = _semantic_consumed_inputs("EventGuard", contract)
+    consumed = _semantic_consumed_inputs("EventGuard", contract, variable_timepoints=variable_timepoints)
     if not events and not states and not transitions:
         return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_EVENTS", "No executable event, state, or transition records were supplied.")], consumed, {}
     contradictory = event_model.get("contradictory_fluents")
@@ -884,7 +884,7 @@ def _evaluate_equations(
 def _causal(contract: GuardContract):
     causal = contract.inputs.get("causal_model", {})
     variable_timepoints = _variable_timepoint_map(contract)
-    consumed = _semantic_consumed_inputs("CausalGuard", contract)
+    consumed = _semantic_consumed_inputs("CausalGuard", contract, variable_timepoints=variable_timepoints)
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {})
     graph = causal.get("graph", [])
