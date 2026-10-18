@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from collections.abc import Mapping
-from math import ceil, sqrt, isfinite
+from math import ceil, sqrt
 import re
 from typing import Any
 
@@ -26,6 +26,7 @@ from .semantic import (
     aggregate_provider_status,
     aggregate_semantic_status,
     fingerprint_mesh,
+    _semantic_consumed_inputs,
 )
 from .status import GuardStatus, aggregate_statuses, coerce_status
 
@@ -2042,6 +2043,17 @@ def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, An
     return {"mesh_fingerprint": fingerprint, "coverage_fingerprint": coverage_fingerprint, "claim_atoms": claim_atoms}
 
 
+def validate_semantic_receipt_for_mesh(source: Mapping[str, Any], mesh: ModelMeshContract) -> SemanticExecutionReceipt:
+    receipt = SemanticExecutionReceipt.from_dict(source)
+    node = next((node for node in mesh.nodes if node.model_id == receipt.node_id), None)
+    if node is None or node.contract is None or receipt.guard not in derive_required_guards(node.contract.claim):
+        raise ValueError("semantic source does not belong to a current candidate node/Guard")
+    expected = _semantic_consumed_inputs(receipt.guard, node.contract)
+    if receipt.status not in {SemanticStatus.NOT_RUN, SemanticStatus.BOUNDARY_ONLY} and receipt.consumed_inputs != expected:
+        raise ValueError("semantic source consumed inputs do not match the current candidate")
+    return receipt
+
+
 def validate_native_depth_receipt(source: Mapping[str, Any], mesh: ModelMeshContract) -> NativeDepthReceipt:
     """Validate a reusable native receipt against its exact current mesh inputs."""
     receipt = NativeDepthReceipt.from_dict(source)
@@ -2058,67 +2070,32 @@ def validate_native_depth_receipt(source: Mapping[str, Any], mesh: ModelMeshCont
     }
     if any(source[key] != value for key, value in expected.items()):
         raise ValueError("native depth source does not bind the current candidate mesh and coverage")
-    # Derive the quantitative producer field/type inventory from the same native
-    # assessment, using no execution results. This does not rerun any owner.
-    _, _, shape = _predictive_assessment(mesh, state, [])
-    quantitative = receipt.quantitative_coverage
-    if set(quantitative) != set(shape) or any(
-        (quantitative[key] is not None and type(quantitative[key]) not in {int, float})
-        if value is None else type(quantitative[key]) is not type(value)
-        for key, value in shape.items()
-    ):
-        raise ValueError("native depth quantitative coverage does not match the current producer shape")
-    def finite_counts(value: Any, key: str = "") -> bool:
-        if isinstance(value, dict):
-            return all(finite_counts(item, str(name)) for name, item in value.items())
-        if isinstance(value, list):
-            return all(finite_counts(item, key) for item in value)
-        if key.endswith("_count"):
-            return type(value) is int and value >= 0
-        if "normalized_timepoint_gap" in key and value is None:
-            return True  # The native producer uses None when no interval can be measured.
-        if key.endswith(("_ratio", "_coverage")) or "normalized_timepoint_gap" in key:
-            return type(value) in {int, float} and isfinite(value) and 0 <= value <= 1
-        return not isinstance(value, float) or isfinite(value)
-    if not finite_counts(quantitative):
-        raise ValueError("native depth quantitative coverage has invalid numeric values")
-    if quantitative["horizon"] != mesh.semantic_coverage.horizon or quantitative["predictive_requested"] != shape["predictive_requested"]:
-        raise ValueError("native depth quantitative coverage does not bind the candidate scope")
-    for key in ("expected_model_node_count", "expected_semantic_child_count", "expected_scenario_count", "expected_holdout_scenario_count"):
-        if quantitative[key] != shape[key]:
-            raise ValueError("native depth expected coverage denominator is not current")
-    for key in ("per_model_node_results", "predictive_axis_results"):
-        if any(not isinstance(row, dict) or type(row.get("passed")) is not bool for row in quantitative[key]):
-            raise ValueError("native depth coverage rows have an invalid producer shape")
-    if set(receipt.provider_states) != set(receipt.expected_semantic_children):
-        raise ValueError("native depth provider inventory does not cover its semantic children")
+    if not receipt.semantic_receipts:
+        raise ValueError("native depth source lacks reusable native semantic execution receipts")
+    executions = [validate_semantic_receipt_for_mesh(row, mesh) for row in receipt.semantic_receipts]
+    children = [f"{row.node_id}:{row.guard}" for row in executions]
+    if len(children) != len(set(children)) or set(children) != set(receipt.expected_semantic_children):
+        raise ValueError("native depth source semantic inventory is incomplete or duplicated")
+    gaps, licensed, quantitative = _predictive_assessment(mesh, state, executions)
+    if (receipt.predictive_gaps != gaps or receipt.predictive_claim_licensed != licensed
+            or receipt.quantitative_coverage != quantitative):
+        raise ValueError("native depth source coverage/license differs from native semantic outputs")
+    executed = [f"{row.node_id}:{row.guard}" for row in executions if row.status not in {SemanticStatus.NOT_RUN, SemanticStatus.BOUNDARY_ONLY}]
+    providers = {f"{row.node_id}:{row.guard}": row.provider_status.value for row in executions}
+    for row in receipt.skipped_children:
+        providers.setdefault(str(row.get("child_id", "")), "NOT_EXECUTED")
+    obligations = _native_obligation_observations(semantic_receipts=executions, quantitative_coverage=quantitative, claim_atoms=identity["claim_atoms"], required_guards=state["required_guards"])
+    if (receipt.executed_semantic_children != executed or receipt.provider_states != providers
+            or receipt.bindings != [row.binding.to_dict() for row in executions]
+            or receipt.native_obligation_evidence != obligations):
+        raise ValueError("native depth source execution projections are inconsistent")
     summary = [row for row in receipt.findings if row.get("code") == "SEMANTIC_ROLLOUT_SUMMARY"]
-    if len(summary) != 1 or summary[0].get("predictive_gaps") != receipt.predictive_gaps or summary[0].get("predictive_claim_licensed") is not receipt.predictive_claim_licensed:
-        raise ValueError("native depth summary and predictive license disagree")
-    if receipt.predictive_claim_licensed:
-        executed = set(receipt.executed_semantic_children)
-        ready = (
-            quantitative["predictive_requested"] is True
-            and set(receipt.expected_semantic_children) <= executed
-            and set(receipt.expected_model_nodes) == set(receipt.executed_model_nodes)
-            and not receipt.skipped_children and not receipt.skipped_model_nodes
-            and not receipt.missing_guards and not receipt.model_node_reconciliation_gaps
-            and {row.get("node_id") for row in receipt.structural_checks} == set(receipt.expected_model_nodes)
-            and {row.get("model_node_id") for row in quantitative["per_model_node_results"]} == set(receipt.expected_model_nodes)
-            and {row.get("axis_id") for row in quantitative["predictive_axis_results"]} == {row["axis_id"] for row in shape["predictive_axis_results"]}
-            and bool(receipt.bindings) and bool(receipt.native_obligation_evidence)
-            and all(value == "AVAILABLE" for value in receipt.provider_states.values())
-            and all(row.get("status") == "PASS" for row in receipt.structural_checks)
-            and all(summary[0].get(key) == "PASS" for key in ("structural_status", "semantic_status", "rollout_status"))
-            and summary[0].get("provider_status") == "AVAILABLE"
-            and all(row.get("passed") is True for row in quantitative["per_model_node_results"])
-            and all(row.get("passed") is True for row in quantitative["predictive_axis_results"])
-        )
-        for key, value in quantitative.items():
-            if key.startswith("expected_") and key.endswith("_count"):
-                ready = ready and value == quantitative.get(key.replace("expected_", "executed_", 1))
-        if not ready:
-            raise ValueError("native depth predictive license is inconsistent with its execution coverage")
+    if len(summary) != 1 or summary[0].get("predictive_gaps") != gaps or summary[0].get("predictive_claim_licensed") is not licensed:
+        raise ValueError("native depth summary and derived predictive license disagree")
+    if licensed and (any(row.get("status") != "PASS" for row in receipt.structural_checks)
+                     or {row.get("node_id") for row in receipt.structural_checks} != set(receipt.expected_model_nodes)
+                     or summary[0].get("structural_status") != "PASS"):
+        raise ValueError("native depth license requires complete passing structural checks")
     return receipt
 
 
@@ -2270,6 +2247,7 @@ def _depth_receipt(
             required_guards=coverage_state["required_guards"],
         ),
         predictive_claim_licensed=predictive_licensed,
+        semantic_receipts=[receipt.to_dict() for receipt in semantic_receipts],
     )
 
 

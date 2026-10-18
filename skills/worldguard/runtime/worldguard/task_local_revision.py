@@ -708,7 +708,7 @@ class SemanticRolloutReceipt:
         status = _text(data.get("semantic_status"), "semantic_status").lower()
         if status not in _REVALIDATION_STATUSES:
             raise ValueError("semantic_status is not supported")
-        required_source = {"artifact_kind", "status", "scenario", "candidate_sha256"}
+        required_source = {"artifact_kind", "status", "scenario", "candidate_sha256", "native_receipt"}
         _require_fields(source, required_source, "semantic source result")
         if source.get("artifact_kind") != "worldguard.semantic_execution":
             raise ValueError("semantic source result artifact_kind is not current")
@@ -718,6 +718,10 @@ class SemanticRolloutReceipt:
             raise ValueError("semantic source result scenario does not match its role")
         if _sha256_text(source.get("candidate_sha256"), "semantic source candidate_sha256") != str(candidate.get("sha256", "")).lower():
             raise ValueError("semantic source result does not bind the candidate model")
+        from .semantic import SemanticExecutionReceipt
+        native = SemanticExecutionReceipt.from_dict(source["native_receipt"])
+        if native.status.value.lower() != status:
+            raise ValueError("semantic source status does not match the native execution")
         source_fingerprint = _sha256_text(data.get("source_result_fingerprint"), "source_result_fingerprint")
         if _fingerprint(source) != source_fingerprint:
             raise ValueError("semantic source result fingerprint is stale or tampered")
@@ -1098,7 +1102,7 @@ def compare_observed_world(
 
 def _validate_candidate_native_depth(
     candidate_model: WorldModelIdentity, source: Mapping[str, Any], base_dir: Path,
-) -> None:
+):
     """Reuse the native mesh producer/reader; unsupported model kinds stay open."""
     from .io import load_mapping
     from .mesh import ModelMeshContract, validate_native_depth_receipt
@@ -1110,7 +1114,9 @@ def _validate_candidate_native_depth(
     raw = payload.get("mesh", payload)
     if not isinstance(raw, Mapping) or not raw.get("mesh_id") or not isinstance(raw.get("nodes"), list) or not raw["nodes"]:
         raise ValueError("native depth source binding supports a current native mesh candidate only")
-    validate_native_depth_receipt(source, ModelMeshContract.from_dict(raw))
+    mesh = ModelMeshContract.from_dict(raw)
+    validate_native_depth_receipt(source, mesh)
+    return mesh
 
 
 def bind_task_local_native_depth_receipt(
@@ -1252,8 +1258,9 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         findings.append("native_depth_coverage_mismatch")
     if not _same_identity(revision.native_depth_receipt.candidate_model, revision.candidate_model):
         findings.append("native_depth_candidate_mismatch")
+    candidate_mesh = None
     try:
-        _validate_candidate_native_depth(revision.candidate_model, revision.native_depth_receipt.source_receipt, base_dir)
+        candidate_mesh = _validate_candidate_native_depth(revision.candidate_model, revision.native_depth_receipt.source_receipt, base_dir)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         findings.append(f"native_depth_source_invalid:{exc}")
 
@@ -1274,6 +1281,18 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
             issues.append("semantic_task_or_role_mismatch")
         if check.semantic_receipt.semantic_status != "pass":
             issues.append("semantic_rollout_non_pass")
+        if candidate_mesh is not None:
+            from .mesh import validate_semantic_receipt_for_mesh
+            try:
+                native = validate_semantic_receipt_for_mesh(check.semantic_receipt.source_result["native_receipt"], candidate_mesh)
+                scope = candidate_mesh.semantic_coverage.per_model_node.get(native.node_id, {})
+                field = "scenario_ids" if check.role == RevalidationRole.ORIGINAL_SCENARIO else "holdout_scenario_ids"
+                expected = set(scope.get(field, getattr(candidate_mesh.semantic_coverage, field)))
+                observed = native.outputs.get("executed_" + field, [])
+                if not expected or not isinstance(observed, list) or not expected <= set(observed):
+                    issues.append("semantic_role_scope_not_executed")
+            except (ValueError, TypeError, KeyError) as exc:
+                issues.append(f"semantic_source_invalid:{exc}")
         if comparison_receipt.get("status") != "pass" or comparison_receipt.get("input_gap_ids"):
             issues.append("empirical_comparison_non_pass")
         if comparison_receipt.get("task_id") != task_id or comparison_receipt.get("coverage_universe_fingerprint") != coverage_fingerprint:
@@ -1305,7 +1324,6 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         ("observation_source_ref", "holdout_source_not_independent"),
         ("observation_evidence_fingerprint", "holdout_evidence_not_independent"),
         ("observation_content_fingerprint", "holdout_content_alias_not_independent"),
-        ("semantic_source_fingerprint", "holdout_semantic_receipt_not_independent"),
     ):
         if original.get(key) and original.get(key) == holdout.get(key):
             holdout.setdefault("issues", []).append(code)

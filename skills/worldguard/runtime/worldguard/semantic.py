@@ -66,6 +66,28 @@ class SemanticExecutionReceipt:
     outputs: dict[str, Any] = field(default_factory=dict)
     skipped_reason: str = ""
 
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "SemanticExecutionReceipt":
+        """Read an existing native execution, not an arbitrary PASS envelope."""
+        if not isinstance(data, Mapping) or set(data) != {item.name for item in fields(cls)}:
+            raise ValueError("semantic source must have the complete native producer field set")
+        binding = data["binding"]
+        registration = EXECUTOR_REGISTRY.get(data["guard"])
+        if registration is None or binding != registration.binding.to_dict():
+            raise ValueError("semantic source binding is not the current native executor")
+        for key in ("node_id", "guard"):
+            if not isinstance(data[key], str) or not data[key].strip():
+                raise ValueError(f"semantic source {key} must be non-empty text")
+        if not isinstance(data["findings"], list) or any(not isinstance(row, dict) for row in data["findings"]):
+            raise ValueError("semantic source findings must be native rows")
+        if any(not isinstance(data[key], dict) for key in ("consumed_inputs", "outputs")) or not isinstance(data["skipped_reason"], str):
+            raise ValueError("semantic source inputs/outputs must be native mappings")
+        status = SemanticStatus(data["status"])
+        provider = ProviderStatus(data["provider_status"])
+        if status == SemanticStatus.PASS and (provider != ProviderStatus.AVAILABLE or data["skipped_reason"] or data["findings"]):
+            raise ValueError("semantic PASS needs an available, executed native provider")
+        return cls(**{**dict(data), "binding": registration.binding, "status": status, "provider_status": provider})
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "node_id": self.node_id,
@@ -113,6 +135,7 @@ class NativeDepthReceipt:
     predictive_gaps: list[str] = field(default_factory=list)
     native_obligation_evidence: list[dict[str, Any]] = field(default_factory=list)
     predictive_claim_licensed: bool = False
+    semantic_receipts: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "NativeDepthReceipt":
@@ -132,7 +155,7 @@ class NativeDepthReceipt:
         if data["predictive_profile"] not in {"bounded", "predictive"} or not isinstance(data["predictive_claim_licensed"], bool):
             raise ValueError("native depth profile or predictive license is invalid")
         text_lists = {"executed_semantic_children", "expected_model_nodes", "discovered_model_nodes", "declared_model_nodes", "model_node_reconciliation_gaps", "executed_model_nodes", "expected_semantic_children", "predictive_gaps"}
-        row_lists = {"structural_checks", "bindings", "findings", "skipped_children", "claim_atoms", "excluded_model_nodes", "skipped_model_nodes", "native_obligation_evidence"}
+        row_lists = {"structural_checks", "bindings", "findings", "skipped_children", "claim_atoms", "excluded_model_nodes", "skipped_model_nodes", "native_obligation_evidence", "semantic_receipts"}
         for key in text_lists | row_lists:
             value = data[key]
             expected_type = str if key in text_lists else dict
@@ -184,6 +207,7 @@ class NativeDepthReceipt:
             "predictive_gaps": self.predictive_gaps,
             "native_obligation_evidence": self.native_obligation_evidence,
             "predictive_claim_licensed": self.predictive_claim_licensed,
+            "semantic_receipts": self.semantic_receipts,
         }
 
 
@@ -259,6 +283,21 @@ def _variable_timepoint_map(contract: GuardContract) -> dict[str, list[str]]:
     }
 
 
+def _semantic_consumed_inputs(guard: str, contract: GuardContract) -> dict[str, Any]:
+    """One projection shared by native producers and reusable-source validation."""
+    inputs = contract.inputs
+    if guard == "EventGuard":
+        return {"event_model": inputs.get("event_model", {}), "events": inputs.get("events", []), "variable_observations": _variable_timepoint_map(contract)}
+    if guard == "CausalGuard":
+        return {"causal_model": inputs.get("causal_model", {}), "variable_observations": _variable_timepoint_map(contract)}
+    if guard == "AgentGuard":
+        return {"agent_model": inputs.get("agent_model", {}), "agents": inputs.get("beliefs", {})}
+    if guard == "NormGuard":
+        return {"norm_model": {"norms": inputs.get("norms", []), "facts": inputs.get("facts", [])}}
+    key, default = {"SpaceGuard": ("spatial_relations", []), "ResourceGuard": ("resources", {}), "ConflictGuard": ("game_model", {})}[guard]
+    return {key: inputs.get(key, default)}
+
+
 def _event(contract: GuardContract):
     event_model = contract.inputs.get("event_model", {})
     events = contract.inputs.get("events", [])
@@ -267,11 +306,7 @@ def _event(contract: GuardContract):
         event_model.get("transitions", []) if isinstance(event_model, dict) else []
     )
     variable_timepoints = _variable_timepoint_map(contract)
-    consumed = {
-        "event_model": event_model,
-        "events": events,
-        "variable_observations": variable_timepoints,
-    }
+    consumed = _semantic_consumed_inputs("EventGuard", contract)
     if not events and not states and not transitions:
         return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_EVENTS", "No executable event, state, or transition records were supplied.")], consumed, {}
     contradictory = event_model.get("contradictory_fluents")
@@ -560,7 +595,7 @@ def _event(contract: GuardContract):
 def _agent(contract: GuardContract):
     agent_model = contract.inputs.get("agent_model", {})
     agents = contract.inputs.get("beliefs", {})
-    consumed = {"agent_model": agent_model, "agents": agents}
+    consumed = _semantic_consumed_inputs("AgentGuard", contract)
     if not isinstance(agents, dict) or not agents:
         return SemanticStatus.GAP, [_finding("SEM_AGENT_MISSING_MODEL", "No BDI agent records were supplied.")], consumed, {}
     identity_mismatches = [
@@ -616,7 +651,7 @@ _RCC8_CONVERSE = {
 
 def _space(contract: GuardContract):
     relations = contract.inputs.get("spatial_relations", [])
-    consumed = {"spatial_relations": relations}
+    consumed = _semantic_consumed_inputs("SpaceGuard", contract)
     if not relations:
         return SemanticStatus.GAP, [_finding("SEM_SPACE_MISSING_RCC8", "No RCC8 base relations were supplied.")], consumed, {}
     by_pair: dict[tuple[Any, Any, Any], set[str]] = defaultdict(set)
@@ -687,7 +722,7 @@ def _space(contract: GuardContract):
 
 def _resource(contract: GuardContract):
     resources = contract.inputs.get("resources", {})
-    consumed = {"resources": resources}
+    consumed = _semantic_consumed_inputs("ResourceGuard", contract)
     places = resources.get("places", {}) if isinstance(resources, dict) else {}
     transitions = resources.get("transitions", []) if isinstance(resources, dict) else []
     inventory = resources.get("inventory", []) if isinstance(resources, dict) else []
@@ -849,10 +884,7 @@ def _evaluate_equations(
 def _causal(contract: GuardContract):
     causal = contract.inputs.get("causal_model", {})
     variable_timepoints = _variable_timepoint_map(contract)
-    consumed = {
-        "causal_model": causal,
-        "variable_observations": variable_timepoints,
-    }
+    consumed = _semantic_consumed_inputs("CausalGuard", contract)
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {})
     graph = causal.get("graph", [])
@@ -1021,7 +1053,7 @@ def _causal(contract: GuardContract):
 
 def _conflict(contract: GuardContract):
     game = contract.inputs.get("game_model", {})
-    consumed = {"game_model": game}
+    consumed = _semantic_consumed_inputs("ConflictGuard", contract)
     required = [name for name in ("players", "actions", "states", "transitions", "payoffs") if not game.get(name)]
     if required:
         return SemanticStatus.GAP, [_finding("SEM_CONFLICT_INCOMPLETE_GAME", "Conflict rollout requires players, actions, states, transitions, and payoffs.", evidence={"missing": required})], consumed, {}
@@ -1131,7 +1163,7 @@ def _norm(contract: GuardContract):
     norms = contract.inputs.get("norms", [])
     facts = contract.inputs.get("facts", [])
     norm_model = {"norms": norms, "facts": facts}
-    consumed = {"norm_model": norm_model}
+    consumed = _semantic_consumed_inputs("NormGuard", contract)
     if not norms:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_MODEL", "No norms were supplied.")], consumed, {}
     invalid_modalities = sorted(

@@ -221,6 +221,7 @@ def _revalidation(
     candidate: dict[str, str],
     role: RevalidationRole,
     comparison: dict,
+    native_receipt: dict,
 ) -> dict:
     identity = WorldModelIdentity.from_dict(candidate)
     semantic = bind_semantic_rollout_receipt(
@@ -234,6 +235,7 @@ def _revalidation(
             "status": "PASS",
             "scenario": role.value,
             "candidate_sha256": candidate["sha256"],
+            "native_receipt": native_receipt,
         },
         evidence_ref=f"test://semantic/{role.value}",
     )
@@ -294,10 +296,12 @@ def _revision(
         prior_gap_ids=prior_gap_ids,
         prior_gap_fingerprints=prior_gap_fingerprints,
     )
+    native_source = _native_source(tmp_path, candidate)
+    semantic_source = next(row for row in native_source["semantic_receipts"] if row["guard"] == "CausalGuard")
     depth = bind_task_local_native_depth_receipt(
         base_prediction,
         WorldModelIdentity.from_dict(candidate),
-        _native_source(tmp_path, candidate),
+        native_source,
         base_dir=tmp_path,
         binding_id="depth-binding:one",
     )
@@ -323,11 +327,13 @@ def _revision(
                 candidate=candidate,
                 role=RevalidationRole.ORIGINAL_SCENARIO,
                 comparison=original,
+                native_receipt=semantic_source,
             ),
             _revalidation(
                 candidate=candidate,
                 role=RevalidationRole.REAL_HOLDOUT_OBSERVATION,
                 comparison=holdout,
+                native_receipt=semantic_source,
             ),
         ],
         "candidate_applied": candidate_applied,
@@ -623,15 +629,10 @@ def test_failed_applied_candidate_rolls_back_to_exact_current_base(tmp_path: Pat
     base = _model(tmp_path, "v1.json", '{"version": 1}')
     candidate = _model(tmp_path, "v2.json", '{"version": 2}')
     row = _revision(tmp_path, base, candidate, candidate_applied=True, rollback_model=base)
-    semantic = row["revalidations"][1]["semantic_receipt"]
-    semantic["semantic_status"] = "fail"
-    semantic["source_result"]["status"] = "FAIL"
-    semantic["source_result_fingerprint"] = _fp(semantic["source_result"])
-    body = {key: value for key, value in semantic.items() if key != "binding_fingerprint"}
-    semantic["binding_fingerprint"] = _fp(body)
+    _, mismatch = _comparison(tmp_path, candidate, prediction_id="prediction-holdout", observation_id="observation-holdout", voltage=0.60)
     revalidation = row["revalidations"][1]
-    revalidation_body = {key: value for key, value in revalidation.items() if key != "receipt_fingerprint"}
-    revalidation["receipt_fingerprint"] = _fp(revalidation_body)
+    revalidation["empirical_comparison"] = mismatch
+    revalidation["receipt_fingerprint"] = _fp({key: value for key, value in revalidation.items() if key != "receipt_fingerprint"})
     receipt = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
     assert receipt["disposition"] == "rolled_back"
     assert receipt["terminal_reason"] == "candidate_rolled_back"
@@ -718,3 +719,73 @@ def test_native_depth_unknown_model_kind_is_explicitly_unsupported(tmp_path):
     candidate["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     with pytest.raises(ValueError, match="supports a current native mesh candidate only"):
         bind_task_local_native_depth_receipt(PredictionSnapshot.from_dict(_prediction(candidate)), WorldModelIdentity.from_dict(candidate), source, base_dir=tmp_path, binding_id="unsupported")
+
+
+def test_shallow_native_outputs_cannot_be_licensed_by_erasing_summary_gaps(tmp_path):
+    base = _model(tmp_path, "base.json", "base")
+    candidate = _model(tmp_path, "candidate.json", "candidate")
+    path = tmp_path / candidate["path"]
+    payload = json.loads(path.read_text())
+    payload["mesh"]["nodes"][0]["contract"]["inputs"]["variable_observations"]["y"] = ["t0"]
+    path.write_text(json.dumps(payload))
+    candidate["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    row = _revision(tmp_path, base, candidate)
+    depth = row["native_depth_receipt"]
+    source = depth["source_receipt"]
+    assert source["predictive_gaps"]
+    source["predictive_gaps"] = []
+    source["predictive_claim_licensed"] = True
+    for summary in source["findings"]:
+        if summary.get("code") == "SEMANTIC_ROLLOUT_SUMMARY":
+            summary.update(predictive_gaps=[], predictive_claim_licensed=True, rollout_status="PASS")
+    for node in source["quantitative_coverage"]["per_model_node_results"]:
+        node["passed"] = True
+    depth["source_receipt_fingerprint"] = _fp(source)
+    depth["binding_fingerprint"] = _fp({key: value for key, value in depth.items() if key != "binding_fingerprint"})
+    result = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
+    assert result["terminal_reason"] == "blocked"
+    assert any("coverage/license differs" in finding for finding in result["identity_findings"])
+
+
+def test_four_metadata_fields_without_native_semantic_execution_are_rejected(tmp_path):
+    candidate = _model(tmp_path, "candidate.json", "candidate")
+    with pytest.raises(ValueError, match="native_receipt"):
+        bind_semantic_rollout_receipt(receipt_id="fake", task_id="task-1", role=RevalidationRole.ORIGINAL_SCENARIO,
+            candidate_model=WorldModelIdentity.from_dict(candidate), semantic_status="pass",
+            source_result={"artifact_kind": "worldguard.semantic_execution", "status": "PASS", "scenario": "original_scenario", "candidate_sha256": candidate["sha256"]}, evidence_ref="test://not-native")
+
+
+def test_original_only_native_execution_cannot_revalidate_holdout(tmp_path):
+    from worldguard.semantic import execute_semantic
+    base = _model(tmp_path, "base.json", "base")
+    candidate = _model(tmp_path, "candidate.json", "candidate")
+    row = _revision(tmp_path, base, candidate)
+    mesh = ModelMeshContract.from_dict(json.loads((tmp_path / candidate["path"]).read_text())["mesh"])
+    node = mesh.nodes[0]
+    original_only = execute_semantic(node_id=node.model_id, guard="EventGuard", contract=node.contract.for_guard("EventGuard"), provider_available=True,
+        coverage_context={"scenario_ids": ["s-base"]}).to_dict()
+    assert original_only["status"] == "PASS"
+    assert original_only["outputs"]["executed_scenario_ids"] == ["s-base"]
+    assert original_only["outputs"]["executed_holdout_scenario_ids"] == []
+    row["revalidations"][1] = _revalidation(candidate=candidate, role=RevalidationRole.REAL_HOLDOUT_OBSERVATION,
+        comparison=row["revalidations"][1]["empirical_comparison"], native_receipt=original_only)
+    result = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
+    assert result["terminal_reason"] == "candidate_rejected"
+    assert "semantic_role_scope_not_executed" in result["revalidation_results"][1]["issues"]
+
+
+def test_semantic_source_from_different_inputs_cannot_be_rebound_by_metadata(tmp_path):
+    base = _model(tmp_path, "base.json", "base")
+    candidate = _model(tmp_path, "candidate.json", "candidate")
+    row = _revision(tmp_path, base, candidate)
+    other = _model(tmp_path, "other.json", "other")
+    path = tmp_path / other["path"]
+    payload = json.loads(path.read_text())
+    payload["mesh"]["nodes"][0]["contract"]["inputs"]["causal_model"]["equations"]["y"] = "x * 3"
+    path.write_text(json.dumps(payload))
+    native = next(receipt for receipt in _native_source(tmp_path, other)["semantic_receipts"] if receipt["guard"] == "CausalGuard")
+    row["revalidations"][1] = _revalidation(candidate=candidate, role=RevalidationRole.REAL_HOLDOUT_OBSERVATION,
+        comparison=row["revalidations"][1]["empirical_comparison"], native_receipt=native)
+    result = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
+    assert result["terminal_reason"] == "candidate_rejected"
+    assert any("consumed inputs do not match" in issue for issue in result["revalidation_results"][1]["issues"])

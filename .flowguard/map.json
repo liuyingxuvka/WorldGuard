@@ -98,7 +98,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:5268f61ba84d68f9b12c4d0e9a4aed1e267fa973006771f544b7ed4cb85e43d0"
+      "fingerprint": "sha256:0cc80f36813e1087c879657dd3547a232e66565e40486378bf5818fa0fb7efde"
     },
     {
       "id": "worldguard.guards",
@@ -224,7 +224,7 @@
         ".flowguard/current_input_authority/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:99f0e12f06d6db5305e1d505056b151a137bbd5c796d42391a6882118b3edb6f"
+      "fingerprint": "sha256:6030c1c04158a49d722f55fc1766edf8b5e36add2e2f91666a028b50f4f89219"
     },
     {
       "id": "worldguard.blueprint",
@@ -325,7 +325,7 @@
         ".flowguard/fact_revision/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:517a42e03f0cd97203daefbdfc89bae913e99829c413594aaffbce8208c688b3"
+      "fingerprint": "sha256:e83cfca5a1f765f0243b2b74a94c06d4bf10fba8acfda234eff4e604dcc976aa"
     },
     {
       "id": "worldguard.templates",

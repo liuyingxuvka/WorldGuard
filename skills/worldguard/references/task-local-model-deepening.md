@@ -101,10 +101,9 @@ raw gap list is empty.
 Each revalidation binds the exact task/candidate, a typed content-addressed
 semantic receipt, and a sealed `worldguard_observed_world_comparison_receipt`.
 There must be exactly one original and one real holdout. Their observation id,
-source, evidence fingerprint, content fingerprint, and semantic source
-fingerprint must differ, and
+source, evidence fingerprint, and content fingerprint must differ, and
 the holdout fingerprint cannot appear in candidate-construction evidence.
-Semantic `PASS` text without the typed source receipt is invalid.
+Semantic `PASS` text without the complete current native `SemanticExecutionReceipt` in `source_result.native_receipt` is invalid. The validator binds its registered executor, consumed inputs, and actually executed scenario/holdout ids to the current candidate. One recorded native execution may be reused for both roles only when it covers both scopes; it never substitutes for the two independent empirical observations. Depth closure receipts retain their native `semantic_receipts` so the existing predictive assessment can rederive all nested coverage and license values without rerunning the owners. Older receipts lacking these execution sources are insufficient for task closure.
 
 The evaluator computes input, resolved, persisted, introduced, and current gap
 ids. A new gap continues, an unchanged or repeated gap fingerprint stalls, and
