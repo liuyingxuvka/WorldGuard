@@ -5,7 +5,7 @@ import hashlib
 import json
 import math
 from collections import defaultdict
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, replace
 from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any, Callable, Mapping
@@ -113,6 +113,43 @@ class NativeDepthReceipt:
     predictive_gaps: list[str] = field(default_factory=list)
     native_obligation_evidence: list[dict[str, Any]] = field(default_factory=list)
     predictive_claim_licensed: bool = False
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "NativeDepthReceipt":
+        """Read the complete native producer shape, without executing a mesh."""
+        expected = {item.name for item in fields(cls)}
+        if not isinstance(data, Mapping) or set(data) != expected:
+            raise ValueError("native depth source must have the complete current producer field set")
+        if data["receipt_version"] != "worldguard.native_depth.v2":
+            raise ValueError("native execution-depth receipt_version is not current")
+        for key in ("receipt_id", "mesh_id", "run_id", "claim_boundary", "generated_at"):
+            if not isinstance(data[key], str) or not data[key].strip():
+                raise ValueError(f"native depth {key} must be non-empty text")
+        for key in ("mesh_fingerprint", "coverage_fingerprint"):
+            value = data[key]
+            if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+                raise ValueError(f"native depth {key} must be a lowercase SHA-256")
+        if data["predictive_profile"] not in {"bounded", "predictive"} or not isinstance(data["predictive_claim_licensed"], bool):
+            raise ValueError("native depth profile or predictive license is invalid")
+        text_lists = {"executed_semantic_children", "expected_model_nodes", "discovered_model_nodes", "declared_model_nodes", "model_node_reconciliation_gaps", "executed_model_nodes", "expected_semantic_children", "predictive_gaps"}
+        row_lists = {"structural_checks", "bindings", "findings", "skipped_children", "claim_atoms", "excluded_model_nodes", "skipped_model_nodes", "native_obligation_evidence"}
+        for key in text_lists | row_lists:
+            value = data[key]
+            expected_type = str if key in text_lists else dict
+            if not isinstance(value, list) or any(not isinstance(row, expected_type) for row in value):
+                raise ValueError(f"native depth {key} has an invalid producer shape")
+            if key in text_lists and (any(not row.strip() for row in value) or len(value) != len(set(value))):
+                raise ValueError(f"native depth {key} must contain distinct non-empty identities")
+        for key in ("required_guards", "declared_guards", "missing_guards"):
+            if not isinstance(data[key], dict) or any(not isinstance(node, str) or not isinstance(guards, list) or any(not isinstance(guard, str) for guard in guards) for node, guards in data[key].items()):
+                raise ValueError(f"native depth {key} has an invalid producer shape")
+        if not isinstance(data["provider_states"], dict) or any(value not in {item.value for item in ProviderStatus} | {"NOT_EXECUTED"} for value in data["provider_states"].values()):
+            raise ValueError("native depth provider states are invalid")
+        if not isinstance(data["quantitative_coverage"], dict) or not data["quantitative_coverage"]:
+            raise ValueError("native depth quantitative_coverage must be a producer mapping")
+        if data["predictive_claim_licensed"] and data["predictive_gaps"]:
+            raise ValueError("native depth cannot license a predictive claim while gaps remain")
+        return cls(**dict(data))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -690,16 +727,21 @@ def _resource(contract: GuardContract):
     for place, tokens in places.items():
         for token in tokens:
             available[(str(place), str(token.get("color", "")))] += float(token.get("qty", 0))
-    for transition in transitions:
+    # The declared list is a finite ordered firing trace, as in ResourceGuard:
+    # each transition consumes its current marking, then produces for later ones.
+    for index, transition in enumerate(transitions):
         for need in transition.get("consumes", []):
-            demanded[(str(need.get("place", "")), str(need.get("color", "")))] += float(need.get("qty", 0))
-    overspent = [
-        {"place": key[0], "color": key[1], "available": available[key], "demanded": quantity}
-        for key, quantity in demanded.items()
-        if quantity > available[key]
-    ]
-    if overspent:
-        return SemanticStatus.FAIL, [_finding("SEM_RESOURCE_DOUBLE_CONSUMPTION", "Combined transitions consume more finite resource than the initial marking provides.", evidence={"overspent": overspent})], consumed, {}
+            key = (str(need.get("place", "")), str(need.get("color", "")))
+            quantity = float(need.get("qty", 0))
+            demanded[key] += quantity
+            if quantity > available[key]:
+                evidence = {"transition": transition.get("id"), "place": key[0], "color": key[1], "available": available[key], "demanded": quantity}
+                if index == 0:
+                    return SemanticStatus.GAP, [_finding("SEM_RESOURCE_MISSING_MODEL", "The first declared transition is not enabled by its initial marking.", evidence=evidence)], consumed, {}
+                return SemanticStatus.FAIL, [_finding("SEM_RESOURCE_DOUBLE_CONSUMPTION", "The ordered transitions consume more finite resource than remains available.", evidence={"overspent": [evidence]})], consumed, {}
+            available[key] -= quantity
+        for produced in transition.get("produces", []):
+            available[(str(produced.get("place", "")), str(produced.get("color", "")))] += float(produced.get("qty", 0))
     return SemanticStatus.PASS, [], consumed, {
         **inventory_output,
         "evaluated_transitions": len(transitions),
@@ -768,7 +810,19 @@ def _evaluate_equations(
     seed: dict[str, float],
     overrides: dict[str, float] | None = None,
 ) -> tuple[dict[str, float], list[str]]:
-    environment = dict(seed)
+    # A scenario may seed identity roots (x = x), but a pending endogenous
+    # value is not an input to another equation until recomputed. Otherwise
+    # declaration order can leak a stale seed into the final SCM result.
+    identity_roots = {
+        variable for variable in variables
+        if isinstance(equations.get(variable), str)
+        and isinstance((tree := ast.parse(equations[variable], mode="eval")).body, ast.Name)
+        and tree.body.id == variable
+    }
+    environment = {
+        key: value for key, value in seed.items()
+        if key not in variables or key in identity_roots
+    }
     overrides = dict(overrides or {})
     environment.update(overrides)
     remaining = [variable for variable in variables if variable not in overrides]

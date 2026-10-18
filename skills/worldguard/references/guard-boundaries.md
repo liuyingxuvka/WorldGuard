@@ -34,7 +34,7 @@ Outputs `BOUNDARY_EXCEEDED` for metric distance, continuous geometry, sensor fus
 
 ## ResourceGuard
 
-Owns Colored Petri Net resources, places, tokens, transitions, capacity, and enablement.
+Owns Colored Petri Net resources, places, tokens, transitions, capacity, and enablement. The declared `transitions` list is a finite ordered firing trace: each step consumes the current marking, then its `produces` tokens become available to later steps. The first disabled step is a missing-input gap; later over-consumption fails. No schedule search, concurrent firing, or temporal simulation is inferred.
 
 Outputs `BOUNDARY_EXCEEDED` for norms, permission, real physics, market price, or causality.
 

@@ -642,29 +642,8 @@ class TaskLocalNativeDepthReceipt:
         if not isinstance(candidate, Mapping) or not isinstance(source, Mapping):
             raise ValueError("candidate_model and source_receipt must be mappings")
         source_receipt = dict(source)
-        required_source = {"receipt_id", "receipt_version", "mesh_fingerprint", "coverage_fingerprint", "predictive_gaps", "quantitative_coverage", "predictive_claim_licensed"}
-        _require_fields(source_receipt, required_source, "native execution-depth source receipt")
-        if source_receipt.get("receipt_version") != "worldguard.native_depth.v2":
-            raise ValueError("native execution-depth receipt_version is not current")
-        _text(source_receipt.get("receipt_id"), "native depth receipt_id")
-        _text(source_receipt.get("mesh_fingerprint"), "native depth mesh_fingerprint")
-        _text(source_receipt.get("coverage_fingerprint"), "native depth coverage_fingerprint")
-        predictive_gaps = _unique_texts(source_receipt.get("predictive_gaps"), "native predictive_gaps")
-        invalid_gaps = sorted(
-            gap
-            for gap in predictive_gaps
-            if gap.split(":", 1)[0] not in _PREDICTIVE_GAP_PREFIXES
-            or ":" not in gap
-            or not gap.split(":", 1)[1].strip()
-        )
-        if invalid_gaps:
-            raise ValueError("native predictive gaps must use one of the seven current category prefixes")
-        if not isinstance(source_receipt.get("quantitative_coverage"), Mapping) or not isinstance(source_receipt.get("predictive_claim_licensed"), bool):
-            raise ValueError("native depth quantitative_coverage and predictive_claim_licensed are invalid")
-        if not source_receipt.get("quantitative_coverage"):
-            raise ValueError("native depth quantitative_coverage must be non-empty")
-        if source_receipt.get("predictive_claim_licensed") and predictive_gaps:
-            raise ValueError("native depth cannot license a predictive claim while gaps remain")
+        from .semantic import NativeDepthReceipt
+        NativeDepthReceipt.from_dict(source_receipt)
         source_fingerprint = _sha256_text(data.get("source_receipt_fingerprint"), "source_receipt_fingerprint")
         if _fingerprint(source_receipt) != source_fingerprint:
             raise ValueError("native depth source receipt fingerprint is stale or tampered")
@@ -1117,6 +1096,23 @@ def compare_observed_world(
     )
 
 
+def _validate_candidate_native_depth(
+    candidate_model: WorldModelIdentity, source: Mapping[str, Any], base_dir: Path,
+) -> None:
+    """Reuse the native mesh producer/reader; unsupported model kinds stay open."""
+    from .io import load_mapping
+    from .mesh import ModelMeshContract, validate_native_depth_receipt
+
+    identity = _identity_receipt(candidate_model, base_dir)
+    if identity["status"] != "current":
+        raise ValueError("candidate model identity is not current for native depth binding")
+    payload = load_mapping(identity["resolved_path"])
+    raw = payload.get("mesh", payload)
+    if not isinstance(raw, Mapping) or not raw.get("mesh_id") or not isinstance(raw.get("nodes"), list) or not raw["nodes"]:
+        raise ValueError("native depth source binding supports a current native mesh candidate only")
+    validate_native_depth_receipt(source, ModelMeshContract.from_dict(raw))
+
+
 def bind_task_local_native_depth_receipt(
     prediction: PredictionSnapshot,
     candidate_model: WorldModelIdentity,
@@ -1125,9 +1121,8 @@ def bind_task_local_native_depth_receipt(
     base_dir: Path,
     binding_id: str,
 ) -> dict[str, Any]:
-    if _identity_receipt(candidate_model, base_dir)["status"] != "current":
-        raise ValueError("candidate model identity is not current for native depth binding")
     source = dict(source_receipt)
+    _validate_candidate_native_depth(candidate_model, source, base_dir)
     source_fingerprint = _fingerprint(source)
     body = {
         "artifact_kind": "worldguard_task_local_native_depth_receipt",
@@ -1212,8 +1207,11 @@ def _comparison_binds_model(comparison: Mapping[str, Any], model: WorldModelIden
 def _predictive_gap_categories(gaps: list[str]) -> dict[str, list[str]]:
     result = {category: [] for category in _PREDICTIVE_GAP_PREFIXES}
     for gap in gaps:
-        category = gap.split(":", 1)[0]
-        result[category].append(gap)
+        # Native mesh gap identities include predictive_object/... prefixes;
+        # keep the exact ids rather than requiring caller-invented categories.
+        categories = [category for category in result if re.search(r"(?:^|[_:])" + category + r"(?:$|[_:])", gap)]
+        for category in categories or ["other"]:
+            result.setdefault(category, []).append(gap)
     return {key: sorted(value) for key, value in result.items()}
 
 
@@ -1254,6 +1252,10 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         findings.append("native_depth_coverage_mismatch")
     if not _same_identity(revision.native_depth_receipt.candidate_model, revision.candidate_model):
         findings.append("native_depth_candidate_mismatch")
+    try:
+        _validate_candidate_native_depth(revision.candidate_model, revision.native_depth_receipt.source_receipt, base_dir)
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        findings.append(f"native_depth_source_invalid:{exc}")
 
     check_results: list[dict[str, Any]] = []
     for check in revision.revalidations:

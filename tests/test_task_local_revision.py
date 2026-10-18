@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
 from worldguard.cli import main
+from worldguard.mesh import ModelMeshContract, run_model_mesh
 from worldguard.task_local_revision import (
     TASK_LOCAL_REVISION_OWNER_ID,
     TASK_LOCAL_REVISION_SCHEMA_VERSION,
@@ -37,7 +39,9 @@ def _fp(value: object) -> str:
 
 def _model(tmp_path: Path, name: str, text: str) -> dict[str, str]:
     path = tmp_path / name
-    path.write_text(text, encoding="utf-8")
+    fixture = json.loads((ROOT / "tests/fixtures/execution_depth/deep.json").read_text())
+    fixture["mesh"]["run_id"] = name + ":" + hashlib.sha256(text.encode()).hexdigest()
+    path.write_text(json.dumps(fixture), encoding="utf-8")
     return {
         "model_id": f"model:{name}",
         "model_version": "1",
@@ -192,17 +196,24 @@ def _comparison(
     return prediction, compare_observed_world(prediction, observation, base_dir=tmp_path)
 
 
-def _native_source(*, gaps: list[str] | None = None, licensed: bool = True) -> dict:
-    current_gaps = gaps or []
-    return {
-        "receipt_id": "depth:current",
-        "receipt_version": "worldguard.native_depth.v2",
-        "mesh_fingerprint": "mesh:current",
-        "coverage_fingerprint": "coverage:native-current",
-        "predictive_gaps": current_gaps,
-        "quantitative_coverage": {"expected_state_count": 2, "executed_state_count": 2},
-        "predictive_claim_licensed": licensed and not current_gaps,
-    }
+def _native_source(tmp_path: Path, candidate: dict[str, str]) -> dict:
+    payload = json.loads((tmp_path / candidate["path"]).read_text())
+    return run_model_mesh(ModelMeshContract.from_dict(payload["mesh"])).depth_receipt.to_dict()
+
+
+def _prepare_native_candidate(tmp_path: Path, candidate: dict[str, str], gaps: list[str], licensed: bool) -> None:
+    path = tmp_path / candidate["path"]
+    payload = json.loads(path.read_text())
+    mesh = payload["mesh"]
+    mesh["semantic_coverage"]["branch_ids"] = ["b0", *gaps]
+    if not licensed:
+        mesh["semantic_coverage"]["profile"] = "bounded"
+        for node in mesh["nodes"]:
+            node["contract"]["claim"]["text"] = "bounded declared state"
+            for atom in node["contract"]["claim"]["atoms"]:
+                atom["predictive_intent"] = False
+    path.write_text(json.dumps(payload))
+    candidate["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _revalidation(
@@ -250,6 +261,7 @@ def _revision(
     candidate_applied: bool = False,
     rollback_model: dict[str, str] | None = None,
 ) -> dict:
+    _prepare_native_candidate(tmp_path, candidate, native_gaps or [], licensed)
     base_prediction, base_comparison = _comparison(
         tmp_path,
         base,
@@ -285,7 +297,7 @@ def _revision(
     depth = bind_task_local_native_depth_receipt(
         base_prediction,
         WorldModelIdentity.from_dict(candidate),
-        _native_source(gaps=native_gaps, licensed=licensed),
+        _native_source(tmp_path, candidate),
         base_dir=tmp_path,
         binding_id="depth-binding:one",
     )
@@ -403,17 +415,15 @@ def test_candidate_closes_only_with_current_depth_and_independent_holdout(tmp_pa
 def test_native_depth_gap_is_derived_and_forces_continuation(tmp_path: Path) -> None:
     base = _model(tmp_path, "v1.json", '{"version": 1}')
     candidate = _model(tmp_path, "v2.json", '{"version": 2}')
-    receipt = evaluate_candidate_world_revision(
-        CandidateWorldModelRevision.from_dict(
-            _revision(tmp_path, base, candidate, native_gaps=["branch:new-regime"])
-        ),
-        base_dir=tmp_path,
-    )
+    row = _revision(tmp_path, base, candidate, native_gaps=["branch:new-regime"])
+    receipt = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
+    gaps = row["native_depth_receipt"]["source_receipt"]["predictive_gaps"]
+    expected = sorted("native:" + gap for gap in gaps)
     assert receipt["status"] == "blocked"
     assert receipt["terminal_reason"] == "continue_iteration"
-    assert receipt["current_gap_ids"] == ["native:branch:new-regime"]
-    assert receipt["predictive_gap_categories"]["branch"] == ["branch:new-regime"]
-    assert receipt["introduced_gap_ids"] == ["native:branch:new-regime"]
+    assert receipt["current_gap_ids"] == expected
+    assert receipt["predictive_gap_categories"]["branch"] == sorted(gaps)
+    assert receipt["introduced_gap_ids"] == expected
 
 
 def test_no_raw_gap_but_unlicensed_native_receipt_cannot_close(tmp_path: Path) -> None:
@@ -432,14 +442,16 @@ def test_no_raw_gap_but_unlicensed_native_receipt_cannot_close(tmp_path: Path) -
 def test_repeated_gap_fingerprint_stalls_without_caller_progress_override(tmp_path: Path) -> None:
     base = _model(tmp_path, "v1.json", '{"version": 1}')
     candidate = _model(tmp_path, "v2.json", '{"version": 2}')
-    current_gap_fingerprint = _fp(["native:transition:missing-edge"])
+    first = _revision(tmp_path, base, candidate, native_gaps=["transition:missing-edge"])
+    current_gaps = sorted("native:" + gap for gap in first["native_depth_receipt"]["source_receipt"]["predictive_gaps"])
+    current_gap_fingerprint = _fp(current_gaps)
     row = _revision(
         tmp_path,
         base,
         candidate,
         native_gaps=["transition:missing-edge"],
         iteration=1,
-        prior_gap_ids=["native:transition:missing-edge"],
+        prior_gap_ids=current_gaps,
         prior_gap_fingerprints=[current_gap_fingerprint],
     )
     receipt = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
@@ -487,7 +499,7 @@ def test_later_iteration_derives_resolved_and_introduced_gap_ids(tmp_path: Path)
         base_dir=tmp_path,
     )
     assert receipt["resolved_gap_ids"] == prior_gap_ids
-    assert receipt["introduced_gap_ids"] == ["native:transition:new-edge-gap"]
+    assert receipt["introduced_gap_ids"] == sorted("native:" + gap for gap in row["native_depth_receipt"]["source_receipt"]["predictive_gaps"])
     assert receipt["persisted_gap_ids"] == []
     assert receipt["terminal_reason"] == "continue_iteration"
 
@@ -522,12 +534,10 @@ def test_exact_external_input_can_stop_but_incomplete_boundary_blocks(tmp_path: 
             "affected_claim_ids": ["claim:future-regime"],
         }
     ]
-    receipt = evaluate_candidate_world_revision(
-        CandidateWorldModelRevision.from_dict(
-            _revision(tmp_path, base, candidate, native_gaps=["holdout:unseen-regime"], external_inputs=exact)
-        ),
-        base_dir=tmp_path,
-    )
+    row = _revision(tmp_path, base, candidate, native_gaps=["holdout:unseen-regime"])
+    exact[0]["blocked_gap_ids"] = sorted("native:" + gap for gap in row["native_depth_receipt"]["source_receipt"]["predictive_gaps"])
+    row["external_inputs"] = exact
+    receipt = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
     assert receipt["terminal_reason"] == "external_input_required"
     bad = json.loads(json.dumps(_revision(tmp_path, base, candidate, native_gaps=["holdout:unseen-regime"], external_inputs=exact)))
     bad["external_inputs"][0]["blocked_gap_ids"] = ["native:other-gap"]
@@ -636,7 +646,7 @@ def test_task_model_cli_freezes_and_binds_native_depth(tmp_path: Path, capsys) -
     native_path = tmp_path / "native-depth.json"
     prediction_path.write_text(json.dumps(_prediction(model)), encoding="utf-8")
     candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
-    native_path.write_text(json.dumps(_native_source()), encoding="utf-8")
+    native_path.write_text(json.dumps(_native_source(tmp_path, candidate)), encoding="utf-8")
     assert main(["task-model", "freeze", str(prediction_path)]) == 0
     assert json.loads(capsys.readouterr().out)["receipt_version"] == "2.0"
     assert main(["task-model", "depth-bind", str(prediction_path), str(candidate_path), str(native_path), "--binding-id", "depth:cli"]) == 0
@@ -649,3 +659,62 @@ def test_bundled_task_local_runtime_matches_source_and_version() -> None:
     for relative_path in ("task_local_revision.py", "fact_revision.py", "cli.py", "__init__.py"):
         assert (ROOT / "worldguard" / relative_path).read_bytes() == (bundled_root / relative_path).read_bytes()
     assert '__version__ = "0.7.14"' in (bundled_root / "__init__.py").read_text(encoding="utf-8")
+
+
+def test_native_depth_reuses_real_producer_without_reexecuting_mesh(tmp_path, monkeypatch):
+    import worldguard.mesh as owner
+    candidate = _model(tmp_path, "candidate.json", "actual native candidate")
+    prediction = PredictionSnapshot.from_dict(_prediction(candidate))
+    source = _native_source(tmp_path, candidate)
+    def forbid_execution(*args, **kwargs):
+        raise AssertionError("binding an existing native receipt must not execute the mesh")
+    monkeypatch.setattr(owner, "run_model_mesh", forbid_execution)
+    bound = bind_task_local_native_depth_receipt(prediction, WorldModelIdentity.from_dict(candidate), source, base_dir=tmp_path, binding_id="reused")
+    assert bound["source_receipt"] == source
+    assert bound["task_id"] == prediction.task_id
+    assert bound["coverage_universe_fingerprint"] == prediction.coverage_universe_fingerprint
+
+
+@pytest.mark.parametrize("mutation", ["seven_fields", "mesh_hash", "word_coverage", "bad_count", "false_summary"])
+def test_native_depth_rejects_nonproducer_or_inconsistent_sources(tmp_path, mutation):
+    candidate = _model(tmp_path, "candidate.json", "native")
+    source = _native_source(tmp_path, candidate)
+    if mutation == "seven_fields":
+        source = {key: source[key] for key in ("receipt_id", "receipt_version", "mesh_fingerprint", "coverage_fingerprint", "predictive_gaps", "quantitative_coverage", "predictive_claim_licensed")}
+    elif mutation == "mesh_hash":
+        source["mesh_fingerprint"] = "not-a-sha256"
+    elif mutation == "word_coverage":
+        source["quantitative_coverage"] = {"made_up_no_models": "a word"}
+    elif mutation == "bad_count":
+        source["quantitative_coverage"]["executed_model_node_count"] = -1
+    else:
+        source["findings"][-1]["predictive_claim_licensed"] = False
+    with pytest.raises(ValueError):
+        bind_task_local_native_depth_receipt(PredictionSnapshot.from_dict(_prediction(candidate)), WorldModelIdentity.from_dict(candidate), source, base_dir=tmp_path, binding_id="invalid")
+
+
+def test_native_depth_other_candidate_cannot_be_rebound_by_outer_self_hash(tmp_path):
+    base = _model(tmp_path, "base.json", "base")
+    candidate = _model(tmp_path, "candidate.json", "candidate")
+    other = _model(tmp_path, "other.json", "other")
+    other_source = _native_source(tmp_path, other)
+    with pytest.raises(ValueError, match="current candidate"):
+        bind_task_local_native_depth_receipt(PredictionSnapshot.from_dict(_prediction(base)), WorldModelIdentity.from_dict(candidate), other_source, base_dir=tmp_path, binding_id="other")
+    row = _revision(tmp_path, base, candidate)
+    binding = row["native_depth_receipt"]
+    binding["source_receipt"] = other_source
+    binding["source_receipt_fingerprint"] = _fp(other_source)
+    binding["binding_fingerprint"] = _fp({key: value for key, value in binding.items() if key != "binding_fingerprint"})
+    result = evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=tmp_path)
+    assert result["terminal_reason"] == "blocked"
+    assert any("native_depth_source_invalid" in finding for finding in result["identity_findings"])
+
+
+def test_native_depth_unknown_model_kind_is_explicitly_unsupported(tmp_path):
+    candidate = _model(tmp_path, "candidate.json", "native")
+    source = _native_source(tmp_path, candidate)
+    path = tmp_path / candidate["path"]
+    path.write_text('{"arbitrary_model": true}')
+    candidate["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match="supports a current native mesh candidate only"):
+        bind_task_local_native_depth_receipt(PredictionSnapshot.from_dict(_prediction(candidate)), WorldModelIdentity.from_dict(candidate), source, base_dir=tmp_path, binding_id="unsupported")

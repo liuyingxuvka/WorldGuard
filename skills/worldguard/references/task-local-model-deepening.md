@@ -92,7 +92,7 @@ revalidation inventory containing both:
 Candidate evaluation also consumes one
 `worldguard_task_local_native_depth_receipt`. WorldGuard creates this binding
 from the exact native `worldguard.native_depth.v2` receipt plus the task,
-candidate, and independent coverage fingerprint. State, transition, branch,
+candidate, and independent coverage fingerprint. This source type is produced by the native mesh owner: supply the current candidate as a native `ModelMeshContract` mapping (or the existing depth-fixture mapping containing `mesh`). Other model kinds remain unsupported by this binder. The binder reads the candidate and validates the complete producer shape, current mesh/coverage fingerprints, numeric coverage, and license consistency; it reuses the recorded execution without rerunning the mesh. The existing outer binding retains the exact task and independent coverage-universe identity. State, transition, branch,
 perturbation, intervention, counterfactual, and holdout gaps are derived from
 that receipt. Caller-authored remaining-gap lists have no authority, and a
 native receipt with `predictive_claim_licensed: false` remains open even if its

@@ -469,3 +469,64 @@ def test_parent_qualification_cannot_hide_a_guard_semantic_known_bad(
     assert report.depth_state["status"] == expected_status.value
     assert report.gaps
     assert report.semantic_receipts[0].findings
+
+
+@pytest.mark.parametrize("variables", [["y", "x"], ["x", "y"]])
+def test_causal_pending_endogenous_seed_never_changes_final_equations(variables) -> None:
+    inputs = {"causal_model": {
+        "variables": variables, "equations": {"x": "2", "y": "x + 1"},
+        "graph": [["x", "y"]], "scenarios": {"s": {"x": 100}},
+        "holdout_scenarios": {"h": {"x": 200}},
+        "interventions": [{"intervention_id": "do-x", "scenario_id": "s", "set": {"x": 7}}],
+        "counterfactuals": [{"counterfactual_id": "cf-y", "intervention_id": "do-x", "query": "y"}],
+    }}
+    report = run_worldguard(make_contract("CausalGuard", inputs=inputs))
+    assert report.status == GuardStatus.PASS
+    output = report.semantic_receipts[0].outputs
+    assert output["scenario_results"]["s"] == {"x": 2, "y": 3}
+    assert output["scenario_results"]["h"] == {"x": 2, "y": 3}
+    assert output["intervention_results"]["do-x"] == {"x": 7, "y": 8}
+    assert output["counterfactual_results"]["cf-y"] == 8
+
+
+def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
+    inputs = {"causal_model": {
+        "variables": ["y", "x"], "equations": {"x": "x", "y": "x + z"},
+        "exogenous": ["z"], "graph": [["x", "y"]],
+        "scenarios": {"s": {"x": 3, "z": 2}},
+    }}
+    receipt = _semantic("CausalGuard", inputs)
+    assert receipt.status == SemanticStatus.PASS
+    assert receipt.outputs["scenario_results"]["s"] == {"x": 3, "z": 2, "y": 5}
+
+
+@pytest.mark.parametrize("equations", [
+    {"x": "y + 1", "y": "x + 1"},
+    {"x": "x + 1", "y": "x + 1"},
+    {"x": "__import__('os')", "y": "x + 1"},
+])
+def test_causal_seed_cannot_resolve_cycles_or_unsafe_equations(equations) -> None:
+    receipt = _semantic("CausalGuard", {"causal_model": {
+        "variables": ["x", "y"], "equations": equations, "graph": [],
+        "scenarios": {"s": {"x": 1, "y": 2}},
+    }})
+    assert receipt.status == SemanticStatus.GAP
+    assert receipt.findings
+
+
+def test_resource_ordered_production_enables_later_consumption() -> None:
+    resources = {
+        "places": {"p1": [{"color": "a", "qty": 1}], "p2": []},
+        "capacities": {"p1": 1, "p2": 1},
+        "transitions": [
+            {"id": "move", "consumes": [{"place": "p1", "color": "a", "qty": 1}], "produces": [{"place": "p2", "color": "a", "qty": 1}]},
+            {"id": "return", "consumes": [{"place": "p2", "color": "a", "qty": 1}], "produces": [{"place": "p1", "color": "a", "qty": 1}]},
+        ],
+    }
+    report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}))
+    assert report.structural_status == GuardStatus.PASS
+    assert report.semantic_status == SemanticStatus.PASS
+    resources["transitions"].reverse()
+    reversed_report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}))
+    assert reversed_report.structural_status == GuardStatus.GAP
+    assert reversed_report.semantic_status == SemanticStatus.GAP

@@ -98,7 +98,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:8175c1ee9e1f045cac5f9ec553b6f51eebfa40bdea0823566290316ed843fce0"
+      "fingerprint": "sha256:5268f61ba84d68f9b12c4d0e9a4aed1e267fa973006771f544b7ed4cb85e43d0"
     },
     {
       "id": "worldguard.guards",
@@ -112,7 +112,8 @@
         "worldguard/guards/*.py",
         "worldguard/guard_model_contract.py",
         "skills/worldguard/runtime/worldguard/guards/*.py",
-        "skills/worldguard/runtime/worldguard/guard_model_contract.py"
+        "skills/worldguard/runtime/worldguard/guard_model_contract.py",
+        "skills/worldguard/references/guard-boundaries.md"
       ],
       "entrypoints": [
         "worldguard/guard_model_contract.py:run_guard_model_contract",
@@ -140,7 +141,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:b211cf301842639712199bf92b9cb1470c24bed129a3a0d5e106bd146a860cf4"
+      "fingerprint": "sha256:71b565c606aa02079b9758f0a85bc4deb7f2eb152a749a6b87ef9b92772491a4"
     },
     {
       "id": "worldguard.qualification",
@@ -188,7 +189,8 @@
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Run per-node native qualification with complete per-variable/timepoint predictive coverage",
-        "Build native execution-depth evidence without author-tool transport"
+        "Build native execution-depth evidence without author-tool transport",
+        "Validate the existing native depth producer shape and current mesh/coverage identity without rerunning owners"
       ],
       "files": [
         "worldguard/mesh.py",
@@ -222,7 +224,7 @@
         ".flowguard/current_input_authority/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:90df023caf0e51405fa0399b7ca65a3a0db57df1a1365b67bf7498d51ade2498"
+      "fingerprint": "sha256:99f0e12f06d6db5305e1d505056b151a137bbd5c796d42391a6882118b3edb6f"
     },
     {
       "id": "worldguard.blueprint",
@@ -286,14 +288,15 @@
       "summary": "Task-local prediction, reversible revision and fact transactions",
       "responsibilities": [
         "Freeze prediction before observation and compare declared world coverage",
-        "Bind current native depth and independent holdout evidence to candidate revisions",
+        "Validate complete reusable native mesh receipts against current candidate bytes/coverage and bind independent holdout evidence to candidate revisions",
         "Preview subordinate four-valued fact transactions and activate only against current evidence"
       ],
       "files": [
         "worldguard/task_local_revision.py",
         "worldguard/fact_revision.py",
         "skills/worldguard/runtime/worldguard/task_local_revision.py",
-        "skills/worldguard/runtime/worldguard/fact_revision.py"
+        "skills/worldguard/runtime/worldguard/fact_revision.py",
+        "skills/worldguard/references/task-local-model-deepening.md"
       ],
       "entrypoints": [
         "worldguard/task_local_revision.py:freeze_prediction_snapshot",
@@ -308,7 +311,9 @@
         "Return candidate activation or rollback results without an implicit persistent store"
       ],
       "depends_on": [
-        "worldguard"
+        "worldguard",
+        "worldguard.core",
+        "worldguard.mesh"
       ],
       "tests": [
         "tests/test_task_local_revision.py",
@@ -320,7 +325,7 @@
         ".flowguard/fact_revision/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:09d20cf57faabae77d68ea051ef610f91197e9c2460e02f65bdbedae6028eac9"
+      "fingerprint": "sha256:517a42e03f0cd97203daefbdfc89bae913e99829c413594aaffbce8208c688b3"
     },
     {
       "id": "worldguard.templates",

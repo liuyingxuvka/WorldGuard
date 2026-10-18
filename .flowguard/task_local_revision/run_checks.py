@@ -1,11 +1,10 @@
-"""Run WorldGuard task-local FlowGuard scenarios and focused native tests."""
+"""Check the finite WorldGuard task-local workflow scenarios; no native tests run here."""
 
 from __future__ import annotations
 
 import importlib.util
 import json
 from pathlib import Path
-import subprocess
 import sys
 
 from flowguard.review import review_scenarios

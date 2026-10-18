@@ -9,6 +9,7 @@ from ._helpers import error, result, semantics_text
 
 
 def run(contract: GuardContract):
+    """Check the declared finite ordered CPN firing trace; no scheduler is inferred."""
     guard = "ResourceGuard"
     text = semantics_text(contract)
     resources = contract.inputs.get("resources", {})

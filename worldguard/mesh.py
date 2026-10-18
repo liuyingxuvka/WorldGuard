@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from collections.abc import Mapping
-from math import ceil, sqrt
+from math import ceil, sqrt, isfinite
 import re
 from typing import Any
 
@@ -2014,6 +2014,114 @@ def _native_obligation_observations(
     return observations
 
 
+def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, Any]) -> dict[str, Any]:
+    """The producer's current input identity; no native execution occurs here."""
+    fingerprint = fingerprint_mesh(mesh.to_dict())
+    expected_nodes = coverage_state["expected_nodes"]
+    claim_atoms = [
+        {"node_id": node.model_id, **atom.to_dict()}
+        for node in mesh.nodes
+        if node.model_id in expected_nodes and node.contract
+        for atom in node.contract.claim.atoms
+    ]
+    coverage_fingerprint = fingerprint_mesh(
+        {
+            "mesh_fingerprint": fingerprint,
+            "semantic_coverage": mesh.semantic_coverage.to_dict(),
+            "claim_atoms": claim_atoms,
+            "required_guards": coverage_state["required_guards"],
+            "expected_children": coverage_state["expected_children"],
+            "discovered_model_nodes": coverage_state["discovered_nodes"],
+            "declared_model_nodes": coverage_state["declared_nodes"],
+            "excluded_model_nodes": coverage_state["excluded_models"],
+            "model_node_reconciliation_gaps": coverage_state[
+                "reconciliation_gaps"
+            ],
+        }
+    )
+    return {"mesh_fingerprint": fingerprint, "coverage_fingerprint": coverage_fingerprint, "claim_atoms": claim_atoms}
+
+
+def validate_native_depth_receipt(source: Mapping[str, Any], mesh: ModelMeshContract) -> NativeDepthReceipt:
+    """Validate a reusable native receipt against its exact current mesh inputs."""
+    receipt = NativeDepthReceipt.from_dict(source)
+    state = _coverage_route_state(mesh)
+    identity = _native_depth_identity(mesh, state)
+    expected = {
+        **identity, "mesh_id": mesh.mesh_id, "run_id": mesh.run_id,
+        "predictive_profile": mesh.semantic_coverage.profile,
+        "required_guards": state["required_guards"], "declared_guards": state["declared_guards"],
+        "missing_guards": state["missing_guards"], "expected_model_nodes": state["expected_nodes"],
+        "discovered_model_nodes": state["discovered_nodes"], "declared_model_nodes": state["declared_nodes"],
+        "excluded_model_nodes": state["excluded_models"], "model_node_reconciliation_gaps": state["reconciliation_gaps"],
+        "expected_semantic_children": state["expected_children"],
+    }
+    if any(source[key] != value for key, value in expected.items()):
+        raise ValueError("native depth source does not bind the current candidate mesh and coverage")
+    # Derive the quantitative producer field/type inventory from the same native
+    # assessment, using no execution results. This does not rerun any owner.
+    _, _, shape = _predictive_assessment(mesh, state, [])
+    quantitative = receipt.quantitative_coverage
+    if set(quantitative) != set(shape) or any(
+        (quantitative[key] is not None and type(quantitative[key]) not in {int, float})
+        if value is None else type(quantitative[key]) is not type(value)
+        for key, value in shape.items()
+    ):
+        raise ValueError("native depth quantitative coverage does not match the current producer shape")
+    def finite_counts(value: Any, key: str = "") -> bool:
+        if isinstance(value, dict):
+            return all(finite_counts(item, str(name)) for name, item in value.items())
+        if isinstance(value, list):
+            return all(finite_counts(item, key) for item in value)
+        if key.endswith("_count"):
+            return type(value) is int and value >= 0
+        if "normalized_timepoint_gap" in key and value is None:
+            return True  # The native producer uses None when no interval can be measured.
+        if key.endswith(("_ratio", "_coverage")) or "normalized_timepoint_gap" in key:
+            return type(value) in {int, float} and isfinite(value) and 0 <= value <= 1
+        return not isinstance(value, float) or isfinite(value)
+    if not finite_counts(quantitative):
+        raise ValueError("native depth quantitative coverage has invalid numeric values")
+    if quantitative["horizon"] != mesh.semantic_coverage.horizon or quantitative["predictive_requested"] != shape["predictive_requested"]:
+        raise ValueError("native depth quantitative coverage does not bind the candidate scope")
+    for key in ("expected_model_node_count", "expected_semantic_child_count", "expected_scenario_count", "expected_holdout_scenario_count"):
+        if quantitative[key] != shape[key]:
+            raise ValueError("native depth expected coverage denominator is not current")
+    for key in ("per_model_node_results", "predictive_axis_results"):
+        if any(not isinstance(row, dict) or type(row.get("passed")) is not bool for row in quantitative[key]):
+            raise ValueError("native depth coverage rows have an invalid producer shape")
+    if set(receipt.provider_states) != set(receipt.expected_semantic_children):
+        raise ValueError("native depth provider inventory does not cover its semantic children")
+    summary = [row for row in receipt.findings if row.get("code") == "SEMANTIC_ROLLOUT_SUMMARY"]
+    if len(summary) != 1 or summary[0].get("predictive_gaps") != receipt.predictive_gaps or summary[0].get("predictive_claim_licensed") is not receipt.predictive_claim_licensed:
+        raise ValueError("native depth summary and predictive license disagree")
+    if receipt.predictive_claim_licensed:
+        executed = set(receipt.executed_semantic_children)
+        ready = (
+            quantitative["predictive_requested"] is True
+            and set(receipt.expected_semantic_children) <= executed
+            and set(receipt.expected_model_nodes) == set(receipt.executed_model_nodes)
+            and not receipt.skipped_children and not receipt.skipped_model_nodes
+            and not receipt.missing_guards and not receipt.model_node_reconciliation_gaps
+            and {row.get("node_id") for row in receipt.structural_checks} == set(receipt.expected_model_nodes)
+            and {row.get("model_node_id") for row in quantitative["per_model_node_results"]} == set(receipt.expected_model_nodes)
+            and {row.get("axis_id") for row in quantitative["predictive_axis_results"]} == {row["axis_id"] for row in shape["predictive_axis_results"]}
+            and bool(receipt.bindings) and bool(receipt.native_obligation_evidence)
+            and all(value == "AVAILABLE" for value in receipt.provider_states.values())
+            and all(row.get("status") == "PASS" for row in receipt.structural_checks)
+            and all(summary[0].get(key) == "PASS" for key in ("structural_status", "semantic_status", "rollout_status"))
+            and summary[0].get("provider_status") == "AVAILABLE"
+            and all(row.get("passed") is True for row in quantitative["per_model_node_results"])
+            and all(row.get("passed") is True for row in quantitative["predictive_axis_results"])
+        )
+        for key, value in quantitative.items():
+            if key.startswith("expected_") and key.endswith("_count"):
+                ready = ready and value == quantitative.get(key.replace("expected_", "executed_", 1))
+        if not ready:
+            raise ValueError("native depth predictive license is inconsistent with its execution coverage")
+    return receipt
+
+
 def _depth_receipt(
     mesh: ModelMeshContract,
     *,
@@ -2115,29 +2223,11 @@ def _depth_receipt(
         }
         for receipt in semantic_receipts
     ]
-    fingerprint = fingerprint_mesh(mesh.to_dict())
+    identity = _native_depth_identity(mesh, coverage_state)
+    fingerprint = identity["mesh_fingerprint"]
+    coverage_fingerprint = identity["coverage_fingerprint"]
+    claim_atoms = identity["claim_atoms"]
     expected_nodes = coverage_state["expected_nodes"]
-    claim_atoms = [
-        {"node_id": node.model_id, **atom.to_dict()}
-        for node in mesh.nodes
-        if node.model_id in expected_nodes and node.contract
-        for atom in node.contract.claim.atoms
-    ]
-    coverage_fingerprint = fingerprint_mesh(
-        {
-            "mesh_fingerprint": fingerprint,
-            "semantic_coverage": mesh.semantic_coverage.to_dict(),
-            "claim_atoms": claim_atoms,
-            "required_guards": coverage_state["required_guards"],
-            "expected_children": coverage_state["expected_children"],
-            "discovered_model_nodes": coverage_state["discovered_nodes"],
-            "declared_model_nodes": coverage_state["declared_nodes"],
-            "excluded_model_nodes": coverage_state["excluded_models"],
-            "model_node_reconciliation_gaps": coverage_state[
-                "reconciliation_gaps"
-            ],
-        }
-    )
     executed_nodes = sorted(
         node_id
         for node_id in expected_nodes
