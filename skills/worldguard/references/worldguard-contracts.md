@@ -18,7 +18,7 @@ Keep `contract_id`, `schema_version`, `run_id`, `claim`, `world_model`, `inputs`
 
 The exact supported branch fields and limits are in the selected route capsule and `guard-model-contract.md`. Missing consumed inputs produce typed gaps.
 
-Use `derive_guard_requirements(claim)` as the single semantics-to-Guard authority. Its denominator, unmapped semantics, and canonical fingerprint are shared by unit, mesh, and prompt audit. `claim.target_guards` must exactly reconcile with the denominator; omitted or unexpected routes block before execution. `claim.target_guard` is retired. Prediction derives EventGuard plus CausalGuard. Unknown semantics do not fall back to the caller's Guard list.
+Use `derive_guard_requirements(claim)` as the single semantics-to-Guard authority. Its denominator, unmapped semantics, and canonical fingerprint are shared by unit, mesh, and prompt audit. `claim.target_guards` must exactly reconcile with the denominator. Omitted derived Guards make the aggregate `GAP`; the native owner may still execute the derived set to provide diagnostics. Unexpected declared Guards block execution. `claim.target_guard` is retired. Prediction derives EventGuard plus CausalGuard. Unknown semantics do not fall back to the caller's Guard list.
 
 Existing contracts run directly: `run_worldguard(contract)`. `for_guard` creates a read-only child retaining task/run/model, claim, inputs, and upstream identities. Ordinary contracts do not carry `guard_purpose_declarations` or `guard_purpose_contract`. The author-owned 7-good/81-bad catalog is a regression check, not a per-use admission step. Domain-specific BlueprintTaskPurpose still binds actual blueprint behavior cases; see the blueprint reference when selected.
 

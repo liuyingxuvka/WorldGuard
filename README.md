@@ -10,7 +10,7 @@
 </p>
 <!-- README HERO END -->
 
-**Source version:** `v0.7.13`<br>
+**Source version:** `v0.7.14`<br>
 **Package:** `worldguard`<br>
 **Release type:** source-only Python package and Codex skill workflow
 
@@ -172,7 +172,7 @@ assets/readme-hero/          README visual assets
 
 ## Release Notes
 
-See [CHANGELOG.md](./CHANGELOG.md). The current source candidate is `v0.7.13`;
+See [CHANGELOG.md](./CHANGELOG.md). The current source candidate is `v0.7.14`;
 the first source-only release was `v0.1.0`.
 
 ## License
@@ -183,7 +183,7 @@ No license file is included yet. Treat this repository as source-visible but not
 
 # WorldGuard 中文说明
 
-**源码版本：** `v0.7.13`<br>
+**源码版本：** `v0.7.14`<br>
 **包名：** `worldguard`<br>
 **发布类型：** 源码版 Python 包 + Codex 技能工作流
 

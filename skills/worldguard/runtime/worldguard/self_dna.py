@@ -1,10 +1,8 @@
-"""FlowGuard-owned WorldGuard repository self-DNA route.
+"""Observe WorldGuard's current directory and FlowGuard map bindings.
 
-``WorldBlueprint`` models an arbitrary external world or workflow.  It is not
-the WorldGuard repository's own DNA.  This explicit route delegates that
-whole-repository question to the current FlowGuard self-blueprint API and
-returns a visible blocked result whenever the project authority is stale or
-the released provider is unavailable.
+This read-only route inventories the repository and checks its current map;
+it does not execute domain models or tests, prove semantic equivalence, or
+authorize a release. ``WorldBlueprint`` models external targets separately.
 """
 
 from __future__ import annotations
@@ -65,6 +63,8 @@ def _blocked(root: Path, code: str, message: str, *, exc: Exception | None = Non
         "ok": False,
         "root": str(root),
         "claim_boundary": "Only the exact WorldGuard native directory boundary is covered; no directory copy or transport artifact is produced.",
+        "model_execution": "not_run",
+        "test_execution": "not_run",
         "flowguard": _flowguard_identity(),
         "readiness": {
             "layers": [
@@ -173,6 +173,8 @@ def _build(root: Path) -> tuple[dict[str, Any], Any | None]:
                       "first_gap": errors[0] if errors else None, "rows": errors},
         "map_components": len(data["components"]),
         "claim_boundary": "Current directory inventory and confirmed map/code/test bindings only. Models and tests are not executed; full semantic equivalence and release are not licensed.",
+        "model_execution": "not_run",
+        "test_execution": "not_run",
     }, data
 
 
@@ -180,28 +182,16 @@ def check(root: str | Path, *, compact: bool = False) -> tuple[dict[str, Any], i
     root_path = Path(root).resolve()
     payload, _bundle = _build(root_path)
     if compact:
-        readiness = payload.get("readiness", {})
         native_directory = payload.get("native_directory")
         if isinstance(native_directory, dict):
-            native_directory = {
-                key: value
-                for key, value in native_directory.items()
-                if key != "files"
+            payload = {
+                **payload,
+                "native_directory": {
+                    key: value
+                    for key, value in native_directory.items()
+                    if key != "files"
+                },
             }
-        payload = {
-            "report_kind": payload.get("report_kind"),
-            "software_id": payload.get("software_id"),
-            "target_kind": payload.get("target_kind"),
-            "status": payload.get("status"),
-            "ok": payload.get("ok"),
-            "native_directory": native_directory,
-            "flowguard": payload.get("flowguard"),
-            "readiness": {
-                key: readiness[key]
-                for key in ("status", "deepest_proven_layer", "first_gap", "gap_count", "implementation_admitted", "rows")
-                if key in readiness
-            },
-        }
     return payload, 0 if payload.get("ok") else 1
 
 

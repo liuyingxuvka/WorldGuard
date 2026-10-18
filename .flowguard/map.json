@@ -51,7 +51,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:31ea3778df55b73f28981bfc8b551d9614c6f3145d783ae681389ab50e4b5d67"
+      "fingerprint": "sha256:42371073ea38beef4423a4cdd55c0c56cb147a942ac1d5c9b7ce66d58d2524ca"
     },
     {
       "id": "worldguard.core",
@@ -219,8 +219,7 @@
         "tests/test_runtime_identity.py"
       ],
       "models": [
-        ".flowguard/current_input_authority/run_checks.py",
-        ".flowguard/hierarchical_model_mesh/run_checks.py"
+        ".flowguard/current_input_authority/run_checks.py"
       ],
       "status": "confirmed",
       "fingerprint": "sha256:90df023caf0e51405fa0399b7ca65a3a0db57df1a1365b67bf7498d51ade2498"
@@ -368,7 +367,8 @@
       "summary": "Read-only repository map and native directory snapshot",
       "responsibilities": [
         "Report repository map/code/test bindings through installed FlowGuard",
-        "Keep static ready distinct from domain test/model execution or release closure"
+        "Keep static ready distinct from domain test/model execution or release closure",
+        "Preserve claim boundaries, explicit not_run execution fields and actionable gaps in full and compact output"
       ],
       "files": [
         "worldguard/self_dna.py",
@@ -392,7 +392,7 @@
         ".flowguard/authoritative_model_system/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:ca31a9a389f5ce5a108ee0d159caa5c7094e10fd1de8bc438ddbff4ac7ca6520"
+      "fingerprint": "sha256:10709f3e8a43ae790ee72ecad691a3d642ce7ba8ac3265bb9f7e7d3a9b1bfd43"
     },
     {
       "id": "release",
@@ -450,10 +450,7 @@
         "tests/test_runtime_identity.py",
         "tests/test_worldguard_portable_runtime_projection.py"
       ],
-      "models": [
-        ".flowguard/model_test_code_alignment/run_checks.py",
-        ".flowguard/test_evidence_mesh/run_checks.py"
-      ],
+      "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:899e110471f50b592ace2ba0bba36ab931068556afa2b33d8fd9785fa791fccd"
     },
@@ -463,10 +460,14 @@
       "summary": "Portable skill launchers and routing audits",
       "responsibilities": [
         "Select the bundled CLI without a package fallback",
-        "Audit exact internal Guard routes, task shapes and conditional references"
+        "Audit exact internal Guard routes, task shapes and conditional references",
+        "Keep selected contract, blueprint and final-reporting instructions aligned with native execution and target-local evidence boundaries"
       ],
       "files": [
-        "skills/worldguard/scripts/*.py"
+        "skills/worldguard/scripts/*.py",
+        "skills/worldguard/references/closure-report.md",
+        "skills/worldguard/references/world-blueprint.md",
+        "skills/worldguard/references/worldguard-contracts.md"
       ],
       "entrypoints": [],
       "state": [],
@@ -486,7 +487,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:8e5bbade8859ffea702fb989df3a7237779c5a7c70439fc693b9fc6ac1947979"
+      "fingerprint": "sha256:0fc6d04788239aa82cbccf343b9e49fb97c739b0b44fd32fb8c4bd7c36e0c02f"
     }
   ],
   "flows": [],

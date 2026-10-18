@@ -3,6 +3,10 @@ from pathlib import Path
 import importlib.util
 import shutil
 
+import pytest
+
+from worldguard.self_dna import check
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("runtime_identity", ROOT / "scripts/check_runtime_identity.py")
 AUDIT = importlib.util.module_from_spec(SPEC)
@@ -33,3 +37,27 @@ def test_missing_or_symlink_installation_blocks(tmp_path):
     link = tmp_path / "link"
     link.symlink_to(ROOT / "skills/worldguard", target_is_directory=True)
     assert not AUDIT.audit(ROOT, installed_skill=link)["ok"]
+
+
+@pytest.mark.parametrize("compact", [False, True])
+@pytest.mark.parametrize("available", [False, True], ids=["blocked", "current"])
+def test_self_dna_preserves_execution_and_claim_boundaries(tmp_path, compact, available):
+    root = ROOT if available else tmp_path / "missing"
+    full, full_code = check(root)
+    result, code = check(root, compact=compact)
+
+    assert code == full_code == (0 if available else 1)
+    assert result["status"] == full["status"] == ("ready" if available else "blocked")
+    assert result["claim_boundary"] == full["claim_boundary"]
+    assert result["model_execution"] == result["test_execution"] == "not_run"
+    if available:
+        expected_directory = dict(full["native_directory"])
+        assert expected_directory["files"]
+        if compact:
+            del expected_directory["files"]
+        assert result["native_directory"] == expected_directory
+        assert result == {**full, "native_directory": expected_directory}
+    else:
+        assert result["gap"] == full["gap"]
+        assert result["gap"]["code"] == "native_directory_unavailable"
+        assert result == full

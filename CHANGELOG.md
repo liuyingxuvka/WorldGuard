@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.7.14 - 2026-10-18
+
+- Align ordinary closure instructions with derived Guards and direct native execution while retaining target-local blueprint oracles and SCM gaps.
+- Preserve claim boundaries, explicit model/test `not_run` fields and actionable gaps in compact repository self-DNA reports.
+- Remove three historical requirements sketches (`hierarchical_model_mesh`, `model_test_code_alignment`, `test_evidence_mesh`) from the default map registry; retain their compatibility files. Their Boolean sketches do not validate native implementations. The seven remaining models and all ordinary test bindings remain active.
+- Synchronize the portable runtime from canonical source and publish one frozen patch identity.
+
 ## v0.7.13 - 2026-10-17
 
 - Partition the living map into native responsibilities while keeping canonical and generated runtime files together under each logical owner.

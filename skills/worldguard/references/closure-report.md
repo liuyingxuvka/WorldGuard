@@ -14,8 +14,8 @@ Use closure reports before claiming a multi-model WorldGuard check is complete.
 - Were child ledgers preserved in the aggregate ledger?
 - Did structural, semantic, provider, and rollout status remain distinct?
 - Did every required semantic child run through a declared typed binding?
-- Does every invoked Guard have a declared prevention purpose and unsupported boundary?
-- Did the source-discovered finite Guard-owned failure inventory exactly match the declared inventory, with one native good per Guard, one native bad per failure class, and an exact status/code oracle reaction?
+- Does the report preserve this task's derived Guard set, current native results, supported scope, unsupported boundaries, and checks that did not run?
+- Is the author-owned 7-good/81-bad catalog kept as a Guard implementation-maintenance regression, rather than required calibration or admission for ordinary unit/mesh closure?
 - Were required Guards derived from structured claim atoms rather than accepted from the caller's target list alone?
 - Do unit, mesh, and prompt composition expose the same canonical Guard denominator and derivation fingerprint from `worldguard.contracts.derive_guard_requirements`?
 - Did every expected semantic-rollout node supply a contract, and does every skipped node/child have a typed reason and coverage impact?
@@ -32,7 +32,7 @@ Use closure reports before claiming a multi-model WorldGuard check is complete.
 - Are target-material, evidence, test/check, and native-result bindings present only where required, non-substituting, and bound to the exact target id/revision, provider/version/capability, lowercase SHA-256 content and receipt identities, owner, and claim boundary? For external roles, did the registered owners actually execute the test contract and semantically align the evidence rather than merely compare hashes?
 - Was each local binding observed beneath the blueprint root, or backed by a registered provider capability and its registered execution-owner attestation? Is every identity-only external binding still `content_not_verified`?
 - Does every typed native semantic object link to the exact current `native_result` observation and a terminal signed by the applicable domain Guard owner, with ownerless containers explicit `NOT_APPLICABLE`?
-- Does every applicable native element carry one target-local purpose, one known-good, and one known-bad per selected failure; pass through parent declaration -> `for_guard` -> frozen purpose verification before execution; and compare target output/post-state/effects/failure against its own oracle afterward?
+- Does every applicable native element retain its `BlueprintTaskPurpose`, one target-local known-good, and one known-bad per selected failure; validate those case/oracle identities, then execute parent declaration -> `for_guard` -> structural and semantic owners; and compare target input/prestate -> output/poststate, effects, and failure against its own oracle? Does `admission_bad` remain parser rejection only?
 - Does the report state the deepest continuously qualified layer and the first unresolved layer, and keep `native_domain_qualified`, `object_dna_qualified`, and `full_domain_qualified` separate while absent cross-artifact projection is `not_run`?
 - If a cross-artifact result was supplied, did a currently registered independent producer own it; did exact source blueprint/native-report/set/payload identities and immutable receipt bytes match; and did it leave native qualification unchanged?
 - Is any requested portable handoff or retrieval route rejected as `WORLD_BLUEPRINT_NATIVE_DIRECTORY_ONLY`, while the in-memory model and optional cross-artifact projection keep `native_handoff_qualified`, `object_dna_handoff_qualified`, and `full_cross_artifact_handoff_qualified` separate?
@@ -48,9 +48,10 @@ Use closure reports before claiming a multi-model WorldGuard check is complete.
   closure; it cannot be described as simulated or semantically validated.
 - Provider-unavailable and unevaluable semantic cases fail closed even when
   every required input field is present.
-- A connected Guard whose purpose, finite failure inventory, good/bad
-  cardinality, or native reaction oracle is missing or stale cannot support
-  closure. In particular, a partially defined SCM is `GAP`, not `PASS`.
+- Ordinary unit/mesh closure requires the complete derived Guard set and
+  current native results within the stated scope; missing or stale task
+  evidence remains a gap. It does not require checker calibration or the
+  author regression catalog. A partially defined SCM is `GAP`, not `PASS`.
 - One event, one or two convenient timepoints, enough points concentrated in only one phase, a rich aggregate with one shallow child, one equation, or one convenient scenario may pass a
   local bounded check, but cannot license prediction. Predictive closure needs
   `predictive_claim_licensed: true` on the current target receipt.
