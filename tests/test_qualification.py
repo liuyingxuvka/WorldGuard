@@ -10,14 +10,12 @@ from worldguard import (
     ModelMeshContract,
     ProviderStatus,
     QualificationContext,
-    QualificationError,
     SemanticStatus,
     qualification_context_for_node,
     run_model_mesh,
     run_worldguard,
 )
 from worldguard.status import GuardStatus
-import worldguard.qualification as qualification_module
 
 
 def _event_contract() -> dict:
@@ -43,23 +41,6 @@ def _event_contract() -> dict:
     return contract
 
 
-def _supplied_provider_result(report) -> dict:
-    evidence = report.provider_evidence["EventGuard"]
-    return {
-        key: evidence[key]
-        for key in (
-            "evidence_id",
-            "provider_id",
-            "provider_version",
-            "capability_id",
-            "content_fingerprint",
-            "receipt_fingerprint",
-            "target_id",
-            "target_revision",
-            "contract_fingerprint",
-            "claim_boundary",
-        )
-    }
 
 
 def test_unit_and_one_node_mesh_share_one_qualification_shape() -> None:
@@ -92,7 +73,6 @@ def test_unit_and_one_node_mesh_share_one_qualification_shape() -> None:
         receipt.to_dict() for receipt in unit.semantic_receipts
     ]
     assert node.provider_states == unit.provider_states
-    assert node.provider_evidence == unit.provider_evidence
     assert node.rollout_status == unit.rollout_status == SemanticStatus.PASS
     assert node.depth_state == unit.depth_state
     assert node.gaps == unit.gaps == []
@@ -143,7 +123,7 @@ def test_unmapped_atom_preserves_claim_and_atom_identity() -> None:
     assert report.status == GuardStatus.GAP
 
 
-def test_unavailable_and_stale_provider_evidence_are_typed_non_passes() -> None:
+def test_unavailable_provider_is_a_typed_non_pass() -> None:
     unavailable = run_worldguard(
         _event_contract(),
         context=QualificationContext(
@@ -154,113 +134,7 @@ def test_unavailable_and_stale_provider_evidence_are_typed_non_passes() -> None:
     assert unavailable.structural_status == GuardStatus.PASS
     assert unavailable.semantic_status == SemanticStatus.NOT_RUN
     assert unavailable.provider_status == ProviderStatus.UNAVAILABLE
-    assert unavailable.provider_evidence["EventGuard"]["evidence_id"]
-    assert unavailable.provider_evidence["EventGuard"]["content_fingerprint"]
     assert unavailable.status == GuardStatus.GAP
-
-    stale = run_worldguard(
-        _event_contract(),
-        context=QualificationContext(
-            node_id="event-world",
-            provider_results={
-                "EventGuard": {
-                    "contract_fingerprint": "0" * 64,
-                    "target_revision": "revision-0",
-                }
-            },
-        ),
-    )
-    assert stale.semantic_status == SemanticStatus.NOT_RUN
-    assert stale.provider_status == ProviderStatus.STALE
-    assert stale.semantic_receipts[0].skipped_reason == "stale_provider_evidence"
-    assert (
-        stale.provider_evidence["EventGuard"]["contract_fingerprint"]
-        == "0" * 64
-    )
-    assert stale.provider_evidence["EventGuard"]["validation_status"] == "invalid"
-    assert "missing_fields" in stale.provider_evidence["EventGuard"]["validation_errors"]
-    assert "expected_contract_fingerprint" not in stale.provider_evidence["EventGuard"]
-    assert stale.status == GuardStatus.GAP
-
-
-def test_exact_supplied_provider_result_is_accepted_without_field_defaults() -> None:
-    native = run_worldguard(_event_contract())
-    supplied = _supplied_provider_result(native)
-
-    report = run_worldguard(
-        _event_contract(),
-        context=QualificationContext(
-            node_id="event-world",
-            target_id="event-world",
-            target_revision="revision-1",
-            provider_results={"EventGuard": supplied},
-        ),
-    )
-
-    assert report.status == GuardStatus.PASS
-    assert report.provider_evidence["EventGuard"]["source"] == "supplied_provider"
-    assert report.provider_evidence["EventGuard"]["validation_status"] == "current"
-    assert _supplied_provider_result(report) == supplied
-
-
-@pytest.mark.parametrize(
-    ("mutation", "expected_error"),
-    [
-        ({"provider_version": None}, "missing_fields"),
-        ({"provider_id": "foreign.provider.v1"}, "identity_mismatches"),
-        ({"capability_id": "foreign.capability"}, "identity_mismatches"),
-        ({"target_revision": "revision-0"}, "identity_mismatches"),
-        ({"claim_boundary": "another claim"}, "identity_mismatches"),
-        ({"content_fingerprint": "0" * 64}, "content_fingerprint"),
-        ({"receipt_fingerprint": "f" * 64}, "receipt_fingerprint"),
-    ],
-)
-def test_partial_foreign_stale_and_fake_provider_results_are_not_run(
-    mutation: dict,
-    expected_error: str,
-) -> None:
-    native = run_worldguard(_event_contract())
-    supplied = _supplied_provider_result(native)
-    for field_name, value in mutation.items():
-        if value is None:
-            supplied.pop(field_name)
-        else:
-            supplied[field_name] = value
-
-    report = run_worldguard(
-        _event_contract(),
-        context=QualificationContext(
-            node_id="event-world",
-            target_id="event-world",
-            target_revision="revision-1",
-            provider_results={"EventGuard": supplied},
-        ),
-    )
-
-    assert report.semantic_receipts[0].status == SemanticStatus.NOT_RUN
-    assert report.provider_status == ProviderStatus.STALE
-    assert report.provider_evidence["EventGuard"]["validation_status"] == "invalid"
-    assert expected_error in report.provider_evidence["EventGuard"]["validation_errors"]
-    assert report.status == GuardStatus.GAP
-
-
-def test_partial_supplied_provider_result_is_blocked_before_semantic_execution(
-    monkeypatch,
-) -> None:
-    def forbidden_execution(**kwargs):
-        raise AssertionError("semantic execution must not start for partial provider evidence")
-
-    monkeypatch.setattr(qualification_module, "execute_semantic", forbidden_execution)
-    report = run_worldguard(
-        _event_contract(),
-        context=QualificationContext(
-            node_id="event-world",
-            provider_results={"EventGuard": {"evidence_id": "partial"}},
-        ),
-    )
-    assert report.semantic_status == SemanticStatus.NOT_RUN
-    assert report.provider_status == ProviderStatus.STALE
-
 
 def test_extra_declared_guard_is_reported_and_the_derived_set_runs() -> None:
     contract = _event_contract()
@@ -287,17 +161,6 @@ def test_exact_input_repetition_has_stable_qualification_identity() -> None:
     assert first.qualification_fingerprint == second.qualification_fingerprint
 
 
-def test_duplicate_execution_attempt_and_unknown_report_field_fail_closed() -> None:
-    with pytest.raises(QualificationError, match="duplicate execution owner"):
-        run_worldguard(
-            _event_contract(),
-            context=QualificationContext(
-                node_id="event-world",
-                prior_execution_owner_ids=(
-                    "worldguard.structural:event-world:EventGuard",
-                ),
-            ),
-        )
-
+def test_unknown_report_field_fails_closed() -> None:
     with pytest.raises(ValueError, match="unknown fields"):
         GuardedReport.validate_payload_fields({"status": "PASS", "legacy": {}})

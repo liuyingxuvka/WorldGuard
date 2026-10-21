@@ -167,7 +167,6 @@
         "Execute selected native Guards and return a bounded report"
       ],
       "depends_on": [
-        "worldguard",
         "worldguard.core",
         "worldguard.guards"
       ],

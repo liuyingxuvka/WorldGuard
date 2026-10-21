@@ -624,7 +624,6 @@ class ModelMeshContract:
     edges: list[ModelEdge] = field(default_factory=list)
     snapshots: list[WorldStateSnapshot] = field(default_factory=list)
     provider_availability: dict[str, bool] = field(default_factory=dict)
-    provider_results: dict[str, dict[str, Any]] = field(default_factory=dict)
     semantic_coverage: SemanticCoverageContract = field(
         default_factory=SemanticCoverageContract
     )
@@ -666,11 +665,6 @@ class ModelMeshContract:
                 str(key): bool(value)
                 for key, value in dict(data.get("provider_availability", {})).items()
             },
-            provider_results={
-                str(key): dict(value)
-                for key, value in dict(data.get("provider_results", {})).items()
-                if isinstance(value, Mapping)
-            },
             semantic_coverage=SemanticCoverageContract.from_dict(
                 coverage_data,
                 default_model_node_ids=[node.model_id for node in nodes],
@@ -686,7 +680,6 @@ class ModelMeshContract:
             "edges": [edge.to_dict() for edge in self.edges],
             "snapshots": [snapshot.to_dict() for snapshot in self.snapshots],
             "provider_availability": self.provider_availability,
-            "provider_results": self.provider_results,
             "semantic_coverage": self.semantic_coverage.to_dict(),
         }
 
@@ -1740,7 +1733,6 @@ def qualification_context_for_node(
         target_id=node.contract.world_model.model_id or node.model_id,
         target_revision=node.contract.world_model.model_version or node.model_version,
         provider_availability=mesh.provider_availability,
-        provider_results=mesh.provider_results,
         rollout_inputs=_qualification_rollout_inputs(mesh),
     )
 

@@ -89,7 +89,6 @@ class GuardedReport:
             "child_results",
             "semantic_receipts",
             "provider_states",
-            "provider_evidence",
             "depth_state",
             "gaps",
             "aggregate_ledger",
@@ -119,7 +118,6 @@ class GuardedReport:
     child_results: list[GuardResult]
     semantic_receipts: list[SemanticExecutionReceipt]
     provider_states: dict[str, str]
-    provider_evidence: dict[str, dict[str, Any]]
     depth_state: dict[str, Any]
     gaps: list[dict[str, Any]]
     aggregate_ledger: list[LedgerEntry]
@@ -156,56 +154,6 @@ class GuardedReport:
             raise ValueError("semantic receipts do not match the effective Guard denominator")
         if set(self.provider_states) != set(self.effective_guards):
             raise ValueError("provider states do not match the effective Guard denominator")
-        if set(self.provider_evidence) != set(self.effective_guards):
-            raise ValueError("provider evidence does not match the effective Guard denominator")
-        for guard, evidence in self.provider_evidence.items():
-            required = {
-                "evidence_id",
-                "provider_id",
-                "provider_version",
-                "capability_id",
-                "content_fingerprint",
-                "receipt_fingerprint",
-                "target_id",
-                "target_revision",
-                "contract_fingerprint",
-                "claim_boundary",
-                "source",
-                "validation_status",
-                "validation_errors",
-            }
-            missing = sorted(required.difference(evidence))
-            if missing:
-                raise ValueError(
-                    f"provider evidence for {guard} lacks identities: "
-                    + ", ".join(missing)
-                )
-            if evidence["validation_status"] not in {"current", "invalid"}:
-                raise ValueError(
-                    f"provider evidence for {guard} has unknown validation status"
-                )
-            if evidence["validation_status"] == "current":
-                empty = sorted(
-                    field_name
-                    for field_name in required.difference(
-                        {"validation_errors"}
-                    )
-                    if not str(evidence[field_name]).strip()
-                )
-                if empty:
-                    raise ValueError(
-                        f"current provider evidence for {guard} has empty identities: "
-                        + ", ".join(empty)
-                    )
-                for field_name in ("content_fingerprint", "receipt_fingerprint"):
-                    value = str(evidence[field_name])
-                    if len(value) != 64 or any(
-                        character not in "0123456789abcdef" for character in value
-                    ):
-                        raise ValueError(
-                            f"current provider evidence for {guard} has invalid {field_name}"
-                        )
-
         if self.status == GuardStatus.PASS:
             if self.gaps:
                 raise ValueError("a passing qualification cannot contain gaps")
@@ -261,7 +209,6 @@ class GuardedReport:
             "child_results": [result.to_dict() for result in self.child_results],
             "semantic_receipts": [receipt.to_dict() for receipt in self.semantic_receipts],
             "provider_states": self.provider_states,
-            "provider_evidence": self.provider_evidence,
             "depth_state": self.depth_state,
             "gaps": self.gaps,
             "aggregate_ledger": [entry.to_dict() for entry in self.aggregate_ledger],

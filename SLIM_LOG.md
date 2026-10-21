@@ -343,3 +343,23 @@ Status: completed.
 | `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-18/map.log`) |
 
 Adaptations: 脚本目录库存按 Git 跟踪文件核对，保留未跟踪的解释器缓存；真实启动器任何字节未改。
+
+### WG-19: 单元检查总是直接执行：删除“调用方提供的 provider 收据回放”和“执行者身份”检查
+
+Status: completed.
+
+单元路径直接执行结构及语义 Guard；删除调用方 provider 收据回放和执行者身份记账，保留 provider_availability。7 项 qualification、348 项完整测试及 6 个模型通过，fuel_cell 输出 122688 字节。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `qualification` | 0 | 7 passed in 0.13s (`WG-19/qualification.log`) |
+| `residue` | 0 | (no output) (`WG-19/residue.log`) |
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-19/mirror.log`) |
+| `map-initial` | 1 | check: 1 error(s), 9 warning(s), 0 info (`WG-19/map-initial.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-19/map.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.core: 2 identical bodies (115 AST nodes) in ['worldguard.core']: skills/worldguard/runtime/worldguard/status.py:aggregate_statuses, worldguard/status.py:aggregate_statuses (`WG-19/change.log`) |
+| `example` | 0 | 122688 (`WG-19/example.log`) |
+| `pytest` | 0 | 348 passed in 48.66s (`WG-19/pytest.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-19/models.log`) |
+
+Adaptations: 首次 map 发现文档预告的 worldguard.qualification→worldguard 无用依赖，删除该唯一已失效依赖后 map 0 errors；失败原日志保留。

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-import re
 from typing import Any
 
 from .contracts import (
@@ -14,7 +13,6 @@ from .guards import GUARD_RUNNERS
 from .ledgers import LedgerEntry, ledger_entry
 from .reports import GuardResult, GuardedReport
 from .semantic import (
-    EXECUTOR_REGISTRY,
     ProviderStatus,
     SemanticExecutionReceipt,
     SemanticStatus,
@@ -38,10 +36,8 @@ class QualificationContext:
     target_id: str = ""
     target_revision: str = ""
     provider_availability: dict[str, bool] = field(default_factory=dict)
-    provider_results: dict[str, dict[str, Any]] = field(default_factory=dict)
     semantic_inputs: dict[str, Any] = field(default_factory=dict)
     rollout_inputs: dict[str, Any] = field(default_factory=dict)
-    prior_execution_owner_ids: tuple[str, ...] = ()
     claim_boundary: str = ""
 
     @classmethod
@@ -52,29 +48,14 @@ class QualificationContext:
             "target_id",
             "target_revision",
             "provider_availability",
-            "provider_results",
             "semantic_inputs",
             "rollout_inputs",
-            "prior_execution_owner_ids",
             "claim_boundary",
         }
         unknown = sorted(set(data).difference(allowed))
         if unknown:
             raise QualificationError(
                 "qualification context has unknown fields: " + ", ".join(unknown)
-            )
-        provider_results = data.get("provider_results", {})
-        if not isinstance(provider_results, Mapping):
-            raise QualificationError("qualification provider_results must be a mapping")
-        invalid_provider_rows = sorted(
-            str(key)
-            for key, value in provider_results.items()
-            if not isinstance(value, Mapping)
-        )
-        if invalid_provider_rows:
-            raise QualificationError(
-                "qualification provider_results require mapping rows: "
-                + ", ".join(invalid_provider_rows)
             )
         return cls(
             node_id=str(data.get("node_id", "")),
@@ -84,15 +65,8 @@ class QualificationContext:
                 str(key): bool(value)
                 for key, value in dict(data.get("provider_availability", {})).items()
             },
-            provider_results={
-                str(key): dict(value)
-                for key, value in provider_results.items()
-            },
             semantic_inputs=dict(data.get("semantic_inputs", {})),
             rollout_inputs=dict(data.get("rollout_inputs", {})),
-            prior_execution_owner_ids=tuple(
-                str(value) for value in data.get("prior_execution_owner_ids", [])
-            ),
             claim_boundary=str(data.get("claim_boundary", "")),
         )
 
@@ -102,12 +76,8 @@ class QualificationContext:
             "target_id": self.target_id,
             "target_revision": self.target_revision,
             "provider_availability": dict(sorted(self.provider_availability.items())),
-            "provider_results": {
-                key: self.provider_results[key] for key in sorted(self.provider_results)
-            },
             "semantic_inputs": self.semantic_inputs,
             "rollout_inputs": self.rollout_inputs,
-            "prior_execution_owner_ids": list(self.prior_execution_owner_ids),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -190,45 +160,6 @@ def _provider_guard_status(status: ProviderStatus) -> GuardStatus:
     return GuardStatus.GAP
 
 
-def _execution_owner(
-    *,
-    seen: set[str],
-    prior: set[str],
-    layer: str,
-    node_id: str,
-    guard: str,
-) -> None:
-    owner_id = f"worldguard.{layer}:{node_id}:{guard}"
-    if owner_id in seen or owner_id in prior:
-        raise QualificationError(f"duplicate execution owner: {owner_id}")
-    seen.add(owner_id)
-
-
-def _stale_provider_receipt(
-    *,
-    node_id: str,
-    guard: str,
-    contract: GuardContract,
-    evidence: dict[str, Any],
-) -> SemanticExecutionReceipt:
-    executor = EXECUTOR_REGISTRY[guard]
-    return SemanticExecutionReceipt(
-        node_id=node_id,
-        guard=guard,
-        status=SemanticStatus.NOT_RUN,
-        provider_status=ProviderStatus.STALE,
-        binding=executor.binding,
-        findings=[
-            {
-                "code": "SEM_PROVIDER_EVIDENCE_STALE",
-                "message": "The supplied provider evidence does not match the current contract or target revision.",
-                "evidence": evidence,
-            }
-        ],
-        skipped_reason="stale_provider_evidence",
-    )
-
-
 def _claim_boundary(
     contract: GuardContract,
     context: QualificationContext,
@@ -239,119 +170,6 @@ def _claim_boundary(
         return context.claim_boundary
     revision = target_revision or "unversioned"
     return f"target:{target_id}@{revision};claim:{contract.claim.claim_id}"
-
-
-def _provider_evidence_identity(
-    *,
-    guard: str,
-    receipt: SemanticExecutionReceipt,
-    target_id: str,
-    target_revision: str,
-    contract_fingerprint: str,
-    claim_boundary: str,
-) -> dict[str, Any]:
-    """Derive exact evidence identity from this run's native semantic receipt."""
-
-    receipt_fingerprint = fingerprint_mesh(receipt.to_dict())
-    executor_id = receipt.binding.executor_id
-    return {
-        "evidence_id": f"semantic:{receipt.node_id}:{guard}",
-        "provider_id": executor_id,
-        "provider_version": executor_id.rsplit(".", 1)[-1],
-        "capability_id": f"{executor_id}.execute",
-        "content_fingerprint": receipt_fingerprint,
-        "receipt_fingerprint": receipt_fingerprint,
-        "target_id": target_id,
-        "target_revision": target_revision,
-        "contract_fingerprint": contract_fingerprint,
-        "claim_boundary": claim_boundary,
-        "source": "native_execution",
-        "validation_status": "current",
-        "validation_errors": {},
-    }
-
-
-PROVIDER_EVIDENCE_FIELDS = frozenset(
-    {
-        "evidence_id",
-        "provider_id",
-        "provider_version",
-        "capability_id",
-        "content_fingerprint",
-        "receipt_fingerprint",
-        "target_id",
-        "target_revision",
-        "contract_fingerprint",
-        "claim_boundary",
-    }
-)
-
-
-def _canonical_fingerprint(value: Any) -> bool:
-    return bool(re.fullmatch(r"[0-9a-f]{64}", str(value or "")))
-
-
-def _supplied_provider_preflight(
-    *,
-    guard: str,
-    supplied: dict[str, Any],
-    target_id: str,
-    target_revision: str,
-    contract_fingerprint: str,
-    claim_boundary: str,
-) -> dict[str, Any]:
-    executor_id = EXECUTOR_REGISTRY[guard].binding.executor_id
-    missing = sorted(PROVIDER_EVIDENCE_FIELDS.difference(supplied))
-    unknown = sorted(set(supplied).difference(PROVIDER_EVIDENCE_FIELDS))
-    errors: dict[str, Any] = {}
-    if missing:
-        errors["missing_fields"] = missing
-    if unknown:
-        errors["unknown_fields"] = unknown
-    expected = {
-        "provider_id": executor_id,
-        "provider_version": executor_id.rsplit(".", 1)[-1],
-        "capability_id": f"{executor_id}.execute",
-        "target_id": target_id,
-        "target_revision": target_revision,
-        "contract_fingerprint": contract_fingerprint,
-        "claim_boundary": claim_boundary,
-    }
-    mismatches = {
-        field_name: {"expected": expected_value, "observed": supplied.get(field_name)}
-        for field_name, expected_value in expected.items()
-        if field_name in supplied and supplied.get(field_name) != expected_value
-    }
-    if mismatches:
-        errors["identity_mismatches"] = mismatches
-    if "evidence_id" in supplied and not str(supplied.get("evidence_id", "")).strip():
-        errors["evidence_id"] = "non_empty_string_required"
-    for field_name in ("content_fingerprint", "receipt_fingerprint"):
-        if field_name in supplied and not _canonical_fingerprint(supplied[field_name]):
-            errors[field_name] = "canonical_sha256_required"
-    return errors
-
-
-def _invalid_provider_evidence(
-    supplied: dict[str, Any],
-    errors: dict[str, Any],
-) -> dict[str, Any]:
-    return {
-        **{field_name: supplied.get(field_name, "") for field_name in sorted(PROVIDER_EVIDENCE_FIELDS)},
-        "source": "supplied_provider",
-        "validation_status": "invalid",
-        "validation_errors": errors,
-        "supplied_evidence": dict(supplied),
-    }
-
-
-def _validated_supplied_provider_evidence(supplied: dict[str, Any]) -> dict[str, Any]:
-    return {
-        **{field_name: supplied[field_name] for field_name in sorted(PROVIDER_EVIDENCE_FIELDS)},
-        "source": "supplied_provider",
-        "validation_status": "current",
-        "validation_errors": {},
-    }
 
 
 def qualify_guard_contract(
@@ -405,99 +223,22 @@ def qualify_guard_contract(
         target_revision,
     )
 
-    seen_owners: set[str] = set()
-    prior_owners = set(context.prior_execution_owner_ids)
     child_results: list[GuardResult] = []
     semantic_receipts: list[SemanticExecutionReceipt] = []
-    provider_evidence: dict[str, dict[str, Any]] = {}
 
     for guard in effective:
-        _execution_owner(
-            seen=seen_owners,
-            prior=prior_owners,
-            layer="structural",
-            node_id=node_id,
-            guard=guard,
-        )
         guard_contract = contract.for_guard(
             guard,
             upstream_results=[result.to_dict() for result in child_results],
         )
         child_results.append(GUARD_RUNNERS[guard](guard_contract))
-
-        _execution_owner(
-            seen=seen_owners,
-            prior=prior_owners,
-            layer="semantic",
+        receipt = execute_semantic(
             node_id=node_id,
             guard=guard,
+            contract=guard_contract,
+            provider_available=context.provider_availability.get(guard, True),
+            coverage_context=context.rollout_inputs,
         )
-        supplied_present = guard in context.provider_results
-        provider_result = context.provider_results.get(guard, {})
-        stale_reasons = (
-            _supplied_provider_preflight(
-                guard=guard,
-                supplied=provider_result,
-                target_id=target_id,
-                target_revision=target_revision,
-                contract_fingerprint=contract_fingerprint,
-                claim_boundary=claim_boundary,
-            )
-            if supplied_present
-            else {}
-        )
-        if supplied_present and stale_reasons:
-            receipt = _stale_provider_receipt(
-                node_id=node_id,
-                guard=guard,
-                contract=guard_contract,
-                evidence=stale_reasons,
-            )
-            provider_evidence[guard] = _invalid_provider_evidence(
-                provider_result,
-                stale_reasons,
-            )
-        else:
-            receipt = execute_semantic(
-                node_id=node_id,
-                guard=guard,
-                contract=guard_contract,
-                provider_available=context.provider_availability.get(guard, True),
-                coverage_context=context.rollout_inputs,
-            )
-            if supplied_present:
-                receipt_fingerprint = fingerprint_mesh(receipt.to_dict())
-                fingerprint_errors: dict[str, Any] = {}
-                for field_name in ("content_fingerprint", "receipt_fingerprint"):
-                    if provider_result[field_name] != receipt_fingerprint:
-                        fingerprint_errors[field_name] = {
-                            "expected": receipt_fingerprint,
-                            "observed": provider_result[field_name],
-                        }
-                if fingerprint_errors:
-                    receipt = _stale_provider_receipt(
-                        node_id=node_id,
-                        guard=guard,
-                        contract=guard_contract,
-                        evidence=fingerprint_errors,
-                    )
-                    provider_evidence[guard] = _invalid_provider_evidence(
-                        provider_result,
-                        fingerprint_errors,
-                    )
-                else:
-                    provider_evidence[guard] = _validated_supplied_provider_evidence(
-                        provider_result
-                    )
-            else:
-                provider_evidence[guard] = _provider_evidence_identity(
-                    guard=guard,
-                    receipt=receipt,
-                    target_id=target_id,
-                    target_revision=target_revision,
-                    contract_fingerprint=contract_fingerprint,
-                    claim_boundary=claim_boundary,
-                )
         semantic_receipts.append(receipt)
 
     structural_status = aggregate_statuses(
@@ -602,7 +343,6 @@ def qualify_guard_contract(
             guard: context.provider_availability.get(guard, True)
             for guard in effective
         },
-        "provider_evidence": provider_evidence,
         "semantic_inputs_fingerprint": fingerprint_mesh(contract.inputs),
         "rollout_inputs": context.rollout_inputs,
         "claim_boundary": claim_boundary,
@@ -621,7 +361,6 @@ def qualify_guard_contract(
         "structural_results": [result.to_dict() for result in child_results],
         "semantic_receipts": [receipt.to_dict() for receipt in semantic_receipts],
         "provider_states": provider_states,
-        "provider_evidence": provider_evidence,
         "rollout_status": rollout_status.value,
         "depth_state": depth_state,
         "gaps": gaps,
@@ -652,7 +391,6 @@ def qualify_guard_contract(
         child_results=child_results,
         semantic_receipts=semantic_receipts,
         provider_states=provider_states,
-        provider_evidence=provider_evidence,
         depth_state=depth_state,
         gaps=gaps,
         aggregate_ledger=aggregate_ledger,
