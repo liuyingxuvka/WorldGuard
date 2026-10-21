@@ -434,15 +434,10 @@
         "Run only the selected native CLI and emit routing reports"
       ],
       "depends_on": [
-        "scripts",
-        "worldguard",
-        "worldguard.core",
-        "worldguard.guards"
+        "worldguard"
       ],
       "tests": [
-        "tests/test_run_worldguard_check_helper.py",
-        "tests/test_entry_prompt_bundle.py",
-        "tests/test_internal_guard_topology.py"
+        "tests/test_run_worldguard_check_helper.py"
       ],
       "models": [],
       "status": "confirmed",

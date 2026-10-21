@@ -180,3 +180,21 @@ Deleted only the unused, drifted top-level examples/fuel_cell YAML copy and poin
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-09/map.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-10: 删除路由 capsule、入口协议和两个作者用的提示词检查器
+
+Status: completed.
+
+Deleted unused route-capsule/entry-routing files, two author-only prompt checker scripts and their 24 dedicated tests. Removed their prompt references, retained the five shape rows and name: worldguard, and replaced openai.yaml with the 300-byte portable native-use prompt. Removed exactly the three script dependencies exposed as unused by map check; native launcher code is unchanged.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `map-before` | 1 | check: 1 error(s), 8 warning(s), 0 info (`WG-10/map-before.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-10/map.log`) |
+| `residue` | 0 | (no output) (`WG-10/residue.log`) |
+| `prompt-and-scripts` | 1 | ['__pycache__', 'run_worldguard.py', 'run_worldguard_check.py'] (`WG-10/prompt-and-scripts.log`) |
+| `pytest` | 0 | 356 passed in 40.32s (`WG-10/pytest.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-10/models.log`) |
+| `prompt-and-scripts-tracked` | 0 | ['skills/worldguard/scripts/run_worldguard.py', 'skills/worldguard/scripts/run_worldguard_check.py'] (`WG-10/prompt-and-scripts-tracked.log`) |
+
+Adaptations: The literal directory listing also contained an ignored generated __pycache__; the initial strict two-entry probe failed and is preserved. A read-only git-tracked script inventory proves only run_worldguard.py and run_worldguard_check.py remain, without deleting unrelated generated cache artifacts.

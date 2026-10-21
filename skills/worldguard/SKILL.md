@@ -11,7 +11,7 @@ WorldGuard is the single public skill and console. EventGuard, AgentGuard, Space
 
 ## Start
 
-Read [entry-routing.md](references/entry-routing.md). Preserve the request's source spans, claim semantics, model/input identities, requested scope, and missing evidence. Select exactly one shape:
+Pick the shape that fits the request and read its reference:
 
 | Shape | Work | Selected reference |
 |---|---|---|
@@ -21,7 +21,7 @@ Read [entry-routing.md](references/entry-routing.md). Preserve the request's sou
 | `task_local_revision` | Frozen prediction, later observation, finite model revision | [task-local-model-deepening.md](references/task-local-model-deepening.md) |
 | `template_pack` | Select and compose reusable WorldGuard scaffolding | [template-packs.md](references/template-packs.md) |
 
-For unit, mesh, and task-local claims, call `worldguard.contracts.derive_guard_requirements` and consume its full denominator, unmapped semantics, and fingerprint. `claim.target_guards` cannot shrink that set. Prediction requires EventGuard plus CausalGuard. Read the selected capsules in [internal-guard-routes.json](references/internal-guard-routes.json) and their selected Guard reference. Missing inputs or mandatory references, no matching shape, several shapes, and unknown semantics remain explicit blockers.
+WorldGuard derives the Guards to run from `claim.requested_semantics` (and atom semantics); `claim.target_guards` is optional. A predictive claim adds EventGuard and CausalGuard. Unknown semantics stay visible as a gap.
 
 ## First native action
 

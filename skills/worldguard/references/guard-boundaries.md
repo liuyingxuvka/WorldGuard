@@ -8,12 +8,6 @@ Mesh boundary decides whether one model node may support another model node thro
 
 These are different checks. A Guard may return `PASS` inside one node while the overall mesh remains `GAP`, `FAIL`, or `BOUNDARY_EXCEEDED`.
 
-All seven boundaries below are complete internal routes of the single
-`worldguard` skill and console. Their exact runner, expectation/prediction,
-response, validator, semantic executor, and terminal bindings are declared in
-`internal-guard-routes.json`. None is a separately installed skill or alternate
-success path.
-
 ## EventGuard
 
 Owns event, timepoint, fluent persistence, initiation, termination, clipping, and exclusive fluent conflicts.
