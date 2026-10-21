@@ -2,7 +2,9 @@
   "schema": "flowguard.map.v1",
   "project": "WorldGuard",
   "layers": [],
-  "ignore": [],
+  "ignore": [
+    "skills/worldguard/runtime/**"
+  ],
   "test_command": "",
   "components": [
     {
@@ -19,12 +21,7 @@
         "worldguard/__main__.py",
         "worldguard/cli.py",
         "worldguard/examples/__init__.py",
-        "worldguard/examples/fuel_cell.py",
-        "skills/worldguard/runtime/worldguard/__init__.py",
-        "skills/worldguard/runtime/worldguard/__main__.py",
-        "skills/worldguard/runtime/worldguard/cli.py",
-        "skills/worldguard/runtime/worldguard/examples/__init__.py",
-        "skills/worldguard/runtime/worldguard/examples/fuel_cell.py"
+        "worldguard/examples/fuel_cell.py"
       ],
       "entrypoints": [
         "worldguard/cli.py:main",
@@ -67,13 +64,7 @@
         "worldguard/status.py",
         "worldguard/ledgers.py",
         "worldguard/reports.py",
-        "worldguard/semantic.py",
-        "skills/worldguard/runtime/worldguard/contracts.py",
-        "skills/worldguard/runtime/worldguard/io.py",
-        "skills/worldguard/runtime/worldguard/status.py",
-        "skills/worldguard/runtime/worldguard/ledgers.py",
-        "skills/worldguard/runtime/worldguard/reports.py",
-        "skills/worldguard/runtime/worldguard/semantic.py"
+        "worldguard/semantic.py"
       ],
       "entrypoints": [
         "worldguard/contracts.py:derive_guard_requirements",
@@ -110,8 +101,6 @@
       "files": [
         "worldguard/guards/*.py",
         "worldguard/guard_model_contract.py",
-        "skills/worldguard/runtime/worldguard/guards/*.py",
-        "skills/worldguard/runtime/worldguard/guard_model_contract.py",
         "skills/worldguard/references/guard-inputs.md"
       ],
       "entrypoints": [
@@ -154,9 +143,7 @@
       ],
       "files": [
         "worldguard/qualification.py",
-        "worldguard/kernel.py",
-        "skills/worldguard/runtime/worldguard/qualification.py",
-        "skills/worldguard/runtime/worldguard/kernel.py"
+        "worldguard/kernel.py"
       ],
       "entrypoints": [
         "worldguard/kernel.py:run_worldguard",
@@ -189,8 +176,7 @@
         "Validate the existing native depth producer shape and current mesh/coverage identity without rerunning owners"
       ],
       "files": [
-        "worldguard/mesh.py",
-        "skills/worldguard/runtime/worldguard/mesh.py"
+        "worldguard/mesh.py"
       ],
       "entrypoints": [
         "worldguard/mesh.py:run_model_mesh"
@@ -225,8 +211,7 @@
         "Expose optional FlowGuard identity projection without claiming independent provider execution"
       ],
       "files": [
-        "worldguard/blueprint.py",
-        "skills/worldguard/runtime/worldguard/blueprint.py"
+        "worldguard/blueprint.py"
       ],
       "entrypoints": [
         "worldguard/blueprint.py:check_world_blueprint",
@@ -270,8 +255,6 @@
       "files": [
         "worldguard/task_local_revision.py",
         "worldguard/fact_revision.py",
-        "skills/worldguard/runtime/worldguard/task_local_revision.py",
-        "skills/worldguard/runtime/worldguard/fact_revision.py",
         "skills/worldguard/references/task-local-model-deepening.md"
       ],
       "entrypoints": [
@@ -312,8 +295,7 @@
         "Keep construction identity separate from semantic, provider and predictive closure"
       ],
       "files": [
-        "worldguard/template_packs.py",
-        "skills/worldguard/runtime/worldguard/template_packs.py"
+        "worldguard/template_packs.py"
       ],
       "entrypoints": [
         "worldguard/template_packs.py:builtin_template_registry",

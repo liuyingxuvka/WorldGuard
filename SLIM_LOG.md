@@ -547,3 +547,21 @@ Status: completed.
 | `models` | 0 | models: 3 passed, 0 failed (`WG-28/models.log`) |
 
 Adaptations: 地图登记减少 6→3 是本项明确授权退役，未提前取消模型以掩盖失败；三个现存模型的运行边界警告如实保留，后续 WG43/WG55–58 才接入真实代码/合约探索。
+
+### WG-29: 地图忽略生成出来的运行时副本；AGENTS.md 改为每次跑全量测试
+
+Status: completed.
+
+地图将派生 runtime 整体标为生成物，canonical 文件仍是唯一 owner；AGENTS 明确全量测试及现行模型检查，原生镜像检查仍通过。308 项完整测试及 3 个模型通过，change mesh 输出精确 3781 字节。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | ['skills/worldguard/runtime/**'] 0 (`WG-29/inventory.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-29/change.log`) |
+| `change-size` | 0 | 3781 (`WG-29/change-size.log`) |
+| `pytest` | 0 | 308 passed in 28.58s (`WG-29/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 10 warning(s), 0 info (`WG-29/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-29/models.log`) |
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-29/mirror.log`) |
+
+Adaptations: 不再将逐字节副本当成第二份业务代码进行重复架构告警；实际仍有原生大文件/辅助函数重复提示，未把它们伪称零警告。确认继续按 WG35 时点统一处理。
