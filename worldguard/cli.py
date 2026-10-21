@@ -9,19 +9,6 @@ from yaml import YAMLError
 from .io import dump_json, load_mapping
 
 
-def _add_object_census_trust_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "--trust-object-census-authority",
-        action="append",
-        default=[],
-        help="trust one exact signed object-census authority fingerprint",
-    )
-    parser.add_argument(
-        "--trust-object-census-producer",
-        action="append",
-        default=[],
-        help="trust one exact object-census producer descriptor fingerprint",
-    )
 
 
 def _input_error(operation: str, input_path: str, exc: Exception) -> int:
@@ -59,15 +46,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     blueprint_check = blueprint_commands.add_parser("check")
     blueprint_check.add_argument("--blueprint", required=True)
-    _add_object_census_trust_arguments(blueprint_check)
     blueprint_impact_command = blueprint_commands.add_parser("impact")
     blueprint_impact_command.add_argument("--blueprint", required=True)
     blueprint_impact_command.add_argument("--changed-id", action="append", required=True)
-    _add_object_census_trust_arguments(blueprint_impact_command)
     blueprint_trace_command = blueprint_commands.add_parser("trace")
     blueprint_trace_command.add_argument("--blueprint", required=True)
     blueprint_trace_command.add_argument("--target-id", required=True)
-    _add_object_census_trust_arguments(blueprint_trace_command)
     task_model = subparsers.add_parser(
         "task-model",
         help="freeze, compare, and reversibly evaluate one task-local world model",
@@ -150,27 +134,13 @@ def main(argv: list[str] | None = None) -> int:
         try:
             current_blueprint = load_world_blueprint(args.blueprint)
             if operation == "check":
-                report = check_world_blueprint(
-                    current_blueprint,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
+                report = check_world_blueprint(current_blueprint)
                 print(dump_json(report.to_dict()))
                 return 0 if report.status.value == "PASS" else 1
             if operation == "impact":
                 report = blueprint_impact(
                     current_blueprint,
                     changed_ids=args.changed_id,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
                 )
                 print(dump_json(report.to_dict()))
                 return 0 if not report.gaps else 1
@@ -178,12 +148,6 @@ def main(argv: list[str] | None = None) -> int:
                 report = blueprint_reverse_trace(
                     current_blueprint,
                     target_id=args.target_id,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
                 )
                 print(dump_json(report.to_dict()))
                 return 0 if report.status.value == "PASS" else 1

@@ -14,12 +14,10 @@ from worldguard.blueprint import (
     WORLD_ELEMENT_KINDS,
     BlueprintError,
     BlueprintLayerStatus,
-    TargetSemanticAuthority,
     WorldBlueprintContract,
     _binding_receipt_fingerprint,
     _provider_capability_registration,
     _provider_observation_expected,
-    _target_semantic_census_members,
     check_world_blueprint,
     compile_behavior_commitment_inventory_cache,
     load_world_blueprint,
@@ -27,7 +25,6 @@ from worldguard.blueprint import (
 from worldguard.semantic import fingerprint_mesh
 from worldguard.status import GuardStatus
 
-from tests.object_census_fixtures import signed_object_census
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -974,47 +971,6 @@ def test_provider_content_requires_one_complete_exact_current_receipt(
         "sha256:" + hashlib.sha256(authority_bytes).hexdigest()
     )
 
-    census_ref = next(
-        row
-        for row in base["commitment_inventory"]["input_refs"]
-        if row["input_kind"] == "target_object_census_authority"
-    )
-    census_record = json.loads(
-        (FIXTURE.parent / census_ref["locator"]).read_text(encoding="utf-8")
-    )
-    census_authority = census_record["authority"]
-    semantic_authority = TargetSemanticAuthority.from_dict(authority)
-    census_authority["required_node_ids"] = list(
-        semantic_authority.required_node_ids
-    )
-    census_authority["required_guard_owner_ids"] = list(
-        semantic_authority.required_guard_owner_ids
-    )
-    census_authority["members"] = _target_semantic_census_members(
-        semantic_authority
-    )
-    census_authority["input_fingerprints"] = {
-        input_kind: next(
-            row["content_fingerprint"]
-            for row in base["commitment_inventory"]["input_refs"]
-            if row["input_kind"] == input_kind
-        )
-        for input_kind in (
-            "request_contract",
-            "target_material",
-            "target_semantic_authority",
-            "target_object_census_source",
-        )
-    }
-    signed_census = signed_object_census(census_authority)
-    census_bytes = (
-        json.dumps(signed_census, ensure_ascii=False, indent=2, sort_keys=True)
-        + "\n"
-    ).encode("utf-8")
-    census_ref["content_fingerprint"] = (
-        "sha256:" + hashlib.sha256(census_bytes).hexdigest()
-    )
-
     def with_receipt(row: dict) -> dict:
         row = {key: value for key, value in row.items() if key != "receipt_fingerprint"}
         return {**row, "receipt_fingerprint": "sha256:" + fingerprint_mesh(row)}
@@ -1033,7 +989,6 @@ def test_provider_content_requires_one_complete_exact_current_receipt(
         (case_root / "support/target-semantic-authority.json").write_bytes(
             authority_bytes
         )
-        (case_root / census_ref["locator"]).write_bytes(census_bytes)
         if provider_result is not None:
             (case_root / "provider-results.json").write_text(
                 json.dumps({"assignment_evidence": provider_result}),

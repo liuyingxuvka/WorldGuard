@@ -8,9 +8,6 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.object_census_fixtures import (
-    OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT,
-)
 from worldguard.blueprint import (
     check_world_blueprint,
     load_world_blueprint,
@@ -29,51 +26,12 @@ def test_blueprint_check_cli_emits_canonical_report(capsys) -> None:
     assert exit_code == 0
     assert payload["status"] == "PASS"
     assert payload["native_domain_qualified"] is True
-    assert payload["object_dna_qualified"] is False
-    assert payload["object_census"]["first_gap"]["code"] == (
-        "object-census-trust-not-licensed"
-    )
     assert len(payload["blueprint_fingerprint"]) == 64
     assert len(payload["report_fingerprint"]) == 64
 
 
-def test_blueprint_check_cli_requires_explicit_census_trust_for_object_dna(
-    capsys,
-) -> None:
-    exit_code = main(
-        [
-            "blueprint",
-            "check",
-            "--blueprint",
-            str(FIXTURE),
-            "--trust-object-census-producer",
-            OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT,
-        ]
-    )
-    payload = json.loads(capsys.readouterr().out)
-
-    assert exit_code == 0
-    assert payload["native_domain_qualified"] is True
-    assert payload["object_dna_qualified"] is True
-    assert payload["object_census"]["authority_licensed"] is True
-    assert payload["object_census"]["first_gap"] is None
 
 
-def test_blueprint_check_cli_rejects_malformed_census_trust(capsys) -> None:
-    exit_code = main(
-        [
-            "blueprint",
-            "check",
-            "--blueprint",
-            str(FIXTURE),
-            "--trust-object-census-authority",
-            "not-a-fingerprint",
-        ]
-    )
-    payload = json.loads(capsys.readouterr().out)
-
-    assert exit_code == 2
-    assert payload["error"]["code"] == "WORLD_BLUEPRINT_FINGERPRINT_INVALID"
 
 
 def test_blueprint_impact_cli_is_repeatable(capsys) -> None:

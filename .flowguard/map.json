@@ -231,15 +231,12 @@
       ],
       "files": [
         "worldguard/blueprint.py",
-        "worldguard/blueprint_census.py",
-        "skills/worldguard/runtime/worldguard/blueprint.py",
-        "skills/worldguard/runtime/worldguard/blueprint_census.py"
+        "skills/worldguard/runtime/worldguard/blueprint.py"
       ],
       "entrypoints": [
         "worldguard/blueprint.py:check_world_blueprint",
         "worldguard/blueprint.py:blueprint_impact",
-        "worldguard/blueprint.py:blueprint_reverse_trace",
-        "worldguard/blueprint_census.py:validate_external_object_census_record"
+        "worldguard/blueprint.py:blueprint_reverse_trace"
       ],
       "state": [
         "Blueprint identities and independently signed object census values"
@@ -259,7 +256,6 @@
         "tests/test_blueprint_impact_trace.py",
         "tests/test_world_blueprint.py",
         "tests/test_world_blueprint_freeze_blockers.py",
-        "tests/test_world_blueprint_object_census.py",
         "tests/test_world_blueprint_policy_target.py",
         "tests/test_world_blueprint_seven_guard_matrix.py",
         "tests/test_world_blueprint_target_semantic_authority.py"

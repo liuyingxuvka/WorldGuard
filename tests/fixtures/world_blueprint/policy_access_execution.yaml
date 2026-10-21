@@ -523,27 +523,13 @@ commitment_inventory:
   target_id: policy-access-execution
   target_revision: policy-revision-1
   input_refs:
-  - input_id: object-census-source:policy-access-execution:policy-revision-1
-    input_kind: target_object_census_source
-    observation_mode: local_content
-    locator: support/policy-access-target-object-census-source.json
-    target_id: policy-access-execution
-    target_revision: policy-revision-1
-    content_fingerprint: sha256:376d1c67ece0cd84c8e9c9b5fef6ef351e8408a3fabc055a135eb4140a2cb01a
-  - input_id: object-census:policy-access-execution:policy-revision-1
-    input_kind: target_object_census_authority
-    observation_mode: local_content
-    locator: support/policy-access-target-object-census-authority.json
-    target_id: policy-access-execution
-    target_revision: policy-revision-1
-    content_fingerprint: sha256:2bb8f5f289b08412225213499ab345f1ccb6357634feddbf665b24d24e830a39
   - input_id: request:policy-access-execution:policy-revision-1
     input_kind: request_contract
     observation_mode: local_content
     locator: support/policy-access-behavior-request-contract.json
     target_id: policy-access-execution
     target_revision: policy-revision-1
-    content_fingerprint: sha256:9bd589563d9407bae4aa3a6b364920186d047e91d409381a3f06404aa82cc102
+    content_fingerprint: sha256:d28479d32b8c74dfbcf63220c75d8431e5378d09b74927950c5fbe0c32b01164
   - input_id: target-material:policy-access-execution:policy-revision-1
     input_kind: target_material
     observation_mode: local_content
@@ -560,4 +546,4 @@ commitment_inventory:
     content_fingerprint: sha256:cf588e692ca177029748073d6a14f1d780df6161ce5654eb879c2d747283aa55
   claim_boundary: field access policy execution revision 1 only
 declared_gaps: []
-blueprint_fingerprint: c504cc0cbb3a70e254149535c9b6e1b8d90c7600b51264d8b704e05d0d06526a
+blueprint_fingerprint: 880c586007a449a56332aaa6634444188a06a45a9d4529258fab7ade102acf3a

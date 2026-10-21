@@ -10,7 +10,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import runpy
 import sys
 from copy import deepcopy
 from pathlib import Path
@@ -30,7 +29,6 @@ from worldguard.blueprint import (
     check_world_blueprint,
     compile_behavior_commitment_inventory_cache,
 )
-from worldguard.blueprint_census import validate_external_object_census_source
 from worldguard.semantic import fingerprint_mesh
 
 
@@ -44,16 +42,12 @@ BASE_REQUEST = SUPPORT_ROOT / "behavior-request-contract.json"
 BASE_MATERIAL = SUPPORT_ROOT / "target-material.json"
 BASE_AUTHORITY = SUPPORT_ROOT / "target-semantic-authority.json"
 BASE_CACHE = SUPPORT_ROOT / "behavior-commitments.json"
-BASE_CENSUS = SUPPORT_ROOT / "target-object-census-authority.json"
-BASE_CENSUS_SOURCE = SUPPORT_ROOT / "target-object-census-source.json"
 
 SEVEN_BLUEPRINT = FIXTURE_ROOT / "seven_guard_portable_handoff.json"
 SEVEN_AUTHORITY = SUPPORT_ROOT / "seven-guard-target-semantic-authority.json"
 SEVEN_REQUEST = SUPPORT_ROOT / "seven-guard-behavior-request-contract.json"
 SEVEN_MATERIAL = SUPPORT_ROOT / "seven-guard-validation-target-material.json"
 SEVEN_CACHE = SUPPORT_ROOT / "seven-guard-behavior-commitments.json"
-SEVEN_CENSUS = SUPPORT_ROOT / "seven-guard-target-object-census-authority.json"
-SEVEN_CENSUS_SOURCE = SUPPORT_ROOT / "seven-guard-target-object-census-source.json"
 SEVEN_MATRIX = FIXTURE_ROOT / "seven_guard_native_owner_matrix.json"
 
 POLICY_BLUEPRINT = FIXTURE_ROOT / "policy_access_execution.yaml"
@@ -64,8 +58,6 @@ POLICY_EVIDENCE = SUPPORT_ROOT / "policy-access-evidence.json"
 POLICY_TESTS = SUPPORT_ROOT / "policy-access-tests.json"
 POLICY_NATIVE_RESULTS = SUPPORT_ROOT / "policy-access-native-results.json"
 POLICY_CACHE = SUPPORT_ROOT / "policy-access-behavior-commitments.json"
-POLICY_CENSUS = SUPPORT_ROOT / "policy-access-target-object-census-authority.json"
-POLICY_CENSUS_SOURCE = SUPPORT_ROOT / "policy-access-target-object-census-source.json"
 
 DERIVED_SUPPORTS = {
     "allocation_summary": "derive_allocation_result",
@@ -90,252 +82,6 @@ MATRIX_ELEMENT_IDS = {
     "matrix_resource_pass",
     "matrix_space_pass",
 }
-
-
-def _object_census_member(
-    element_id: str,
-    element_kind: str,
-    owner_node_id: str,
-    required_guard_owner_id: str,
-    binding_roles: tuple[str, ...],
-    not_applicable_roles: tuple[str, ...],
-    *,
-    support_mode: str = "direct",
-    derivation_ids: tuple[str, ...] = (),
-) -> dict[str, Any]:
-    """Author one raw-request census row without consulting a candidate model."""
-
-    return {
-        "element_id": element_id,
-        "element_kind": element_kind,
-        "owner_node_id": owner_node_id,
-        "required_guard_owner_id": required_guard_owner_id,
-        "support_mode": support_mode,
-        "binding_roles": sorted(binding_roles),
-        "not_applicable_roles": sorted(not_applicable_roles),
-        "derivation_ids": sorted(derivation_ids),
-    }
-
-
-_ALL_DIRECT_ROLES = ("evidence", "native_result", "target_material", "test_check")
-_NATIVE_MATERIAL_ROLES = ("native_result", "target_material")
-_EVIDENCE_TEST_NOT_APPLICABLE = ("evidence", "test_check")
-_DERIVED_NOT_APPLICABLE = ("evidence", "target_material", "test_check")
-
-
-BASE_OBJECT_CENSUS_MEMBERS = (
-    _object_census_member(
-        "actor_alex",
-        "agent",
-        "assign_task_leaf",
-        "AgentGuard",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-    _object_census_member(
-        "allocation_summary",
-        "relation",
-        "allocation_layer",
-        "not_applicable",
-        ("native_result",),
-        _DERIVED_NOT_APPLICABLE,
-        support_mode="derived",
-        derivation_ids=("derive_allocation_result",),
-    ),
-    _object_census_member(
-        "assignment_transition",
-        "transition",
-        "assign_task_leaf",
-        "EventGuard",
-        _ALL_DIRECT_ROLES,
-        (),
-    ),
-    _object_census_member(
-        "authorization_norm",
-        "norm",
-        "authorize_task_leaf",
-        "NormGuard",
-        _ALL_DIRECT_ROLES,
-        (),
-    ),
-    _object_census_member(
-        "governance_summary",
-        "relation",
-        "governance_layer",
-        "not_applicable",
-        ("native_result",),
-        _DERIVED_NOT_APPLICABLE,
-        support_mode="derived",
-        derivation_ids=("derive_governance_result",),
-    ),
-    _object_census_member(
-        "plan_outcome",
-        "state",
-        "plan_root",
-        "EventGuard",
-        ("native_result",),
-        _DERIVED_NOT_APPLICABLE,
-        support_mode="derived",
-        derivation_ids=("derive_root_plan_outcome",),
-    ),
-    _object_census_member(
-        "planner_role",
-        "property",
-        "assign_task_leaf",
-        "not_applicable",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-    _object_census_member(
-        "resource_reservation",
-        "resource",
-        "reserve_resource_leaf",
-        "ResourceGuard",
-        _ALL_DIRECT_ROLES,
-        (),
-    ),
-    _object_census_member(
-        "schedule_event",
-        "event",
-        "schedule_task_leaf",
-        "EventGuard",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-    _object_census_member(
-        "schedule_transition",
-        "transition",
-        "schedule_task_leaf",
-        "EventGuard",
-        _ALL_DIRECT_ROLES,
-        (),
-    ),
-    _object_census_member(
-        "scheduled_state",
-        "state",
-        "schedule_task_leaf",
-        "EventGuard",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-    _object_census_member(
-        "scheduling_summary",
-        "state",
-        "scheduling_layer",
-        "EventGuard",
-        ("native_result",),
-        _DERIVED_NOT_APPLICABLE,
-        support_mode="derived",
-        derivation_ids=("derive_scheduling_result",),
-    ),
-    _object_census_member(
-        "task_prepare",
-        "entity",
-        "assign_task_leaf",
-        "not_applicable",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-)
-
-SEVEN_GUARD_MATRIX_CENSUS_MEMBERS = tuple(
-    _object_census_member(
-        element_id,
-        element_kind,
-        "plan_root",
-        guard_owner,
-        _ALL_DIRECT_ROLES,
-        (),
-    )
-    for element_id, element_kind, guard_owner in (
-        ("matrix_agent_pass", "agent", "AgentGuard"),
-        ("matrix_causal_pass", "causal_link", "CausalGuard"),
-        ("matrix_conflict_pass", "conflict", "ConflictGuard"),
-        ("matrix_event_pass", "event", "EventGuard"),
-        ("matrix_norm_pass", "norm", "NormGuard"),
-        ("matrix_resource_pass", "resource", "ResourceGuard"),
-        ("matrix_space_pass", "relation", "SpaceGuard"),
-    )
-)
-
-POLICY_OBJECT_CENSUS_MEMBERS = (
-    _object_census_member(
-        "access_policy_norm",
-        "norm",
-        "evaluate_access_leaf",
-        "NormGuard",
-        _ALL_DIRECT_ROLES,
-        (),
-    ),
-    _object_census_member(
-        "policy_decision_state",
-        "state",
-        "policy_root",
-        "EventGuard",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-        support_mode="derived",
-        derivation_ids=("derive_policy_decision",),
-    ),
-    _object_census_member(
-        "request_actor",
-        "agent",
-        "evaluate_access_leaf",
-        "AgentGuard",
-        _NATIVE_MATERIAL_ROLES,
-        _EVIDENCE_TEST_NOT_APPLICABLE,
-    ),
-)
-
-
-def _raw_request_object_census(
-    request: dict[str, Any],
-    *,
-    source_id: str,
-    source_owner_id: str,
-    authority_id: str,
-    authority_owner_id: str,
-    discovery_mode: str,
-    object_claim_kind: str,
-    members: tuple[dict[str, Any], ...],
-) -> dict[str, Any]:
-    """Create the request-owned denominator from explicit independent observations."""
-
-    semantic = request["semantic_authority"]
-    observed_element_ids = sorted(row["element_id"] for row in members)
-    if observed_element_ids != semantic["required_element_ids"]:
-        raise ValueError(
-            "independent census member observations do not match the raw request "
-            "element denominator"
-        )
-    observed_guard_owners = sorted(
-        {
-            row["required_guard_owner_id"]
-            for row in members
-            if row["required_guard_owner_id"] != "not_applicable"
-        }
-    )
-    if observed_guard_owners != semantic["required_guard_owner_ids"]:
-        raise ValueError(
-            "independent census member observations do not match the raw request "
-            "Guard-owner denominator"
-        )
-    return {
-        "schema_version": "worldguard.external_object_census_source.v1",
-        "source_id": source_id,
-        "source_owner_id": source_owner_id,
-        "discovery_mode": discovery_mode,
-        "authority_id": authority_id,
-        "authority_revision": request["target_revision"],
-        "authority_owner_id": authority_owner_id,
-        "target_id": request["target_id"],
-        "target_revision": request["target_revision"],
-        "claim_boundary": request["claim_boundary"],
-        "object_claim_kind": object_claim_kind,
-        "required_node_ids": list(semantic["required_node_ids"]),
-        "required_guard_owner_ids": list(semantic["required_guard_owner_ids"]),
-        "members": [deepcopy(row) for row in members],
-    }
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -649,9 +395,7 @@ def _refresh_integrated_external_support_records(
             continue
         path_text, separator, selector = binding["locator"].partition("#")
         if not separator:
-            raise ValueError(
-                f"integrated support binding {binding['binding_id']} requires a selector"
-            )
+            continue
         path = FIXTURE_ROOT / path_text
         container = containers.setdefault(path, _load_json(path))
         existing = container.get(selector, {})
@@ -731,173 +475,6 @@ def _refresh_input_fingerprints(blueprint: dict[str, Any]) -> None:
         ).hexdigest()
 
 
-def _census_member(row: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "element_id": row["element_id"],
-        "element_kind": row["element_kind"],
-        "owner_node_id": row["owner_node_id"],
-        "required_guard_owner_id": row["required_guard_owner_id"],
-        "support_mode": row["support_mode"],
-        "binding_roles": sorted(
-            responsibility["role"]
-            for responsibility in row["binding_responsibilities"]
-        ),
-        "not_applicable_roles": sorted(
-            responsibility["role"]
-            for responsibility in row["not_applicable_responsibilities"]
-        ),
-        "derivation_ids": sorted(
-            responsibility["derivation_id"]
-            for responsibility in row["derivation_responsibilities"]
-        ),
-    }
-
-
-def _compile_census_source_from_raw_inputs(
-    *,
-    request_path: Path,
-    material_path: Path,
-    census_source_path: Path,
-) -> dict[str, Any]:
-    """Compile the census source without reading a candidate or semantic authority.
-
-    The request owns the detailed denominator.  Raw target material is used to
-    prove that every requested material identity exists and that no raw target
-    member silently falls outside the request.  Candidate blueprint and
-    target-semantic files are deliberately not parameters of this adapter.
-    """
-
-    request = _load_json(request_path)
-    material = _load_json(material_path)
-    source = request.get("object_census")
-    if not isinstance(source, dict):
-        raise TypeError(f"{request_path} requires one object_census object")
-    validated = validate_external_object_census_source(source)
-    identity_mismatches = {
-        field: {"expected": request.get(field), "observed": source.get(field)}
-        for field in ("target_id", "target_revision", "claim_boundary")
-        if request.get(field) != source.get(field)
-    }
-    semantic_request = request.get("semantic_authority")
-    if not isinstance(semantic_request, dict):
-        raise TypeError(f"{request_path} requires semantic_authority")
-    denominator_mismatches = {
-        field: {"expected": expected, "observed": observed}
-        for field, expected, observed in (
-            (
-                "required_node_ids",
-                semantic_request.get("required_node_ids"),
-                validated["required_node_ids"],
-            ),
-            (
-                "required_element_ids",
-                semantic_request.get("required_element_ids"),
-                validated["required_element_ids"],
-            ),
-            (
-                "required_guard_owner_ids",
-                semantic_request.get("required_guard_owner_ids"),
-                validated["required_guard_owner_ids"],
-            ),
-        )
-        if expected != observed
-    }
-    required_material_ids = sorted(
-        {
-            str(material_id)
-            for behavior in request.get("behaviors", [])
-            if isinstance(behavior, dict)
-            for material_id in behavior.get("required_material_ids", [])
-        }
-    )
-    material_ids = sorted(material)
-    if identity_mismatches or denominator_mismatches or required_material_ids != material_ids:
-        raise ValueError(
-            "raw request/target object-census discovery did not close: "
-            + json.dumps(
-                {
-                    "identity_mismatches": identity_mismatches,
-                    "denominator_mismatches": denominator_mismatches,
-                    "required_material_ids": required_material_ids,
-                    "observed_material_ids": material_ids,
-                },
-                ensure_ascii=False,
-                sort_keys=True,
-            )
-        )
-    _write_json(census_source_path, source)
-    return source
-
-
-def _append_census_source_input(
-    *,
-    blueprint: dict[str, Any],
-    census_source_path: Path,
-) -> None:
-    blueprint["commitment_inventory"]["input_refs"].append(
-        {
-            "input_id": (
-                f"object-census-source:{blueprint['target_id']}:"
-                f"{blueprint['target_revision']}"
-            ),
-            "input_kind": "target_object_census_source",
-            "observation_mode": "local_content",
-            "locator": census_source_path.relative_to(FIXTURE_ROOT).as_posix(),
-            "target_id": blueprint["target_id"],
-            "target_revision": blueprint["target_revision"],
-            "content_fingerprint": ZERO_SHA256,
-        }
-    )
-
-
-def _refresh_external_object_census(
-    *,
-    blueprint: dict[str, Any],
-    census_path: Path,
-    census_source_path: Path,
-) -> None:
-    """Sign the raw-input census source after all governed inputs are frozen."""
-
-    input_fingerprints = {
-        row["input_kind"]: row["content_fingerprint"]
-        for row in blueprint["commitment_inventory"]["input_refs"]
-        if row["input_kind"]
-        in {
-            "request_contract",
-            "target_material",
-            "target_object_census_source",
-            "target_semantic_authority",
-        }
-    }
-    census_source = _load_json(census_source_path)
-    signer = runpy.run_path(str(ROOT / "tests/object_census_fixtures.py"))[
-        "signed_object_census_from_source"
-    ]
-    _write_json(
-        census_path,
-        signer(census_source, input_fingerprints=input_fingerprints),
-    )
-    blueprint["commitment_inventory"]["input_refs"].append(
-        {
-            "input_id": (
-                f"object-census:{blueprint['target_id']}:"
-                f"{blueprint['target_revision']}"
-            ),
-            "input_kind": "target_object_census_authority",
-            "observation_mode": "local_content",
-            "locator": census_path.relative_to(FIXTURE_ROOT).as_posix(),
-            "target_id": blueprint["target_id"],
-            "target_revision": blueprint["target_revision"],
-            "content_fingerprint": "sha256:"
-            + hashlib.sha256(census_path.read_bytes()).hexdigest(),
-        }
-    )
-    blueprint["commitment_inventory"]["input_refs"] = sorted(
-        blueprint["commitment_inventory"]["input_refs"],
-        key=lambda row: row["input_id"],
-    )
-
-
 def _refresh_one(
     *,
     blueprint_path: Path,
@@ -905,8 +482,6 @@ def _refresh_one(
     material_path: Path,
     authority_path: Path,
     cache_path: Path,
-    census_path: Path,
-    census_source_path: Path,
     blueprint: dict[str, Any],
     authority: dict[str, Any],
 ) -> None:
@@ -915,10 +490,7 @@ def _refresh_one(
         row
         for row in blueprint["commitment_inventory"]["input_refs"]
         if row["input_kind"]
-        not in {
-            "target_object_census_authority",
-            "target_object_census_source",
-        }
+        in {"request_contract", "target_material", "target_semantic_authority"}
     ]
     existing_binding_ids = {
         row["binding_id"] for row in blueprint["bindings"]
@@ -964,26 +536,11 @@ def _refresh_one(
             roles_by_element.get(element["element_id"], set())
         )
 
-    census_source = _compile_census_source_from_raw_inputs(
-        request_path=request_path,
-        material_path=material_path,
-        census_source_path=census_source_path,
-    )
-    if census_source["object_claim_kind"] == "integrated_target":
-        _refresh_integrated_external_support_records(blueprint)
+    _refresh_integrated_external_support_records(blueprint)
     _refresh_binding_content_and_receipts(blueprint)
     _refresh_authority(blueprint, authority)
     _write_json(authority_path, authority)
-    _append_census_source_input(
-        blueprint=blueprint,
-        census_source_path=census_source_path,
-    )
     _refresh_input_fingerprints(blueprint)
-    _refresh_external_object_census(
-        blueprint=blueprint,
-        census_path=census_path,
-        census_source_path=census_source_path,
-    )
     _write_blueprint(blueprint_path, blueprint)
 
     parsed = WorldBlueprintContract.from_dict(
@@ -1036,31 +593,6 @@ def _prepare_seven_guard_validation() -> tuple[dict[str, Any], dict[str, Any]]:
     authority = _normalize_seven_guard_revision(authority)
     request = _normalize_seven_guard_revision(request)
     matrix = _normalize_seven_guard_revision(matrix)
-    request["object_census"] = _raw_request_object_census(
-        request,
-        source_id=(
-            "seven-guard-capability-validation:object-census-source:"
-            "validation-revision-1"
-        ),
-        source_owner_id=(
-            "seven-guard-capability-validation-object-census-source-owner"
-        ),
-        authority_id=(
-            "seven-guard-capability-validation:object-census:"
-            "validation-revision-1"
-        ),
-        authority_owner_id=(
-            "seven-guard-capability-validation-object-census-owner"
-        ),
-        discovery_mode="candidate_consistency",
-        object_claim_kind="oracle_carrying_capability_fixture",
-        members=tuple(
-            sorted(
-                (*BASE_OBJECT_CENSUS_MEMBERS, *SEVEN_GUARD_MATRIX_CENSUS_MEMBERS),
-                key=lambda row: row["element_id"],
-            )
-        ),
-    )
 
     resource_copies = {
         "target-material.json": "seven-guard-validation-target-material.json",
@@ -1598,20 +1130,6 @@ def _prepare_policy_access_execution() -> tuple[dict[str, Any], dict[str, Any]]:
             "required_guard_owner_ids": ["AgentGuard", "EventGuard", "NormGuard"],
         },
     }
-    request_contract["object_census"] = _raw_request_object_census(
-        request_contract,
-        source_id=(
-            "policy-access-execution:object-census-source:policy-revision-1"
-        ),
-        source_owner_id="policy-access-execution-object-census-source-owner",
-        authority_id=(
-            "policy-access-execution:object-census:policy-revision-1"
-        ),
-        authority_owner_id="policy-access-execution-object-census-owner",
-        discovery_mode="independent_raw_target_request",
-        object_claim_kind="integrated_target",
-        members=POLICY_OBJECT_CENSUS_MEMBERS,
-    )
     _write_json(POLICY_REQUEST, request_contract)
 
     authority_elements = []
@@ -1749,16 +1267,6 @@ def main() -> int:
     base_blueprint = _load_blueprint(BASE_BLUEPRINT)
     base_authority = _load_json(BASE_AUTHORITY)
     base_request = _load_json(BASE_REQUEST)
-    base_request["object_census"] = _raw_request_object_census(
-        base_request,
-        source_id="planning-workflow:object-census-source:revision-1",
-        source_owner_id="planning-workflow-object-census-source-owner",
-        authority_id="planning-workflow:object-census:revision-1",
-        authority_owner_id="planning-workflow-object-census-owner",
-        discovery_mode="independent_raw_target_request",
-        object_claim_kind="integrated_target",
-        members=BASE_OBJECT_CENSUS_MEMBERS,
-    )
     _write_json(BASE_REQUEST, base_request)
     _refresh_one(
         blueprint_path=BASE_BLUEPRINT,
@@ -1766,8 +1274,6 @@ def main() -> int:
         material_path=BASE_MATERIAL,
         authority_path=BASE_AUTHORITY,
         cache_path=BASE_CACHE,
-        census_path=BASE_CENSUS,
-        census_source_path=BASE_CENSUS_SOURCE,
         blueprint=base_blueprint,
         authority=base_authority,
     )
@@ -1779,8 +1285,6 @@ def main() -> int:
         material_path=SEVEN_MATERIAL,
         authority_path=SEVEN_AUTHORITY,
         cache_path=SEVEN_CACHE,
-        census_path=SEVEN_CENSUS,
-        census_source_path=SEVEN_CENSUS_SOURCE,
         blueprint=seven_blueprint,
         authority=seven_authority,
     )
@@ -1792,8 +1296,6 @@ def main() -> int:
         material_path=POLICY_MATERIAL,
         authority_path=POLICY_AUTHORITY,
         cache_path=POLICY_CACHE,
-        census_path=POLICY_CENSUS,
-        census_source_path=POLICY_CENSUS_SOURCE,
         blueprint=policy_blueprint,
         authority=policy_authority,
     )

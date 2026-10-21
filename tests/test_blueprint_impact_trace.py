@@ -135,22 +135,9 @@ def test_each_query_runs_exactly_one_current_source_preflight(monkeypatch) -> No
     real_check = blueprint_module.check_world_blueprint
     calls: list[str] = []
 
-    def counted_check(
-        candidate,
-        *,
-        trusted_object_census_authority_fingerprints=(),
-        trusted_object_census_producer_descriptor_fingerprints=(),
-    ):
+    def counted_check(candidate):
         calls.append(candidate.blueprint_fingerprint)
-        return real_check(
-            candidate,
-            trusted_object_census_authority_fingerprints=(
-                trusted_object_census_authority_fingerprints
-            ),
-            trusted_object_census_producer_descriptor_fingerprints=(
-                trusted_object_census_producer_descriptor_fingerprints
-            ),
-        )
+        return real_check(candidate)
 
     monkeypatch.setattr(blueprint_module, "check_world_blueprint", counted_check)
 

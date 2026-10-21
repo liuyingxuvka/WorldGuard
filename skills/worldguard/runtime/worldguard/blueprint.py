@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from pathlib import Path
@@ -12,11 +12,6 @@ import re
 from typing import Any
 
 from .contracts import GuardContract
-from .blueprint_census import (
-    ExternalObjectCensusError,
-    validate_external_object_census_record,
-    validate_external_object_census_source,
-)
 from .guard_model_contract import PROTECTED_FAILURE_CLASSES
 from .guards import GUARD_RUNNERS
 from .io import load_mapping
@@ -72,9 +67,7 @@ BEHAVIOR_COMMITMENT_INPUT_KINDS = frozenset(
     {
         "request_contract",
         "target_material",
-        "target_object_census_source",
         "target_semantic_authority",
-        "target_object_census_authority",
         "openspec",
         "spark",
         "changelog",
@@ -864,20 +857,6 @@ def _required_sha256(value: Any, field_id: str) -> str:
     return result
 
 
-def _normalized_trust_fingerprints(
-    values: Iterable[str], field_id: str
-) -> tuple[str, ...]:
-    """Normalize one explicit caller trust set and reject non-current identities."""
-
-    return tuple(
-        sorted(
-            {
-                _required_sha256(value, field_id)
-                for value in values
-                if str(value).strip()
-            }
-        )
-    )
 
 
 @dataclass(frozen=True)
@@ -2991,16 +2970,12 @@ BEHAVIOR_COMMITMENT_ADAPTER_REGISTRY = BehaviorCommitmentAdapterRegistry(
             required_input_kinds=(
                 "request_contract",
                 "target_material",
-                "target_object_census_source",
                 "target_semantic_authority",
-                "target_object_census_authority",
             ),
             supported_input_kinds=(
                 "request_contract",
                 "target_material",
-                "target_object_census_source",
                 "target_semantic_authority",
-                "target_object_census_authority",
             ),
         ),
     )
@@ -3232,8 +3207,6 @@ class WorldBlueprintReport:
     deepest_continuously_proven_layer: int | None
     first_unresolved_layer: int | None
     native_domain_qualified: bool
-    object_dna_qualified: bool
-    object_census: dict[str, Any]
     partial_model_usable: bool
     native_execution_receipts: tuple[dict[str, Any], ...]
     gaps: tuple[BlueprintGap, ...]
@@ -3252,8 +3225,6 @@ class WorldBlueprintReport:
             "deepest_continuously_proven_layer": self.deepest_continuously_proven_layer,
             "first_unresolved_layer": self.first_unresolved_layer,
             "native_domain_qualified": self.native_domain_qualified,
-            "object_dna_qualified": self.object_dna_qualified,
-            "object_census": self.object_census,
             "partial_model_usable": self.partial_model_usable,
             "native_execution_receipts": list(self.native_execution_receipts),
             "gaps": [item.to_dict() for item in self.gaps],
@@ -4078,33 +4049,6 @@ def _json_leaf_paths(
     return (prefix,)
 
 
-def _target_semantic_census_members(
-    authority: TargetSemanticAuthority,
-) -> list[dict[str, Any]]:
-    """Project the exact semantic denominator carried by a signed census."""
-
-    return [
-        {
-            "element_id": row.element_id,
-            "element_kind": row.element_kind,
-            "owner_node_id": row.owner_node_id,
-            "required_guard_owner_id": row.required_guard_owner_id,
-            "support_mode": row.support_mode,
-            "binding_roles": sorted(
-                responsibility.role
-                for responsibility in row.binding_responsibilities
-            ),
-            "not_applicable_roles": sorted(
-                responsibility.role
-                for responsibility in row.not_applicable_responsibilities
-            ),
-            "derivation_ids": sorted(
-                responsibility.derivation_id
-                for responsibility in row.derivation_responsibilities
-            ),
-        }
-        for row in authority.elements
-    ]
 
 
 def _execute_request_contract_commitment_adapter(
@@ -4138,13 +4082,7 @@ def _execute_request_contract_commitment_adapter(
         }
     request_contract = payloads_by_kind["request_contract"][0]
     target_material = payloads_by_kind["target_material"][0]
-    target_census_source_payload = payloads_by_kind[
-        "target_object_census_source"
-    ][0]
     target_semantic_payload = payloads_by_kind["target_semantic_authority"][0]
-    target_census_payload = payloads_by_kind[
-        "target_object_census_authority"
-    ][0]
     required_request_fields = {
         "schema_version",
         "request_id",
@@ -4157,7 +4095,6 @@ def _execute_request_contract_commitment_adapter(
         "claim_boundary",
         "behaviors",
         "semantic_authority",
-        "object_census",
     }
     missing_fields = sorted(required_request_fields.difference(request_contract))
     unknown_fields = sorted(set(request_contract).difference(required_request_fields))
@@ -4312,199 +4249,6 @@ def _execute_request_contract_commitment_adapter(
             "code": getattr(exc, "code", ""),
             "details": getattr(exc, "details", {}),
         }
-    try:
-        validated_census = validate_external_object_census_record(
-            target_census_payload
-        )
-    except (ExternalObjectCensusError, TypeError, ValueError) as exc:
-        return (), (), {}, {}, "target_object_census_authority_invalid", {
-            "error": str(exc)
-        }
-    try:
-        validated_census_source = validate_external_object_census_source(
-            target_census_source_payload
-        )
-    except (ExternalObjectCensusError, TypeError, ValueError) as exc:
-        return (), (), {}, {}, "target_object_census_authority_invalid", {
-            "error": str(exc),
-            "source_kind": "target_object_census_source",
-        }
-    request_census_source = request_contract.get("object_census")
-    if request_census_source != target_census_source_payload:
-        return (), (), {}, {}, "target_object_census_denominator_mismatch", {
-            "request_source_mismatch": {
-                "expected_fingerprint": "sha256:"
-                + fingerprint_mesh(target_census_source_payload),
-                "observed_fingerprint": "sha256:"
-                + fingerprint_mesh(request_census_source),
-            }
-        }
-    census_authority = validated_census["authority"]
-    if not isinstance(census_authority, Mapping):
-        return (), (), {}, {}, "target_object_census_authority_invalid", {
-            "error": "validated object census authority is not an object"
-        }
-    observed_input_fingerprints = {
-        str(row["input_kind"]): str(row["observed_content_fingerprint"])
-        for row in input_observations
-        if row.get("input_kind")
-        in {
-            "request_contract",
-            "target_material",
-            "target_object_census_source",
-            "target_semantic_authority",
-        }
-    }
-    census_identity_mismatches = {
-        field_name: {"expected": expected, "observed": observed}
-        for field_name, expected, observed in (
-            ("target_id", blueprint.target_id, census_authority.get("target_id")),
-            (
-                "target_revision",
-                blueprint.target_revision,
-                census_authority.get("target_revision"),
-            ),
-            (
-                "claim_boundary",
-                blueprint.declared_boundary,
-                census_authority.get("claim_boundary"),
-            ),
-        )
-        if expected != observed
-    }
-    census_input_mismatches = {
-        input_kind: {
-            "expected": census_authority["input_fingerprints"].get(input_kind),
-            "observed": observed_input_fingerprints.get(input_kind),
-        }
-        for input_kind in (
-            "request_contract",
-            "target_material",
-            "target_object_census_source",
-            "target_semantic_authority",
-        )
-        if census_authority["input_fingerprints"].get(input_kind)
-        != observed_input_fingerprints.get(input_kind)
-    }
-    semantic_census_members = _target_semantic_census_members(
-        target_semantic_authority
-    )
-    source_projection = validated_census_source["source"]
-    source_required_element_ids = [
-        row["element_id"] for row in source_projection["members"]
-    ]
-    source_identity_mismatches = {
-        field_name: {"expected": expected, "observed": observed}
-        for field_name, expected, observed in (
-            (
-                "authority_id",
-                census_authority.get("authority_id"),
-                source_projection.get("authority_id"),
-            ),
-            (
-                "authority_revision",
-                census_authority.get("authority_revision"),
-                source_projection.get("authority_revision"),
-            ),
-            (
-                "authority_owner_id",
-                census_authority.get("authority_owner_id"),
-                source_projection.get("authority_owner_id"),
-            ),
-            ("target_id", blueprint.target_id, source_projection.get("target_id")),
-            (
-                "target_revision",
-                blueprint.target_revision,
-                source_projection.get("target_revision"),
-            ),
-            (
-                "claim_boundary",
-                blueprint.declared_boundary,
-                source_projection.get("claim_boundary"),
-            ),
-            (
-                "object_claim_kind",
-                census_authority.get("object_claim_kind"),
-                source_projection.get("object_claim_kind"),
-            ),
-            (
-                "discovery_mode",
-                validated_census.get("discovery_mode"),
-                source_projection.get("discovery_mode"),
-            ),
-            (
-                "discovery_source_id",
-                source_projection.get("source_id"),
-                validated_census["discovery_receipt"].get("source_id"),
-            ),
-            (
-                "discovery_source_owner_id",
-                source_projection.get("source_owner_id"),
-                validated_census["discovery_receipt"].get("source_owner_id"),
-            ),
-        )
-        if expected != observed
-    }
-    source_denominator_mismatches = {
-        field_name: {"expected": expected, "observed": observed}
-        for field_name, expected, observed in (
-            (
-                "required_node_ids",
-                census_authority.get("required_node_ids"),
-                source_projection.get("required_node_ids"),
-            ),
-            (
-                "required_guard_owner_ids",
-                census_authority.get("required_guard_owner_ids"),
-                source_projection.get("required_guard_owner_ids"),
-            ),
-            (
-                "members",
-                census_authority.get("members"),
-                source_projection.get("members"),
-            ),
-        )
-        if expected != observed
-    }
-    census_denominator_mismatches = {
-        field_name: {"expected": expected, "observed": observed}
-        for field_name, expected, observed in (
-            (
-                "required_node_ids",
-                list(target_semantic_authority.required_node_ids),
-                census_authority.get("required_node_ids"),
-            ),
-            (
-                "required_guard_owner_ids",
-                list(target_semantic_authority.required_guard_owner_ids),
-                census_authority.get("required_guard_owner_ids"),
-            ),
-            (
-                "members",
-                semantic_census_members,
-                census_authority.get("members"),
-            ),
-        )
-        if expected != observed
-    }
-    if (
-        census_identity_mismatches
-        or census_input_mismatches
-        or census_denominator_mismatches
-        or source_identity_mismatches
-        or source_denominator_mismatches
-    ):
-        return (), (), {}, {}, "target_object_census_denominator_mismatch", {
-            "identity_mismatches": census_identity_mismatches,
-            "input_fingerprint_mismatches": census_input_mismatches,
-            "denominator_mismatches": census_denominator_mismatches,
-            "source_identity_mismatches": source_identity_mismatches,
-            "source_denominator_mismatches": source_denominator_mismatches,
-            "authority_fingerprint": validated_census["authority_fingerprint"],
-            "producer_descriptor_fingerprint": validated_census[
-                "producer_descriptor_fingerprint"
-            ],
-        }
     semantic_identity_mismatches = {
         field_name: {"expected": expected, "observed": observed}
         for field_name, expected, observed in (
@@ -4557,27 +4301,6 @@ def _execute_request_contract_commitment_adapter(
     authority_element_ids = tuple(
         sorted(row.element_id for row in target_semantic_authority.elements)
     )
-    independent_source_request_mismatches = {
-        field_name: {"expected": list(expected), "observed": list(observed)}
-        for field_name, expected, observed in (
-            (
-                "required_node_ids",
-                expected_node_ids,
-                tuple(source_projection["required_node_ids"]),
-            ),
-            (
-                "required_element_ids",
-                expected_element_ids,
-                tuple(source_required_element_ids),
-            ),
-            (
-                "required_guard_owner_ids",
-                expected_guard_owner_ids,
-                tuple(source_projection["required_guard_owner_ids"]),
-            ),
-        )
-        if expected != observed
-    }
     semantic_denominator_mismatches = {
         field_name: {"expected": list(expected), "observed": list(observed)}
         for field_name, expected, observed in (
@@ -4608,7 +4331,6 @@ def _execute_request_contract_commitment_adapter(
     if (
         semantic_identity_mismatches
         or semantic_denominator_mismatches
-        or independent_source_request_mismatches
         or duplicate_semantic_request_ids
         or not expected_node_ids
         or not expected_element_ids
@@ -4616,9 +4338,6 @@ def _execute_request_contract_commitment_adapter(
         return (), (), {}, {}, "target_semantic_denominator_mismatch", {
             "identity_mismatches": semantic_identity_mismatches,
             "denominator_mismatches": semantic_denominator_mismatches,
-            "independent_source_request_mismatches": (
-                independent_source_request_mismatches
-            ),
             "duplicate_ids": duplicate_semantic_request_ids,
         }
 
@@ -4796,39 +4515,6 @@ def _execute_request_contract_commitment_adapter(
             "material_assertions": assertion_results,
             "authority_fingerprint": "sha256:"
             + fingerprint_mesh(target_semantic_authority.to_dict()),
-        },
-        "target_object_census_authority": {
-            "authority_id": census_authority["authority_id"],
-            "authority_revision": census_authority["authority_revision"],
-            "authority_owner_id": census_authority["authority_owner_id"],
-            "object_claim_kind": census_authority["object_claim_kind"],
-            "required_node_ids": list(census_authority["required_node_ids"]),
-            "required_element_ids": [
-                row["element_id"] for row in census_authority["members"]
-            ],
-            "required_guard_owner_ids": list(
-                census_authority["required_guard_owner_ids"]
-            ),
-            "members": list(census_authority["members"]),
-            "member_count": len(census_authority["members"]),
-            "authority_fingerprint": validated_census["authority_fingerprint"],
-            "producer_descriptor_fingerprint": validated_census[
-                "producer_descriptor_fingerprint"
-            ],
-            "signature_valid": True,
-            "coverage_complete": True,
-            "discovery_mode": validated_census["discovery_mode"],
-            "discovery_receipt": validated_census["discovery_receipt"],
-            "independent_discovery_current": bool(
-                validated_census["independent_discovery_declared"]
-                and source_projection["discovery_mode"]
-                == "independent_raw_target_request"
-            ),
-            "census_source_id": source_projection["source_id"],
-            "census_source_owner_id": source_projection["source_owner_id"],
-            "census_source_fingerprint": observed_input_fingerprints[
-                "target_object_census_source"
-            ],
         },
         "terminal_status": "PASS",
     }
@@ -5023,9 +4709,6 @@ def _load_behavior_commitment_inventory(
         ],
         "required_guard_owner_ids": adapter_result["target_semantic_authority"][
             "required_guard_owner_ids"
-        ],
-        "target_object_census_authority": adapter_result[
-            "target_object_census_authority"
         ],
     }
 
@@ -6000,9 +5683,6 @@ def _execute_blueprint_native_semantic(
 
 def check_world_blueprint(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
-    *,
-    trusted_object_census_authority_fingerprints: Iterable[str] = (),
-    trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> WorldBlueprintReport:
     if not isinstance(blueprint, WorldBlueprintContract):
         blueprint = WorldBlueprintContract.from_dict(blueprint)
@@ -6050,12 +5730,6 @@ def check_world_blueprint(
             "target_semantic_request_invalid": (
                 "WORLD_BLUEPRINT_TARGET_SEMANTIC_REQUEST_INVALID"
             ),
-            "target_object_census_authority_invalid": (
-                "WORLD_BLUEPRINT_OBJECT_CENSUS_AUTHORITY_INVALID"
-            ),
-            "target_object_census_denominator_mismatch": (
-                "WORLD_BLUEPRINT_OBJECT_CENSUS_DENOMINATOR_MISMATCH"
-            ),
         }.get(
             commitment_inventory_error,
             "WORLD_BLUEPRINT_COMMITMENT_INVENTORY_NOT_CURRENT",
@@ -6080,8 +5754,6 @@ def check_world_blueprint(
                         "target_semantic_owner_registry_mismatch",
                         "target_semantic_authority_invalid",
                         "target_semantic_request_invalid",
-                        "target_object_census_authority_invalid",
-                        "target_object_census_denominator_mismatch",
                     }
                     else GuardStatus.GAP
                 ),
@@ -6093,72 +5765,6 @@ def check_world_blueprint(
             )
         )
 
-    object_census_source = commitment_inventory_evidence.get(
-        "target_object_census_authority", {}
-    )
-    object_census_authority_fingerprint = str(
-        object_census_source.get("authority_fingerprint", "")
-    )
-    object_census_producer_fingerprint = str(
-        object_census_source.get("producer_descriptor_fingerprint", "")
-    )
-    trusted_census_authorities = set(
-        _normalized_trust_fingerprints(
-            trusted_object_census_authority_fingerprints,
-            "trusted_object_census_authority_fingerprints",
-        )
-    )
-    trusted_census_producers = set(
-        _normalized_trust_fingerprints(
-            trusted_object_census_producer_descriptor_fingerprints,
-            "trusted_object_census_producer_descriptor_fingerprints",
-        )
-    )
-    object_census_authority_valid = bool(
-        object_census_source.get("signature_valid")
-    )
-    object_census_independent_discovery_current = bool(
-        object_census_source.get("independent_discovery_current")
-    )
-    object_census_exact_authority_trusted = bool(
-        object_census_authority_fingerprint in trusted_census_authorities
-    )
-    object_census_producer_trusted = bool(
-        object_census_producer_fingerprint in trusted_census_producers
-    )
-    object_census_producer_revision_licensed = bool(
-        object_census_authority_valid
-        and object_census_independent_discovery_current
-        and object_census_producer_trusted
-    )
-    object_census_authority_licensed = bool(
-        object_census_authority_valid
-        and (
-            object_census_exact_authority_trusted
-            or object_census_producer_revision_licensed
-        )
-    )
-    object_claim_kind = str(object_census_source.get("object_claim_kind", ""))
-    integrated_object_claim = object_claim_kind == "integrated_target"
-    census_required_nodes = set(object_census_source.get("required_node_ids", []))
-    census_required_elements = set(
-        object_census_source.get("required_element_ids", [])
-    )
-    census_missing_node_ids = sorted(census_required_nodes.difference(node_ids))
-    census_unexpected_node_ids = sorted(set(node_ids).difference(census_required_nodes))
-    census_missing_element_ids = sorted(
-        census_required_elements.difference(element_ids)
-    )
-    census_unexpected_element_ids = sorted(
-        set(element_ids).difference(census_required_elements)
-    )
-    object_census_coverage_complete = bool(
-        object_census_source.get("coverage_complete")
-        and not census_missing_node_ids
-        and not census_unexpected_node_ids
-        and not census_missing_element_ids
-        and not census_unexpected_element_ids
-    )
     commitment_ids = [row.commitment_id for row in behavior_commitments]
     commitment_output_ids = [row.output_id for row in behavior_commitments]
     for duplicate in _duplicates(commitment_ids):
@@ -7737,9 +7343,9 @@ def check_world_blueprint(
                     )
                 )
         if (
-            integrated_object_claim
-            and binding_current[binding.binding_id]
+            binding_current[binding.binding_id]
             and binding.role in {"evidence", "test_check"}
+            and "#" in binding.locator
         ):
             if binding.observation_mode == "provider_content":
                 # `_provider_binding_observation` above has already verified the
@@ -8371,240 +7977,6 @@ def check_world_blueprint(
         and not native_gaps
         and declared_depths == list(range(max(declared_depths) + 1))
     )
-    census_members = [
-        row
-        for row in object_census_source.get("members", [])
-        if isinstance(row, Mapping)
-    ]
-    census_test_element_ids = {
-        str(row.get("element_id", ""))
-        for row in census_members
-        if "test_check" in row.get("binding_roles", [])
-    }
-    census_evidence_element_ids = {
-        str(row.get("element_id", ""))
-        for row in census_members
-        if "evidence" in row.get("binding_roles", [])
-    }
-    test_design_element_ids = {
-        element_id
-        for element_id in census_test_element_ids
-        if len(binding_by_element_role.get((element_id, "test_check"), [])) == 1
-    }
-    evidence_design_element_ids = {
-        element_id
-        for element_id in census_evidence_element_ids
-        if len(binding_by_element_role.get((element_id, "evidence"), [])) == 1
-    }
-    executed_test_element_ids = {
-        str(row.get("element_id", ""))
-        for row in external_test_execution_receipts
-        if row.get("terminal_status") == "PASS"
-    }
-    aligned_evidence_element_ids = {
-        str(row.get("element_id", ""))
-        for row in external_evidence_alignment_receipts
-        if row.get("terminal_status") == "PASS"
-    }
-    external_test_design_present = bool(
-        census_test_element_ids == test_design_element_ids
-    )
-    external_evidence_design_present = bool(
-        census_evidence_element_ids == evidence_design_element_ids
-    )
-    external_test_execution_current = bool(
-        census_test_element_ids == executed_test_element_ids
-    )
-    external_evidence_semantically_aligned = bool(
-        external_evidence_design_present
-        and census_evidence_element_ids == aligned_evidence_element_ids
-    )
-    applicable_external_binding_ids = {
-        row.binding_id
-        for (element_id, role), rows in binding_by_element_role.items()
-        if (
-            (role == "test_check" and element_id in census_test_element_ids)
-            or (role == "evidence" and element_id in census_evidence_element_ids)
-        )
-        for row in rows
-    }
-    external_support_bytes_current = bool(
-        all(binding_current.get(binding_id, False) for binding_id in applicable_external_binding_ids)
-    )
-    object_dna_qualified = bool(
-        native_domain_qualified
-        and object_census_authority_valid
-        and object_census_authority_licensed
-        and object_census_independent_discovery_current
-        and object_census_coverage_complete
-        and integrated_object_claim
-        and external_support_bytes_current
-        and external_test_design_present
-        and external_evidence_design_present
-        and external_test_execution_current
-        and external_evidence_semantically_aligned
-    )
-    object_census_first_gap: dict[str, Any] | None = None
-    if not object_census_authority_valid:
-        object_census_first_gap = {
-            "code": "object-census-authority-invalid",
-            "detail": commitment_inventory_error
-            or "no valid independently signed census was replayed",
-        }
-    elif not integrated_object_claim:
-        object_census_first_gap = {
-            "code": "object-claim-kind-not-integrated-target",
-            "detail": (
-                "the signed target is an oracle-carrying capability fixture, not an "
-                "integrated external object"
-            ),
-        }
-    elif not object_census_independent_discovery_current:
-        object_census_first_gap = {
-            "code": "object-census-independent-discovery-not-current",
-            "detail": (
-                "the denominator was not discovered from the frozen raw request, "
-                "raw target material, and independent census source"
-            ),
-        }
-    elif not object_census_coverage_complete:
-        object_census_first_gap = {
-            "code": "object-census-coverage-incomplete",
-            "detail": "candidate nodes/elements do not exactly match the signed census",
-        }
-    elif not object_census_authority_licensed:
-        object_census_first_gap = {
-            "code": "object-census-trust-not-licensed",
-            "detail": (
-                "the signed census is portable and internally valid, but the caller "
-                "did not trust its exact authority or producer descriptor fingerprint"
-            ),
-        }
-    elif not external_test_design_present:
-        object_census_first_gap = {
-            "code": "object-test-design-incomplete",
-            "detail": "one census-required test/check has no exact current design binding",
-        }
-    elif not external_evidence_design_present:
-        object_census_first_gap = {
-            "code": "object-evidence-design-incomplete",
-            "detail": "one census-required evidence obligation has no exact current binding",
-        }
-    elif not external_support_bytes_current:
-        object_census_first_gap = {
-            "code": "object-support-bytes-not-current",
-            "detail": "one required external evidence or test resource is missing or stale",
-        }
-    elif not external_test_execution_current:
-        object_census_first_gap = {
-            "code": "object-test-execution-not-current",
-            "detail": "one required external test did not execute to terminal PASS",
-        }
-    elif not external_evidence_semantically_aligned:
-        object_census_first_gap = {
-            "code": "object-evidence-not-semantically-aligned",
-            "detail": "one required evidence record does not support its bound subject",
-        }
-    elif not native_domain_qualified:
-        object_census_first_gap = {
-            "code": "candidate-native-consistency-not-qualified",
-            "detail": "the census is licensed but the candidate model has native gaps",
-        }
-    object_census = {
-        "authority_status": (
-            "valid" if object_census_authority_valid else "invalid"
-        ),
-        "authority_licensed": object_census_authority_licensed,
-        "exact_authority_trusted": object_census_exact_authority_trusted,
-        "producer_trusted": object_census_producer_trusted,
-        "producer_revision_licensed": object_census_producer_revision_licensed,
-        "independent_discovery_current": object_census_independent_discovery_current,
-        "independent_discovery_status": (
-            "current"
-            if object_census_independent_discovery_current
-            else (
-                "candidate_consistency"
-                if object_census_source.get("discovery_mode")
-                == "candidate_consistency"
-                else "invalid_or_not_run"
-            )
-        ),
-        "discovery_mode": str(object_census_source.get("discovery_mode", "")),
-        "discovery_receipt_fingerprint": str(
-            object_census_source.get("discovery_receipt", {}).get(
-                "receipt_fingerprint", ""
-            )
-            if isinstance(object_census_source.get("discovery_receipt"), Mapping)
-            else ""
-        ),
-        "coverage_complete": object_census_coverage_complete,
-        "byte_currentness_status": (
-            ("current" if external_support_bytes_current else "gap")
-            if integrated_object_claim
-            else "not_applicable_for_capability_fixture"
-        ),
-        "test_design_status": (
-            ("present" if external_test_design_present else "gap")
-            if integrated_object_claim
-            else "not_applicable_for_capability_fixture"
-        ),
-        "test_execution_status": (
-            ("passed" if external_test_execution_current else "failed_or_not_run")
-            if integrated_object_claim
-            else "not_applicable_for_capability_fixture"
-        ),
-        "evidence_design_status": (
-            ("present" if external_evidence_design_present else "gap")
-            if integrated_object_claim
-            else "not_applicable_for_capability_fixture"
-        ),
-        "evidence_alignment_status": (
-            (
-                "aligned"
-                if external_evidence_semantically_aligned
-                else "misaligned_or_not_run"
-            )
-            if integrated_object_claim
-            else "not_applicable_for_capability_fixture"
-        ),
-        "external_test_execution_receipts": sorted(
-            external_test_execution_receipts,
-            key=lambda row: (str(row.get("element_id", "")), str(row.get("check_id", ""))),
-        ),
-        "external_evidence_alignment_receipts": sorted(
-            external_evidence_alignment_receipts,
-            key=lambda row: (str(row.get("element_id", "")), str(row.get("evidence_id", ""))),
-        ),
-        "object_claim_kind": object_claim_kind,
-        "object_dna_qualified": object_dna_qualified,
-        "authority_id": str(object_census_source.get("authority_id", "")),
-        "authority_revision": str(
-            object_census_source.get("authority_revision", "")
-        ),
-        "authority_owner_id": str(
-            object_census_source.get("authority_owner_id", "")
-        ),
-        "authority_fingerprint": object_census_authority_fingerprint,
-        "producer_descriptor_fingerprint": object_census_producer_fingerprint,
-        "required_node_ids": sorted(census_required_nodes),
-        "required_element_ids": sorted(census_required_elements),
-        "required_guard_owner_ids": list(
-            object_census_source.get("required_guard_owner_ids", [])
-        ),
-        "missing_node_ids": census_missing_node_ids,
-        "unexpected_node_ids": census_unexpected_node_ids,
-        "missing_element_ids": census_missing_element_ids,
-        "unexpected_element_ids": census_unexpected_element_ids,
-        "unmapped_member_ids": sorted(
-            {
-                *census_missing_node_ids,
-                *census_unexpected_node_ids,
-                *census_missing_element_ids,
-                *census_unexpected_element_ids,
-            }
-        ),
-        "first_gap": object_census_first_gap,
-    }
     status = (
         GuardStatus.PASS
         if native_domain_qualified
@@ -8629,8 +8001,6 @@ def check_world_blueprint(
         "deepest_continuously_proven_layer": deepest,
         "first_unresolved_layer": first_unresolved,
         "native_domain_qualified": native_domain_qualified,
-        "object_dna_qualified": object_dna_qualified,
-        "object_census": object_census,
         "partial_model_usable": partial_model_usable,
         "native_execution_receipts": native_execution_receipts,
         "gaps": [gap.to_dict() for gap in gaps],
@@ -8648,8 +8018,6 @@ def check_world_blueprint(
         deepest_continuously_proven_layer=deepest,
         first_unresolved_layer=first_unresolved,
         native_domain_qualified=native_domain_qualified,
-        object_dna_qualified=object_dna_qualified,
-        object_census=object_census,
         partial_model_usable=partial_model_usable,
         native_execution_receipts=tuple(native_execution_receipts),
         gaps=tuple(gaps),
@@ -9253,21 +8621,10 @@ def _build_blueprint_indexes(blueprint: WorldBlueprintContract) -> _BlueprintInd
 
 def _require_qualified_query_source(
     blueprint: WorldBlueprintContract,
-    *,
-    trusted_object_census_authority_fingerprints: Iterable[str] = (),
-    trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> WorldBlueprintReport:
     """Qualify one query source before any derived index is materialized."""
 
-    report = check_world_blueprint(
-        blueprint,
-        trusted_object_census_authority_fingerprints=(
-            trusted_object_census_authority_fingerprints
-        ),
-        trusted_object_census_producer_descriptor_fingerprints=(
-            trusted_object_census_producer_descriptor_fingerprints
-        ),
-    )
+    report = check_world_blueprint(blueprint)
     if report.status != GuardStatus.PASS or not report.native_domain_qualified:
         raise BlueprintError(
             "WORLD_BLUEPRINT_QUERY_SOURCE_UNQUALIFIED",
@@ -9290,20 +8647,10 @@ def blueprint_impact(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
     *,
     changed_ids: Sequence[str],
-    trusted_object_census_authority_fingerprints: Iterable[str] = (),
-    trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> BlueprintImpactReport:
     if not isinstance(blueprint, WorldBlueprintContract):
         blueprint = WorldBlueprintContract.from_dict(blueprint)
-    _require_qualified_query_source(
-        blueprint,
-        trusted_object_census_authority_fingerprints=(
-            trusted_object_census_authority_fingerprints
-        ),
-        trusted_object_census_producer_descriptor_fingerprints=(
-            trusted_object_census_producer_descriptor_fingerprints
-        ),
-    )
+    _require_qualified_query_source(blueprint)
     indexes = _build_blueprint_indexes(blueprint)
     normalized = tuple(sorted(set(str(value) for value in changed_ids if str(value))))
     if not normalized:
@@ -9375,20 +8722,10 @@ def blueprint_reverse_trace(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
     *,
     target_id: str,
-    trusted_object_census_authority_fingerprints: Iterable[str] = (),
-    trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> BlueprintTraceReport:
     if not isinstance(blueprint, WorldBlueprintContract):
         blueprint = WorldBlueprintContract.from_dict(blueprint)
-    blueprint_report = _require_qualified_query_source(
-        blueprint,
-        trusted_object_census_authority_fingerprints=(
-            trusted_object_census_authority_fingerprints
-        ),
-        trusted_object_census_producer_descriptor_fingerprints=(
-            trusted_object_census_producer_descriptor_fingerprints
-        ),
-    )
+    blueprint_report = _require_qualified_query_source(blueprint)
     indexes = _build_blueprint_indexes(blueprint)
     target_id = str(target_id).strip()
     if target_id not in indexes.kinds:

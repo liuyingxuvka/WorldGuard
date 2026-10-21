@@ -18,7 +18,6 @@ from worldguard.blueprint import (
 )
 from worldguard.semantic import fingerprint_mesh
 
-from tests.object_census_fixtures import signed_object_census_from_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -104,35 +103,6 @@ def _renew_native_receipt(
     ]
 
 
-def _renew_object_census(payload: dict, *, source_root: Path) -> None:
-    """Re-sign the independent test census after an intentional target revision.
-
-    Tests that exercise a deeper semantic check must first keep the independent
-    denominator coherent.  Otherwise the census/input-fingerprint boundary is
-    expected to stop the candidate before the deeper adapter is reached.
-    """
-
-    census_ref = _input_ref(payload, "target_object_census_authority")
-    census_path = source_root / census_ref["locator"]
-    source_ref = _input_ref(payload, "target_object_census_source")
-    source = json.loads(
-        (source_root / source_ref["locator"]).read_text(encoding="utf-8")
-    )
-    input_fingerprints = {
-        input_kind: _input_ref(payload, input_kind)["content_fingerprint"]
-        for input_kind in (
-            "request_contract",
-            "target_material",
-            "target_object_census_source",
-            "target_semantic_authority",
-        )
-    }
-    renewed = signed_object_census_from_source(
-        source,
-        input_fingerprints=input_fingerprints,
-    )
-    _write_json(census_path, renewed)
-    census_ref["content_fingerprint"] = _file_fingerprint(census_path)
 
 
 def _forge_cache_envelope_for_changed_material(
@@ -227,7 +197,6 @@ def test_changed_target_material_cannot_pass_with_old_model_after_coherent_refre
         source_root=tmp_path,
         material=material,
     )
-    _renew_object_census(payload, source_root=tmp_path)
 
     report = check_world_blueprint(_current(payload, source_root=tmp_path))
 
@@ -376,26 +345,6 @@ def test_authority_cannot_relabel_registered_native_owner(
     _input_ref(payload, "target_semantic_authority")["content_fingerprint"] = (
         _file_fingerprint(authority_path)
     )
-    source_ref = _input_ref(payload, "target_object_census_source")
-    source_path = tmp_path / source_ref["locator"]
-    source = json.loads(source_path.read_text(encoding="utf-8"))
-    next(
-        row for row in source["members"]
-        if row["element_id"] == "matrix_causal_pass"
-    )["required_guard_owner_id"] = "EventGuard"
-    next(
-        row for row in source["members"]
-        if row["element_id"] == "matrix_event_pass"
-    )["required_guard_owner_id"] = "CausalGuard"
-    _write_json(source_path, source)
-    source_ref["content_fingerprint"] = _file_fingerprint(source_path)
-    request_ref = _input_ref(payload, "request_contract")
-    request_path = tmp_path / request_ref["locator"]
-    request = json.loads(request_path.read_text(encoding="utf-8"))
-    request["object_census"] = deepcopy(source)
-    _write_json(request_path, request)
-    request_ref["content_fingerprint"] = _file_fingerprint(request_path)
-    _renew_object_census(payload, source_root=tmp_path)
 
     report = check_world_blueprint(_current(payload, source_root=tmp_path))
 
@@ -424,7 +373,6 @@ def test_material_assertion_denominator_must_cover_every_required_leaf(
     _input_ref(payload, "target_semantic_authority")["content_fingerprint"] = (
         _file_fingerprint(authority_path)
     )
-    _renew_object_census(payload, source_root=tmp_path)
 
     report = check_world_blueprint(_current(payload, source_root=tmp_path))
 
@@ -683,7 +631,6 @@ def test_consistent_target_change_passes_and_receives_new_blueprint_identity(
     _input_ref(payload, "target_semantic_authority")["content_fingerprint"] = (
         _file_fingerprint(authority_path)
     )
-    _renew_object_census(payload, source_root=tmp_path)
 
     _renew_native_receipt(payload, "task_prepare_native", source_root=tmp_path)
     updated_contract = _current(payload, source_root=tmp_path)

@@ -451,3 +451,24 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-23/models.log`) |
 
 Adaptations: 首次作者脚本因重复 return payload 锚点在写入前停止，前置检查实际上仍是 WG22 状态：residue/native-check 失败如实留存，误启动的无变更全量在 10.561 秒中断并单列 pytest-pre-edit-interrupted；修正限定锚点并应用后才执行最终验收。后续命令采用遇错停止。
+
+### WG-24: 蓝图删除“签名对象普查”（RSA 签名 census、调用方信任参数、object_dna_qualified）
+
+Status: completed.
+
+删除 RSA 签名普查、调用方信任参数及 object_dna/census 报告；三套夹具重新生成并幂等，真实外部 test/evidence 仅在 locator 选中记录时执行，整文件绑定保留哈希边界。82 项蓝图、310 项完整测试及 6 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-24/mirror.log`) |
+| `regenerate` | 0 | (no output) (`WG-24/regenerate.log`) |
+| `boundary-and-idempotence` | 0 | } (`WG-24/boundary-and-idempotence.log`) |
+| `blueprint` | 0 | 82 passed in 31.21s (`WG-24/blueprint.log`) |
+| `residue` | 0 | only deferred map descriptions remain (`WG-24/residue.log`) |
+| `exports` | 0 | 8991 worldguard/blueprint.py (`WG-24/exports.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-24/change.log`) |
+| `pytest` | 0 | 310 passed in 37.15s (`WG-24/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-24/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-24/models.log`) |
+
+Adaptations: 外部只读 probe 包装实际两类 owner 逐绑定计数，所有 #selector 均执行且 whole-file 均不执行；三套便携报告均 PASS True 且无 census/dna 字段。blueprint.py 实际 8991 行，未为匹配文档 8984 行而改代码。作者脚本两次内存转换因 AST/签名完整性断言停止，未写源码或启动验收；修正后成功应用。地图仅余三处旧描述按 WG35 统一更新。
