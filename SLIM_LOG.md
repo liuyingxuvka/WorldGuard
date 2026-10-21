@@ -645,3 +645,21 @@ Status: completed.
 | `models` | 0 | models: 3 passed, 0 failed (`WG-33/models.log`) |
 
 Adaptations: 本库私有 .venv 从既有3.12切到缓存3.11，并仍使用隔离 exact baseline FG0.70.6，安装日志外置；没有共享/全局安装改动。未发现本地3.13，未声称运行。CI YAML/内嵌 Python 编译及四个本地 stub gate 正反例通过，未运行 hosted CI/未推送，release 按 WG35 后才运行。历史 v0.7.10 修正是本项明确要求，其余历史不改。
+
+### WG-34: 历史文档归位：归档过期的 OpenSpec 变更，给旧审计/旧规格标“历史”，删 SkillGuard 资产，更新 README 的修订说明
+
+Status: completed.
+
+归档四个过期 OpenSpec 变更，旧审计/0.1 技术规格明确历史身份，删除无消费者 SkillGuard 格式资产；中英文修订说明改为 fresh candidate run。294 项测试、3 个模型与三个 README 快速命令通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | active changes archived; README receipt count 0 (`WG-34/inventory.log`) |
+| `residue` | 0 | {'unfiltered_hits': 0, 'journal_only': 0, 'active_hits': 0} (`WG-34/residue.log`) |
+| `quick-start` | 0 | (no output) (`WG-34/quick-start.log`) |
+| `change` | 0 | tests to run (0 of 29): - (`WG-34/change.log`) |
+| `pytest` | 0 | 294 passed in 26.16s (`WG-34/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 11 warning(s), 0 info (`WG-34/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-34/models.log`) |
+
+Adaptations: 归档日期实际 2026-10-21；保留原有 archive、CHANGELOG 历史与旧生成物忽略规则。未过滤 grep 实际 0 命中，原日志外置；没有通过广泛 Markdown 排除制造零残留。

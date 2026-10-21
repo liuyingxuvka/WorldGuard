@@ -38,13 +38,6 @@ The authoritative runtime and bundled consumer runtime SHALL contain identical i
 #### Scenario: Bundled runtime drifts
 - **WHEN** any governed runtime file differs between the repository package and `skills/worldguard/runtime/worldguard`
 
-### Requirement: Validation binds only the current runtime authority
-FlowGuard alignment SHALL bind native depth obligations directly to `worldguard/execution_depth.py`. The retired `worldguard/skillguard_depth.py` path MUST have zero current authority and MUST NOT remain as a compatibility or fallback validation path.
-
-#### Scenario: Retired validation path remains
-- **WHEN** a current FlowGuard alignment file still names `worldguard/skillguard_depth.py`
-- **THEN** the topology checker SHALL fail visibly instead of resolving or retrying through that retired path
-
 ### Requirement: The contracted entry topology has one version identity
 The public entry-loading refinement SHALL be frozen as pre-1.0 source version `0.7.1`. Root `VERSION`, package metadata, README source labels, changelog, authoritative runtime `__version__`, and bundled consumer runtime `__version__` SHALL agree before the candidate is published.
 

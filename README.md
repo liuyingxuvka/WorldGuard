@@ -92,17 +92,16 @@ scenario, and independent real-holdout checks.
 
 ## Task-local predictive revision
 
-The current task-local route rejects former shallow snapshots. Every prediction
-binds one task and purpose, an independently owned and fingerprinted coverage
-universe, explicit assumptions and unknowns, and an exact predecessor. Later
-iterations also bind the exact prior gap ids and the fingerprint of that set. Native
-state, transition, branch, perturbation, intervention, counterfactual, and
-holdout gaps come from one content-addressed execution-depth receipt rather
-than a caller-authored gap list.
+Every prediction names one task and purpose, a coverage universe, explicit
+assumptions and unknowns, and its predecessor; later iterations name the exact
+prior gap ids. WorldGuard computes the coverage and gap fingerprints itself.
+`task-model revision` runs the candidate mesh once and takes the state,
+transition, branch, perturbation, intervention, counterfactual, and holdout gaps
+from that run rather than from a caller-authored gap list.
 
-Candidate closure requires typed semantic and empirical receipts for exactly
-one original scenario and one genuinely independent holdout; renamed copies
-are caught by an id-independent observation-content fingerprint. WorldGuard
+Closing a candidate needs one original scenario and one genuinely independent
+holdout observation; a renamed copy of the same observation is caught by its
+content. WorldGuard
 computes resolved, persisted, and introduced gaps itself; unchanged evidence
 stalls, a finite iteration limit blocks, and missing external evidence must name
 the exact gaps, owner, reason, and affected claims.
@@ -164,8 +163,8 @@ worldguard/examples/fuel_cell/  Toy unit-check fixture (packaged with the runtim
 examples/model_mesh/         Generic mesh-check fixture
 tests/                       Runtime and regression tests
 skills/worldguard/           Codex skill copy
-openspec/                    Change proposals and specs
-docs/                        Architecture and adoption notes
+openspec/                    Historical change proposals and specs
+docs/                        Historical audit notes
 assets/readme-hero/          README visual assets
 ```
 
@@ -243,13 +242,14 @@ WorldGuard 现在可以预览并激活一次显式的事实支持修订，但这
 
 ## 任务本地预测修订
 
-当前任务本地入口会直接拒绝旧的浅层快照。每个预测都必须绑定一个任务和
-目的、由独立 owner 给出的覆盖全集及其指纹、显式假设和未知边界，以及精确
-前序迭代；后续迭代还要绑定上一轮精确 gap 集合及其指纹。状态、转移、分支、扰动、干预、反事实和留出 gap 都只能从一份
-内容寻址的原生执行深度收据产生，调用方不能自己填写“没有 gap”。
+每个预测都要写明一个任务和目的、覆盖全集、显式假设和未知边界，以及前序
+迭代；后续迭代还要写明上一轮精确的 gap 编号。覆盖全集和 gap 集合的指纹由
+WorldGuard 自己计算。`task-model revision` 会把候选网格实际运行一次，状态、
+转移、分支、扰动、干预、反事实和留出 gap 都取自这次运行，调用方不能自己
+填写“没有 gap”。
 
-候选关闭需要恰好一份原场景和一份真正独立的留出场景语义与经验收据；
-不依赖名称的观察内容指纹会拦住“改名后重复使用同一证据”。
+候选关闭需要一份原场景和一份真正独立的留出观测；改名后重复使用的同一份
+观测会按内容被识别出来。
 WorldGuard 自己计算已解决、仍存在和新引入的 gap；证据没有变化就停在
 `progress_stalled`，迭代上限会阻断，外部缺失输入必须精确说明 gap、owner、
 原因和受影响声明。

@@ -1,3 +1,5 @@
+> Historical document (0.1 MVP specification); it does not describe current behavior. Current behavior: `README.md` and `skills/worldguard/`.
+
 # WorldGuard 技术规格
 
 版本：0.1 MVP 规格草案  

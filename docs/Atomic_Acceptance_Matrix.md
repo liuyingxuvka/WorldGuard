@@ -1,3 +1,5 @@
+> Historical document (June 2026 audit); it does not describe current behavior. Current behavior: `README.md` and `skills/worldguard/`.
+
 # WorldGuard Atomic Acceptance Matrix
 
 Audit date: 2026-06-15
