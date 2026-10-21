@@ -635,7 +635,7 @@ Status: completed.
 
 | Check | Exit | Actual result / log |
 |---|---:|---|
-| `python311` | 0 | flowguard 0.70.6 /workspace/skill-review/repos/guard-baseline/flowguard/flowguard/__init__.py (`WG-33/python311.log`) |
+| `python311` | 0 | flowguard 0.70.6 ../guard-baseline/flowguard/flowguard/__init__.py (`WG-33/python311.log`) |
 | `workflow-definition` | 0 | } (`WG-33/workflow-definition.log`) |
 | `change` | 0 | REVIEW release: its files changed; update its description if behavior changed, then confirm release (`WG-33/change.log`) |
 | `pytest` | 0 | 294 passed in 25.68s (`WG-33/pytest.log`) |
@@ -1169,3 +1169,63 @@ AGENTS timing now explicitly says about30seconds on this shared host. Actual WG5
 | `pytest` | 0 | 282 passed in 27.41s (`WG-59/pytest.log`) |
 
 Adaptations: Root approved purpose-preserving timing adaptation: reference15seconds is not reproduced here, recent fulls vary23–46seconds under concurrent host load. Exact observations archivedWG-59/timing-observations.json; commit subject reflects actual about30 rather than false15. XR04 notified of exact new AGENTS line.
+
+### WG-60: CHANGELOG v0.7.16 一节写上 WG-55…WG-60：三个自模型是合约模型
+
+Status: completed.
+
+Completed all60 ordered actions at WorldGuard0.7.16. Final Python3.11 and independent Python3.13 suites each pass282 tests; old/newFG maps0/0 and releases3/3; three native contract replays8/7/10 and ten prescribed known-bad variants pass. Actual portable install/content/origin/no-bytecode, baselineLW layout boundaries, CLI exits/sizes/catalog, active residue and canonical changelog/version checks pass. Full section5 commands and limitations follow.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `changelog` | 0 | 0.7.16 ['v0.7.16 - 2026-10-21 - Claims bound to the world model; slim/2026-10'] (`WG-60/changelog.log`) |
+| `focused` | 0 | 9 passed in 0.24s (`WG-60/focused.log`) |
+| `section5-cli-portable` | 1 | KeyError: 'provider_version' (`WG-60/section5-cli-portable.log`) |
+| `section5-cli-portable-final` | 0 | } (`WG-60/section5-cli-portable-final.log`) |
+| `residue-volume` | 0 | } (`WG-60/residue-volume.log`) |
+| `contract-models` | 0 | conformance: 10/10 model inputs match the real code (`WG-60/contract-models.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-60/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-60/release.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-60/new-fg.log`) |
+| `openspec` | 0 | SKIPPED: optional openspec CLI unavailable (`WG-60/openspec.log`) |
+| `pytest` | 0 | 282 passed in 28.45s (`WG-60/pytest.log`) |
+| `final-origins` | 0 | cached3.13 [] (`WG-60/final-origins.log`) |
+| `python313-origins` | 0 | 0.7.16 /workspace/skill-review/repos/WorldGuard/worldguard/__init__.py (`WG-60/python313-origins.log`) |
+| `pytest-python313` | 0 | 282 passed in 35.48s (`WG-60/pytest-python313.log`) |
+
+Adaptations: Actual Python3.13 was found during final PATH inspection and genuinely tested after ensurepip failure was recovered with private uv; earlier unavailable note corrected with raw history retained. Optional OpenSpec validation unavailable; no official9pass claim. Author count is reference274+8 recorded purpose-preserving regression cases, not functionality inferred from counts. Initial final-CLI probe KeyError was an external nested-field assumption, corrected without product changes. Final latest-LW XR and independent terminal carryforward remain cross-owner checks; no push/global install.
+
+## Final section 5 verification
+
+All WG-01–WG-60 actions are complete; none was skipped. Optional OpenSpec CLI validation was unavailable and is explicitly skipped, rather than counted as nine official validations. The user override remains WorldGuard0.7.16/FlowGuard0.70.7; no publication or actual-user skill installation was performed.
+
+The author environment from WG33 onward is Python3.11.17. The new FlowGuard0.70.7 is installed non-editably in an isolated environment from exact frozen source `bc8c519be928cfc18292a7c66b47ece27b10d31a`; old FlowGuard0.70.6 compatibility remains independently checked. Final PATH inspection additionally found system Python3.13.5. Standard venv creation failed because ensurepip was missing; existing uv created a private disposable environment without any system package changes. The initial external probe's unavailable3.13 note was corrected, with original output retained.
+
+| Actual command / check | Observed result |
+|---|---|
+| Python3.11 + installed FG0.70.7: `python -m pytest -q` | 282 passed in28.45s; `WG-60/pytest.log` |
+| Separate Python3.13 + installed FG0.70.7: `python -m pytest -q` | 282 passed in35.48s; `WG-60/pytest-python313.log` |
+| Old/new `python -m flowguard map check` | each0errors/0warnings/0info |
+| Old/new `python -m flowguard release` | each3declared/3executed/3passed; release checks map/lint/models, not pytest |
+| `python .flowguard/models/<model>.py` | fact8/8, task7/7, template10/10 native conformance; ten prescribed known-bad variants caught |
+| `python -m pytest -q tests/test_version.py tests/test_world_model_language.py` | 9passed |
+| `python -m worldguard.guard_model_contract` | status=pass purposes=7 goods=7 failures=84 known_bads=84 |
+| `python -m worldguard.examples.fuel_cell --check` | exit0; PASS/PASS/FAIL expected statuses preserved |
+| Portable `check --example fuel_cell` / `--json` | 7080 /126292 bytes, both exit0 |
+| Portable `mesh-check --mesh examples/model_mesh/basic_mesh.yaml` | 297bytes, PASS/exit0 |
+| Portable blueprint `check` / `impact --changed-id schedule_transition` | 548 /3043 bytes, exit0; added WG26 empty-metadata explanations retained |
+| Portable scene/trip `check --contract <example>` | PASS/exit0; missing file is typed WORLDGUARD_INPUT_INVALID/exit2 |
+| `check --help` | both --contract/--example present |
+| `python scripts/install_skill.py --target <temporary>/skills`, installed launcher from foreign cwd, installer `--check` | native PASS, origin in generated runtime, no __pycache__, current content |
+| Exact baseline LogicWriting preflight, installed skill | current_pass, provider_version0.7.16, both capability flags true |
+| Same baseline preflight, repository layout | expected provider_unavailable/portable_resource_missing before XR11; final latest-LW layout belongs to cross owner |
+| Section5 legacy grep rules | raw skillguard hit1 and legacy hits6 are only the mandatory SLIM_LOG; active hits0, raw evidence retained |
+| Tracked `.flowguard` inventory | map +three canonical contract models, four files total; nine current OpenSpec specs retained |
+| Volume before final journal entry | baseline638files/18566156bytes ->225files/2305463bytes including journal;224files/2211976bytes without journal; final frozen metrics archived externally |
+| Canonical/test Python lines | 23403/10777 ->17407/6892; this is volume evidence, not proof of semantic preservation |
+
+Finite coverage remains explicit: task explores nine safe inputs and replays seven real terminals, fact eight real cases, template ten inputs; this does not claim all possible defect combinations. NewFG reports non-gating lint warnings and three design invariants without a targeted known-bad variant; these remain visible in raw release logs. The ten authorized variants and their targeted invariants were preserved rather than expanded to silence warnings.
+
+WG06 input-shape, WG20 per-node scope, WG32 installer-byte comparison, WG36 missing-runtime layout, WG43 exact terminal and WG48–52 binding changes also have independent cross-owner evidence. Their independent checks are not added to the author's pytest/model counts. WG48–52 exact61e86946 review is owned by the FlowGuard agent; final55–57 carryforward review is still the cross owner's responsibility.
+
+The first WG60 external CLI probe mistakenly read baseline-LW provider_version at the top level rather than evidence.provider_version; product current_pass/exit0 was already correct. Original failed probe/raw outputs remain, corrected real probe passes. One earlier journal-only absolute path was rendered as its equivalent relative path to comply with the public-log rule. XR05/XR11/XR12 own the specified LogicWriting adapter/preflight synchronization; XR04 uses the actual about30seconds shared-host AGENTS wording. No other repository was edited.

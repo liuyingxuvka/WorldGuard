@@ -2,7 +2,7 @@
 
 ## v0.7.16 - 2026-10-21 - Claims bound to the world model; slim/2026-10
 
-- Done: WG-01 to WG-54. Skipped: none.
+- Done: WG-01 to WG-60. Skipped: none.
 - Claims are bound to the world model: each `claim.asserts` row (a fluent at a time, event order, tokens in a
   place, a variable value, an agent's belief/desire/intention, a spatial relation, an active norm, a payoff) is
   evaluated on the model. A false row is `FAIL` (`CLAIM_ASSERTION_FALSE`, with the observed value), a row naming
@@ -18,8 +18,11 @@
   replay, sealed task-local receipts, mesh depth replay, blueprint request fingerprints, the signed object census,
   the blueprint completeness and projection layers, template construction fingerprints, retired ledgers and
   tautology self-models. The portable runtime copy is made by `scripts/install_skill.py` instead of committed.
-- The three self-models replay every terminal on the real code, name `IMPLEMENTED_BY`/`TESTED_BY`, carry
-  known-bad variants, and pass with FlowGuard 0.70.6 and 0.70.7.
+- The three self-models are FlowGuard contract models in `.flowguard/models/` (`MODEL_ID`, `COMPONENTS`,
+  `IMPLEMENTED_BY`, `TESTED_BY`, `build_explorer()`, `broken_variants()`, `conformance()`): each explores its
+  design, carries known-bad variants that must fail, replays every case on the real code, and passes with
+  FlowGuard 0.70.6 and 0.70.7. The template model and a unit test cover a pack that misses a claim-derived
+  Guard route.
 
 ## v0.7.15 - 2026-10-18
 
