@@ -23,6 +23,7 @@
   design, carries known-bad variants that must fail, replays every case on the real code, and passes with
   FlowGuard 0.70.6 and 0.70.7. The template model and a unit test cover a pack that misses a claim-derived
   Guard route.
+- Cross-repo pass: XR-04; skipped none. Details in the cross-repo action list.
 
 ## v0.7.15 - 2026-10-18
 

@@ -1229,3 +1229,9 @@ Finite coverage remains explicit: task explores nine safe inputs and replays sev
 WG06 input-shape, WG20 per-node scope, WG32 installer-byte comparison, WG36 missing-runtime layout, WG43 exact terminal and WG48–52 binding changes also have independent cross-owner evidence. Their independent checks are not added to the author's pytest/model counts. WG48–52 exact61e86946 review is owned by the FlowGuard agent; final55–57 carryforward review is still the cross owner's responsibility.
 
 The first WG60 external CLI probe mistakenly read baseline-LW provider_version at the top level rather than evidence.provider_version; product current_pass/exit0 was already correct. Original failed probe/raw outputs remain, corrected real probe passes. One earlier journal-only absolute path was rendered as its equivalent relative path to comply with the public-log rule. XR05/XR11/XR12 own the specified LogicWriting adapter/preflight synchronization; XR04 uses the actual about30seconds shared-host AGENTS wording. No other repository was edited.
+
+## Cross-repository implementation handoff
+
+Implemented repository changes: XR-04. Their affected checks and real cross-repository native paths passed; exact commands and failures/adaptations are retained in the external XR_LOG and results/CrossReview.
+Shared XR02–14 checks used the new Python 3.12 editable joint environment. XR15 final native bridge and final frozen Release-SHA full suites, official GitHub CI/publication and local FlowGuard update remain pending at the time of this journal entry. No final deployment or all-invariant-coverage claim is made.
+XR04 preserves the actual shared-host about30seconds estimate as load dependent, not a controlled benchmark.
