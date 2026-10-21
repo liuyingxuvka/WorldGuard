@@ -34,9 +34,9 @@ explosion, and `neither` is not closed-world falsity.
    to the preview fingerprint. Bind the activation request to the same task,
    owner, and exact candidate fact-model fingerprint.
 6. Treat successful activation as an intermediate candidate handoff. Its only
-   successful terminal is `task_local_revalidation_required`; rerun current
-   prediction, native execution depth, original scenario, and independent real
-   holdout through the same task-local owner.
+   successful terminal is `task_local_revalidation_required`; rerun the
+   prediction, the candidate mesh, the original scenario, and the independent
+   real holdout through the same task-local owner.
 
 Retraction removes a support id, not a fact. Strict rules derive only their
 declared signed consequent when all signed antecedents have support. Missing

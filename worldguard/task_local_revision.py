@@ -1,8 +1,8 @@
 """Strict task-local prediction and reversible world-model revision.
 
 The current route has one owner.  It freezes an independently bounded task
-prediction before observation, binds immutable native depth and revalidation
-evidence to a separate candidate, derives gap transitions, and refuses to
+prediction before observation, runs the separate candidate mesh once with
+independent original/holdout observations, derives gap transitions, and refuses to
 close while any current predictive obligation remains open.
 """
 
@@ -48,7 +48,6 @@ class RevalidationRole(StrEnum):
     REAL_HOLDOUT_OBSERVATION = "real_holdout_observation"
 
 
-_REVALIDATION_STATUSES = {"pass", "fail", "gap", "blocked", "not_run"}
 _CURRENT_TERMINALS = {
     "continue_iteration",
     "model_closed_for_task",
@@ -129,12 +128,7 @@ def _unique_texts(raw: Any, label: str, *, non_empty: bool = False) -> tuple[str
     return values
 
 
-def _seal_receipt(payload: Mapping[str, Any]) -> dict[str, Any]:
-    body = dict(payload)
-    return {**body, "receipt_fingerprint": _fingerprint(body)}
-
-
-def _verify_sealed_receipt(
+def _receipt_body(
     data: Mapping[str, Any],
     *,
     artifact_kind: str,
@@ -142,11 +136,7 @@ def _verify_sealed_receipt(
 ) -> dict[str, Any]:
     if str(data.get("artifact_kind", "")) != artifact_kind:
         raise ValueError(f"{label} artifact_kind is not current")
-    supplied = _sha256_text(data.get("receipt_fingerprint"), f"{label} receipt_fingerprint")
-    body = {key: value for key, value in data.items() if key != "receipt_fingerprint"}
-    if _fingerprint(body) != supplied:
-        raise ValueError(f"{label} receipt fingerprint is stale or tampered")
-    return body
+    return dict(data)
 
 
 def coverage_universe_fingerprint(
@@ -347,7 +337,7 @@ class PredictionSnapshot:
             "expected_relationships", "weakening_conditions",
         }
         _strict_fields(data, allowed, "prediction snapshot")
-        _require_fields(data, allowed, "prediction snapshot")
+        _require_fields(data, allowed - {"coverage_universe_fingerprint", "prior_gap_fingerprints"}, "prediction snapshot")
         if data.get("schema_version") != TASK_LOCAL_REVISION_SCHEMA_VERSION:
             raise ValueError("prediction snapshot schema_version is not current")
         model = data.get("model")
@@ -391,28 +381,28 @@ class PredictionSnapshot:
         assumptions = _unique_texts(data.get("assumptions"), "assumptions", non_empty=True)
         unknowns = _unique_texts(data.get("unknowns"), "unknowns", non_empty=True)
         prior_gap_ids = _unique_texts(data.get("prior_gap_ids"), "prior_gap_ids")
-        prior = tuple(_sha256_text(item, "prior gap fingerprint") for item in _unique_texts(data.get("prior_gap_fingerprints"), "prior_gap_fingerprints"))
+        prior = tuple(_sha256_text(item, "prior gap fingerprint") for item in _unique_texts(data.get("prior_gap_fingerprints", []), "prior_gap_fingerprints"))
         predecessor = _text(data.get("predecessor_iteration_fingerprint"), "predecessor_iteration_fingerprint")
         if iteration == 0:
             if predecessor != "root" or prior or prior_gap_ids:
                 raise ValueError("iteration zero requires predecessor 'root' and no prior gaps")
         else:
             predecessor = _sha256_text(predecessor, "predecessor_iteration_fingerprint")
-            if not prior or not prior_gap_ids:
-                raise ValueError("later iterations require exact prior gap ids and fingerprints")
-            if _fingerprint(sorted(prior_gap_ids)) != prior[-1]:
-                raise ValueError("latest prior gap fingerprint does not bind prior_gap_ids")
+            if not prior_gap_ids:
+                raise ValueError("later iterations require exact prior gap ids")
+            latest = _fingerprint(sorted(prior_gap_ids))
+            if not prior or prior[-1] != latest:
+                prior = (*prior, latest)
         universe_id = _text(data.get("coverage_universe_id"), "coverage_universe_id")
         universe_owner = _text(data.get("coverage_universe_owner_id"), "coverage_universe_owner_id")
         universe_source = _text(data.get("coverage_universe_source_ref"), "coverage_universe_source_ref")
-        supplied_universe_fingerprint = _sha256_text(data.get("coverage_universe_fingerprint"), "coverage_universe_fingerprint")
         expected_universe_fingerprint = coverage_universe_fingerprint(
             universe_id=universe_id,
             owner_id=universe_owner,
             source_ref=universe_source,
             coverage_ids=coverage_ids,
         )
-        if supplied_universe_fingerprint != expected_universe_fingerprint:
+        if data.get("coverage_universe_fingerprint") not in (None, expected_universe_fingerprint):
             raise ValueError("coverage_universe_fingerprint does not match the independent inventory")
         weakening = _unique_texts(data.get("weakening_conditions"), "weakening_conditions", non_empty=True)
         return cls(
@@ -422,7 +412,7 @@ class PredictionSnapshot:
             coverage_universe_id=universe_id,
             coverage_universe_owner_id=universe_owner,
             coverage_universe_source_ref=universe_source,
-            coverage_universe_fingerprint=supplied_universe_fingerprint,
+            coverage_universe_fingerprint=expected_universe_fingerprint,
             coverage_ids=coverage_ids,
             assumptions=assumptions,
             unknowns=unknowns,
@@ -550,7 +540,7 @@ class ObservedWorldSnapshot:
             "values", "relationships", "evidence_id", "evidence_fingerprint", "external_inputs",
         }
         _strict_fields(data, allowed, "observed world snapshot")
-        _require_fields(data, allowed, "observed world snapshot")
+        _require_fields(data, allowed - {"evidence_fingerprint"}, "observed world snapshot")
         if data.get("schema_version") != TASK_LOCAL_REVISION_SCHEMA_VERSION:
             raise ValueError("observed world snapshot schema_version is not current")
         try:
@@ -578,7 +568,6 @@ class ObservedWorldSnapshot:
         observation_id = _text(data.get("observation_id"), "observation_id")
         prediction_id = _text(data.get("prediction_id"), "prediction_id")
         source_ref = _text(data.get("source_ref"), "source_ref")
-        supplied = _sha256_text(data.get("evidence_fingerprint"), "evidence_fingerprint")
         expected = observation_evidence_fingerprint(
             observation_id=observation_id,
             prediction_id=prediction_id,
@@ -588,7 +577,7 @@ class ObservedWorldSnapshot:
             relationships=relationships,
             external_inputs=external_inputs,
         )
-        if supplied != expected:
+        if data.get("evidence_fingerprint") not in (None, expected):
             raise ValueError("observation evidence_fingerprint is stale or tampered")
         return cls(
             observation_id=observation_id,
@@ -598,7 +587,7 @@ class ObservedWorldSnapshot:
             values=values,
             relationships=relationships,
             evidence_id=_text(data.get("evidence_id"), "evidence_id"),
-            evidence_fingerprint=supplied,
+            evidence_fingerprint=expected,
             external_inputs=external_inputs,
         )
 
@@ -618,195 +607,27 @@ class ObservedWorldSnapshot:
 
 
 @dataclass(frozen=True)
-class TaskLocalNativeDepthReceipt:
-    binding_id: str
-    task_id: str
-    candidate_model: WorldModelIdentity
-    coverage_universe_fingerprint: str
-    source_receipt: dict[str, Any]
-    source_receipt_fingerprint: str
-    binding_fingerprint: str
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "TaskLocalNativeDepthReceipt":
-        allowed = {
-            "artifact_kind", "schema_version", "binding_id", "task_id", "candidate_model",
-            "coverage_universe_fingerprint", "source_receipt", "source_receipt_fingerprint", "binding_fingerprint",
-        }
-        _strict_fields(data, allowed, "task-local native depth receipt")
-        _require_fields(data, allowed, "task-local native depth receipt")
-        if data.get("artifact_kind") != "worldguard_task_local_native_depth_receipt" or data.get("schema_version") != TASK_LOCAL_REVISION_SCHEMA_VERSION:
-            raise ValueError("task-local native depth receipt shape is not current")
-        candidate = data.get("candidate_model")
-        source = data.get("source_receipt")
-        if not isinstance(candidate, Mapping) or not isinstance(source, Mapping):
-            raise ValueError("candidate_model and source_receipt must be mappings")
-        source_receipt = dict(source)
-        from .semantic import NativeDepthReceipt
-        NativeDepthReceipt.from_dict(source_receipt)
-        source_fingerprint = _sha256_text(data.get("source_receipt_fingerprint"), "source_receipt_fingerprint")
-        if _fingerprint(source_receipt) != source_fingerprint:
-            raise ValueError("native depth source receipt fingerprint is stale or tampered")
-        body = {key: value for key, value in data.items() if key != "binding_fingerprint"}
-        binding_fingerprint = _sha256_text(data.get("binding_fingerprint"), "binding_fingerprint")
-        if _fingerprint(body) != binding_fingerprint:
-            raise ValueError("native depth binding fingerprint is stale or tampered")
-        return cls(
-            binding_id=_text(data.get("binding_id"), "binding_id"),
-            task_id=_text(data.get("task_id"), "task_id"),
-            candidate_model=WorldModelIdentity.from_dict(candidate),
-            coverage_universe_fingerprint=_sha256_text(data.get("coverage_universe_fingerprint"), "coverage_universe_fingerprint"),
-            source_receipt=source_receipt,
-            source_receipt_fingerprint=source_fingerprint,
-            binding_fingerprint=binding_fingerprint,
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "artifact_kind": "worldguard_task_local_native_depth_receipt",
-            "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-            "binding_id": self.binding_id,
-            "task_id": self.task_id,
-            "candidate_model": self.candidate_model.to_dict(),
-            "coverage_universe_fingerprint": self.coverage_universe_fingerprint,
-            "source_receipt": self.source_receipt,
-            "source_receipt_fingerprint": self.source_receipt_fingerprint,
-            "binding_fingerprint": self.binding_fingerprint,
-        }
-
-
-@dataclass(frozen=True)
-class SemanticRolloutReceipt:
-    receipt_id: str
-    task_id: str
-    role: RevalidationRole
-    candidate_model: WorldModelIdentity
-    semantic_status: str
-    source_result: dict[str, Any]
-    source_result_fingerprint: str
-    evidence_ref: str
-    binding_fingerprint: str
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "SemanticRolloutReceipt":
-        allowed = {
-            "artifact_kind", "schema_version", "receipt_id", "task_id", "role", "candidate_model",
-            "semantic_status", "source_result", "source_result_fingerprint", "evidence_ref", "binding_fingerprint",
-        }
-        _strict_fields(data, allowed, "semantic rollout receipt")
-        _require_fields(data, allowed, "semantic rollout receipt")
-        if data.get("artifact_kind") != "worldguard_semantic_rollout_receipt" or data.get("schema_version") != TASK_LOCAL_REVISION_SCHEMA_VERSION:
-            raise ValueError("semantic rollout receipt shape is not current")
-        candidate = data.get("candidate_model")
-        source = data.get("source_result")
-        if not isinstance(candidate, Mapping) or not isinstance(source, Mapping):
-            raise ValueError("semantic candidate_model and source_result must be mappings")
-        try:
-            role = RevalidationRole(_text(data.get("role"), "role"))
-        except ValueError as exc:
-            raise ValueError("semantic rollout role is not supported") from exc
-        status = _text(data.get("semantic_status"), "semantic_status").lower()
-        if status not in _REVALIDATION_STATUSES:
-            raise ValueError("semantic_status is not supported")
-        required_source = {"artifact_kind", "status", "scenario", "candidate_sha256", "native_receipt"}
-        _require_fields(source, required_source, "semantic source result")
-        if source.get("artifact_kind") != "worldguard.semantic_execution":
-            raise ValueError("semantic source result artifact_kind is not current")
-        if str(source.get("status", "")).strip().lower() != status:
-            raise ValueError("semantic source result status does not match its typed receipt")
-        if str(source.get("scenario", "")).strip() != role.value:
-            raise ValueError("semantic source result scenario does not match its role")
-        if _sha256_text(source.get("candidate_sha256"), "semantic source candidate_sha256") != str(candidate.get("sha256", "")).lower():
-            raise ValueError("semantic source result does not bind the candidate model")
-        from .semantic import SemanticExecutionReceipt
-        native = SemanticExecutionReceipt.from_dict(source["native_receipt"])
-        if native.status.value.lower() != status:
-            raise ValueError("semantic source status does not match the native execution")
-        source_fingerprint = _sha256_text(data.get("source_result_fingerprint"), "source_result_fingerprint")
-        if _fingerprint(source) != source_fingerprint:
-            raise ValueError("semantic source result fingerprint is stale or tampered")
-        body = {key: value for key, value in data.items() if key != "binding_fingerprint"}
-        binding_fingerprint = _sha256_text(data.get("binding_fingerprint"), "binding_fingerprint")
-        if _fingerprint(body) != binding_fingerprint:
-            raise ValueError("semantic rollout binding fingerprint is stale or tampered")
-        return cls(
-            receipt_id=_text(data.get("receipt_id"), "semantic receipt_id"),
-            task_id=_text(data.get("task_id"), "semantic task_id"),
-            role=role,
-            candidate_model=WorldModelIdentity.from_dict(candidate),
-            semantic_status=status,
-            source_result=dict(source),
-            source_result_fingerprint=source_fingerprint,
-            evidence_ref=_text(data.get("evidence_ref"), "semantic evidence_ref"),
-            binding_fingerprint=binding_fingerprint,
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "artifact_kind": "worldguard_semantic_rollout_receipt",
-            "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-            "receipt_id": self.receipt_id,
-            "task_id": self.task_id,
-            "role": self.role.value,
-            "candidate_model": self.candidate_model.to_dict(),
-            "semantic_status": self.semantic_status,
-            "source_result": self.source_result,
-            "source_result_fingerprint": self.source_result_fingerprint,
-            "evidence_ref": self.evidence_ref,
-            "binding_fingerprint": self.binding_fingerprint,
-        }
-
-
-@dataclass(frozen=True)
-class WorldRevalidationReceipt:
+class RevalidationCheck:
     check_id: str
     role: RevalidationRole
-    candidate_model: WorldModelIdentity
-    semantic_receipt: SemanticRolloutReceipt
     empirical_comparison: dict[str, Any]
-    receipt_fingerprint: str
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "WorldRevalidationReceipt":
-        allowed = {"artifact_kind", "schema_version", "check_id", "role", "candidate_model", "semantic_receipt", "empirical_comparison", "receipt_fingerprint"}
-        _strict_fields(data, allowed, "world revalidation receipt")
-        _require_fields(data, allowed, "world revalidation receipt")
-        _verify_sealed_receipt(data, artifact_kind="worldguard_world_revalidation_receipt", label="world revalidation")
-        if data.get("schema_version") != TASK_LOCAL_REVISION_SCHEMA_VERSION:
-            raise ValueError("world revalidation receipt schema_version is not current")
-        candidate = data.get("candidate_model")
-        semantic = data.get("semantic_receipt")
+    def from_dict(cls, data: Mapping[str, Any]) -> "RevalidationCheck":
+        allowed = {"check_id", "role", "empirical_comparison"}
+        _strict_fields(data, allowed, "revalidation check")
+        _require_fields(data, allowed, "revalidation check")
         comparison = data.get("empirical_comparison")
-        if not isinstance(candidate, Mapping) or not isinstance(semantic, Mapping) or not isinstance(comparison, Mapping):
-            raise ValueError("revalidation candidate, semantic receipt, and comparison must be mappings")
+        if not isinstance(comparison, Mapping):
+            raise ValueError("revalidation empirical_comparison must be a mapping")
         try:
             role = RevalidationRole(_text(data.get("role"), "role"))
         except ValueError as exc:
             raise ValueError("revalidation role is not supported") from exc
-        semantic_receipt = SemanticRolloutReceipt.from_dict(semantic)
-        candidate_model = WorldModelIdentity.from_dict(candidate)
-        if semantic_receipt.role != role or semantic_receipt.candidate_model != candidate_model:
-            raise ValueError("semantic receipt does not bind the revalidation role and candidate")
-        return cls(
-            check_id=_text(data.get("check_id"), "check_id"),
-            role=role,
-            candidate_model=candidate_model,
-            semantic_receipt=semantic_receipt,
-            empirical_comparison=dict(comparison),
-            receipt_fingerprint=_sha256_text(data.get("receipt_fingerprint"), "receipt_fingerprint"),
-        )
+        return cls(check_id=_text(data.get("check_id"), "check_id"), role=role, empirical_comparison=dict(comparison))
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "artifact_kind": "worldguard_world_revalidation_receipt",
-            "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-            "check_id": self.check_id,
-            "role": self.role.value,
-            "candidate_model": self.candidate_model.to_dict(),
-            "semantic_receipt": self.semantic_receipt.to_dict(),
-            "empirical_comparison": self.empirical_comparison,
-            "receipt_fingerprint": self.receipt_fingerprint,
-        }
+        return {"check_id": self.check_id, "role": self.role.value, "empirical_comparison": self.empirical_comparison}
 
 
 @dataclass(frozen=True)
@@ -818,10 +639,9 @@ class CandidateWorldModelRevision:
     revision_kind: WorldRevisionKind
     prediction_receipt: dict[str, Any]
     comparison_receipt: dict[str, Any]
-    native_depth_receipt: TaskLocalNativeDepthReceipt
     candidate_build_evidence_fingerprints: tuple[str, ...]
     required_revalidation_ids: tuple[str, ...]
-    revalidations: tuple[WorldRevalidationReceipt, ...]
+    revalidations: tuple[RevalidationCheck, ...]
     candidate_applied: bool
     rollback_model: WorldModelIdentity | None
     external_inputs: tuple[ExternalInputRequirement, ...]
@@ -830,7 +650,7 @@ class CandidateWorldModelRevision:
     def from_dict(cls, data: Mapping[str, Any]) -> "CandidateWorldModelRevision":
         allowed = {
             "schema_version", "revision_id", "prediction_id", "base_model", "candidate_model", "revision_kind",
-            "prediction_receipt", "comparison_receipt", "native_depth_receipt", "candidate_build_evidence_fingerprints",
+            "prediction_receipt", "comparison_receipt", "candidate_build_evidence_fingerprints",
             "required_revalidation_ids", "revalidations", "candidate_applied", "rollback_model", "external_inputs",
         }
         _strict_fields(data, allowed, "candidate world-model revision")
@@ -841,8 +661,7 @@ class CandidateWorldModelRevision:
         candidate = data.get("candidate_model")
         prediction_receipt = data.get("prediction_receipt")
         comparison_receipt = data.get("comparison_receipt")
-        native_depth = data.get("native_depth_receipt")
-        if not all(isinstance(item, Mapping) for item in (base, candidate, prediction_receipt, comparison_receipt, native_depth)):
+        if not all(isinstance(item, Mapping) for item in (base, candidate, prediction_receipt, comparison_receipt)):
             raise ValueError("candidate revision identities and receipts must be mappings")
         try:
             revision_kind = WorldRevisionKind(_text(data.get("revision_kind"), "revision_kind"))
@@ -858,7 +677,7 @@ class CandidateWorldModelRevision:
         rows = data.get("revalidations")
         if not isinstance(rows, list):
             raise ValueError("revalidations must be a list")
-        revalidations = tuple(WorldRevalidationReceipt.from_dict(row) for row in rows if isinstance(row, Mapping))
+        revalidations = tuple(RevalidationCheck.from_dict(row) for row in rows if isinstance(row, Mapping))
         if len(revalidations) != len(rows):
             raise ValueError("revalidations must be mappings")
         check_ids = tuple(item.check_id for item in revalidations)
@@ -890,7 +709,6 @@ class CandidateWorldModelRevision:
             revision_kind=revision_kind,
             prediction_receipt=dict(prediction_receipt),
             comparison_receipt=dict(comparison_receipt),
-            native_depth_receipt=TaskLocalNativeDepthReceipt.from_dict(native_depth),
             candidate_build_evidence_fingerprints=build_evidence,
             required_revalidation_ids=required_ids,
             revalidations=revalidations,
@@ -909,7 +727,6 @@ class CandidateWorldModelRevision:
             "revision_kind": self.revision_kind.value,
             "prediction_receipt": self.prediction_receipt,
             "comparison_receipt": self.comparison_receipt,
-            "native_depth_receipt": self.native_depth_receipt.to_dict(),
             "candidate_build_evidence_fingerprints": list(self.candidate_build_evidence_fingerprints),
             "required_revalidation_ids": list(self.required_revalidation_ids),
             "revalidations": [item.to_dict() for item in self.revalidations],
@@ -936,7 +753,7 @@ def _same_identity(left: WorldModelIdentity, right: WorldModelIdentity) -> bool:
 
 def freeze_prediction_snapshot(prediction: PredictionSnapshot, *, base_dir: Path) -> dict[str, Any]:
     model = _identity_receipt(prediction.model, base_dir)
-    return _seal_receipt(
+    return (
         {
             "artifact_kind": "worldguard_prediction_snapshot_receipt",
             "receipt_version": "2.0",
@@ -1060,7 +877,7 @@ def compare_observed_world(
         }
     )
     status = "blocked" if external_findings else ("pass" if not mismatches and not coverage_gaps else "fail")
-    return _seal_receipt(
+    return (
         {
             "artifact_kind": "worldguard_observed_world_comparison_receipt",
             "receipt_version": "2.0",
@@ -1100,100 +917,19 @@ def compare_observed_world(
     )
 
 
-def _validate_candidate_native_depth(
-    candidate_model: WorldModelIdentity, source: Mapping[str, Any], base_dir: Path,
-):
-    """Reuse the native mesh producer/reader; unsupported model kinds stay open."""
+def _load_candidate_mesh(candidate_model: WorldModelIdentity, base_dir: Path):
+    """Load the candidate as a native mesh; other model kinds cannot close a revision."""
     from .io import load_mapping
-    from .mesh import ModelMeshContract, validate_native_depth_receipt
+    from .mesh import ModelMeshContract
 
     identity = _identity_receipt(candidate_model, base_dir)
     if identity["status"] != "current":
-        raise ValueError("candidate model identity is not current for native depth binding")
+        raise ValueError("candidate model identity is not current")
     payload = load_mapping(identity["resolved_path"])
     raw = payload.get("mesh", payload)
     if not isinstance(raw, Mapping) or not raw.get("mesh_id") or not isinstance(raw.get("nodes"), list) or not raw["nodes"]:
-        raise ValueError("native depth source binding supports a current native mesh candidate only")
-    mesh = ModelMeshContract.from_dict(raw)
-    validate_native_depth_receipt(source, mesh)
-    return mesh
-
-
-def bind_task_local_native_depth_receipt(
-    prediction: PredictionSnapshot,
-    candidate_model: WorldModelIdentity,
-    source_receipt: Mapping[str, Any],
-    *,
-    base_dir: Path,
-    binding_id: str,
-) -> dict[str, Any]:
-    source = dict(source_receipt)
-    _validate_candidate_native_depth(candidate_model, source, base_dir)
-    source_fingerprint = _fingerprint(source)
-    body = {
-        "artifact_kind": "worldguard_task_local_native_depth_receipt",
-        "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-        "binding_id": _text(binding_id, "binding_id"),
-        "task_id": prediction.task_id,
-        "candidate_model": candidate_model.to_dict(),
-        "coverage_universe_fingerprint": prediction.coverage_universe_fingerprint,
-        "source_receipt": source,
-        "source_receipt_fingerprint": source_fingerprint,
-    }
-    sealed = {**body, "binding_fingerprint": _fingerprint(body)}
-    TaskLocalNativeDepthReceipt.from_dict(sealed)
-    return sealed
-
-
-def bind_semantic_rollout_receipt(
-    *,
-    receipt_id: str,
-    task_id: str,
-    role: RevalidationRole | str,
-    candidate_model: WorldModelIdentity,
-    semantic_status: str,
-    source_result: Mapping[str, Any],
-    evidence_ref: str,
-) -> dict[str, Any]:
-    role_value = RevalidationRole(role).value
-    source = dict(source_result)
-    body = {
-        "artifact_kind": "worldguard_semantic_rollout_receipt",
-        "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-        "receipt_id": _text(receipt_id, "semantic receipt_id"),
-        "task_id": _text(task_id, "semantic task_id"),
-        "role": role_value,
-        "candidate_model": candidate_model.to_dict(),
-        "semantic_status": _text(semantic_status, "semantic_status").lower(),
-        "source_result": source,
-        "source_result_fingerprint": _fingerprint(source),
-        "evidence_ref": _text(evidence_ref, "semantic evidence_ref"),
-    }
-    sealed = {**body, "binding_fingerprint": _fingerprint(body)}
-    SemanticRolloutReceipt.from_dict(sealed)
-    return sealed
-
-
-def bind_world_revalidation_receipt(
-    *,
-    check_id: str,
-    role: RevalidationRole | str,
-    candidate_model: WorldModelIdentity,
-    semantic_receipt: Mapping[str, Any],
-    empirical_comparison: Mapping[str, Any],
-) -> dict[str, Any]:
-    payload = {
-        "artifact_kind": "worldguard_world_revalidation_receipt",
-        "schema_version": TASK_LOCAL_REVISION_SCHEMA_VERSION,
-        "check_id": _text(check_id, "check_id"),
-        "role": RevalidationRole(role).value,
-        "candidate_model": candidate_model.to_dict(),
-        "semantic_receipt": dict(semantic_receipt),
-        "empirical_comparison": dict(empirical_comparison),
-    }
-    sealed = _seal_receipt(payload)
-    WorldRevalidationReceipt.from_dict(sealed)
-    return sealed
+        raise ValueError("revision closure supports a current native mesh candidate only")
+    return ModelMeshContract.from_dict(raw)
 
 
 def _comparison_binds_model(comparison: Mapping[str, Any], model: WorldModelIdentity) -> bool:
@@ -1233,8 +969,8 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         findings.append("candidate_not_distinct_from_base")
 
     try:
-        prediction_body = _verify_sealed_receipt(revision.prediction_receipt, artifact_kind="worldguard_prediction_snapshot_receipt", label="prediction")
-        comparison_body = _verify_sealed_receipt(revision.comparison_receipt, artifact_kind="worldguard_observed_world_comparison_receipt", label="comparison")
+        prediction_body = _receipt_body(revision.prediction_receipt, artifact_kind="worldguard_prediction_snapshot_receipt", label="prediction")
+        comparison_body = _receipt_body(revision.comparison_receipt, artifact_kind="worldguard_observed_world_comparison_receipt", label="comparison")
     except ValueError as exc:
         prediction_body = {}
         comparison_body = {}
@@ -1252,47 +988,45 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         findings.append("comparison_task_or_coverage_mismatch")
     if not _comparison_binds_model(comparison_body, revision.base_model):
         findings.append("comparison_base_model_identity_mismatch")
-    if revision.native_depth_receipt.task_id != task_id:
-        findings.append("native_depth_task_mismatch")
-    if revision.native_depth_receipt.coverage_universe_fingerprint != coverage_fingerprint:
-        findings.append("native_depth_coverage_mismatch")
-    if not _same_identity(revision.native_depth_receipt.candidate_model, revision.candidate_model):
-        findings.append("native_depth_candidate_mismatch")
     candidate_mesh = None
+    mesh_report = None
     try:
-        candidate_mesh = _validate_candidate_native_depth(revision.candidate_model, revision.native_depth_receipt.source_receipt, base_dir)
+        from .mesh import run_model_mesh
+
+        candidate_mesh = _load_candidate_mesh(revision.candidate_model, base_dir)
+        mesh_report = run_model_mesh(candidate_mesh)
     except (ValueError, OSError, KeyError, TypeError) as exc:
-        findings.append(f"native_depth_source_invalid:{exc}")
+        findings.append(f"candidate_mesh_not_runnable:{exc}")
 
     check_results: list[dict[str, Any]] = []
     for check in revision.revalidations:
         issues: list[str] = []
         comparison = check.empirical_comparison
         try:
-            comparison_receipt = _verify_sealed_receipt(comparison, artifact_kind="worldguard_observed_world_comparison_receipt", label=f"revalidation {check.check_id}")
+            comparison_receipt = _receipt_body(comparison, artifact_kind="worldguard_observed_world_comparison_receipt", label=f"revalidation {check.check_id}")
         except ValueError as exc:
             comparison_receipt = {}
             issues.append(str(exc))
-        if not _same_identity(check.candidate_model, revision.candidate_model):
-            issues.append("revalidation_candidate_identity_mismatch")
-        if not _same_identity(check.semantic_receipt.candidate_model, revision.candidate_model):
-            issues.append("semantic_candidate_identity_mismatch")
-        if check.semantic_receipt.task_id != task_id or check.semantic_receipt.role != check.role:
-            issues.append("semantic_task_or_role_mismatch")
-        if check.semantic_receipt.semantic_status != "pass":
-            issues.append("semantic_rollout_non_pass")
-        if candidate_mesh is not None:
-            from .mesh import validate_semantic_receipt_for_mesh
-            try:
-                native = validate_semantic_receipt_for_mesh(check.semantic_receipt.source_result["native_receipt"], candidate_mesh)
-                scope = candidate_mesh.semantic_coverage.per_model_node.get(native.node_id, {})
-                field = "scenario_ids" if check.role == RevalidationRole.ORIGINAL_SCENARIO else "holdout_scenario_ids"
+        if mesh_report is None or candidate_mesh is None:
+            issues.append("semantic_rollout_not_run")
+        else:
+            if mesh_report.semantic_status.value != "PASS":
+                issues.append("semantic_rollout_non_pass")
+            field = "scenario_ids" if check.role == RevalidationRole.ORIGINAL_SCENARIO else "holdout_scenario_ids"
+            scopes_executed = bool(mesh_report.node_reports)
+            for node_id in mesh_report.node_reports:
+                scope = candidate_mesh.semantic_coverage.per_model_node.get(node_id, {})
                 expected = set(scope.get(field, getattr(candidate_mesh.semantic_coverage, field)))
-                observed = native.outputs.get("executed_" + field, [])
-                if not expected or not isinstance(observed, list) or not expected <= set(observed):
-                    issues.append("semantic_role_scope_not_executed")
-            except (ValueError, TypeError, KeyError) as exc:
-                issues.append(f"semantic_source_invalid:{exc}")
+                observed = {
+                    item
+                    for receipt in mesh_report.semantic_receipts
+                    if receipt.node_id == node_id
+                    for item in receipt.outputs.get("executed_" + field, [])
+                }
+                if not expected or not expected <= observed:
+                    scopes_executed = False
+            if not scopes_executed:
+                issues.append("semantic_role_scope_not_executed")
         if comparison_receipt.get("status") != "pass" or comparison_receipt.get("input_gap_ids"):
             issues.append("empirical_comparison_non_pass")
         if comparison_receipt.get("task_id") != task_id or comparison_receipt.get("coverage_universe_fingerprint") != coverage_fingerprint:
@@ -1303,16 +1037,13 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
             {
                 "check_id": check.check_id,
                 "role": check.role.value,
-                "semantic_receipt_id": check.semantic_receipt.receipt_id,
-                "semantic_status": check.semantic_receipt.semantic_status,
-                "semantic_source_fingerprint": check.semantic_receipt.source_result_fingerprint,
+                "semantic_status": mesh_report.semantic_status.value if mesh_report is not None else "NOT_RUN",
                 "observation_id": comparison_receipt.get("observation_id", ""),
                 "observation_source_ref": comparison_receipt.get("source_ref", ""),
                 "observation_evidence_fingerprint": comparison_receipt.get("observation_evidence_fingerprint", ""),
                 "observation_content_fingerprint": comparison_receipt.get("observation_content_fingerprint", ""),
                 "effective_status": "pass" if not issues else "fail",
                 "issues": issues,
-                "revalidation_receipt_fingerprint": check.receipt_fingerprint,
             }
         )
 
@@ -1334,10 +1065,10 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         item["effective_status"] = "pass" if not item["issues"] else "fail"
     failed = [item["check_id"] for item in check_results if item["effective_status"] != "pass"]
 
-    source_depth = revision.native_depth_receipt.source_receipt
-    raw_predictive_gaps = sorted(set(str(item) for item in source_depth.get("predictive_gaps", [])))
+    depth = mesh_report.depth_receipt if mesh_report is not None else None
+    raw_predictive_gaps = sorted(set(str(item) for item in (depth.predictive_gaps if depth is not None else [])))
     current_gap_ids = {f"native:{item}" for item in raw_predictive_gaps}
-    predictive_licensed = bool(source_depth.get("predictive_claim_licensed", False))
+    predictive_licensed = bool(depth.predictive_claim_licensed) if depth is not None else False
     if not predictive_licensed and not raw_predictive_gaps:
         current_gap_ids.add("native:predictive_claim_not_licensed")
     prior_gap_ids = prediction_body.get("prior_gap_ids", [])
@@ -1415,12 +1146,7 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         "base_model": base,
         "candidate_model": candidate,
         "rollback_model": rollback,
-        "prediction_receipt_fingerprint": revision.prediction_receipt.get("receipt_fingerprint", ""),
-        "comparison_receipt_fingerprint": revision.comparison_receipt.get("receipt_fingerprint", ""),
-        "native_depth_binding_id": revision.native_depth_receipt.binding_id,
-        "native_depth_binding_fingerprint": revision.native_depth_receipt.binding_fingerprint,
-        "native_depth_source_receipt_id": source_depth.get("receipt_id", ""),
-        "native_depth_source_receipt_fingerprint": revision.native_depth_receipt.source_receipt_fingerprint,
+        "candidate_mesh_status": mesh_report.status.value if mesh_report is not None else "NOT_RUN",
         "predictive_claim_licensed": predictive_licensed,
         "native_predictive_gap_ids": raw_predictive_gaps,
         "predictive_gap_categories": _predictive_gap_categories(raw_predictive_gaps),
@@ -1440,9 +1166,9 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         "identity_findings": sorted(set(findings)),
         "base_model_preserved": base["status"] == "current",
         "revision_fingerprint": _fingerprint(revision.to_dict()),
-        "claim_boundary": "This decision applies only to the exact task, independent coverage universe, base/candidate identities, current native depth receipt, and independent original/holdout evidence. Only this owner may emit model_closed_for_task.",
+        "claim_boundary": "This decision applies only to the exact task, coverage universe, base/candidate models, one fresh run of the candidate mesh, and the independent original/holdout observations. Only this owner may emit model_closed_for_task.",
     }
-    return _seal_receipt(payload)
+    return payload
 
 
 __all__ = [
@@ -1455,16 +1181,11 @@ __all__ = [
     "ObservedWorldRelationship",
     "ObservedWorldSnapshot",
     "PredictionSnapshot",
+    "RevalidationCheck",
     "RevalidationRole",
-    "SemanticRolloutReceipt",
-    "TaskLocalNativeDepthReceipt",
     "WorldMismatchCategory",
     "WorldModelIdentity",
     "WorldRevisionKind",
-    "WorldRevalidationReceipt",
-    "bind_semantic_rollout_receipt",
-    "bind_task_local_native_depth_receipt",
-    "bind_world_revalidation_receipt",
     "compare_observed_world",
     "coverage_universe_fingerprint",
     "evaluate_candidate_world_revision",

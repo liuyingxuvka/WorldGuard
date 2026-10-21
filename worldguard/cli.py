@@ -91,30 +91,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     task_model_compare.add_argument("prediction")
     task_model_compare.add_argument("observation")
-    task_model_depth_bind = task_model_commands.add_parser(
-        "depth-bind",
-        help="bind one exact native execution-depth receipt to the current task and candidate",
-    )
-    task_model_depth_bind.add_argument("prediction")
-    task_model_depth_bind.add_argument("candidate_model")
-    task_model_depth_bind.add_argument("native_depth")
-    task_model_depth_bind.add_argument("--binding-id", required=True)
-    task_model_revalidation_bind = task_model_commands.add_parser(
-        "revalidation-bind",
-        help="bind typed semantic and empirical evidence for one original or real-holdout role",
-    )
-    task_model_revalidation_bind.add_argument("prediction")
-    task_model_revalidation_bind.add_argument("candidate_model")
-    task_model_revalidation_bind.add_argument(
-        "role",
-        choices=("original_scenario", "real_holdout_observation"),
-    )
-    task_model_revalidation_bind.add_argument("semantic_result")
-    task_model_revalidation_bind.add_argument("comparison")
-    task_model_revalidation_bind.add_argument("--check-id", required=True)
-    task_model_revalidation_bind.add_argument("--semantic-receipt-id", required=True)
-    task_model_revalidation_bind.add_argument("--semantic-status", required=True)
-    task_model_revalidation_bind.add_argument("--evidence-ref", required=True)
     task_model_revision = task_model_commands.add_parser(
         "revision",
         help="accept, reject, or roll back a separate candidate task model",
@@ -301,56 +277,10 @@ def main(argv: list[str] | None = None) -> int:
             CandidateWorldModelRevision,
             ObservedWorldSnapshot,
             PredictionSnapshot,
-            RevalidationRole,
-            WorldModelIdentity,
-            bind_semantic_rollout_receipt,
-            bind_task_local_native_depth_receipt,
-            bind_world_revalidation_receipt,
             compare_observed_world,
             evaluate_candidate_world_revision,
             freeze_prediction_snapshot,
         )
-        if args.task_model_command == "depth-bind":
-            prediction_path = Path(args.prediction)
-            prediction = PredictionSnapshot.from_dict(load_mapping(prediction_path))
-            candidate = WorldModelIdentity.from_dict(load_mapping(args.candidate_model))
-            native_payload = load_mapping(args.native_depth)
-            if "depth_receipt" in native_payload:
-                depth_receipt = native_payload.get("depth_receipt")
-                if not isinstance(depth_receipt, dict):
-                    raise ValueError("native mesh report depth_receipt must be a mapping")
-            else:
-                depth_receipt = native_payload
-            receipt = bind_task_local_native_depth_receipt(
-                prediction,
-                candidate,
-                depth_receipt,
-                base_dir=prediction_path.parent,
-                binding_id=args.binding_id,
-            )
-            print(dump_json(receipt))
-            return 0
-        if args.task_model_command == "revalidation-bind":
-            prediction = PredictionSnapshot.from_dict(load_mapping(args.prediction))
-            candidate = WorldModelIdentity.from_dict(load_mapping(args.candidate_model))
-            semantic = bind_semantic_rollout_receipt(
-                receipt_id=args.semantic_receipt_id,
-                task_id=prediction.task_id,
-                role=args.role,
-                candidate_model=candidate,
-                semantic_status=args.semantic_status,
-                source_result=load_mapping(args.semantic_result),
-                evidence_ref=args.evidence_ref,
-            )
-            receipt = bind_world_revalidation_receipt(
-                check_id=args.check_id,
-                role=args.role,
-                candidate_model=candidate,
-                semantic_receipt=semantic,
-                empirical_comparison=load_mapping(args.comparison),
-            )
-            print(dump_json(receipt))
-            return 0
         if args.task_model_command == "fact-revision-preview":
             from .fact_revision import (
                 FactRevisionActivationRequest,

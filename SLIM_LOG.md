@@ -363,3 +363,26 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-19/models.log`) |
 
 Adaptations: 首次 map 发现文档预告的 worldguard.qualification→worldguard 无用依赖，删除该唯一已失效依赖后 map 0 errors；失败原日志保留。
+
+### WG-20: 任务内修订闭环：自己运行候选网格，删除封签收据、depth-bind 和 revalidation-bind
+
+Status: completed.
+
+任务修订自行加载并执行候选网格一次；去除 depth/revalidation 封签绑定入口，工具计算省略的观测与覆盖指纹，保留缺口集合、停滞、预算、外部输入、回滚与独立留出规则。32 项任务测试、341 项完整测试和 6 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-20/mirror.log`) |
+| `task-revision-initial` | 2 | 1 error in 0.32s (`WG-20/task-revision-initial.log`) |
+| `task-revision` | 0 | 30 passed in 0.38s (`WG-20/task-revision.log`) |
+| `map-initial` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-20/map-initial.log`) |
+| `scoped-revalidation` | 0 | 32 passed in 0.53s (`WG-20/scoped-revalidation.log`) |
+| `cli-exports` | 0 | 135 ok (`WG-20/cli-exports.log`) |
+| `residue` | 0 | (no output) (`WG-20/residue.log`) |
+| `mirror-final` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-20/mirror-final.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-20/change.log`) |
+| `pytest` | 0 | 341 passed in 38.96s (`WG-20/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-20/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-20/models.log`) |
+
+Adaptations: 参考片段跨节点合并 scope 会丢失现有 per_model_node 边界；沿用现有按节点 scope 覆盖并匹配 fresh receipt.node_id，两个有限正反例均断言只执行一次。负例保留原生 PASS/license 与全局并集，仅本节点缺 holdout 输出，确由 semantic_role_scope_not_executed 拒绝。首次作者脚本在测试迁移前断言停止造成 collection failure，保留原记录；完成迁移后通过。实际测试总数比文档多 5（WG06 3＋本项 2）。
