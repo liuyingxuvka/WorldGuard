@@ -13,6 +13,21 @@ from flowguard.review import review_scenarios
 ROOT = Path(__file__).resolve().parents[2]
 MODEL_PATH = Path(__file__).with_name("model.py")
 
+IMPLEMENTED_BY = {
+    "BuildFactRevisionPreview": "worldguard/fact_revision.py:preview_fact_revision",
+    "ActivateFactRevision": "worldguard/fact_revision.py:activate_fact_revision",
+}
+TESTED_BY = {
+    "fact_revision_requires_current_base": ["tests/test_fact_revision.py:test_stale_base_fingerprint_blocks_preview"],
+    "fact_revision_preserves_declared_facts": ["tests/test_fact_revision.py:test_preserved_fact_change_blocks_with_support_delta"],
+    "fact_revision_surfaces_contradictions": ["tests/test_fact_revision.py:test_positive_and_negative_support_yield_both_without_explosion"],
+    "fact_revision_activation_is_evidence_bound": [
+        "tests/test_fact_revision.py:test_activation_requires_current_regression_and_holdout_evidence",
+        "tests/test_fact_revision.py:test_missing_holdout_evidence_keeps_activation_blocked",
+    ],
+    "fact_revision_activation_returns_to_same_task_owner": ["tests/test_fact_revision.py:test_fact_activation_cannot_claim_model_closed_for_task"],
+}
+
 
 def _load_model():
     spec = importlib.util.spec_from_file_location(

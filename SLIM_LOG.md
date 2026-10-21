@@ -830,3 +830,27 @@ Status: completed.
 | `pytest` | 0 | 272 passed in 47.49s (`WG-42/pytest.log`) |
 
 Adaptations: 真实场景 foreign-cwd CLI：路人 intentions=[] 返回 PASS/0，删该键返回 AGENT_INCOMPLETE_BDI GAP/1；beliefs/desires 非空、身份冲突、意图冲突及目录失败类别保持。
+
+### WG-43: 两个抽象自模型接上真实代码：每个模型终态都在 worldguard 代码上重放一次；三个运行器写明代码和测试锚点
+
+Status: completed.
+
+两个抽象模型连接真实代码：task 修订7个终态、template9个输入逐一重放；三个 runner 显式实现与测试锚点8/7/6全部有效，abstract boundary警告归零。真实领域坏代码两例均 exit1，恢复后3模型/release与272完整测试通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-43/read.log`) |
+| `reference-nonclosure` | 0 | } (`WG-43/reference-nonclosure.log`) |
+| `corrected-nonclosure` | 0 | } (`WG-43/corrected-nonclosure.log`) |
+| `native-mutations` | 1 | AssertionError: ('worldguard/task_local_revision.py', 2) (`WG-43/native-mutations.log`) |
+| `native-mutations-final` | 0 | ] (`WG-43/native-mutations-final.log`) |
+| `anchors` | 0 | template_selection 6 [] (`WG-43/anchors.log`) |
+| `binding-boundaries` | 0 | native mutation source bytes restored; original model scenarios/invariants unchanged; fact native findings AST unchanged (`WG-43/binding-boundaries.log`) |
+| `change` | 0 | run: python -m flowguard.map models fact_revision task_local_revision template_selection (`WG-43/change.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-43/models.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-43/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-43/release.log`) |
+| `pytest` | 0 | 272 passed in 38.11s (`WG-43/pytest.log`) |
+| `real-runner-results` | 0 | template_selection {"cases": 9, "findings": [], "ok": true} FLOWGUARD_RUNNER_DONE {"exit_code": 0, "checked": 3} (`WG-43/real-runner-results.log`) |
+
+Adaptations: 参考 task runner 只比较关闭布尔量，真实模型非关闭终态错误仍 ok:true；保留该漏检复现。经 root 授权在同一 runner 按终态精确核对，仅 holdout_not_independent 明确映射 candidate_rejected，新版识别6个错误非关闭结果；不是 native领域算法错误，也不改model.py场景/不变量。 坏代码 probe 首次发现 progress_stalled 源文本有2处而非1处，在任何修改前停止；修正计数后依参考演示同时替换，两例均拒绝且通过finally逐字节恢复，原失败日志保留。fact原生 findings AST保持。

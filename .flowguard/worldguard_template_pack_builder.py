@@ -96,7 +96,7 @@ class SelectTemplatePack:
             return
         if not request.base_present:
             yield FunctionResult(
-                Blocked("candidate_base_missing"),
+                Blocked("template_selected_base_missing"),
                 replace(state, selection_outcome="selected_without_base"),
                 "candidate_base_missing_blocked",
             )
@@ -129,7 +129,7 @@ class ComposeTemplatePack:
             return
         if not selected.request.field_ownership_exact:
             yield FunctionResult(
-                Blocked("template_field_ownership_mismatch"), state, "field_ownership_mismatch_blocked"
+                Blocked("template_fragment_field_ownership_mismatch"), state, "field_ownership_mismatch_blocked"
             )
             return
         if selected.request.field_conflict:
@@ -277,6 +277,90 @@ def review_template_pack_builder():
             "template_instance_ready",
         ),
     ).explore()
+
+
+def _model_outcome(request: BuildRequest) -> str:
+    """Run the three model blocks for one request and return its terminal outcome."""
+    current: object = request
+    state = State()
+    for block in build_workflow().blocks:
+        if isinstance(current, (Blocked, TemplateInstanceReady)):
+            break
+        step = next(iter(block.apply(current, state)))
+        current, state = step.output, step.new_state
+    return current.reason if isinstance(current, Blocked) else "ready"
+
+
+def native_conformance() -> dict[str, object]:
+    """Replay every model input against the real worldguard.template_packs code."""
+    from dataclasses import replace as replace_manifest
+
+    from worldguard.template_packs import (
+        GUARD_CONTRACT_KIND,
+        VALIDATOR_GUARD_SHAPE,
+        TemplateFragment,
+        TemplatePackError,
+        TemplatePackManifest,
+        TemplatePackRegistry,
+        build_template_instance,
+        builtin_template_registry,
+        compose_template_packs,
+        template_slot,
+    )
+
+    registry = builtin_template_registry()
+    event = {
+        "contract_id": "conformance:event", "run_id": "conformance:run", "claim_id": "claim:event",
+        "claim_text": "a declared event initiates readiness", "target_guards": ["EventGuard"],
+        "requested_semantics": ["event"], "claim_atoms": [], "model_id": "conformance:model",
+        "model_version": "v1", "event_inputs": [{"event_id": "event:ready", "at": "t0", "initiates": "ready"}],
+    }
+    candidate = TemplatePackManifest.build(
+        pack_id="conformance.candidate", pack_version="1", contract_kind=GUARD_CONTRACT_KIND, is_base=False,
+        required_fact_ids=("candidate:yes",), fragments=(TemplateFragment.build("fragment:candidate", {"inputs": {"events": []}}),),
+        native_validator_ids=(VALIDATOR_GUARD_SHAPE,), claim_boundary="conformance only",
+    )
+    test_base = TemplatePackManifest.build(
+        pack_id="conformance.base", pack_version="1", contract_kind=GUARD_CONTRACT_KIND, is_base=True,
+        fragments=(TemplateFragment.build("fragment:base", {"contract_id": template_slot("contract_id")}),),
+        native_validator_ids=(VALIDATOR_GUARD_SHAPE,), claim_boundary="conformance only",
+    )
+    overlap = TemplatePackManifest.build(
+        pack_id="conformance.overlap", pack_version="1", contract_kind=GUARD_CONTRACT_KIND, is_base=False,
+        required_fact_ids=("overlap",), fragments=(TemplateFragment.build("fragment:overlap", {"contract_id": "wrong"}),),
+        native_validator_ids=(VALIDATOR_GUARD_SHAPE,), claim_boundary="conformance only",
+    )
+    builtin_base = registry.by_id("worldguard.guard-contract.base")
+
+    def build(fact_ids, bindings, source=registry):
+        return lambda: build_template_instance(source, contract_kind=GUARD_CONTRACT_KIND, fact_ids=fact_ids, slot_bindings=bindings)
+
+    real_calls = {
+        BuildRequest(candidate_count=0): build(["unmatched:fact"], event),
+        BuildRequest(candidate_count=1): build(["guard:EventGuard"], event),
+        BuildRequest(candidate_count=2): build(["guard:EventGuard", "guard:CausalGuard"], event),
+        BuildRequest(candidate_count=0, base_present=False): build([], {}, TemplatePackRegistry.build((candidate,))),
+        BuildRequest(candidate_count=1, base_present=False): build(["candidate:yes"], {}, TemplatePackRegistry.build((candidate,))),
+        BuildRequest(field_ownership_exact=False): lambda: TemplateFragment.from_dict(
+            {"fragment_id": "fragment:mismatch", "owned_field_ids": ["claim.text"], "payload": {"claim": {"claim_id": "claim:one"}}}
+        ).validate(),
+        BuildRequest(field_conflict=True): lambda: compose_template_packs((test_base, overlap)),
+        BuildRequest(native_validators_bound=False): lambda: TemplatePackRegistry.build(
+            (replace_manifest(builtin_base, native_validator_ids=("worldguard.unknown.v1",)),)
+        ),
+        BuildRequest(native_validation_passes=False): build(["guard:EventGuard"], {**event, "run_id": ""}),
+    }
+    findings = []
+    for request in EXTERNAL_INPUTS:
+        try:
+            real_calls[request]()
+            real = "ready"
+        except TemplatePackError as exc:
+            real = exc.code.lower()
+        expected = _model_outcome(request)
+        if real != expected:
+            findings.append({"request": repr(request), "model": expected, "code": real})
+    return {"ok": not findings and len(real_calls) == len(EXTERNAL_INPUTS), "cases": len(real_calls), "findings": findings}
 
 
 if __name__ == "__main__":
