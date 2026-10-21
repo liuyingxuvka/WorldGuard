@@ -472,7 +472,7 @@ def test_causal_pending_endogenous_seed_never_changes_final_equations(variables)
         "interventions": [{"intervention_id": "do-x", "scenario_id": "s", "set": {"x": 7}}],
         "counterfactuals": [{"counterfactual_id": "cf-y", "intervention_id": "do-x", "query": "y"}],
     }}
-    report = run_worldguard(make_contract("CausalGuard", inputs=inputs))
+    report = run_worldguard(make_contract("CausalGuard", inputs=inputs, asserts=[{"variable": "y", "op": "==", "value": 3}]))
     assert report.status == GuardStatus.PASS
     output = report.semantic_receipts[0].outputs
     assert output["scenario_results"]["s"] == {"x": 2, "y": 3}
@@ -515,7 +515,7 @@ def test_resource_ordered_production_enables_later_consumption() -> None:
             {"id": "return", "consumes": [{"place": "p2", "color": "a", "qty": 1}], "produces": [{"place": "p1", "color": "a", "qty": 1}]},
         ],
     }
-    report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}))
+    report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}, asserts=[{"place": "p1", "qty": 1}]))
     assert report.structural_status == GuardStatus.PASS
     assert report.semantic_status == SemanticStatus.PASS
     resources["transitions"].reverse()

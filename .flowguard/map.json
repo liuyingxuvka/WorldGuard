@@ -133,7 +133,7 @@
       "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
         "Qualify a unit by executing its derived Guard obligations structurally and semantically",
-        "Evaluate each claim.asserts row against the world model; a false row fails the claim and an unresolved row is a gap",
+        "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
         "Keep structural status, semantic status and provider availability separate",
         "Expose the run_worldguard kernel through one qualification owner"
       ],
@@ -161,7 +161,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:eaab65658976f396d3f4f903470480d1f6416e5b1f94a31d3330f946e0e7a65d"
+      "fingerprint": "sha256:0ad6f18d3606086611eb70da2c1dd7c4ea5c2802916dd543599799bc5cfcce94"
     },
     {
       "id": "worldguard.mesh",

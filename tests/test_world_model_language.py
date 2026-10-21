@@ -108,3 +108,13 @@ def test_trip_claims_are_checked_against_the_timetable_model() -> None:
     report = run_worldguard(hour_of_slack)
     assert report.status.value == "FAIL"
     assert report.gaps[0]["observed"] == {"published_timetable": 0.75}
+
+
+def test_a_claim_without_assertions_is_not_bound_to_the_world_model() -> None:
+    scene = _world("scene_locked_door.yaml")
+    del scene["claim"]["asserts"]
+    report = run_worldguard(scene)
+    assert report.structural_status.value == "PASS"
+    assert report.status.value == "GAP"
+    assert _gap_codes(report) == ["CLAIM_NOT_BOUND"]
+    assert report.gaps[0]["message"] == "claim not bound to the world model: add claim.asserts"

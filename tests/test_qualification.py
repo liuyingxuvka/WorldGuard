@@ -27,6 +27,7 @@ def _event_contract() -> dict:
             "text": "the declared event makes the plan ready",
             "target_guards": ["EventGuard"],
             "requested_semantics": ["event"],
+            "asserts": [{"holds": "ready", "at": "t0"}],
         },
         "world_model": {
             "model_id": "event-world",

@@ -8,7 +8,7 @@ from worldguard.status import GuardStatus
 
 
 
-def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim") -> dict:
+def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim", asserts: list | None = None) -> dict:
     semantic = {
         "EventGuard": "event",
         "AgentGuard": "agent",
@@ -33,6 +33,7 @@ def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim") -> 
                         "text": text,
                         "target_guards": [guard],
                         "requested_semantics": [semantic],
+                        "asserts": asserts or [],
                     },
                     "world_model": {
                         "model_id": f"model-{semantic}",
@@ -128,6 +129,7 @@ def _valid_event_mesh() -> dict:
     return _mesh(
         "EventGuard",
         {"events": [{"event_id": "e1", "at": "t0", "initiates": "ready"}]},
+        asserts=[{"holds": "ready", "at": "t0"}],
     )
 
 

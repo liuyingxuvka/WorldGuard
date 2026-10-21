@@ -998,3 +998,21 @@ The base Guard template now requires claim_asserts and preserves the supplied ro
 | `pytest` | 0 | 279 passed in 27.43s (`WG-50/pytest.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-51: 没有 claim.asserts 的主张不再 PASS：报 GAP（CLAIM_NOT_BOUND）
+
+Status: completed.
+
+A claim without assertions now reports GAP/CLAIM_NOT_BOUND, semantic GAP and structural PASS, with CLI exit 1; the exact before control was PASS/0. Assertions-only minimal contracts still select their native Guard. Eight focused and 280 full tests passed; release 3/3, map 0/0.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `unbound-before` | 0 | before 0 PASS PASS PASS [] (`WG-51/unbound-before.log`) |
+| `focused` | 0 | 8 passed in 0.32s (`WG-51/focused.log`) |
+| `unbound-after` | 0 | after 1 GAP PASS GAP [{'code': 'CLAIM_NOT_BOUND', 'gap_id': 'qualification:claim:not-bound', 'message': 'claim not bound to the world model: add claim.asserts'}] (`WG-51/unbound-after.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-51/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-51/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-51/release.log`) |
+| `pytest` | 0 | 280 passed in 46.08s (`WG-51/pytest.log`) |
+
+Adaptations: The reference stopped after three edits because WG03 had reformatted the CLI fixture into a single-quoted one-line literal; continued remaining edits with the unique claim text anchor only (WG-51/reference-anchor-adaptation.json). LogicWriting adapter synchronization belongs to XR12; no foreign-repository edit.

@@ -248,7 +248,7 @@ def qualify_guard_contract(
     if unmapped and semantic_status != SemanticStatus.FAIL:
         semantic_status = SemanticStatus.GAP
     claim_binding = evaluate_claim_binding(contract)
-    binding_status = claim_binding["status"] if claim_binding["bound"] else GuardStatus.PASS.value
+    binding_status = claim_binding["status"]
     if binding_status == GuardStatus.FAIL.value:
         semantic_status = SemanticStatus.FAIL
     elif binding_status != GuardStatus.PASS.value and semantic_status != SemanticStatus.FAIL:
@@ -280,6 +280,14 @@ def qualify_guard_contract(
                 "gap_id": f"qualification:unmapped-semantic:{row['semantic']}",
                 "code": "QUALIFICATION_SEMANTIC_UNMAPPED",
                 **row,
+            }
+        )
+    if not claim_binding["bound"]:
+        gaps.append(
+            {
+                "gap_id": "qualification:claim:not-bound",
+                "code": "CLAIM_NOT_BOUND",
+                "message": "claim not bound to the world model: add claim.asserts",
             }
         )
     for row in claim_binding["assertions"]:

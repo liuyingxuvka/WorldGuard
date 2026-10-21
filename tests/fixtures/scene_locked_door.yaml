@@ -5,6 +5,9 @@ claim:
   text: Iris slips into the archive at t3 behind Mara, who unlocked the door at t2 with the key Jonas gave her at t1.
   requested_semantics: [event, resource, agent]
   target_guards: [EventGuard, ResourceGuard, AgentGuard]
+  asserts:
+    - {event: e_mara_unlock, before: e_iris_enter}
+    - {place: iris_inside, color: iris, qty: 1}
 world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only]}
 inputs:
   events:
