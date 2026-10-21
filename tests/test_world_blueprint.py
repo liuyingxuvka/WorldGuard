@@ -14,11 +14,9 @@ from worldguard.blueprint import (
     WORLD_ELEMENT_KINDS,
     BlueprintError,
     BlueprintLayerStatus,
-    CrossArtifactProjectionResult,
     TargetSemanticAuthority,
     WorldBlueprintContract,
     _binding_receipt_fingerprint,
-    _cross_artifact_required_source_ids,
     _provider_capability_registration,
     _provider_observation_expected,
     _target_semantic_census_members,
@@ -69,100 +67,10 @@ def _renew_native_semantic_fingerprint(semantic: dict) -> None:
     semantic["content_fingerprint"] = "sha256:" + fingerprint_mesh(identity)
 
 
-def _projection_payload(
-    blueprint: WorldBlueprintContract,
-    *,
-    status: str = "proven",
-    unresolved_source_ids: tuple[str, ...] = (),
-) -> dict:
-    native_report = check_world_blueprint(blueprint)
-    required_source_ids = _cross_artifact_required_source_ids(blueprint)
-    unresolved = set(unresolved_source_ids)
-    projected_source_ids = tuple(
-        source_id for source_id in required_source_ids if source_id not in unresolved
-    )
-    normalized_payload = {
-        "schema_version": "worldguard.flowguard.blueprint_projection_payload.v2",
-        "blueprint": blueprint.fingerprint_payload(),
-        "source_dispositions": [
-            {
-                "source_id": source_id,
-                "status": "unresolved" if source_id in unresolved else "projected",
-            }
-            for source_id in required_source_ids
-        ],
-    }
-    payload = {
-        "schema_version": "worldguard.cross_artifact_projection.v2",
-        "projection_id": "projection:planning-workflow:external-v2",
-        "provider_id": "worldguard.fixture.cross-artifact-projection",
-        "provider_version": "v1",
-        "provider_capability_id": "fixture.cross-artifact-projection.v1",
-        "execution_owner_id": "worldguard.fixture.cross-artifact-owner.v1",
-        "execution_owner_version": "v1",
-        "target_id": blueprint.target_id,
-        "target_revision": blueprint.target_revision,
-        "claim_boundary": blueprint.declared_boundary,
-        "source_blueprint_fingerprint": "sha256:"
-        + blueprint.blueprint_fingerprint,
-        "source_report_fingerprint": "sha256:"
-        + native_report.report_fingerprint,
-        "required_source_ids": list(required_source_ids),
-        "projected_source_ids": list(projected_source_ids),
-        "unresolved_source_ids": sorted(unresolved),
-        "normalized_payload": normalized_payload,
-        "normalized_payload_fingerprint": "sha256:"
-        + fingerprint_mesh(normalized_payload),
-        "status": status,
-        "producer_identity_fingerprint": "sha256:" + "f" * 64,
-        "terminal_receipt_payload": {},
-        "terminal_receipt_fingerprint": "sha256:" + "0" * 64,
-    }
-    _renew_projection_receipt(payload)
-    return payload
 
 
-def _renew_projection_receipt(payload: dict) -> None:
-    parsed = CrossArtifactProjectionResult.from_dict(
-        {
-            **payload,
-            "terminal_receipt_payload": {},
-            "terminal_receipt_fingerprint": "sha256:" + "0" * 64,
-        }
-    )
-    receipt = {
-        "schema_version": "worldguard.cross_artifact_projection_receipt.v2",
-        "projection_id": parsed.projection_id,
-        "provider_id": parsed.provider_id,
-        "provider_version": parsed.provider_version,
-        "provider_capability_id": parsed.provider_capability_id,
-        "execution_owner_id": parsed.execution_owner_id,
-        "execution_owner_version": parsed.execution_owner_version,
-        "producer_identity_fingerprint": parsed.producer_identity_fingerprint,
-        "projection_result_fingerprint": "sha256:"
-        + fingerprint_mesh(parsed.evidence_payload()),
-        "terminal_status": parsed.status,
-    }
-    payload["terminal_receipt_payload"] = receipt
-    payload["terminal_receipt_fingerprint"] = "sha256:" + fingerprint_mesh(
-        receipt
-    )
 
 
-def _register_fixture_projection_provider(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setitem(
-        blueprint_module._CROSS_ARTIFACT_PROJECTION_CAPABILITIES,
-        (
-            "worldguard.fixture.cross-artifact-projection",
-            "v1",
-            "fixture.cross-artifact-projection.v1",
-        ),
-        {
-            "execution_owner_id": "worldguard.fixture.cross-artifact-owner.v1",
-            "execution_owner_version": "v1",
-            "producer_identity_fingerprint": "sha256:" + "f" * 64,
-        },
-    )
 
 
 def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> None:
@@ -171,7 +79,6 @@ def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> Non
 
     assert report.status == GuardStatus.PASS
     assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is False
     assert report.partial_model_usable is True
     assert len(report.native_execution_receipts) == len(blueprint.elements) == 13
     assert {row["terminal_status"] for row in report.native_execution_receipts} == {
@@ -183,11 +90,6 @@ def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> Non
         and row["receipt_fingerprint"].startswith("sha256:")
         for row in report.native_execution_receipts
     )
-    assert next(
-        row
-        for row in report.qualification_layers
-        if row.layer_id == "cross_artifact_projection"
-    ).status == BlueprintLayerStatus.NOT_RUN
     assert report.deepest_continuously_proven_layer == 2
     assert report.first_unresolved_layer is None
     assert [row.status for row in report.depth_layers] == [
@@ -200,184 +102,14 @@ def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> Non
     assert not any(term in serialized for term in ('"module"', '"function"', '"class"', '"python"'))
 
 
-def test_registered_fixture_projection_closes_only_projection_layer(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _register_fixture_projection_provider(monkeypatch)
-    shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
-    blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint)
-
-    report = check_world_blueprint(
-        blueprint, cross_artifact_projection=projection
-    )
-
-    assert report.status == GuardStatus.PASS
-    assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is True
-    assert report.partial_model_usable is False
-    assert next(
-        row
-        for row in report.qualification_layers
-        if row.layer_id == "cross_artifact_projection"
-    ).status == BlueprintLayerStatus.PROVEN
-    assert report.cross_artifact_projection is not None
-    assert report.cross_artifact_projection.projection_id == projection["projection_id"]
 
 
-def test_unreleased_cross_artifact_provider_cannot_license_projection(
-    tmp_path: Path,
-) -> None:
-    shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
-    blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint)
-
-    report = check_world_blueprint(
-        blueprint, cross_artifact_projection=projection
-    )
-    projection_gap = next(
-        gap
-        for gap in report.gaps
-        if gap.code == "WORLD_BLUEPRINT_CROSS_ARTIFACT_RESULT_INVALID"
-    )
-
-    assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is False
-    assert report.status == GuardStatus.BOUNDARY_EXCEEDED
-    assert "provider_capability_unregistered" in {
-        row["reason"] for row in projection_gap.evidence["errors"]
-    }
 
 
-@pytest.mark.parametrize(
-    ("mutation", "expected_reason"),
-    [
-        ("shrunk_denominator", "required_source_denominator_mismatch"),
-        ("stale_report", "source_identity_mismatch"),
-        ("payload_tamper", "normalized_payload_fingerprint_mismatch"),
-    ],
-)
-def test_cross_artifact_identity_set_and_payload_tampering_remain_projection_gap(
-    mutation: str,
-    expected_reason: str,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _register_fixture_projection_provider(monkeypatch)
-    shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
-    blueprint = _current_at(_payload(), tmp_path)
-    projection = _projection_payload(blueprint)
-    if mutation == "shrunk_denominator":
-        removed = projection["required_source_ids"].pop()
-        projection["projected_source_ids"].remove(removed)
-        projection["normalized_payload"]["source_dispositions"] = [
-            row
-            for row in projection["normalized_payload"]["source_dispositions"]
-            if row["source_id"] != removed
-        ]
-        projection["normalized_payload_fingerprint"] = "sha256:" + fingerprint_mesh(
-            projection["normalized_payload"]
-        )
-        _renew_projection_receipt(projection)
-    elif mutation == "stale_report":
-        projection["source_report_fingerprint"] = "sha256:" + "1" * 64
-        _renew_projection_receipt(projection)
-    else:
-        projection["normalized_payload"]["blueprint"]["declared_boundary"] = (
-            "tampered boundary"
-        )
-
-    report = check_world_blueprint(
-        blueprint, cross_artifact_projection=projection
-    )
-    projection_gap = next(
-        gap
-        for gap in report.gaps
-        if gap.code == "WORLD_BLUEPRINT_CROSS_ARTIFACT_RESULT_INVALID"
-    )
-
-    assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is False
-    assert report.status == GuardStatus.GAP
-    assert next(
-        row
-        for row in report.qualification_layers
-        if row.layer_id == "cross_artifact_projection"
-    ).status == BlueprintLayerStatus.GAP
-    assert expected_reason in {
-        row["reason"] for row in projection_gap.evidence["errors"]
-    }
 
 
-def test_valid_projection_cannot_promote_an_incomplete_native_blueprint(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _register_fixture_projection_provider(monkeypatch)
-    shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
-    payload = _payload()
-    payload["bindings"] = [
-        row
-        for row in payload["bindings"]
-        if row["binding_id"] != "assignment_test"
-    ]
-    blueprint = _current_at(payload, tmp_path)
-    projection = _projection_payload(blueprint)
-
-    report = check_world_blueprint(
-        blueprint, cross_artifact_projection=projection
-    )
-    projection_gap = next(
-        gap
-        for gap in report.gaps
-        if gap.code == "WORLD_BLUEPRINT_CROSS_ARTIFACT_RESULT_INVALID"
-    )
-
-    assert report.native_domain_qualified is False
-    assert report.full_domain_qualified is False
-    assert next(
-        row
-        for row in report.qualification_layers
-        if row.layer_id == "cross_artifact_projection"
-    ).status == BlueprintLayerStatus.GAP
-    assert "native_domain_not_qualified" in {
-        row["reason"] for row in projection_gap.evidence["errors"]
-    }
 
 
-def test_registered_projection_boundary_is_preserved_exactly(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _register_fixture_projection_provider(monkeypatch)
-    shutil.copytree(FIXTURE.parent / "support", tmp_path / "support")
-    blueprint = _current_at(_payload(), tmp_path)
-    required = _cross_artifact_required_source_ids(blueprint)
-    unresolved = required[-1]
-    projection = _projection_payload(
-        blueprint,
-        status="boundary",
-        unresolved_source_ids=(unresolved,),
-    )
-
-    report = check_world_blueprint(
-        blueprint, cross_artifact_projection=projection
-    )
-
-    assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is False
-    assert report.status == GuardStatus.BOUNDARY_EXCEEDED
-    assert next(
-        row
-        for row in report.qualification_layers
-        if row.layer_id == "cross_artifact_projection"
-    ).status == BlueprintLayerStatus.BOUNDARY
-    assert any(
-        gap.code == "WORLD_BLUEPRINT_CROSS_ARTIFACT_UNRESOLVED"
-        and gap.evidence["unresolved_source_ids"] == [unresolved]
-        for gap in report.gaps
-    )
 
 
 def test_round_trip_and_report_identity_are_stable(tmp_path: Path) -> None:
@@ -570,7 +302,6 @@ def test_missing_test_binding_stops_continuous_depth_at_leaf() -> None:
     assert gap.required_role == "test_check"
     assert report.deepest_continuously_proven_layer == 1
     assert report.first_unresolved_layer == 2
-    assert report.full_domain_qualified is False
     assert report.partial_model_usable is True
 
 
@@ -767,7 +498,6 @@ def test_binding_hash_and_target_identity_are_exact() -> None:
         "expected_target_id": "planning-workflow",
         "observed_target_id": "different-planning-workflow",
     }
-    assert report.full_domain_qualified is False
 
 
 def test_native_semantics_are_typed_exact_and_observation_bound() -> None:

@@ -33,7 +33,6 @@ def test_blueprint_check_cli_emits_canonical_report(capsys) -> None:
     assert payload["object_census"]["first_gap"]["code"] == (
         "object-census-trust-not-licensed"
     )
-    assert payload["full_domain_qualified"] is False
     assert len(payload["blueprint_fingerprint"]) == 64
     assert len(payload["report_fingerprint"]) == 64
 

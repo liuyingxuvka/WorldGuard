@@ -426,3 +426,28 @@ impact/trace 删除两个调用方指纹参数，直接重验当前蓝图；未�
 | `models` | 0 | models: 6 passed, 0 failed (`WG-22/models.log`) |
 
 Adaptations: 首次测试迁移误删错误详情的内容身份断言，6 个负例因 expected 字段缺失失败；恢复该现有断言后 29 项通过，产品仍保留报告里的 blueprint_fingerprint。原始失败日志不覆盖。
+
+### WG-23: 蓝图删除“跨制品投影”层
+
+Status: completed.
+
+删除没有实际生产者的跨制品投影消费层和 full_domain_qualified，蓝图仅保留六个原生层及既有深度资格定义。42 项 focused、332 项完整测试与 6 个模型通过，133 个导出可加载。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-23/mirror.log`) |
+| `blueprint` | 0 | 49 passed in 13.51s (`WG-23/blueprint.log`) |
+| `residue` | 1 | worldguard/blueprint.py:9328:        cross_artifact_projection=projection_result, (`WG-23/residue.log`) |
+| `native-check` | 1 | PASS True ['identity_inventory', 'hierarchy', 'interfaces', 'domain_semantics', 'bindings', 'native_checks', 'cross_artifact_projection'] (`WG-23/native-check.log`) |
+| `change` | 0 | tests to run (0 of 32): - (`WG-23/change.log`) |
+| `pytest-pre-edit-interrupted` | -15 | .......... (`WG-23/pytest-pre-edit-interrupted.log`) |
+| `mirror-final` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-23/mirror-final.log`) |
+| `blueprint-final` | 0 | 42 passed in 14.18s (`WG-23/blueprint-final.log`) |
+| `residue-final` | 0 | (no output) (`WG-23/residue-final.log`) |
+| `native-check-final` | 0 | 133 ok (`WG-23/native-check-final.log`) |
+| `change-final` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-23/change-final.log`) |
+| `pytest` | 0 | 332 passed in 33.15s (`WG-23/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-23/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-23/models.log`) |
+
+Adaptations: 首次作者脚本因重复 return payload 锚点在写入前停止，前置检查实际上仍是 WG22 状态：residue/native-check 失败如实留存，误启动的无变更全量在 10.561 秒中断并单列 pytest-pre-edit-interrupted；修正限定锚点并应用后才执行最终验收。后续命令采用遇错停止。

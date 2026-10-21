@@ -136,4 +136,3 @@ def test_policy_target_runs_in_memory_impact_and_reverse_trace() -> None:
     report = check_world_blueprint(blueprint)
     assert report.status == "PASS"
     assert report.native_domain_qualified is True
-    assert report.full_domain_qualified is False

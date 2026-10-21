@@ -3170,216 +3170,6 @@ def load_world_blueprint(path: str | Path) -> WorldBlueprintContract:
 
 
 @dataclass(frozen=True)
-class CrossArtifactProjectionResult:
-    """One independently owned projection result consumed by native qualification.
-
-    The result is evidence about a separate artifact, not part of the native
-    blueprint itself.  Its source/report identities and complete source-id
-    denominator therefore remain explicit and receipt-bound.
-    """
-
-    projection_id: str
-    provider_id: str
-    provider_version: str
-    provider_capability_id: str
-    execution_owner_id: str
-    execution_owner_version: str
-    target_id: str
-    target_revision: str
-    claim_boundary: str
-    source_blueprint_fingerprint: str
-    source_report_fingerprint: str
-    required_source_ids: tuple[str, ...]
-    projected_source_ids: tuple[str, ...]
-    unresolved_source_ids: tuple[str, ...]
-    normalized_payload: dict[str, Any]
-    normalized_payload_fingerprint: str
-    status: str
-    producer_identity_fingerprint: str
-    terminal_receipt_payload: dict[str, Any]
-    terminal_receipt_fingerprint: str
-    schema_version: str = "worldguard.cross_artifact_projection.v2"
-
-    @classmethod
-    def from_dict(
-        cls, data: Mapping[str, Any]
-    ) -> "CrossArtifactProjectionResult":
-        _unknown_fields(
-            data,
-            {
-                "schema_version",
-                "projection_id",
-                "provider_id",
-                "provider_version",
-                "provider_capability_id",
-                "execution_owner_id",
-                "execution_owner_version",
-                "target_id",
-                "target_revision",
-                "claim_boundary",
-                "source_blueprint_fingerprint",
-                "source_report_fingerprint",
-                "required_source_ids",
-                "projected_source_ids",
-                "unresolved_source_ids",
-                "normalized_payload",
-                "normalized_payload_fingerprint",
-                "status",
-                "producer_identity_fingerprint",
-                "terminal_receipt_payload",
-                "terminal_receipt_fingerprint",
-            },
-            "cross-artifact projection result",
-        )
-        schema_version = _required_text(
-            data.get("schema_version"), "cross_artifact_projection.schema_version"
-        )
-        if schema_version != "worldguard.cross_artifact_projection.v2":
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_CROSS_ARTIFACT_SCHEMA_INVALID",
-                "Cross-artifact projection result schema is not current.",
-                details={"schema_version": schema_version},
-            )
-        status = _required_text(
-            data.get("status"), "cross_artifact_projection.status"
-        )
-        if status not in {"proven", "gap", "boundary"}:
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_CROSS_ARTIFACT_STATUS_INVALID",
-                "Cross-artifact projection status must be proven, gap, or boundary.",
-                details={"status": status},
-            )
-        identifier_sets: dict[str, tuple[str, ...]] = {}
-        for field_id in (
-            "required_source_ids",
-            "projected_source_ids",
-            "unresolved_source_ids",
-        ):
-            value = data.get(field_id)
-            if (
-                not isinstance(value, list)
-                or any(not isinstance(item, str) or not item for item in value)
-                or len(value) != len(set(value))
-            ):
-                raise BlueprintError(
-                    "WORLD_BLUEPRINT_CROSS_ARTIFACT_SET_INVALID",
-                    f"Cross-artifact projection {field_id} must be a unique string list.",
-                    details={"field_id": field_id},
-                )
-            identifier_sets[field_id] = tuple(sorted(value))
-        normalized_payload = data.get("normalized_payload")
-        if not isinstance(normalized_payload, Mapping):
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_CROSS_ARTIFACT_PAYLOAD_INVALID",
-                "Cross-artifact normalized payload must be an object.",
-            )
-        terminal_receipt_payload = data.get("terminal_receipt_payload")
-        if not isinstance(terminal_receipt_payload, Mapping):
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_CROSS_ARTIFACT_RECEIPT_INVALID",
-                "Cross-artifact terminal receipt must remain an in-memory object.",
-            )
-        return cls(
-            schema_version=schema_version,
-            projection_id=_required_text(
-                data.get("projection_id"), "cross_artifact_projection.projection_id"
-            ),
-            provider_id=_required_text(
-                data.get("provider_id"), "cross_artifact_projection.provider_id"
-            ),
-            provider_version=_required_text(
-                data.get("provider_version"),
-                "cross_artifact_projection.provider_version",
-            ),
-            provider_capability_id=_required_text(
-                data.get("provider_capability_id"),
-                "cross_artifact_projection.provider_capability_id",
-            ),
-            execution_owner_id=_required_text(
-                data.get("execution_owner_id"),
-                "cross_artifact_projection.execution_owner_id",
-            ),
-            execution_owner_version=_required_text(
-                data.get("execution_owner_version"),
-                "cross_artifact_projection.execution_owner_version",
-            ),
-            target_id=_required_text(
-                data.get("target_id"), "cross_artifact_projection.target_id"
-            ),
-            target_revision=_required_text(
-                data.get("target_revision"),
-                "cross_artifact_projection.target_revision",
-            ),
-            claim_boundary=_required_text(
-                data.get("claim_boundary"),
-                "cross_artifact_projection.claim_boundary",
-            ),
-            source_blueprint_fingerprint=_required_sha256(
-                data.get("source_blueprint_fingerprint"),
-                "cross_artifact_projection.source_blueprint_fingerprint",
-            ),
-            source_report_fingerprint=_required_sha256(
-                data.get("source_report_fingerprint"),
-                "cross_artifact_projection.source_report_fingerprint",
-            ),
-            required_source_ids=identifier_sets["required_source_ids"],
-            projected_source_ids=identifier_sets["projected_source_ids"],
-            unresolved_source_ids=identifier_sets["unresolved_source_ids"],
-            normalized_payload=dict(normalized_payload),
-            normalized_payload_fingerprint=_required_sha256(
-                data.get("normalized_payload_fingerprint"),
-                "cross_artifact_projection.normalized_payload_fingerprint",
-            ),
-            status=status,
-            producer_identity_fingerprint=_required_sha256(
-                data.get("producer_identity_fingerprint"),
-                "cross_artifact_projection.producer_identity_fingerprint",
-            ),
-            terminal_receipt_payload=dict(terminal_receipt_payload),
-            terminal_receipt_fingerprint=_required_sha256(
-                data.get("terminal_receipt_fingerprint"),
-                "cross_artifact_projection.terminal_receipt_fingerprint",
-            ),
-        )
-
-    def evidence_payload(self) -> dict[str, Any]:
-        return {
-            "schema_version": self.schema_version,
-            "projection_id": self.projection_id,
-            "provider_id": self.provider_id,
-            "provider_version": self.provider_version,
-            "provider_capability_id": self.provider_capability_id,
-            "execution_owner_id": self.execution_owner_id,
-            "execution_owner_version": self.execution_owner_version,
-            "target_id": self.target_id,
-            "target_revision": self.target_revision,
-            "claim_boundary": self.claim_boundary,
-            "source_blueprint_fingerprint": self.source_blueprint_fingerprint,
-            "source_report_fingerprint": self.source_report_fingerprint,
-            "required_source_ids": list(self.required_source_ids),
-            "projected_source_ids": list(self.projected_source_ids),
-            "unresolved_source_ids": list(self.unresolved_source_ids),
-            "normalized_payload": self.normalized_payload,
-            "normalized_payload_fingerprint": self.normalized_payload_fingerprint,
-            "status": self.status,
-        }
-
-    def fingerprint_payload(self) -> dict[str, Any]:
-        return {
-            **self.evidence_payload(),
-            "producer_identity_fingerprint": self.producer_identity_fingerprint,
-            "terminal_receipt_payload": self.terminal_receipt_payload,
-            "terminal_receipt_fingerprint": self.terminal_receipt_fingerprint,
-        }
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            **self.fingerprint_payload(),
-            "terminal_receipt_fingerprint": self.terminal_receipt_fingerprint,
-        }
-
-
-@dataclass(frozen=True)
 class BlueprintGap:
     gap_id: str
     code: str
@@ -3442,14 +3232,12 @@ class WorldBlueprintReport:
     deepest_continuously_proven_layer: int | None
     first_unresolved_layer: int | None
     native_domain_qualified: bool
-    full_domain_qualified: bool
     object_dna_qualified: bool
     object_census: dict[str, Any]
     partial_model_usable: bool
     native_execution_receipts: tuple[dict[str, Any], ...]
     gaps: tuple[BlueprintGap, ...]
     claim_boundary: str
-    cross_artifact_projection: CrossArtifactProjectionResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -3464,7 +3252,6 @@ class WorldBlueprintReport:
             "deepest_continuously_proven_layer": self.deepest_continuously_proven_layer,
             "first_unresolved_layer": self.first_unresolved_layer,
             "native_domain_qualified": self.native_domain_qualified,
-            "full_domain_qualified": self.full_domain_qualified,
             "object_dna_qualified": self.object_dna_qualified,
             "object_census": self.object_census,
             "partial_model_usable": self.partial_model_usable,
@@ -3472,10 +3259,6 @@ class WorldBlueprintReport:
             "gaps": [item.to_dict() for item in self.gaps],
             "claim_boundary": self.claim_boundary,
         }
-        if self.cross_artifact_projection is not None:
-            payload["cross_artifact_projection"] = (
-                self.cross_artifact_projection.to_dict()
-            )
         return payload
 
 
@@ -6215,353 +5998,9 @@ def _execute_blueprint_native_semantic(
     return {**payload, "receipt_fingerprint": "sha256:" + fingerprint_mesh(payload)}
 
 
-_CROSS_ARTIFACT_PROJECTION_CAPABILITIES: dict[
-    tuple[str, str, str], dict[str, str]
-] = {
-    (
-        "worldguard.flowguard.blueprint-projection",
-        "v1",
-        "worldguard.flowguard.target-blueprint.v1",
-    ): {
-        "execution_owner_id": "worldguard.flowguard.blueprint-projection-owner",
-        "execution_owner_version": "v1",
-        "producer_identity_fingerprint": "sha256:"
-        + fingerprint_mesh(
-            {
-                "provider_id": "worldguard.flowguard.blueprint-projection",
-                "provider_version": "v1",
-                "provider_capability_id": "worldguard.flowguard.target-blueprint.v1",
-                "execution_owner_id": "worldguard.flowguard.blueprint-projection-owner",
-                "execution_owner_version": "v1",
-            }
-        ),
-    }
-}
-
-
-def _cross_artifact_required_source_ids(
-    blueprint: WorldBlueprintContract,
-) -> tuple[str, ...]:
-    source_ids: set[str] = {
-        f"blueprint:{blueprint.blueprint_id}",
-        f"commitment-inventory:{blueprint.commitment_inventory.inventory_id}",
-    }
-    for node in blueprint.nodes:
-        source_ids.add(f"node:{node.node_id}")
-        source_ids.update(
-            f"port:{node.node_id}:input:{port.port_id}" for port in node.input_ports
-        )
-        source_ids.update(
-            f"port:{node.node_id}:output:{port.port_id}" for port in node.output_ports
-        )
-        source_ids.update(
-            f"mapping:{node.node_id}:child-input:{row.mapping_id}"
-            for row in node.child_input_mappings
-        )
-        source_ids.update(
-            f"mapping:{node.node_id}:element-input:{row.mapping_id}"
-            for row in node.element_input_mappings
-        )
-        source_ids.update(
-            f"mapping:{node.node_id}:child-output:{row.mapping_id}"
-            for row in node.child_output_mappings
-        )
-        source_ids.update(
-            f"derivation:{node.node_id}:{row.derivation_id}"
-            for row in node.output_derivations
-        )
-    for element in blueprint.elements:
-        source_ids.add(f"element:{element.element_id}")
-        source_ids.update(
-            f"dependency:{element.element_id}:{row.dependency_id}"
-            for row in element.dependencies
-        )
-        semantic = element.native_semantic
-        if semantic is None or semantic.task_purpose is None:
-            continue
-        purpose = semantic.task_purpose
-        source_ids.add(f"purpose:{element.element_id}:{purpose.declaration_id}")
-        for case in purpose.behavior_cases:
-            source_ids.add(f"case:{element.element_id}:{case.case_id}")
-            source_ids.add(
-                f"oracle:{element.element_id}:{case.case_id}:{case.oracle_id}"
-            )
-    source_ids.update(f"binding:{row.binding_id}" for row in blueprint.bindings)
-    source_ids.update(f"input:{row.input_id}" for row in blueprint.declared_inputs)
-    source_ids.update(f"output:{row.output_id}" for row in blueprint.declared_outputs)
-    source_ids.update(f"declared-gap:{row.gap_id}" for row in blueprint.declared_gaps)
-    return tuple(sorted(source_ids))
-
-
-def _cross_artifact_projection_gap(
-    blueprint: WorldBlueprintContract,
-    *,
-    code: str,
-    message: str,
-    severity: GuardStatus,
-    evidence: dict[str, Any],
-) -> BlueprintGap:
-    return _gap(
-        blueprint,
-        code=code,
-        message=message,
-        severity=severity,
-        layer_id="cross_artifact_projection",
-        evidence=evidence,
-    )
-
-
-def _validate_cross_artifact_projection(
-    blueprint: WorldBlueprintContract,
-    projection: CrossArtifactProjectionResult,
-    *,
-    native_report_fingerprint: str,
-    native_domain_qualified: bool,
-) -> tuple[BlueprintGap, ...]:
-    expected_required = _cross_artifact_required_source_ids(blueprint)
-    expected_registration = _CROSS_ARTIFACT_PROJECTION_CAPABILITIES.get(
-        (
-            projection.provider_id,
-            projection.provider_version,
-            projection.provider_capability_id,
-        )
-    )
-    errors: list[dict[str, Any]] = []
-    boundary_error = False
-    if expected_registration is None:
-        boundary_error = True
-        errors.append(
-            {
-                "reason": "provider_capability_unregistered",
-                "provider_id": projection.provider_id,
-                "provider_version": projection.provider_version,
-                "provider_capability_id": projection.provider_capability_id,
-            }
-        )
-    elif (
-        projection.execution_owner_id
-        != expected_registration["execution_owner_id"]
-        or projection.execution_owner_version
-        != expected_registration["execution_owner_version"]
-        or projection.producer_identity_fingerprint
-        != expected_registration["producer_identity_fingerprint"]
-    ):
-        boundary_error = True
-        errors.append(
-            {
-                "reason": "execution_owner_mismatch",
-                "expected": expected_registration,
-                "observed": {
-                    "execution_owner_id": projection.execution_owner_id,
-                    "execution_owner_version": projection.execution_owner_version,
-                    "producer_identity_fingerprint": (
-                        projection.producer_identity_fingerprint
-                    ),
-                },
-            }
-        )
-    identity_expected = {
-        "target_id": blueprint.target_id,
-        "target_revision": blueprint.target_revision,
-        "claim_boundary": blueprint.declared_boundary,
-        "source_blueprint_fingerprint": "sha256:"
-        + blueprint.blueprint_fingerprint,
-        "source_report_fingerprint": "sha256:" + native_report_fingerprint,
-    }
-    identity_observed = {
-        key: getattr(projection, key) for key in identity_expected
-    }
-    if identity_observed != identity_expected:
-        errors.append(
-            {
-                "reason": "source_identity_mismatch",
-                "expected": identity_expected,
-                "observed": identity_observed,
-            }
-        )
-    if projection.required_source_ids != expected_required:
-        errors.append(
-            {
-                "reason": "required_source_denominator_mismatch",
-                "missing_source_ids": sorted(
-                    set(expected_required).difference(projection.required_source_ids)
-                ),
-                "extra_source_ids": sorted(
-                    set(projection.required_source_ids).difference(expected_required)
-                ),
-            }
-        )
-    projected = set(projection.projected_source_ids)
-    unresolved = set(projection.unresolved_source_ids)
-    required = set(projection.required_source_ids)
-    if projected.intersection(unresolved) or projected.union(unresolved) != required:
-        errors.append(
-            {
-                "reason": "projection_set_closure_invalid",
-                "overlap_source_ids": sorted(projected.intersection(unresolved)),
-                "unaccounted_source_ids": sorted(
-                    required.difference(projected.union(unresolved))
-                ),
-                "foreign_source_ids": sorted(
-                    projected.union(unresolved).difference(required)
-                ),
-            }
-        )
-    # The target-object projection is an in-memory audit composition, not a
-    # transport envelope.  Keep the complete current blueprint payload and a
-    # closed disposition for every source id; a source-id-only projection can
-    # be re-signed after silently dropping target semantics.
-    expected_dispositions = [
-        {
-            "source_id": source_id,
-            "status": "projected" if source_id in projected else "unresolved",
-        }
-        for source_id in expected_required
-    ]
-    expected_normalized_payload = {
-        "schema_version": "worldguard.flowguard.blueprint_projection_payload.v2",
-        "blueprint": blueprint.fingerprint_payload(),
-        "source_dispositions": expected_dispositions,
-    }
-    payload_shape_valid = (
-        set(projection.normalized_payload)
-        == set(expected_normalized_payload)
-        and projection.normalized_payload.get("schema_version")
-        == expected_normalized_payload["schema_version"]
-        and projection.normalized_payload.get("blueprint")
-        == expected_normalized_payload["blueprint"]
-    )
-    observed_dispositions = projection.normalized_payload.get("source_dispositions")
-    if not isinstance(observed_dispositions, list):
-        payload_shape_valid = False
-        observed_dispositions = []
-    if observed_dispositions != expected_dispositions:
-        payload_shape_valid = False
-    if not payload_shape_valid:
-        errors.append(
-            {
-                "reason": "normalized_payload_lossless_blueprint_mismatch",
-                "expected_blueprint_fingerprint": "sha256:"
-                + blueprint.current_fingerprint(),
-                "observed_blueprint_fingerprint": (
-                    "sha256:"
-                    + fingerprint_mesh(projection.normalized_payload.get("blueprint"))
-                    if isinstance(projection.normalized_payload.get("blueprint"), Mapping)
-                    else ""
-                ),
-                "expected_source_dispositions": expected_dispositions,
-                "observed_source_dispositions": observed_dispositions,
-            }
-        )
-    expected_payload_fingerprint = "sha256:" + fingerprint_mesh(
-        projection.normalized_payload
-    )
-    if projection.normalized_payload_fingerprint != expected_payload_fingerprint:
-        errors.append(
-            {
-                "reason": "normalized_payload_fingerprint_mismatch",
-                "expected": expected_payload_fingerprint,
-                "observed": projection.normalized_payload_fingerprint,
-            }
-        )
-    expected_receipt_payload = {
-        "schema_version": "worldguard.cross_artifact_projection_receipt.v2",
-        "projection_id": projection.projection_id,
-        "provider_id": projection.provider_id,
-        "provider_version": projection.provider_version,
-        "provider_capability_id": projection.provider_capability_id,
-        "execution_owner_id": projection.execution_owner_id,
-        "execution_owner_version": projection.execution_owner_version,
-        "producer_identity_fingerprint": (
-            projection.producer_identity_fingerprint
-        ),
-        "projection_result_fingerprint": "sha256:"
-        + fingerprint_mesh(projection.evidence_payload()),
-        "terminal_status": projection.status,
-    }
-    expected_receipt_fingerprint = "sha256:" + fingerprint_mesh(
-        expected_receipt_payload
-    )
-    if projection.terminal_receipt_payload != expected_receipt_payload:
-        errors.append(
-            {
-                "reason": "terminal_receipt_payload_mismatch",
-                "expected": expected_receipt_payload,
-                "observed": projection.terminal_receipt_payload,
-            }
-        )
-    if projection.terminal_receipt_fingerprint != expected_receipt_fingerprint:
-        errors.append(
-            {
-                "reason": "terminal_receipt_fingerprint_mismatch",
-                "expected": expected_receipt_fingerprint,
-                "observed": projection.terminal_receipt_fingerprint,
-            }
-        )
-    status_matches_sets = (
-        projection.status == "proven" and not unresolved and projected == required
-    ) or (
-        projection.status in {"gap", "boundary"} and bool(unresolved)
-    )
-    if not status_matches_sets:
-        errors.append(
-            {
-                "reason": "terminal_status_set_mismatch",
-                "status": projection.status,
-                "unresolved_source_ids": sorted(unresolved),
-            }
-        )
-    if projection.status == "proven" and not native_domain_qualified:
-        errors.append({"reason": "native_domain_not_qualified"})
-
-    if errors:
-        return (
-            _cross_artifact_projection_gap(
-                blueprint,
-                code="WORLD_BLUEPRINT_CROSS_ARTIFACT_RESULT_INVALID",
-                message=(
-                    "The supplied cross-artifact projection result is not current, "
-                    "complete, or receipt-valid."
-                ),
-                severity=(
-                    GuardStatus.BOUNDARY_EXCEEDED
-                    if boundary_error
-                    else GuardStatus.GAP
-                ),
-                evidence={
-                    "projection_id": projection.projection_id,
-                    "errors": errors,
-                },
-            ),
-        )
-    if projection.status != "proven":
-        return (
-            _cross_artifact_projection_gap(
-                blueprint,
-                code="WORLD_BLUEPRINT_CROSS_ARTIFACT_UNRESOLVED",
-                message="The independent projection owner reported unresolved source ids.",
-                severity=(
-                    GuardStatus.BOUNDARY_EXCEEDED
-                    if projection.status == "boundary"
-                    else GuardStatus.GAP
-                ),
-                evidence={
-                    "projection_id": projection.projection_id,
-                    "unresolved_source_ids": list(
-                        projection.unresolved_source_ids
-                    ),
-                },
-            ),
-        )
-    return ()
-
-
 def check_world_blueprint(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
     *,
-    cross_artifact_projection: CrossArtifactProjectionResult
-    | Mapping[str, Any]
-    | None = None,
     trusted_object_census_authority_fingerprints: Iterable[str] = (),
     trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> WorldBlueprintReport:
@@ -8890,34 +8329,16 @@ def check_world_blueprint(
         "domain_semantics",
         "bindings",
         "native_checks",
-        "cross_artifact_projection",
     )
-    native_gaps = tuple(
-        gap for gap in gaps if gap.layer_id != "cross_artifact_projection"
-    )
-
-    def qualification_results(
-        *, projection_was_supplied: bool
-    ) -> list[BlueprintLayerResult]:
-        results: list[BlueprintLayerResult] = []
-        for layer_id in conceptual_order:
-            layer_gaps = [gap for gap in gaps if gap.layer_id == layer_id]
-            if layer_id == "cross_artifact_projection" and not projection_was_supplied:
-                layer_status = BlueprintLayerStatus.NOT_RUN
-            else:
-                layer_status = _layer_status(layer_gaps)
-            results.append(
-                BlueprintLayerResult(
-                    layer_id=layer_id,
-                    status=layer_status,
-                    gap_ids=tuple(sorted(gap.gap_id for gap in layer_gaps)),
-                )
-            )
-        return results
-
-    native_qualification_layers = qualification_results(
-        projection_was_supplied=False
-    )
+    native_gaps = tuple(gaps)
+    qualification_layers = [
+        BlueprintLayerResult(
+            layer_id=layer_id,
+            status=_layer_status([gap for gap in gaps if gap.layer_id == layer_id]),
+            gap_ids=tuple(sorted(gap.gap_id for gap in gaps if gap.layer_id == layer_id)),
+        )
+        for layer_id in conceptual_order
+    ]
 
     declared_depths = sorted(set(node.depth for node in blueprint.nodes))
     depth_layers: list[BlueprintLayerResult] = []
@@ -9184,99 +8605,19 @@ def check_world_blueprint(
         ),
         "first_gap": object_census_first_gap,
     }
-    native_status = (
+    status = (
         GuardStatus.PASS
         if native_domain_qualified
         else aggregate_statuses(gap.severity for gap in native_gaps)
     )
-    native_partial_model_usable = bool(
+    partial_model_usable = bool(
         native_domain_qualified
         or any(row.status == BlueprintLayerStatus.PROVEN for row in depth_layers)
     )
-    native_report_payload = {
-        "status": native_status.value,
-        "blueprint_id": blueprint.blueprint_id,
-        "target_id": blueprint.target_id,
-        "target_revision": blueprint.target_revision,
-        "blueprint_fingerprint": blueprint.blueprint_fingerprint,
-        "qualification_layers": [
-            row.to_dict() for row in native_qualification_layers
-        ],
-        "depth_layers": [row.to_dict() for row in depth_layers],
-        "deepest_continuously_proven_layer": deepest,
-        "first_unresolved_layer": first_unresolved,
-        "native_domain_qualified": native_domain_qualified,
-        "full_domain_qualified": False,
-        "object_dna_qualified": object_dna_qualified,
-        "object_census": object_census,
-        "partial_model_usable": native_partial_model_usable,
-        "native_execution_receipts": sorted(
-            native_execution_receipts,
-            key=lambda row: (row["element_id"], row["execution_id"]),
-        ),
-        "gaps": [gap.to_dict() for gap in native_gaps],
-        "claim_boundary": blueprint.declared_boundary,
-    }
-    native_report_fingerprint = fingerprint_mesh(native_report_payload)
-
-    projection_was_supplied = cross_artifact_projection is not None
-    projection_result: CrossArtifactProjectionResult | None = None
-    if cross_artifact_projection is not None:
-        try:
-            projection_result = (
-                cross_artifact_projection
-                if isinstance(
-                    cross_artifact_projection, CrossArtifactProjectionResult
-                )
-                else CrossArtifactProjectionResult.from_dict(
-                    cross_artifact_projection
-                )
-            )
-        except BlueprintError as exc:
-            gaps.append(
-                _cross_artifact_projection_gap(
-                    blueprint,
-                    code=exc.code,
-                    message=str(exc),
-                    severity=GuardStatus.GAP,
-                    evidence=exc.details,
-                )
-            )
-        else:
-            gaps.extend(
-                _validate_cross_artifact_projection(
-                    blueprint,
-                    projection_result,
-                    native_report_fingerprint=native_report_fingerprint,
-                    native_domain_qualified=native_domain_qualified,
-                )
-            )
-
-    qualification_layers = qualification_results(
-        projection_was_supplied=projection_was_supplied
+    native_execution_receipts = sorted(
+        native_execution_receipts,
+        key=lambda row: (row["element_id"], row["execution_id"]),
     )
-    projection_proven = any(
-        row.layer_id == "cross_artifact_projection"
-        and row.status == BlueprintLayerStatus.PROVEN
-        for row in qualification_layers
-    )
-    full_domain_qualified = native_domain_qualified and projection_proven
-    partial_model_usable = bool(
-        not full_domain_qualified
-        and (
-            native_domain_qualified
-            or any(row.status == BlueprintLayerStatus.PROVEN for row in depth_layers)
-        )
-    )
-    projection_gaps = [
-        gap for gap in gaps if gap.layer_id == "cross_artifact_projection"
-    ]
-    status = (
-        native_status
-        if not native_domain_qualified or not projection_gaps
-        else aggregate_statuses(gap.severity for gap in projection_gaps)
-    )
-
     report_payload = {
         "status": status.value,
         "blueprint_id": blueprint.blueprint_id,
@@ -9288,19 +8629,13 @@ def check_world_blueprint(
         "deepest_continuously_proven_layer": deepest,
         "first_unresolved_layer": first_unresolved,
         "native_domain_qualified": native_domain_qualified,
-        "full_domain_qualified": full_domain_qualified,
         "object_dna_qualified": object_dna_qualified,
         "object_census": object_census,
         "partial_model_usable": partial_model_usable,
-        "native_execution_receipts": sorted(
-            native_execution_receipts,
-            key=lambda row: (row["element_id"], row["execution_id"]),
-        ),
+        "native_execution_receipts": native_execution_receipts,
         "gaps": [gap.to_dict() for gap in gaps],
         "claim_boundary": blueprint.declared_boundary,
     }
-    if projection_result is not None:
-        report_payload["cross_artifact_projection"] = projection_result.to_dict()
     return WorldBlueprintReport(
         status=status,
         blueprint_id=blueprint.blueprint_id,
@@ -9313,21 +8648,13 @@ def check_world_blueprint(
         deepest_continuously_proven_layer=deepest,
         first_unresolved_layer=first_unresolved,
         native_domain_qualified=native_domain_qualified,
-        full_domain_qualified=full_domain_qualified,
         object_dna_qualified=object_dna_qualified,
         object_census=object_census,
         partial_model_usable=partial_model_usable,
-        native_execution_receipts=tuple(
-            sorted(
-                native_execution_receipts,
-                key=lambda row: (row["element_id"], row["execution_id"]),
-            )
-        ),
+        native_execution_receipts=tuple(native_execution_receipts),
         gaps=tuple(gaps),
         claim_boundary=blueprint.declared_boundary,
-        cross_artifact_projection=projection_result,
     )
-
 
 @dataclass(frozen=True)
 class BlueprintImpactReport:
