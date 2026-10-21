@@ -1,7 +1,8 @@
-"""FlowGuard model for WorldGuard template-pack selection and validation.
+"""Contract model for WorldGuard template-pack selection, composition and native validation.
 
 Each FunctionBlock has the form Input x State -> Set(Output x State). The model
-keeps template mechanics separate from WorldGuard-owned semantic authority.
+keeps template mechanics separate from WorldGuard-owned semantic authority;
+conformance() replays every model input on worldguard/template_packs.py.
 """
 
 from __future__ import annotations
@@ -280,53 +281,79 @@ class _NoMatchActivatesBase(SelectTemplatePack):
             yield result
 
 
-def broken_variants() -> dict[str, tuple[object, tuple[str, ...]]]:
-    """Known-bad variants: name -> (broken block, invariants that must report a counterexample)."""
+# Contract: what this model is about in the real code, its known-bad variants, and the replay on that code.
+
+from pathlib import Path  # noqa: E402
+import sys  # noqa: E402
+
+MODEL_ID = "template_selection"
+COMPONENTS = ["worldguard.templates"]
+ROOT = Path(__file__).resolve().parents[2]
+IMPLEMENTED_BY = {
+    "SelectTemplatePack": "worldguard/template_packs.py:TemplatePackRegistry.select",
+    "ComposeTemplatePack": "worldguard/template_packs.py:compose_template_packs",
+    "ValidateTemplateInstance": "worldguard/template_packs.py:run_native_template_validators",
+}
+TESTED_BY = {
+    "ambiguity_never_constructs": ["tests/test_template_packs.py:test_many_matching_candidates_are_visible_and_never_ranked"],
+    "no_match_never_constructs": ["tests/test_template_packs.py:test_no_candidate_blocks_instead_of_activating_the_shared_scaffold"],
+    "ready_requires_worldguard_native_validation": ["tests/test_template_packs.py:test_builtin_guard_pack_selects_and_validates_deterministically"],
+}
+REQUIRED_LABELS = (
+    "zero_candidates_no_match_blocked",
+    "one_candidate_selected",
+    "multiple_candidates_blocked",
+    "candidate_base_missing_blocked",
+    "field_ownership_mismatch_blocked",
+    "field_conflict_blocked",
+    "native_validator_missing_blocked",
+    "native_validation_failed_blocked",
+    "template_composed",
+    "template_instance_ready",
+)
+
+
+def _explorer(blocks, invariant_names=None, labels=REQUIRED_LABELS) -> Explorer:
+    return Explorer(
+        workflow=Workflow(tuple(blocks), name="worldguard_template_pack_builder"),
+        initial_states=(State(),),
+        external_inputs=EXTERNAL_INPUTS,
+        invariants=tuple(item for item in INVARIANTS if invariant_names is None or item.name in invariant_names),
+        max_sequence_length=MAX_SEQUENCE_LENGTH,
+        terminal_predicate=terminal_predicate,
+        required_labels=tuple(labels),
+    )
+
+
+def build_explorer() -> Explorer:
+    """Every sequence of up to three build requests; every selection, composition and validation label is reached."""
+    return _explorer(build_workflow().blocks)
+
+
+def broken_variants() -> dict[str, Explorer]:
+    """Known-bad variants, each explored with only the invariant that must catch it."""
+    def swapped(broken):
+        return tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
+
     return {
-        "ambiguous_selects_first": (_AmbiguousSelectsFirst(), ("ambiguity_never_constructs",)),
-        "no_match_activates_base": (_NoMatchActivatesBase(), ("no_match_never_constructs",)),
+        "ambiguous_selects_first": _explorer(
+            swapped(_AmbiguousSelectsFirst()), invariant_names={"ambiguity_never_constructs"}, labels=()),
+        "no_match_activates_base": _explorer(
+            swapped(_NoMatchActivatesBase()), invariant_names={"no_match_never_constructs"}, labels=()),
     }
 
 
-def missed_variants() -> list[str]:
-    """Explore every known-bad variant; return the ones the invariants did not catch."""
-    missed = []
-    for name, (broken, invariant_names) in broken_variants().items():
-        blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
-        report = Explorer(
-            workflow=Workflow(blocks, name=name),
-            initial_states=(State(),),
-            external_inputs=EXTERNAL_INPUTS,
-            invariants=INVARIANTS,
-            max_sequence_length=1,
-            terminal_predicate=terminal_predicate,
-        ).explore()
-        if not set(invariant_names) <= {violation.invariant_name for violation in report.violations}:
-            missed.append(name)
-    return missed
+class ReplayReport:
+    """Conformance result: how many model inputs ran on the real code, and the mismatches."""
 
+    def __init__(self, checked: int, mismatches: list[str]) -> None:
+        self.checked = checked
+        self.mismatches = tuple(mismatches)
+        self.ok = not self.mismatches
 
-def review_template_pack_builder():
-    return Explorer(
-        workflow=build_workflow(),
-        initial_states=(State(),),
-        external_inputs=EXTERNAL_INPUTS,
-        invariants=INVARIANTS,
-        max_sequence_length=MAX_SEQUENCE_LENGTH,
-        terminal_predicate=terminal_predicate,
-        required_labels=(
-            "zero_candidates_no_match_blocked",
-            "one_candidate_selected",
-            "multiple_candidates_blocked",
-            "candidate_base_missing_blocked",
-            "field_ownership_mismatch_blocked",
-            "field_conflict_blocked",
-            "native_validator_missing_blocked",
-            "native_validation_failed_blocked",
-            "template_composed",
-            "template_instance_ready",
-        ),
-    ).explore()
+    def format_text(self, max_examples: int | None = None) -> str:
+        lines = [f"conformance: {self.checked - len(self.mismatches)}/{self.checked} model inputs match the real code"]
+        return "\n".join(lines + [f"  mismatch: {line}" for line in self.mismatches[:max_examples]])
 
 
 def _model_outcome(request: BuildRequest) -> str:
@@ -341,8 +368,10 @@ def _model_outcome(request: BuildRequest) -> str:
     return current.reason if isinstance(current, Blocked) else "ready"
 
 
-def native_conformance() -> dict[str, object]:
-    """Replay every model input against the real worldguard.template_packs code."""
+def conformance() -> ReplayReport:
+    """Replay every model input on the real worldguard.template_packs code; the error code must be the model's."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
     from dataclasses import replace as replace_manifest
 
     from worldguard.template_packs import (
@@ -362,8 +391,9 @@ def native_conformance() -> dict[str, object]:
     event = {
         "contract_id": "conformance:event", "run_id": "conformance:run", "claim_id": "claim:event",
         "claim_text": "a declared event initiates readiness", "target_guards": ["EventGuard"],
-        "requested_semantics": ["event"], "claim_atoms": [], "claim_asserts": [{"holds": "ready", "at": "t0"}], "model_id": "conformance:model",
-        "model_version": "v1", "event_inputs": [{"event_id": "event:ready", "at": "t0", "initiates": "ready"}],
+        "requested_semantics": ["event"], "claim_atoms": [], "claim_asserts": [{"holds": "ready", "at": "t0"}],
+        "model_id": "conformance:model", "model_version": "v1",
+        "event_inputs": [{"event_id": "event:ready", "at": "t0", "initiates": "ready"}],
     }
     candidate = TemplatePackManifest.build(
         pack_id="conformance.candidate", pack_version="1", contract_kind=GUARD_CONTRACT_KIND, is_base=False,
@@ -400,20 +430,25 @@ def native_conformance() -> dict[str, object]:
         ),
         BuildRequest(native_validation_passes=False): build(["guard:EventGuard"], {**event, "run_id": ""}),
     }
-    findings = []
+    mismatches = []
     for request in EXTERNAL_INPUTS:
+        call = real_calls.get(request)
+        if call is None:
+            mismatches.append(f"{request!r}: declared only, no real call replays it")
+            continue
         try:
-            real_calls[request]()
+            call()
             real = "ready"
         except TemplatePackError as exc:
             real = exc.code.lower()
         expected = _model_outcome(request)
         if real != expected:
-            findings.append({"request": repr(request), "model": expected, "code": real})
-    return {"ok": not findings and len(real_calls) == len(EXTERNAL_INPUTS), "cases": len(real_calls), "findings": findings}
+            mismatches.append(f"{request!r}: model {expected!r}, real code {real!r}")
+    return ReplayReport(len(EXTERNAL_INPUTS), mismatches)
 
 
 if __name__ == "__main__":
-    report = review_template_pack_builder()
-    print(report.format_text())
-    raise SystemExit(0 if report.ok else 1)
+    print(build_explorer().explore().format_text())
+    for name, variant in broken_variants().items():
+        print(f"known-bad {name}: {'caught' if not variant.explore().ok else 'MISSED'}")
+    print(conformance().format_text())

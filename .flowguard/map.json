@@ -311,7 +311,7 @@
         "tests/test_template_packs.py"
       ],
       "models": [
-        ".flowguard/template_selection/run_checks.py"
+        ".flowguard/models/worldguard_template_selection_model.py"
       ],
       "status": "confirmed",
       "fingerprint": "sha256:2fec888d5bbded92868e569ab0bfb8214fbca1dc6741fca801b193f67e744ac5"

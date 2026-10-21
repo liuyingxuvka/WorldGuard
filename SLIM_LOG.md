@@ -1112,3 +1112,23 @@ Fact revision is a contract model preserving15556 original model bytes, all56 sa
 | `pytest` | 0 | 281 passed in 23.00s (`WG-56/pytest.log`) |
 
 Adaptations: NewFG also emits informational model warnings for design invariants not violated by any of the three prescribed known-bad variants (including fact_revision_requires_current_base); these warnings are retained in raw evidence, not represented as universal mutation coverage. No variants added or protected rules changed.
+
+### WG-57: template_selection 自模型改成合约模型：模板包构造模型（原 worldguard_template_pack_builder.py）移进 .flowguard/models/，两个已知坏变体，在真实模板包代码上重放每个输入
+
+Status: completed.
+
+Template selection now has one canonical contract model; original request/state/three blocks/invariants/inputs and selection/composition mechanics are AST-identical. Nine native outcomes match exactly; two known-bad variants caught. Real ambiguity branch corruption fails8/9 with bothFG versions and is restored. Full281 passed, maps0/0/releases3/3, only four trackedFGfiles remain.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-57/read.log`) |
+| `contract-model` | 0 | conformance: 9/9 model inputs match the real code (`WG-57/contract-model.log`) |
+| `native-corruption` | 0 | native owner restored byte-for-byte (`WG-57/native-corruption.log`) |
+| `change` | 0 | run: python -m flowguard.map models template_selection (`WG-57/change.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-57/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-57/release.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-57/new-fg.log`) |
+| `protected-owners` | 0 | } (`WG-57/protected-owners.log`) |
+| `pytest` | 0 | 281 passed in 32.77s (`WG-57/pytest.log`) |
+
+Adaptations: Historical builder path hits in mandatory SLIM_LOG are retained; raw unfiltered grep archived, active hits are exactly the two preserved workflow names. NewFG warning about ready_requires_worldguard_native_validation having no targeted known-bad is recorded, not hidden or treated as comprehensive negative coverage.
