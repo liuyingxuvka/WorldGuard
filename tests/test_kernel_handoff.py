@@ -35,7 +35,7 @@ def test_kernel_aggregates_fail_before_gap_and_boundary():
                     "claim_id": "mixed",
                     "text": "Company A may share the full membrane recipe with metric distance",
                     "target_guards": ["SpaceGuard", "ConflictGuard", "NormGuard"],
-                    "requested_semantics": ["spatial", "conflict", "norm"],
+                    "requested_semantics": ["spatial", "conflict", "norm", "metric_distance"],
                 },
             "world_model": {"model_id": "m", "model_version": "v"},
             "inputs": {

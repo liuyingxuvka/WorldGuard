@@ -70,6 +70,7 @@ class ProtectedFailureClass:
     text: str = ""
     inputs: Mapping[str, Any] = field(default_factory=dict)
     coverage_context: Mapping[str, Any] = field(default_factory=dict)
+    semantics: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -82,6 +83,7 @@ class ProtectedFailureClass:
             "text": self.text,
             "inputs": dict(self.inputs),
             "coverage_context": dict(self.coverage_context),
+            "semantics": list(self.semantics),
         }
 
 
@@ -205,6 +207,7 @@ def _failure(
     text: str = "",
     inputs: Mapping[str, Any] | None = None,
     coverage_context: Mapping[str, Any] | None = None,
+    semantics: tuple[str, ...] = (),
 ) -> ProtectedFailureClass:
     slug = code.lower().replace("_", "-")
     return ProtectedFailureClass(
@@ -217,11 +220,12 @@ def _failure(
         text=text,
         inputs=dict(inputs or {}),
         coverage_context=dict(coverage_context or {}),
+        semantics=tuple(semantics),
     )
 
 
 PROTECTED_FAILURE_CLASSES = (
-    _failure("EventGuard", "guard", "EVENT_BOUNDARY_NUMERIC_DYNAMICS", "BOUNDARY_EXCEEDED", "EventGuard cannot support a numeric-dynamics claim.", text="continuous numeric dynamics"),
+    _failure("EventGuard", "guard", "EVENT_BOUNDARY_NUMERIC_DYNAMICS", "BOUNDARY_EXCEEDED", "EventGuard cannot support a numeric-dynamics claim.", semantics=("numeric_dynamics",)),
     _failure("EventGuard", "guard", "EVENT_MISSING_EVENT_MODEL", "GAP", "An event claim cannot pass without events or an event model."),
     _failure("EventGuard", "guard", "EVENT_CONTRADICTORY_FLUENTS", "FAIL", "Contradictory event fluents must reject the claim.", inputs={"event_model": {"contradictory_fluents": ["hot", "cold"]}}),
     _failure("EventGuard", "guard", "EVENT_FLUENT_TRANSITION_CONTRADICTION", "FAIL", "One event cannot terminate and initiate the same fluent.", inputs={"events": [{"event_id": "e1", "at": "t0", "terminates": ["ready"], "initiates": ["ready"]}]}),
@@ -230,38 +234,37 @@ PROTECTED_FAILURE_CLASSES = (
     _failure("EventGuard", "guard", "EVENT_MISSING_STATE_DENOMINATOR", "GAP", "A transition model cannot qualify without declared states.", inputs={"event_model": {"transitions": [{"transition_id": "go", "source_state": "waiting", "target_state": "done", "guard": True, "effect": "done"}]}}),
     _failure("EventGuard", "guard", "EVENT_DUPLICATE_STATE_TRANSITION_ID", "FAIL", "State and transition ids must be unique.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}, {"state_id": "waiting", "initial": False, "terminal": True}]}}),
     _failure("EventGuard", "guard", "EVENT_MISSING_INITIAL_STATE", "GAP", "A transition rollout cannot start without an initial state.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": False, "terminal": False}], "transitions": [{"transition_id": "stay", "source_state": "waiting", "target_state": "waiting", "guard": True, "effect": "wait"}]}}),
-    _failure("AgentGuard", "guard", "AGENT_BOUNDARY_NON_BDI", "BOUNDARY_EXCEEDED", "AgentGuard cannot support a payoff-equilibrium claim.", text="payoff equilibrium"),
+    _failure("AgentGuard", "guard", "AGENT_BOUNDARY_NON_BDI", "BOUNDARY_EXCEEDED", "AgentGuard cannot support a payoff-equilibrium claim.", semantics=("payoff",)),
     _failure("AgentGuard", "guard", "AGENT_CONFLICTING_INTENTIONS", "FAIL", "Conflicting intentions must reject the BDI claim.", inputs={"agent_model": {"conflicting_intentions": ["start", "stop"]}}),
     _failure("AgentGuard", "guard", "AGENT_MISSING_BELIEF", "GAP", "A BDI claim cannot pass without its required belief state.", inputs={"agent_model": {"missing_beliefs": ["ready"]}}),
     _failure("AgentGuard", "guard", "AGENT_IDENTITY_MISMATCH", "FAIL", "A BDI record cannot be owned by a map key different from its agent_id.", inputs={"beliefs": {"alice": {"agent_id": "bob", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}}),
     _failure("AgentGuard", "guard", "AGENT_INCOMPLETE_BDI", "GAP", "A declared agent needs beliefs, desires, and intentions.", inputs={"beliefs": {"alice": {"agent_id": "alice", "beliefs": ["b"], "desires": [], "intentions": ["i"]}}}),
-    _failure("SpaceGuard", "guard", "SPACE_BOUNDARY_METRIC_GEOMETRY", "BOUNDARY_EXCEEDED", "SpaceGuard cannot support metric-distance claims.", text="metric distance in meters"),
+    _failure("SpaceGuard", "guard", "SPACE_BOUNDARY_METRIC_GEOMETRY", "BOUNDARY_EXCEEDED", "SpaceGuard cannot support metric-distance claims.", semantics=("metric_distance",)),
     _failure("SpaceGuard", "guard", "SPACE_MISSING_RELATION", "GAP", "An RCC8 claim cannot pass without a relation."),
     _failure("SpaceGuard", "guard", "SPACE_RCC8_CONTRADICTION", "FAIL", "Conflicting RCC8 base relations must reject the claim.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "DC"}, {"at": "t0", "x": "a", "y": "b", "relation": "EQ"}]}),
     _failure("SpaceGuard", "guard", "SPACE_RCC8_REFLEXIVITY_CONTRADICTION", "FAIL", "A non-EQ RCC8 relation from an object to itself must reject the claim.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "a", "relation": "DC"}]}),
     _failure("SpaceGuard", "guard", "SPACE_RCC8_CONVERSE_CONTRADICTION", "FAIL", "Declared reverse RCC8 relations must be exact converses.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "EC"}, {"at": "t0", "x": "b", "y": "a", "relation": "DC"}]}),
     _failure("SpaceGuard", "guard", "SPACE_UNEVALUABLE_RCC8", "GAP", "A malformed or unsupported RCC8 record cannot qualify.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "NEAR"}]}),
-    _failure("ResourceGuard", "guard", "RESOURCE_BOUNDARY_NORM_AUTHORIZATION", "BOUNDARY_EXCEEDED", "ResourceGuard cannot support a permission claim.", text="permission to run"),
+    _failure("ResourceGuard", "guard", "RESOURCE_BOUNDARY_NORM_AUTHORIZATION", "BOUNDARY_EXCEEDED", "ResourceGuard cannot support a permission claim.", semantics=("permission",)),
     _failure("ResourceGuard", "guard", "RESOURCE_MISSING_RESOURCE_MODEL", "GAP", "A resource claim cannot pass without places and transitions."),
     _failure("ResourceGuard", "guard", "RESOURCE_MISSING_TOKEN", "GAP", "A transition cannot pass when required colored tokens are absent.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 0}]}, "transitions": [{"id": "run", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}]}}),
     _failure("ResourceGuard", "guard", "RESOURCE_CAPACITY_OVERFLOW", "FAIL", "A transition that exceeds capacity must reject the claim.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 2}]}, "capacities": {"out": 1}, "transitions": [{"id": "run", "consumes": [{"place": "tank", "color": "h2", "qty": 1}], "produces": [{"place": "out", "color": "kwh", "qty": 2}]}]}}),
     _failure("ResourceGuard", "guard", "RESOURCE_CUMULATIVE_OVERCONSUMPTION", "FAIL", "Inventory presence cannot hide cumulative transition over-consumption.", inputs={"resources": {"inventory": [{"resource_id": "h2", "unit": "unit", "quantity": 1}], "places": {"tank": [{"color": "h2", "qty": 1}]}, "transitions": [{"id": "use-1", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}, {"id": "use-2", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}]}}),
     _failure("ResourceGuard", "guard", "RESOURCE_UNEVALUABLE_TOKEN", "GAP", "Malformed resource tokens cannot enter a conservation rollout.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": "bad"}]}, "transitions": [{"id": "run", "consumes": []}]}}),
     _failure("ResourceGuard", "guard", "RESOURCE_UNEVALUABLE_TRANSITION", "GAP", "Malformed resource transitions cannot enter a conservation rollout.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 1}]}, "transitions": [{"consumes": []}]}}),
-    _failure("CausalGuard", "guard", "CAUSAL_BOUNDARY_TEMPORAL_STORY", "BOUNDARY_EXCEEDED", "CausalGuard cannot promote temporal order alone into SCM evidence.", text="temporal story after an event"),
+    _failure("CausalGuard", "guard", "CAUSAL_BOUNDARY_TEMPORAL_STORY", "BOUNDARY_EXCEEDED", "CausalGuard cannot promote temporal order alone into SCM evidence.", semantics=("temporal_story",)),
     _failure("CausalGuard", "guard", "CAUSAL_CYCLE", "FAIL", "A directed cycle must reject the SCM claim.", inputs={"causal_model": {"variables": ["x", "y"], "equations": {"x": 1, "y": 2}, "graph": [["x", "y"], ["y", "x"]]}}),
     _failure("CausalGuard", "guard", "CAUSAL_MISSING_STRUCTURAL_EQUATION", "GAP", "Every declared SCM variable must have a structural equation.", inputs={"causal_model": {"variables": ["x", "y"], "equations": {"x": 1}, "graph": []}}),
     _failure("CausalGuard", "guard", "CAUSAL_MISSING_BEHAVIOR_OBLIGATION", "GAP", "An equation model cannot qualify behavior without a declared executable scenario, holdout, intervention, or counterfactual.", inputs={"causal_model": {"variables": ["x"], "equations": {"x": 1}, "graph": []}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_BOUNDARY_DEONTIC_OBLIGATION", "BOUNDARY_EXCEEDED", "ConflictGuard cannot support a deontic obligation.", text="deontic obligation"),
+    _failure("ConflictGuard", "guard", "CONFLICT_BOUNDARY_DEONTIC_OBLIGATION", "BOUNDARY_EXCEEDED", "ConflictGuard cannot support a deontic obligation.", semantics=("deontic",)),
     _failure("ConflictGuard", "guard", "CONFLICT_INVALID_PROBABILITY", "FAIL", "Invalid transition probabilities must reject the finite-game claim.", inputs={"game_model": {"transitions": [{"probabilities": [0.7, 0.7]}], "payoffs": [{"state": "s"}]}}),
     _failure("ConflictGuard", "guard", "CONFLICT_DUPLICATE_PARTICIPANT", "FAIL", "Duplicate participant identities must reject the finite-game claim.", inputs={"game_model": {"players": ["a", "a"], "transitions": [{"probabilities": [1.0]}], "payoffs": [{"state": "s"}]}}),
     _failure("ConflictGuard", "guard", "CONFLICT_MISSING_PAYOFF", "GAP", "A finite-game claim cannot pass without payoff evidence.", inputs={"game_model": {"transitions": []}}),
     _failure("ConflictGuard", "guard", "CONFLICT_REFERENCE_CLOSURE", "FAIL", "Finite-game transitions and payoffs cannot reference undeclared states or players.", inputs={"game_model": {"players": ["alice", "bob"], "actions": ["share"], "states": ["open"], "transitions": [{"from": "ghost", "to": "void", "probabilities": [1.0]}], "payoffs": [{"player": "mallory", "state": "void", "value": 1}]}}),
     _failure("ConflictGuard", "guard", "CONFLICT_INCOMPLETE_GAME", "GAP", "A finite game cannot qualify without players, actions, states, transitions, and payoffs.", inputs={"game_model": {"payoffs": [{"player": "alice", "state": "open", "value": 1}]}}),
-    _failure("NormGuard", "guard", "NORM_BOUNDARY_PHYSICAL_ENABLEMENT", "BOUNDARY_EXCEEDED", "NormGuard cannot support physical enablement.", text="physical enablement token"),
+    _failure("NormGuard", "guard", "NORM_BOUNDARY_PHYSICAL_ENABLEMENT", "BOUNDARY_EXCEEDED", "NormGuard cannot support physical enablement.", semantics=("physical_enablement",)),
     _failure("NormGuard", "guard", "NORM_ACTIVE_CONFLICT", "FAIL", "Active norms that forbid and require the same action of one actor must fail.", inputs={'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}),
     _failure("NormGuard", "guard", "NORM_MODALITY_UNKNOWN", "FAIL", "A modality outside the current deontic enumeration must fail.", inputs={"norms": [{"modality": "maybe", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}),
-    _failure("NormGuard", "guard", "NORM_MISSING_PERMISSION", "GAP", "A permission claim cannot pass without a permission or obligation.", text="operator may vent", inputs={"norms": []}),
     _failure("NormGuard", "guard", "NORM_MISSING_NORM_MODEL", "GAP", "A neutral norm claim cannot pass without a norm model.", text="review the declared norm state", inputs={"norms": []}),
     _failure("NormGuard", "guard", "NORM_MISSING_CONDITION_FACT", "GAP", "A norm cannot qualify without its referenced condition fact.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "different", "value": True}]}),
     _failure("NormGuard", "guard", "NORM_UNEVALUABLE_FACT", "GAP", "A fact without an explicit boolean truth value cannot qualify a norm.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized"}]}),
@@ -309,7 +312,7 @@ MESH_RUNTIME_FAILURES = {
 }
 
 
-def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any]) -> GuardContract:
+def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any], semantics: tuple[str, ...] = ()) -> GuardContract:
     task_contract_id = f"guard-model-contract:{case_id}"
     run_id = f"guard-model-contract:{case_id}"
     model_instance_id = f"model:{guard.lower()}"
@@ -321,7 +324,7 @@ def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any]) ->
                 "claim_id": case_id,
                 "text": text,
                 "target_guards": [guard],
-                "requested_semantics": [guard.removesuffix("Guard").lower()],
+                "requested_semantics": [guard.removesuffix("Guard").lower(), *semantics],
             },
             "world_model": {"model_id": model_instance_id, "model_version": "v1"},
             "inputs": dict(inputs),
@@ -436,7 +439,7 @@ def run_guard_model_contract() -> dict[str, Any]:
         if structural.status is not GuardStatus.PASS or semantic_status is not SemanticStatus.PASS:
             failures.append({"code": "NATIVE_GOOD_REJECTED", **observed})
     for case in PROTECTED_FAILURE_CLASSES:
-        contract = _contract(case.failure_id, case.guard, case.text, case.inputs)
+        contract = _contract(case.failure_id, case.guard, case.text, case.inputs, case.semantics)
         if case.coverage_context:
             contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
         if case.layer == "guard":

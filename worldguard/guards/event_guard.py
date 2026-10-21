@@ -3,7 +3,7 @@ from __future__ import annotations
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def _fluent_ids(value) -> set[str]:
@@ -24,7 +24,7 @@ def _duplicate_ids(values: list[str]) -> list[str]:
 
 def run(contract: GuardContract):
     guard = "EventGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     events = contract.inputs.get("events", [])
     event_model = contract.inputs.get("event_model", {})
     states = event_model.get("states", []) if isinstance(event_model, dict) else []
@@ -32,7 +32,7 @@ def run(contract: GuardContract):
         event_model.get("transitions", []) if isinstance(event_model, dict) else []
     )
 
-    if any(word in text for word in ["numeric", "dynamics", "thermodynamics", "continuous"]):
+    if requested & {"numeric_dynamics", "thermodynamics", "continuous_dynamics"}:
         return result(
             contract,
             guard,

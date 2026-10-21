@@ -5,20 +5,20 @@ import math
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def run(contract: GuardContract):
     """Check the declared finite ordered CPN firing trace; no scheduler is inferred."""
     guard = "ResourceGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     resources = contract.inputs.get("resources", {})
     places = resources.get("places", {}) if isinstance(resources, dict) else {}
     transitions = resources.get("transitions", []) if isinstance(resources, dict) else []
     capacities = resources.get("capacities", {}) if isinstance(resources, dict) else {}
     inventory = resources.get("inventory", []) if isinstance(resources, dict) else []
 
-    if any(word in text for word in ["permission", "authorized", "forbidden", "obligation"]):
+    if requested & {"permission", "authorization", "obligation"}:
         return result(
             contract,
             guard,

@@ -5677,10 +5677,11 @@ def _check_blueprint_behavior_cases(purpose: BlueprintTaskPurpose, guard: str, c
         # against its complete expected output/state/effects there.
         if case.inputs == current_inputs:
             continue
+        boundary_semantics = list(catalog[case.failure_id].semantics) if case.failure_id in catalog else []
         contract = GuardContract.from_dict({
             "contract_id": f"blueprint-case:{case.case_id}", "run_id": "blueprint-case",
             "claim": {"claim_id": case.case_id, "text": case.text, "target_guards": [guard],
-                      "requested_semantics": [guard.removesuffix("Guard").lower()]},
+                      "requested_semantics": [guard.removesuffix("Guard").lower(), *boundary_semantics]},
             "world_model": {"model_id": "blueprint-case", "model_version": "current"},
             "inputs": dict(case.inputs),
         })

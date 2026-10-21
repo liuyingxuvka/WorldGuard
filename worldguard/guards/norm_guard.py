@@ -4,7 +4,7 @@ from worldguard.contracts import GuardContract
 from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def _condition_expectation(condition):
@@ -20,14 +20,14 @@ def _condition_expectation(condition):
 
 def run(contract: GuardContract):
     guard = "NormGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     norm_model = {
         "norms": contract.inputs.get("norms", []),
         "facts": contract.inputs.get("facts", []),
     }
     norms = norm_model.get("norms", [])
 
-    if any(word in text for word in ["token", "enabled", "capacity", "physical enablement"]):
+    if requested & {"token", "capacity", "physical_enablement"}:
         return result(
             contract,
             guard,
@@ -62,22 +62,6 @@ def run(contract: GuardContract):
             counterexamples=[
                 {"kind": "model_conflict", "steps": invalid_modalities}
             ],
-        )
-
-    asks_permission = any(word in text for word in ["may", "permitted", "permission"])
-    has_permission = any(
-        isinstance(norm, dict) and norm.get("modality") in {"permitted", "obligatory"}
-        for norm in norms
-    )
-    if asks_permission and not has_permission:
-        return result(
-            contract,
-            guard,
-            GuardStatus.GAP,
-            channel="gap",
-            impact="creates_gap",
-            missing_slots=[{"needed": "permission_or_obligation"}],
-            errors=[error("NORM_MISSING_PERMISSION", "No permission or obligation supports the claim.")],
         )
 
     if not norms:

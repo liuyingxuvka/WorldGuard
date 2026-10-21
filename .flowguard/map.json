@@ -133,6 +133,7 @@
       ],
       "tests": [
         "tests/guards/test_status_matrix.py",
+        "tests/test_claim_prose_is_not_semantics.py",
         "tests/test_guard_model_contract.py",
         "tests/test_guard_semantic_dna_closure.py"
       ],

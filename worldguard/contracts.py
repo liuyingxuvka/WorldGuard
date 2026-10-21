@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from typing import Any
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
-PREDICTIVE_TEXT_MARKERS = (' predict', 'forecast', 'will happen', 'will occur', 'future outcome', 'next state')
 RETIRED_WORLD_MODEL_INPUT_FIELDS = {'event_line', 'agents', 'rcc8_relations', 'resources', 'causal_variables', 'causal_equations', 'causal_graph', 'conflict_players', 'conflict_actions', 'conflict_states', 'conflict_payoffs', 'conflict_transitions', 'norms', 'facts', 'variable_observations', 'signal_observations'}
 RETIRED_TOP_LEVEL_INPUT_FIELDS = {'agents', 'norm_model', 'signal_observations', 'time_series_observations', 'scenarios', 'holdout_scenarios', 'interventions', 'counterfactuals'}
 
@@ -113,8 +112,7 @@ class Claim:
 def claim_predictive_intent(claim: Claim) -> bool:
     semantics = {str(item).strip().lower() for item in claim.requested_semantics if str(item).strip()}
     semantics.update((str(item).strip().lower() for atom in claim.atoms for item in atom.requested_semantics if str(item).strip()))
-    text = f' {claim.text.lower()}'
-    return bool(any((atom.predictive_intent for atom in claim.atoms)) or semantics.intersection(PREDICTIVE_SEMANTICS) or any((marker in text for marker in PREDICTIVE_TEXT_MARKERS)))
+    return bool(any((atom.predictive_intent for atom in claim.atoms)) or semantics.intersection(PREDICTIVE_SEMANTICS))
 
 def claim_semantics(claim: Claim) -> tuple[str, ...]:
     values = [*claim.requested_semantics]

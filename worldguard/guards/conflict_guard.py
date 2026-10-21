@@ -3,18 +3,18 @@ from __future__ import annotations
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def run(contract: GuardContract):
     guard = "ConflictGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     game_model = contract.inputs.get("game_model", {})
     players = game_model.get("players", [])
     payoffs = game_model.get("payoffs", [])
     transitions = game_model.get("transitions", [])
 
-    if any(word in text for word in ["obligation", "permission", "forbidden", "deontic"]):
+    if requested & {"obligation", "permission", "deontic"}:
         return result(
             contract,
             guard,

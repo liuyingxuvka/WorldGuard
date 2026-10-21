@@ -12,7 +12,7 @@ CASES = [
             GuardStatus.PASS: {"inputs": {"events": [{"event_id": "e1", "initiates": "ready"}]}},
             GuardStatus.FAIL: {"inputs": {"event_model": {"contradictory_fluents": ["hot", "cold"]}}},
             GuardStatus.GAP: {"inputs": {}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "numeric dynamics claim"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["event", "numeric_dynamics"]},
         },
     ),
     (
@@ -21,7 +21,7 @@ CASES = [
             GuardStatus.PASS: {"inputs": {"beliefs": {"agent": {"agent_id": "agent", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}}},
             GuardStatus.FAIL: {"inputs": {"beliefs": {"agent": {}}, "agent_model": {"conflicting_intentions": ["i1", "i2"]}}},
             GuardStatus.GAP: {"inputs": {"agent_model": {"missing_beliefs": ["b_missing"]}}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "payoff equilibrium claim"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["agent", "payoff"]},
         },
     ),
     (
@@ -37,7 +37,7 @@ CASES = [
                 }
             },
             GuardStatus.GAP: {"inputs": {}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "metric distance in meters"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["spatial", "metric_distance"]},
         },
     ),
     (
@@ -74,7 +74,7 @@ CASES = [
                     }
                 }
             },
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "permission to run"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["resource", "permission"]},
         },
     ),
     (
@@ -83,7 +83,7 @@ CASES = [
             GuardStatus.PASS: {"inputs": {"causal_model": {"variables": ["x"], "equations": {"x": 1}, "scenarios": {"s1": {}}}}},
             GuardStatus.FAIL: {"inputs": {"causal_model": {"variables": ["x"], "equations": {"x": "f(y)"}, "graph": [["x", "y"], ["y", "x"]]}}},
             GuardStatus.GAP: {"inputs": {"causal_model": {"variables": ["x"], "equations": {}}}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "temporal story only"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["causal", "temporal_story"]},
         },
     ),
     (
@@ -92,7 +92,7 @@ CASES = [
             GuardStatus.PASS: {"inputs": {"game_model": {"players": ["a"], "actions": ["hold"], "states": ["s"], "transitions": [{"from": "s", "to": "s", "probabilities": [1.0]}], "payoffs": [{"state": "s", "reward": {"a": 1}}]}}},
             GuardStatus.FAIL: {"inputs": {"game_model": {"transitions": [{"probabilities": [0.7, 0.7]}], "payoffs": [{"state": "s"}]}}},
             GuardStatus.GAP: {"inputs": {"game_model": {"payoffs": []}}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "deontic obligation"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["conflict", "deontic"]},
         },
     ),
     (
@@ -101,7 +101,7 @@ CASES = [
             GuardStatus.PASS: {"text": "operator may start", "inputs": {"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}},
             GuardStatus.FAIL: {"inputs": {'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}},
             GuardStatus.GAP: {"text": "operator may vent", "inputs": {"norms": []}},
-            GuardStatus.BOUNDARY_EXCEEDED: {"text": "physical enablement token claim"},
+            GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["norm", "physical_enablement"]},
         },
     ),
 ]

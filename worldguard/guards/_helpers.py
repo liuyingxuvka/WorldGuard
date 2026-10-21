@@ -8,10 +8,11 @@ from worldguard.reports import GuardResult
 from worldguard.status import GuardStatus
 
 
-def semantics_text(contract: GuardContract) -> str:
-    values = [contract.claim.text, *contract.claim.requested_semantics]
-    return " ".join(str(value).lower() for value in values)
-
+def requested_semantic_ids(contract: GuardContract) -> set[str]:
+    """Return the claim's requested semantic ids; the claim prose is never parsed."""
+    values = [*contract.claim.requested_semantics]
+    values.extend(item for atom in contract.claim.atoms for item in atom.requested_semantics)
+    return {str(value).strip().lower() for value in values if str(value).strip()}
 
 def result(
     contract: GuardContract,

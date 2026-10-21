@@ -80,3 +80,21 @@ Replaced toy recipe substring special cases with native active-norm conflict det
 | `residue` | 0 | (no output) (`WG-03/residue.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-04: 判定不再看主张句子里的词：边界只由 requested_semantics 里的语义 id 决定
+
+Status: completed.
+
+Guard boundaries and predictive intent now use explicit requested semantic ids only, including atom semantics; natural-language prose cannot change the verdict or inferred route set. Preserved all model checks after each boundary check and ResourceGuard ordered token replay. Migrated the independent boundary catalog/blueprint replay and status cases to semantic ids, and added the real locked-door scene and prose/order regressions.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-04/mirror.log`) |
+| `catalog` | 0 | status=pass purposes=7 goods=7 failures=78 known_bads=78 (`WG-04/catalog.log`) |
+| `focused` | 0 | 17 passed in 1.44s (`WG-04/focused.log`) |
+| `pytest` | 0 | 378 passed in 37.52s (`WG-04/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 7 warning(s), 0 info (`WG-04/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-04/models.log`) |
+| `residue` | 0 | (no output) (`WG-04/residue.log`) |
+
+Adaptations: None; reference purpose and implementation retained.

@@ -3,7 +3,7 @@ from __future__ import annotations
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def _has_cycle(edges: list[list[str] | tuple[str, str]]) -> bool:
@@ -33,14 +33,14 @@ def _has_cycle(edges: list[list[str] | tuple[str, str]]) -> bool:
 
 def run(contract: GuardContract):
     guard = "CausalGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     causal_model = contract.inputs.get("causal_model", {})
     variables = causal_model.get("variables", [])
     equations = causal_model.get("equations", {})
     graph = causal_model.get("graph", [])
     claim_scope = causal_model.get("claim_scope", "equation_model")
 
-    if any(word in text for word in ["then", "after", "temporal story", "because story"]):
+    if requested & {"temporal_story"}:
         return result(
             contract,
             guard,

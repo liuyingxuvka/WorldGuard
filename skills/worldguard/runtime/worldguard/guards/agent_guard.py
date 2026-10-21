@@ -3,16 +3,16 @@ from __future__ import annotations
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 def run(contract: GuardContract):
     guard = "AgentGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     agents = contract.inputs.get("beliefs", {})
     agent_model = contract.inputs.get("agent_model", {})
 
-    if any(word in text for word in ["payoff", "equilibrium", "causal effect", "permission"]):
+    if requested & {"payoff", "equilibrium", "causal_effect", "permission"}:
         return result(
             contract,
             guard,

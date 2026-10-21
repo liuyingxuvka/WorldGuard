@@ -5,7 +5,7 @@ from collections import defaultdict
 from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, result, semantics_text
+from ._helpers import error, requested_semantic_ids, result
 
 
 _RCC8 = {"DC", "EC", "PO", "EQ", "TPP", "NTPP", "TPPI", "NTPPI"}
@@ -23,10 +23,10 @@ _RCC8_CONVERSE = {
 
 def run(contract: GuardContract):
     guard = "SpaceGuard"
-    text = semantics_text(contract)
+    requested = requested_semantic_ids(contract)
     relations = contract.inputs.get("spatial_relations", [])
 
-    if any(word in text for word in ["meters", "distance", "metric", "geometry"]):
+    if requested & {"metric_distance", "geometry"}:
         return result(
             contract,
             guard,
