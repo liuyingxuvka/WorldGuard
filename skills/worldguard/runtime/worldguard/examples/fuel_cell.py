@@ -25,7 +25,8 @@ def build_contracts() -> list[GuardContract]:
     model = {'model_id': world['model_id'], 'model_version': world['model_version'], 'scope_limits': scope_limits}
     for claim in story['claims']:
         task_contract_id = f"fuel-cell:{claim['claim_id']}"
-        contracts.append(GuardContract.from_dict({'contract_id': task_contract_id, 'schema_version': 'worldguard.contract.v1', 'run_id': 'fuel-cell-toy', 'claim': {'claim_id': claim['claim_id'], 'text': claim['text'], 'target_guards': claim['target_guards'], 'requested_semantics': claim['requested_semantics']}, 'world_model': model, 'inputs': inputs, 'dependencies': {'upstream_results': [], 'read_only': True}, 'output_requirements': {'require_ledgers': True, 'require_counterexample_for_non_pass': True, 'allowed_status': ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED']}}))
+        claim_inputs = {**inputs, 'norms': [*inputs['norms'], *claim.get('claimed_norms', [])]}
+        contracts.append(GuardContract.from_dict({'contract_id': task_contract_id, 'schema_version': 'worldguard.contract.v1', 'run_id': 'fuel-cell-toy', 'claim': {'claim_id': claim['claim_id'], 'text': claim['text'], 'target_guards': claim['target_guards'], 'requested_semantics': claim['requested_semantics']}, 'world_model': model, 'inputs': claim_inputs, 'dependencies': {'upstream_results': [], 'read_only': True}, 'output_requirements': {'require_ledgers': True, 'require_counterexample_for_non_pass': True, 'allowed_status': ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED']}}))
     return contracts
 
 def run_check() -> dict[str, Any]:

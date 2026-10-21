@@ -81,7 +81,7 @@ def test_event_closed_transition_executes_from_initial_to_target_state() -> None
     assert semantic.outputs["reached_state_ids"] == ["done", "waiting"]
 
 
-def test_norm_false_condition_fact_is_not_structural_or_semantic_green() -> None:
+def test_norm_false_condition_fact_makes_the_norm_inactive() -> None:
     inputs = {
         "norms": [
             {
@@ -99,14 +99,21 @@ def test_norm_false_condition_fact_is_not_structural_or_semantic_green() -> None
     structural = GUARD_RUNNERS["NormGuard"](contract)
     semantic = _semantic("NormGuard", inputs)
 
-    assert structural.status == GuardStatus.GAP
-    assert [row["code"] for row in structural.errors] == [
-        "NORM_CONDITION_NOT_SATISFIED"
-    ]
-    assert semantic.status == SemanticStatus.GAP
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_NORM_CONDITION_NOT_SATISFIED"
-    ]
+    assert structural.status == GuardStatus.PASS
+    assert semantic.status == SemanticStatus.PASS
+
+
+def test_active_norm_conflict_fails_and_inactive_prohibition_does_not() -> None:
+    inputs = {'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}
+    structural = GUARD_RUNNERS["NormGuard"](make_contract("NormGuard", inputs=inputs))
+    semantic = _semantic("NormGuard", inputs)
+    assert structural.status == GuardStatus.FAIL
+    assert [row["code"] for row in structural.errors] == ["NORM_ACTIVE_CONFLICT"]
+    assert semantic.status == SemanticStatus.FAIL
+    assert [row["code"] for row in semantic.findings] == ["SEM_NORM_ACTIVE_CONFLICT"]
+    inactive = {'norms': [{'modality': 'forbidden', 'actor': 'pilot', 'action': 'leave_harbor', 'condition': {'fact_id': 'storm_uncleared', 'value': True}}, {'modality': 'permitted', 'actor': 'pilot', 'action': 'leave_harbor', 'condition': {'fact_id': 'storm_cleared', 'value': True}}], 'facts': [{'fact_id': 'storm_uncleared', 'value': False}, {'fact_id': 'storm_cleared', 'value': True}]}
+    assert GUARD_RUNNERS["NormGuard"](make_contract("NormGuard", inputs=inactive)).status == GuardStatus.PASS
+    assert _semantic("NormGuard", inactive).status == SemanticStatus.PASS
 
 
 def test_norm_true_condition_fact_qualifies_the_declared_norm() -> None:
@@ -437,22 +444,7 @@ def test_conflict_references_must_close_over_players_states_and_actions() -> Non
             },
             GuardStatus.FAIL,
         ),
-        (
-            "NormGuard",
-            {
-                "norms": [
-                    {
-                        "norm_id": "allow-start",
-                        "modality": "permitted",
-                        "subject_id": "operator",
-                        "action": "start",
-                        "condition": "authorized",
-                    }
-                ],
-                "facts": [{"fact_id": "authorized", "value": False}],
-            },
-            GuardStatus.GAP,
-        ),
+        ("NormGuard", {'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}, GuardStatus.FAIL),
     ],
 )
 def test_parent_qualification_cannot_hide_a_guard_semantic_known_bad(

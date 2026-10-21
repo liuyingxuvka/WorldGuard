@@ -62,3 +62,21 @@ Updated the packaged fuel-cell world to current agent, causal and boolean-fact i
 | `models` | 0 | models: 6 passed, 0 failed (`WG-02/models.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-03: NormGuard 增加真正的规范冲突检查；删除只为示例写死的字符串
+
+Status: completed.
+
+Replaced toy recipe substring special cases with native active-norm conflict detection grouped by actor/action, shared by structural and semantic owners. False condition facts make a norm inactive; missing/malformed/duplicate fact checks remain. Added real active/inactive conflict cases and updated the fuel-cell asserted permission and independent native failure catalog (79 known-bad cases).
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-03/mirror.log`) |
+| `focused` | 0 | 34 passed in 0.41s (`WG-03/focused.log`) |
+| `catalog` | 0 | status=pass purposes=7 goods=7 failures=79 known_bads=79 (`WG-03/catalog.log`) |
+| `fuel-cell` | 0 | True ['PASS', 'PASS', 'FAIL'] [] ['NORM_ACTIVE_CONFLICT'] (`WG-03/fuel-cell.log`) |
+| `pytest` | 0 | 376 passed in 33.33s (`WG-03/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 6 warning(s), 0 info (`WG-03/map.log`) |
+| `residue` | 0 | (no output) (`WG-03/residue.log`) |
+
+Adaptations: None; reference purpose and implementation retained.

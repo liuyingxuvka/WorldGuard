@@ -37,8 +37,8 @@ expected_guard_report:
       model_repair_suggestion: none for voltage claim; do not infer physical efficiency or durability
     - guard: ConflictGuard
       input_slice: [CompanyA, CompanyB, CompanyC, demo_ready, share_full_log_actions, conflict_payoffs]
-      expected_status: FAIL
-      expected_errors: [CONFLICT_POLICY_CONTRADICTION]
+      expected_status: GAP
+      expected_errors: [CONFLICT_INCOMPLETE_GAME]
       contradiction_semantics: CONTRADICTION mapped to FAIL because Company A's selected full-log action conflicts with Company C's payoff-preserving policy under the declared game.
       expected_counterexample:
         trace:
@@ -48,7 +48,7 @@ expected_guard_report:
     - guard: NormGuard
       input_slice: [n_demo_allowed_after_precheck, n_recipe_forbidden_under_nda, n_company_c_must_block_recipe_release, c_precheck_complete, nda_active]
       expected_status: FAIL
-      expected_errors: [NORM_FORBIDDEN_ACTION_CONTRADICTION]
+      expected_errors: [NORM_ACTIVE_CONFLICT]
       contradiction_semantics: CONTRADICTION mapped to FAIL because the claim that full recipe sharing is permitted directly contradicts F_A(share_membrane_recipe).
       expected_counterexample:
         trace:

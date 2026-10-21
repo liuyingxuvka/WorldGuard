@@ -99,10 +99,7 @@ CASES = [
         "NormGuard",
         {
             GuardStatus.PASS: {"text": "operator may start", "inputs": {"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}},
-            GuardStatus.FAIL: {
-                "text": "Company A may share the full membrane recipe",
-                "inputs": {"norms": [{"modality": "forbidden", "action": "share_membrane_recipe"}]},
-            },
+            GuardStatus.FAIL: {"inputs": {'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}},
             GuardStatus.GAP: {"text": "operator may vent", "inputs": {"norms": []}},
             GuardStatus.BOUNDARY_EXCEEDED: {"text": "physical enablement token claim"},
         },

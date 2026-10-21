@@ -15,7 +15,7 @@ ledger_outputs:
   causal_ledger:
     - {claim_id: c_output_voltage, query: do(run_demo=true), descendants: [cell_running, voltage_output], status_impact: supports_pass}
   conflict_ledger:
-    - {claim_id: c_share_full_recipe, error: CONFLICT_POLICY_CONTRADICTION, status_impact: supports_fail}
+    - {claim_id: c_share_full_recipe, error: CONFLICT_INCOMPLETE_GAME, status_impact: creates_gap}
   norm_ledger:
     - {claim_id: c_share_full_recipe, norm: n_recipe_forbidden_under_nda, derives: F_A(share_membrane_recipe), status_impact: supports_fail}
   counterexample_ledger:

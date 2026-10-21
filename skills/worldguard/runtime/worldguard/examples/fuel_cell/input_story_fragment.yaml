@@ -30,6 +30,8 @@ input_story_fragment:
       target_guards: [AgentGuard, ConflictGuard, NormGuard]
       requested_semantics: [agent, conflict, norm]
       expected_status: FAIL
+      claimed_norms:
+        - {id: n_claim_recipe_sharing_permitted, modality: permitted, actor: CompanyA.lead_engineer, action: share_membrane_recipe, condition: nda_active}
   scope_limits:
     - toy fixture only
     - no real fuel-cell thermodynamics

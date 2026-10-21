@@ -59,17 +59,6 @@ def run(contract: GuardContract):
                 counterexamples=[{"kind": "trace", "steps": [transition]}],
             )
 
-    if "full membrane recipe" in text and any("C_block_recipe_release" in str(row) for row in payoffs):
-        return result(
-            contract,
-            guard,
-            GuardStatus.FAIL,
-            channel="conflict",
-            impact="supports_fail",
-            errors=[error("CONFLICT_POLICY_CONTRADICTION", "Declared payoff policy contradicts full recipe sharing.")],
-            counterexamples=[{"kind": "trace", "steps": payoffs}],
-        )
-
     if not payoffs:
         return result(
             contract,

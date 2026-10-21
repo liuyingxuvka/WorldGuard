@@ -32,6 +32,22 @@ class ProviderStatus(StrEnum):
 NORM_MODALITIES = frozenset({"permitted", "obligatory", "forbidden", "prohibited"})
 
 
+def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
+    """Return (actor, action) groups whose active norms both forbid and permit/require it."""
+    groups: dict[tuple[str, str], list[Any]] = {}
+    for norm in norms:
+        if isinstance(norm, dict):
+            key = (str(norm.get("actor", "")), str(norm.get("action", "")))
+            groups.setdefault(key, []).append(norm)
+    conflicts = []
+    for (actor, action), group in sorted(groups.items()):
+        modalities = {str(norm.get("modality", "")) for norm in group}
+        if modalities & {"forbidden", "prohibited"} and modalities & {"permitted", "obligatory"}:
+            conflicts.append({"actor": actor, "action": action, "norms": group})
+    return conflicts
+
+
+
 @dataclass(frozen=True)
 class SemanticBinding:
     executor_id: str
@@ -1216,7 +1232,7 @@ def _norm(contract: GuardContract):
 
     fact_values = {str(item["fact_id"]): item["value"] for item in facts}
     missing = []
-    unsatisfied = []
+    active = []
     for index, norm in enumerate(norms):
         condition = norm.get("condition") if isinstance(norm, dict) else None
         needed = ""
@@ -1239,23 +1255,17 @@ def _norm(contract: GuardContract):
                     "needed_fact": needed or "condition fact",
                 }
             )
-        elif fact_values[needed] is not expected:
-            unsatisfied.append(
-                {
-                    "norm": index,
-                    "fact_id": needed,
-                    "expected": expected,
-                    "observed": fact_values[needed],
-                }
-            )
+        elif fact_values[needed] is expected:
+            active.append(norm)
     if missing:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_CONDITION_FACT", "Norm applicability cannot be evaluated without declared condition facts.", evidence={"missing": missing})], consumed, {}
-    if unsatisfied:
-        return SemanticStatus.GAP, [
+    conflicts = active_norm_conflicts(active)
+    if conflicts:
+        return SemanticStatus.FAIL, [
             _finding(
-                "SEM_NORM_CONDITION_NOT_SATISFIED",
-                "The declared fact values do not make the norm applicable.",
-                evidence={"conditions": unsatisfied},
+                "SEM_NORM_ACTIVE_CONFLICT",
+                "Active norms both forbid and permit or require the same action of the same actor.",
+                evidence={"conflicts": conflicts},
             )
         ], consumed, {}
     return SemanticStatus.PASS, [], consumed, {"evaluated_norms": len(norms), "condition_facts": len(fact_values)}

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GuardContract
-from worldguard.semantic import NORM_MODALITIES
+from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts
 from worldguard.status import GuardStatus
 
 from ._helpers import error, result, semantics_text
@@ -62,24 +62,6 @@ def run(contract: GuardContract):
             counterexamples=[
                 {"kind": "model_conflict", "steps": invalid_modalities}
             ],
-        )
-
-    forbidden_recipe = [
-        norm
-        for norm in norms
-        if isinstance(norm, dict)
-        and norm.get("modality") in {"forbidden", "prohibited"}
-        and "recipe" in str(norm.get("action", ""))
-    ]
-    if "full membrane recipe" in text and forbidden_recipe:
-        return result(
-            contract,
-            guard,
-            GuardStatus.FAIL,
-            channel="norm",
-            impact="supports_fail",
-            errors=[error("NORM_FORBIDDEN_ACTION_CONTRADICTION", "Claimed permission contradicts a forbidden action.")],
-            counterexamples=[{"kind": "model_conflict", "steps": forbidden_recipe}],
         )
 
     asks_permission = any(word in text for word in ["may", "permitted", "permission"])
@@ -157,7 +139,7 @@ def run(contract: GuardContract):
 
     fact_values = {str(fact["fact_id"]): fact["value"] for fact in facts}
     unevaluable_conditions = []
-    unsatisfied_conditions = []
+    active_norms = []
     for index, norm in enumerate(norms):
         condition = norm.get("condition") if isinstance(norm, dict) else None
         fact_id, expected = _condition_expectation(condition)
@@ -166,15 +148,8 @@ def run(contract: GuardContract):
                 {"norm": index, "condition": condition, "needed_fact": fact_id}
             )
             continue
-        if fact_values[fact_id] is not expected:
-            unsatisfied_conditions.append(
-                {
-                    "norm": index,
-                    "fact_id": fact_id,
-                    "expected": expected,
-                    "observed": fact_values[fact_id],
-                }
-            )
+        if fact_values[fact_id] is expected:
+            active_norms.append(norm)
     if unevaluable_conditions:
         return result(
             contract,
@@ -190,20 +165,21 @@ def run(contract: GuardContract):
                 )
             ],
         )
-    if unsatisfied_conditions:
+    conflicts = active_norm_conflicts(active_norms)
+    if conflicts:
         return result(
             contract,
             guard,
-            GuardStatus.GAP,
-            channel="gap",
-            impact="creates_gap",
-            missing_slots=unsatisfied_conditions,
+            GuardStatus.FAIL,
+            channel="norm",
+            impact="supports_fail",
             errors=[
                 error(
-                    "NORM_CONDITION_NOT_SATISFIED",
-                    "The declared fact values do not make the norm applicable.",
+                    "NORM_ACTIVE_CONFLICT",
+                    "Active norms both forbid and permit or require the same action of the same actor.",
                 )
             ],
+            counterexamples=[{"kind": "model_conflict", "steps": conflicts}],
         )
 
     return result(

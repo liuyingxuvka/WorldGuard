@@ -31,13 +31,13 @@ def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
     discovered = discover_guard_owned_failure_codes()
     expected = {(guard, layer, code) for (guard, layer), codes in discovered.items() for code in codes}
     declared = [(case.guard, case.layer, case.code) for case in PROTECTED_FAILURE_CLASSES]
-    assert len(declared) == len(set(declared)) == len(expected) == 81
+    assert len(declared) == len(set(declared)) == len(expected)
     assert set(declared) == expected
-    assert report['protected_failure_count'] == report['known_bad_count'] == 81
-    assert report['executed_case_count'] == 88
+    assert report['protected_failure_count'] == report['known_bad_count'] == len(expected)
+    assert report['executed_case_count'] == len(expected) + len(NATIVE_GOOD_CASES)
     assert {item['family_contract_fingerprint'] for item in report['observations']} == {guard_family_purpose_contract_fingerprint()}
     bad_observations = [item for item in report['observations'] if 'failure_id' in item]
-    assert len(bad_observations) == 81
+    assert len(bad_observations) == len(expected)
     assert all((item['observed_status'] == item['expected_status'] for item in bad_observations))
     assert all((item['observed_codes'] == [item['expected_code']] for item in bad_observations))
 
@@ -64,7 +64,7 @@ def test_guard_model_contract_exhaustion_is_exact_and_oracle_bound():
     assert report.ok is True
     assert report.decision == 'contract_exhaustion_ready'
     assert report.confidence == 'full'
-    assert len(report.generated_cases) == len(expected_ids) == 81
+    assert len(report.generated_cases) == len(expected_ids)
     assert generated_ids == expected_ids
     assert not report.findings
 

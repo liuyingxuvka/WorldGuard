@@ -41,7 +41,8 @@ def test_kernel_aggregates_fail_before_gap_and_boundary():
             "inputs": {
                 "spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "DC"}],
                 "game_model": {"payoffs": [{"joint_action": ["C_block_recipe_release"]}]},
-                "norms": [{"modality": "forbidden", "action": "share_membrane_recipe"}],
+                "norms": [{"modality": "forbidden", "actor": "A", "action": "share_membrane_recipe", "condition": "nda"}, {"modality": "permitted", "actor": "A", "action": "share_membrane_recipe", "condition": "nda"}],
+                "facts": [{"fact_id": "nda", "value": True}],
             },
         }
     data
