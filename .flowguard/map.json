@@ -38,7 +38,6 @@
         "worldguard.blueprint",
         "worldguard.core",
         "worldguard.guards",
-        "worldguard.identity",
         "worldguard.mesh",
         "worldguard.qualification",
         "worldguard.revision",
@@ -46,8 +45,7 @@
       ],
       "tests": [
         "tests/test_cli_module.py",
-        "tests/test_fuel_cell_demo.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_fuel_cell_demo.py"
       ],
       "models": [],
       "status": "confirmed",
@@ -93,8 +91,7 @@
       "tests": [
         "tests/test_contracts.py",
         "tests/test_ledgers.py",
-        "tests/test_claim_derived_coverage.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_claim_derived_coverage.py"
       ],
       "models": [],
       "status": "confirmed",
@@ -137,8 +134,7 @@
       "tests": [
         "tests/guards/test_status_matrix.py",
         "tests/test_guard_model_contract.py",
-        "tests/test_guard_semantic_dna_closure.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_guard_semantic_dna_closure.py"
       ],
       "models": [],
       "status": "confirmed",
@@ -174,8 +170,7 @@
       ],
       "tests": [
         "tests/test_qualification.py",
-        "tests/test_kernel_handoff.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_kernel_handoff.py"
       ],
       "models": [
         ".flowguard/compositional_verification_kernel/run_checks.py"
@@ -195,13 +190,10 @@
       ],
       "files": [
         "worldguard/mesh.py",
-        "worldguard/execution_depth.py",
-        "skills/worldguard/runtime/worldguard/mesh.py",
-        "skills/worldguard/runtime/worldguard/execution_depth.py"
+        "skills/worldguard/runtime/worldguard/mesh.py"
       ],
       "entrypoints": [
-        "worldguard/mesh.py:run_model_mesh",
-        "worldguard/execution_depth.py:build_native_depth_evidence"
+        "worldguard/mesh.py:run_model_mesh"
       ],
       "state": [
         "Model and evidence identities carried in immutable mesh reports"
@@ -216,10 +208,8 @@
       ],
       "tests": [
         "tests/test_model_mesh.py",
-        "tests/test_execution_depth.py",
         "tests/test_semantic_rollout.py",
-        "tests/test_semantic_rollout_runner.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_semantic_rollout_runner.py"
       ],
       "models": [
         ".flowguard/current_input_authority/run_checks.py"
@@ -274,8 +264,7 @@
         "tests/test_world_blueprint_object_census.py",
         "tests/test_world_blueprint_policy_target.py",
         "tests/test_world_blueprint_seven_guard_matrix.py",
-        "tests/test_world_blueprint_target_semantic_authority.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_world_blueprint_target_semantic_authority.py"
       ],
       "models": [
         ".flowguard/behavior_commitment_ledger/run_checks.py"
@@ -318,8 +307,7 @@
       ],
       "tests": [
         "tests/test_task_local_revision.py",
-        "tests/test_fact_revision.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_fact_revision.py"
       ],
       "models": [
         ".flowguard/task_local_revision/run_checks.py",
@@ -358,47 +346,13 @@
         "worldguard.mesh"
       ],
       "tests": [
-        "tests/test_template_packs.py",
-        "tests/test_runtime_identity.py"
+        "tests/test_template_packs.py"
       ],
       "models": [
         ".flowguard/template_selection/run_checks.py"
       ],
       "status": "confirmed",
       "fingerprint": "sha256:09e1cb010f542e04c4ba8009b234e4daee5ff010f9bffb77f639421a6e53f356"
-    },
-    {
-      "id": "worldguard.identity",
-      "layer": "",
-      "summary": "Read-only repository map and native directory snapshot",
-      "responsibilities": [
-        "Report repository map/code/test bindings through installed FlowGuard",
-        "Keep static ready distinct from domain test/model execution or release closure",
-        "Preserve claim boundaries, explicit not_run execution fields and actionable gaps in full and compact output"
-      ],
-      "files": [
-        "worldguard/self_dna.py",
-        "skills/worldguard/runtime/worldguard/self_dna.py"
-      ],
-      "entrypoints": [
-        "worldguard/self_dna.py:check"
-      ],
-      "state": [],
-      "side_effects": [
-        "Read the declared repository tree and emit a bounded static report"
-      ],
-      "depends_on": [
-        "worldguard",
-        "worldguard.core"
-      ],
-      "tests": [
-        "tests/test_runtime_identity.py"
-      ],
-      "models": [
-        ".flowguard/authoritative_model_system/run_checks.py"
-      ],
-      "status": "confirmed",
-      "fingerprint": "sha256:10709f3e8a43ae790ee72ecad691a3d642ce7ba8ac3265bb9f7e7d3a9b1bfd43"
     },
     {
       "id": "release",
@@ -437,7 +391,6 @@
         "scripts/*.py"
       ],
       "entrypoints": [
-        "scripts/check_runtime_identity.py:audit",
         "scripts/sync_worldguard_portable_runtime.py:audit_projection"
       ],
       "state": [
@@ -449,11 +402,9 @@
       "depends_on": [
         "worldguard",
         "worldguard.blueprint",
-        "worldguard.core",
-        "worldguard.mesh"
+        "worldguard.core"
       ],
       "tests": [
-        "tests/test_runtime_identity.py",
         "tests/test_worldguard_portable_runtime_projection.py"
       ],
       "models": [],

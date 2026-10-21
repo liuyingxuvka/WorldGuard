@@ -28,12 +28,10 @@ WorldGuard uses ordinary native checks and pytest. No author-supervision tool or
 ```bash
 python -m pytest -q
 python -m worldguard.guard_model_contract
-python scripts/check_execution_depth.py tests/fixtures/execution_depth/deep.json
-python scripts/check_runtime_identity.py
 python scripts/sync_worldguard_portable_runtime.py check
 ```
 
-For an explicitly copied installation, pass `--installed-skill /absolute/path/to/worldguard` to the read-only identity check. `--package-root` optionally compares a built/installed Python package. Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py check --help`; no Python distribution metadata is required.
+Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py check --help`; no Python distribution metadata is required.
 
 ## What It Does
 

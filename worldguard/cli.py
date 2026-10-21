@@ -55,19 +55,6 @@ def main(argv: list[str] | None = None) -> int:
     blueprint_trace_command.add_argument("--request-fingerprint", required=True)
     blueprint_trace_command.add_argument("--target-id", required=True)
     _add_object_census_trust_arguments(blueprint_trace_command)
-    self_dna = subparsers.add_parser(
-        "self-dna",
-        help="audit the exact native WorldGuard directory and in-memory software model",
-    )
-    self_dna_commands = self_dna.add_subparsers(
-        dest="self_dna_command",
-        required=True,
-    )
-    self_dna_check = self_dna_commands.add_parser(
-        "check", help="audit the repository self-DNA in its native directory"
-    )
-    self_dna_check.add_argument("--root", default=".")
-    self_dna_check.add_argument("--compact", action="store_true")
     task_model = subparsers.add_parser(
         "task-model",
         help="freeze, compare, and reversibly evaluate one task-local world model",
@@ -154,11 +141,6 @@ def main(argv: list[str] | None = None) -> int:
         mesh = ModelMeshContract.from_dict(load_mapping(args.mesh))
         print(dump_json(run_model_mesh(mesh).to_dict()))
         return 0
-    if args.command == "self-dna":
-        from .self_dna import check as self_dna_check_run
-        payload, code = self_dna_check_run(args.root, compact=args.compact)
-        print(dump_json(payload))
-        return code
     if args.command == "blueprint":
         from .blueprint import (
             BlueprintError,
