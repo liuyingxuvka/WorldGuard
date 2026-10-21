@@ -1,8 +1,8 @@
 """Refresh the maintained external-object DNA fixtures through current owners.
 
-This is an author-side fixture compiler. It projects explicitly authored raw-request
-and raw-target observations without consulting the candidate blueprint or its semantic
-authority for the object denominator. It is not an alternate runtime qualification path.
+This is an author-side fixture compiler: it writes the three blueprint fixtures, their
+bindings, support records and native results, then checks that each fixture passes.
+It is not an alternate runtime qualification path.
 """
 
 from __future__ import annotations
@@ -20,14 +20,12 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from worldguard.blueprint import (
-    BINDING_ROLES,
     BehaviorCaseContract,
     BlueprintBinding,
     GuardStatus,
     WorldBlueprintContract,
     _binding_receipt_fingerprint,
     check_world_blueprint,
-    compile_behavior_commitment_inventory_cache,
 )
 from worldguard.semantic import fingerprint_mesh
 
@@ -38,34 +36,18 @@ SUPPORT_ROOT = FIXTURE_ROOT / "support"
 ZERO_SHA256 = "sha256:" + "0" * 64
 
 BASE_BLUEPRINT = FIXTURE_ROOT / "planning_workflow_three_level.yaml"
-BASE_REQUEST = SUPPORT_ROOT / "behavior-request-contract.json"
 BASE_MATERIAL = SUPPORT_ROOT / "target-material.json"
-BASE_AUTHORITY = SUPPORT_ROOT / "target-semantic-authority.json"
-BASE_CACHE = SUPPORT_ROOT / "behavior-commitments.json"
 
 SEVEN_BLUEPRINT = FIXTURE_ROOT / "seven_guard_portable_handoff.json"
-SEVEN_AUTHORITY = SUPPORT_ROOT / "seven-guard-target-semantic-authority.json"
-SEVEN_REQUEST = SUPPORT_ROOT / "seven-guard-behavior-request-contract.json"
 SEVEN_MATERIAL = SUPPORT_ROOT / "seven-guard-validation-target-material.json"
-SEVEN_CACHE = SUPPORT_ROOT / "seven-guard-behavior-commitments.json"
 SEVEN_MATRIX = FIXTURE_ROOT / "seven_guard_native_owner_matrix.json"
 
 POLICY_BLUEPRINT = FIXTURE_ROOT / "policy_access_execution.yaml"
-POLICY_AUTHORITY = SUPPORT_ROOT / "policy-access-target-semantic-authority.json"
-POLICY_REQUEST = SUPPORT_ROOT / "policy-access-behavior-request-contract.json"
 POLICY_MATERIAL = SUPPORT_ROOT / "policy-access-target-material.json"
 POLICY_EVIDENCE = SUPPORT_ROOT / "policy-access-evidence.json"
 POLICY_TESTS = SUPPORT_ROOT / "policy-access-tests.json"
 POLICY_NATIVE_RESULTS = SUPPORT_ROOT / "policy-access-native-results.json"
-POLICY_CACHE = SUPPORT_ROOT / "policy-access-behavior-commitments.json"
 
-DERIVED_SUPPORTS = {
-    "allocation_summary": "derive_allocation_result",
-    "governance_summary": "derive_governance_result",
-    "plan_outcome": "derive_root_plan_outcome",
-    "scheduling_summary": "derive_scheduling_result",
-    "policy_decision_state": "derive_policy_decision",
-}
 BASE_MATERIAL_BINDINGS = {
     "actor_alex": ("actor_alex_material", "workflow_record_assignment"),
     "planner_role": ("planner_role_material", "workflow_record_assignment"),
@@ -244,18 +226,6 @@ def _matrix_binding(
     return binding
 
 
-def _binding_responsibility(binding: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "binding_id": binding["binding_id"],
-        "role": binding["role"],
-        "owner_id": binding["owner"],
-        "resource_id": binding["resource_id"],
-        "locator": binding["locator"],
-        "provider_id": binding["provider_id"],
-        "provider_version": binding["provider_version"],
-        "provider_capability_id": binding["provider_capability_id"],
-        "observation_mode": binding["observation_mode"],
-    }
 
 
 def _native_payload(semantic: dict[str, Any]) -> dict[str, Any]:
@@ -283,92 +253,10 @@ def _refresh_native_semantic_fingerprints(blueprint: dict[str, Any]) -> None:
         )
 
 
-def _derivation_responsibility(
-    blueprint: dict[str, Any], *, element_id: str, derivation_id: str
-) -> dict[str, Any]:
-    matches = [
-        (node, derivation)
-        for node in blueprint["nodes"]
-        for derivation in node.get("output_derivations", [])
-        if derivation["derivation_id"] == derivation_id
-    ]
-    if len(matches) != 1:
-        raise ValueError(f"{element_id} requires one derivation {derivation_id}")
-    node, derivation = matches[0]
-    return {
-        "derivation_id": derivation["derivation_id"],
-        "target_element_id": element_id,
-        "owner_node_id": node["node_id"],
-        "parent_output_port_id": derivation["parent_output_port_id"],
-        "sources": deepcopy(derivation["sources"]),
-    }
 
 
-def _not_applicable_reason(element_id: str, role: str, derived: bool) -> str:
-    if role == "target_material" and derived:
-        return (
-            f"{element_id} is derived from the exact declared output lineage and "
-            "has no independent target-material record."
-        )
-    if role == "target_material":
-        return (
-            f"{element_id} has no separate target-material artifact inside this "
-            "bounded target; its current semantic identity is native-only."
-        )
-    if role == "evidence":
-        return (
-            f"{element_id} has no independent evidence artifact in this target "
-            "boundary; no evidence identity is invented."
-        )
-    return (
-        f"{element_id} has no separate target check; its native purpose cases own "
-        "the applicable semantic check without a duplicate test identity."
-    )
 
 
-def _refresh_authority(
-    blueprint: dict[str, Any], authority: dict[str, Any]
-) -> None:
-    authority["schema_version"] = "worldguard.target_semantic_authority.v2"
-    elements_by_id = {row["element_id"]: row for row in blueprint["elements"]}
-    bindings_by_element: dict[str, list[dict[str, Any]]] = {}
-    for binding in blueprint["bindings"]:
-        bindings_by_element.setdefault(binding["subject_element_id"], []).append(
-            binding
-        )
-    for row in authority["elements"]:
-        element_id = row["element_id"]
-        row["native_semantic"] = deepcopy(
-            elements_by_id[element_id]["native_semantic"]
-        )
-        applicable = sorted(
-            bindings_by_element.get(element_id, []),
-            key=lambda binding: binding["binding_id"],
-        )
-        row["binding_responsibilities"] = [
-            _binding_responsibility(binding) for binding in applicable
-        ]
-        applicable_roles = {binding["role"] for binding in applicable}
-        derived = element_id in DERIVED_SUPPORTS
-        row["not_applicable_responsibilities"] = [
-            {
-                "role": role,
-                "reason": _not_applicable_reason(element_id, role, derived),
-            }
-            for role in sorted(BINDING_ROLES.difference(applicable_roles))
-        ]
-        row["support_mode"] = "derived" if derived else "direct"
-        row["derivation_responsibilities"] = (
-            [
-                _derivation_responsibility(
-                    blueprint,
-                    element_id=element_id,
-                    derivation_id=DERIVED_SUPPORTS[element_id],
-                )
-            ]
-            if derived
-            else []
-        )
 
 
 def _refresh_binding_content_and_receipts(blueprint: dict[str, Any]) -> None:
@@ -468,40 +356,20 @@ def _refresh_integrated_external_support_records(
         _write_json(path, container)
 
 
-def _refresh_input_fingerprints(blueprint: dict[str, Any]) -> None:
-    for input_ref in blueprint["commitment_inventory"]["input_refs"]:
-        input_ref["content_fingerprint"] = "sha256:" + hashlib.sha256(
-            _selected_content(input_ref["locator"])
-        ).hexdigest()
 
 
 def _refresh_one(
     *,
     blueprint_path: Path,
-    request_path: Path,
     material_path: Path,
-    authority_path: Path,
-    cache_path: Path,
     blueprint: dict[str, Any],
-    authority: dict[str, Any],
 ) -> None:
     blueprint.pop("blueprint_fingerprint", None)
-    blueprint["commitment_inventory"]["input_refs"] = [
-        row
-        for row in blueprint["commitment_inventory"]["input_refs"]
-        if row["input_kind"]
-        in {"request_contract", "target_material", "target_semantic_authority"}
-    ]
     existing_binding_ids = {
         row["binding_id"] for row in blueprint["bindings"]
     }
     element_ids = {row["element_id"] for row in blueprint["elements"]}
-    material_locator = next(
-        row["locator"]
-        for row in blueprint["commitment_inventory"]["input_refs"]
-        if row["input_kind"] == "target_material"
-    )
-    material_file = material_locator.partition("#")[0]
+    material_file = material_path.relative_to(FIXTURE_ROOT).as_posix()
     for element_id, (binding_id, material_id) in BASE_MATERIAL_BINDINGS.items():
         if element_id in element_ids and binding_id not in existing_binding_ids:
             blueprint["bindings"].append(
@@ -538,18 +406,12 @@ def _refresh_one(
 
     _refresh_integrated_external_support_records(blueprint)
     _refresh_binding_content_and_receipts(blueprint)
-    _refresh_authority(blueprint, authority)
-    _write_json(authority_path, authority)
-    _refresh_input_fingerprints(blueprint)
     _write_blueprint(blueprint_path, blueprint)
 
     parsed = WorldBlueprintContract.from_dict(
         {key: value for key, value in blueprint.items() if key != "blueprint_fingerprint"},
         source_root=FIXTURE_ROOT,
     )
-    cache = compile_behavior_commitment_inventory_cache(parsed)
-    _write_json(cache_path, cache)
-
     first_report = check_world_blueprint(parsed)
     receipts = {
         row["element_id"]: row["receipt_fingerprint"]
@@ -576,22 +438,16 @@ def _refresh_one(
         )
 
 
-def _prepare_seven_guard_validation() -> tuple[dict[str, Any], dict[str, Any]]:
+def _prepare_seven_guard_validation() -> dict[str, Any]:
     blueprint = _load_blueprint(SEVEN_BLUEPRINT)
-    authority = _load_json(SEVEN_AUTHORITY)
-    request = _load_json(SEVEN_REQUEST)
     matrix = _load_json(SEVEN_MATRIX)
     replacements = (
         ("planning workflow revision 1 only", "seven-Guard capability validation revision 1 only"),
         ("planning-workflow", "seven-guard-capability-validation"),
     )
     blueprint = _replace_strings(blueprint, replacements)
-    authority = _replace_strings(authority, replacements)
-    request = _replace_strings(request, replacements)
     matrix = _replace_strings(matrix, replacements)
     blueprint = _normalize_seven_guard_revision(blueprint)
-    authority = _normalize_seven_guard_revision(authority)
-    request = _normalize_seven_guard_revision(request)
     matrix = _normalize_seven_guard_revision(matrix)
 
     resource_copies = {
@@ -615,12 +471,6 @@ def _prepare_seven_guard_validation() -> tuple[dict[str, Any], dict[str, Any]]:
                 "support/seven-guard-validation-native-results.json"
                 + (f"#{selector}" if separator else "")
             )
-    for input_ref in blueprint["commitment_inventory"]["input_refs"]:
-        input_ref["locator"] = input_ref["locator"].replace(
-            "support/target-material.json",
-            "support/seven-guard-validation-target-material.json",
-        )
-
     _refresh_native_semantic_fingerprints(blueprint)
     native_results = {
         binding["locator"].partition("#")[2]: _native_payload(
@@ -639,9 +489,8 @@ def _prepare_seven_guard_validation() -> tuple[dict[str, Any], dict[str, Any]]:
         SUPPORT_ROOT / "seven-guard-validation-native-results.json",
         native_results,
     )
-    _write_json(SEVEN_REQUEST, request)
     _write_json(SEVEN_MATRIX, matrix)
-    return blueprint, authority
+    return blueprint
 
 
 def _policy_binding(
@@ -680,7 +529,7 @@ def _policy_binding(
     }
 
 
-def _prepare_policy_access_execution() -> tuple[dict[str, Any], dict[str, Any]]:
+def _prepare_policy_access_execution() -> dict[str, Any]:
     """Author a non-planning target from explicit policy material and semantics."""
 
     source = _load_blueprint(BASE_BLUEPRINT)
@@ -1042,262 +891,27 @@ def _prepare_policy_access_execution() -> tuple[dict[str, Any], dict[str, Any]]:
                 "port_id": "policy_decision",
             }
         ],
-        "commitment_inventory": {
-            "inventory_id": "policy-access-execution:commitments:policy-revision-1",
-            "authority_owner_id": "policy-request-contract-owner",
-            "locator": "support/policy-access-behavior-commitments.json",
-            "adapter_id": "worldguard.request-contract.commitment-adapter",
-            "adapter_version": "v2",
-            "adapter_capability_id": "worldguard.behavior-commitment.replay.v2",
-            "target_id": "policy-access-execution",
-            "target_revision": "policy-revision-1",
-            "input_refs": [
-                {
-                    "input_id": "request:policy-access-execution:policy-revision-1",
-                    "input_kind": "request_contract",
-                    "observation_mode": "local_content",
-                    "locator": "support/policy-access-behavior-request-contract.json",
-                    "target_id": "policy-access-execution",
-                    "target_revision": "policy-revision-1",
-                    "content_fingerprint": ZERO_SHA256,
-                },
-                {
-                    "input_id": (
-                        "target-material:policy-access-execution:policy-revision-1"
-                    ),
-                    "input_kind": "target_material",
-                    "observation_mode": "local_content",
-                    "locator": "support/policy-access-target-material.json",
-                    "target_id": "policy-access-execution",
-                    "target_revision": "policy-revision-1",
-                    "content_fingerprint": ZERO_SHA256,
-                },
-                {
-                    "input_id": (
-                        "target-semantics:policy-access-execution:policy-revision-1"
-                    ),
-                    "input_kind": "target_semantic_authority",
-                    "observation_mode": "local_content",
-                    "locator": "support/policy-access-target-semantic-authority.json",
-                    "target_id": "policy-access-execution",
-                    "target_revision": "policy-revision-1",
-                    "content_fingerprint": ZERO_SHA256,
-                },
-            ],
-            "claim_boundary": boundary,
-        },
         "declared_gaps": [],
     }
 
-    request_contract = {
-        "schema_version": "worldguard.behavior_request_contract.v2",
-        "request_id": "policy-access-request:policy-revision-1",
-        "authority_owner_id": "policy-request-contract-owner",
-        "adapter_id": "worldguard.request-contract.commitment-adapter",
-        "adapter_version": "v2",
-        "adapter_capability_id": "worldguard.behavior-commitment.replay.v2",
-        "target_id": "policy-access-execution",
-        "target_revision": "policy-revision-1",
-        "claim_boundary": boundary,
-        "behaviors": [
-            {
-                "commitment_id": "commitment:declared-policy-decision",
-                "behavior_id": "behavior:evaluate-field-access",
-                "output_id": "declared_policy_decision",
-                "node_id": "policy_root",
-                "port_id": "policy_decision",
-                "owner_id": "policy-request-contract-owner",
-                "input_ids": ["external_policy_request"],
-                "required_contributor_element_ids": ["access_policy_norm"],
-                "required_material_ids": [
-                    "policy_subject",
-                    "policy_rule",
-                    "policy_decision_record",
-                ],
-            }
-        ],
-        "semantic_authority": {
-            "authority_id": (
-                "policy-access-execution:target-semantics:policy-revision-1"
-            ),
-            "authority_owner_id": "policy-target-semantic-authority-owner",
-            "required_node_ids": ["evaluate_access_leaf", "policy_root"],
-            "required_element_ids": [
-                "access_policy_norm",
-                "policy_decision_state",
-                "request_actor",
-            ],
-            "required_guard_owner_ids": ["AgentGuard", "EventGuard", "NormGuard"],
-        },
-    }
-    _write_json(POLICY_REQUEST, request_contract)
-
-    authority_elements = []
-    responsibility = {
-        "request_actor": (
-            "evaluate_access_leaf",
-            "agent",
-            "AgentGuard",
-            "worldguard.semantic.agent.v1",
-        ),
-        "access_policy_norm": (
-            "evaluate_access_leaf",
-            "norm",
-            "NormGuard",
-            "worldguard.semantic.norm.v1",
-        ),
-        "policy_decision_state": (
-            "policy_root",
-            "state",
-            "EventGuard",
-            "worldguard.semantic.event.v1",
-        ),
-    }
-    elements_by_id = {row["element_id"]: row for row in blueprint["elements"]}
-    for element_id, (
-        owner_node_id,
-        element_kind,
-        guard_owner,
-        executor_id,
-    ) in responsibility.items():
-        authority_elements.append(
-            {
-                "element_id": element_id,
-                "owner_node_id": owner_node_id,
-                "element_kind": element_kind,
-                "required_guard_owner_id": guard_owner,
-                "required_executor_id": executor_id,
-                "required_executor_version": "v1",
-                "native_semantic": deepcopy(
-                    elements_by_id[element_id]["native_semantic"]
-                ),
-                "binding_responsibilities": [],
-                "not_applicable_responsibilities": [],
-                "support_mode": "direct",
-                "derivation_responsibilities": [],
-            }
-        )
-
-    authority = {
-        "schema_version": "worldguard.target_semantic_authority.v2",
-        "authority_id": "policy-access-execution:target-semantics:policy-revision-1",
-        "authority_owner_id": "policy-target-semantic-authority-owner",
-        "target_id": "policy-access-execution",
-        "target_revision": "policy-revision-1",
-        "claim_boundary": boundary,
-        "required_node_ids": ["evaluate_access_leaf", "policy_root"],
-        "elements": authority_elements,
-        "material_assertions": [
-            {
-                "assertion_id": "policy-subject-agent",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_subject", "agent_id"],
-                "target_element_id": "request_actor",
-                "semantic_path": ["semantic_fields", "agent_id"],
-            },
-            {
-                "assertion_id": "policy-subject-belief",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_subject", "belief"],
-                "target_element_id": "request_actor",
-                "semantic_path": ["semantic_fields", "beliefs", 0],
-            },
-            {
-                "assertion_id": "policy-rule-modality",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_rule", "modality"],
-                "target_element_id": "access_policy_norm",
-                "semantic_path": ["semantic_fields", "modality"],
-            },
-            {
-                "assertion_id": "policy-rule-subject",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_rule", "subject_id"],
-                "target_element_id": "access_policy_norm",
-                "semantic_path": ["semantic_fields", "subject_id"],
-            },
-            {
-                "assertion_id": "policy-rule-action",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_rule", "action"],
-                "target_element_id": "access_policy_norm",
-                "semantic_path": ["semantic_fields", "action"],
-            },
-            {
-                "assertion_id": "policy-rule-condition",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_rule", "condition"],
-                "target_element_id": "access_policy_norm",
-                "semantic_path": ["semantic_fields", "condition"],
-            },
-            {
-                "assertion_id": "policy-rule-condition-value",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_rule", "condition_value"],
-                "target_element_id": "access_policy_norm",
-                "semantic_path": ["semantic_fields", "facts", 0, "value"],
-            },
-            {
-                "assertion_id": "policy-decision-state",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_decision_record", "state_id"],
-                "target_element_id": "policy_decision_state",
-                "semantic_path": ["semantic_fields", "state_id"],
-            },
-            {
-                "assertion_id": "policy-decision-initial",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_decision_record", "initial"],
-                "target_element_id": "policy_decision_state",
-                "semantic_path": ["semantic_fields", "initial"],
-            },
-            {
-                "assertion_id": "policy-decision-terminal",
-                "source_input_kind": "target_material",
-                "source_path": ["policy_decision_record", "terminal"],
-                "target_element_id": "policy_decision_state",
-                "semantic_path": ["semantic_fields", "terminal"],
-            },
-        ],
-    }
-    return blueprint, authority
+    return blueprint
 
 
 def main() -> int:
-    base_blueprint = _load_blueprint(BASE_BLUEPRINT)
-    base_authority = _load_json(BASE_AUTHORITY)
-    base_request = _load_json(BASE_REQUEST)
-    _write_json(BASE_REQUEST, base_request)
     _refresh_one(
         blueprint_path=BASE_BLUEPRINT,
-        request_path=BASE_REQUEST,
         material_path=BASE_MATERIAL,
-        authority_path=BASE_AUTHORITY,
-        cache_path=BASE_CACHE,
-        blueprint=base_blueprint,
-        authority=base_authority,
+        blueprint=_load_blueprint(BASE_BLUEPRINT),
     )
-
-    seven_blueprint, seven_authority = _prepare_seven_guard_validation()
     _refresh_one(
         blueprint_path=SEVEN_BLUEPRINT,
-        request_path=SEVEN_REQUEST,
         material_path=SEVEN_MATERIAL,
-        authority_path=SEVEN_AUTHORITY,
-        cache_path=SEVEN_CACHE,
-        blueprint=seven_blueprint,
-        authority=seven_authority,
+        blueprint=_prepare_seven_guard_validation(),
     )
-
-    policy_blueprint, policy_authority = _prepare_policy_access_execution()
     _refresh_one(
         blueprint_path=POLICY_BLUEPRINT,
-        request_path=POLICY_REQUEST,
         material_path=POLICY_MATERIAL,
-        authority_path=POLICY_AUTHORITY,
-        cache_path=POLICY_CACHE,
-        blueprint=policy_blueprint,
-        authority=policy_authority,
+        blueprint=_prepare_policy_access_execution(),
     )
     return 0
 

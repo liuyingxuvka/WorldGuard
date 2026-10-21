@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import hashlib
 import shutil
 from copy import deepcopy
 from pathlib import Path
@@ -19,7 +18,6 @@ from worldguard.blueprint import (
     _provider_capability_registration,
     _provider_observation_expected,
     check_world_blueprint,
-    compile_behavior_commitment_inventory_cache,
     load_world_blueprint,
 )
 from worldguard.semantic import fingerprint_mesh
@@ -315,40 +313,40 @@ def test_binding_roles_do_not_substitute_for_each_other() -> None:
     assert "WORLD_BLUEPRINT_REQUIRED_BINDING_MISSING" in codes
 
 
-def test_declared_output_graph_owns_claim_contributor_and_binding_denominator() -> None:
+def test_claim_contributor_flag_follows_the_declared_output_lineage() -> None:
     payload = _payload()
-    claim_element_ids = {
-        "assignment_transition",
-        "schedule_transition",
-        "resource_reservation",
-        "authorization_norm",
-    }
-    for element in payload["elements"]:
-        if element["element_id"] in claim_element_ids:
-            element["contributes_to_claim"] = True
-            element["required_binding_roles"] = ["native_result"]
-    payload["bindings"] = [
-        row
-        for row in payload["bindings"]
-        if row["subject_element_id"] not in claim_element_ids
-        or row["role"] == "native_result"
-    ]
+    element = next(
+        row for row in payload["elements"] if row["element_id"] == "assignment_transition"
+    )
+    assert element["contributes_to_claim"] is True
+    element["contributes_to_claim"] = False
 
     report = check_world_blueprint(_current(payload))
 
-    codes = {gap.code for gap in report.gaps}
-    assert "WORLD_BLUEPRINT_BINDING_ROLE_ASSERTION_MISMATCH" in codes
-    missing = {
-        (gap.element_id, gap.required_role)
+    assert any(
+        gap.code == "WORLD_BLUEPRINT_CLAIM_CONTRIBUTOR_ASSERTION_MISMATCH"
+        and gap.element_id == "assignment_transition"
         for gap in report.gaps
-        if gap.code == "WORLD_BLUEPRINT_REQUIRED_BINDING_MISSING"
-    }
-    assert {
-        (element_id, role)
-        for element_id in claim_element_ids
-        for role in {"target_material", "evidence", "test_check"}
-    } <= missing
+    )
     assert report.native_domain_qualified is False
+
+
+def test_rewired_parent_derivation_fails_structurally() -> None:
+    payload = _payload()
+    allocation = next(
+        row for row in payload["nodes"] if row["node_id"] == "allocation_layer"
+    )
+    derivation = next(
+        row
+        for row in allocation["output_derivations"]
+        if row["derivation_id"] == "derive_allocation_result"
+    )
+    derivation["sources"][0]["source_port_id"] = "caller_rewired_output"
+
+    report = check_world_blueprint(_current(payload))
+
+    assert report.status == GuardStatus.FAIL
+    assert "WORLD_BLUEPRINT_OUTPUT_SOURCE_UNKNOWN" in {gap.code for gap in report.gaps}
 
 
 def test_parent_output_mapping_and_derivation_must_name_the_same_child_output() -> None:
@@ -933,44 +931,6 @@ def test_provider_content_requires_one_complete_exact_current_receipt(
     result["receipt_fingerprint"] = receipt
     binding["receipt_fingerprint"] = receipt
 
-    authority = json.loads(
-        (FIXTURE.parent / "support/target-semantic-authority.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    authority_element = next(
-        row
-        for row in authority["elements"]
-        if row["element_id"] == "assignment_transition"
-    )
-    authority_binding = next(
-        row
-        for row in authority_element["binding_responsibilities"]
-        if row["binding_id"] == "assignment_evidence"
-    )
-    authority_binding.update(
-        {
-            "owner_id": binding["owner"],
-            "resource_id": binding["resource_id"],
-            "locator": binding["locator"],
-            "provider_id": binding["provider_id"],
-            "provider_version": binding["provider_version"],
-            "provider_capability_id": binding["provider_capability_id"],
-            "observation_mode": binding["observation_mode"],
-        }
-    )
-    authority_bytes = (
-        json.dumps(authority, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-    ).encode("utf-8")
-    authority_ref = next(
-        row
-        for row in base["commitment_inventory"]["input_refs"]
-        if row["input_kind"] == "target_semantic_authority"
-    )
-    authority_ref["content_fingerprint"] = (
-        "sha256:" + hashlib.sha256(authority_bytes).hexdigest()
-    )
-
     def with_receipt(row: dict) -> dict:
         row = {key: value for key, value in row.items() if key != "receipt_fingerprint"}
         return {**row, "receipt_fingerprint": "sha256:" + fingerprint_mesh(row)}
@@ -986,20 +946,11 @@ def test_provider_content_requires_one_complete_exact_current_receipt(
     for case_id, (provider_result, expected_reason) in cases.items():
         case_root = tmp_path / case_id
         shutil.copytree(FIXTURE.parent / "support", case_root / "support")
-        (case_root / "support/target-semantic-authority.json").write_bytes(
-            authority_bytes
-        )
         if provider_result is not None:
             (case_root / "provider-results.json").write_text(
                 json.dumps({"assignment_evidence": provider_result}),
                 encoding="utf-8",
             )
-        current = _current_at(base, case_root)
-        cache = compile_behavior_commitment_inventory_cache(current)
-        (case_root / "support/behavior-commitments.json").write_text(
-            json.dumps(cache, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
         report = check_world_blueprint(_current_at(base, case_root))
         matching = [
             gap

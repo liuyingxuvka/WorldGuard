@@ -513,37 +513,5 @@ declared_outputs:
 - output_id: declared_policy_decision
   node_id: policy_root
   port_id: policy_decision
-commitment_inventory:
-  inventory_id: policy-access-execution:commitments:policy-revision-1
-  authority_owner_id: policy-request-contract-owner
-  locator: support/policy-access-behavior-commitments.json
-  adapter_id: worldguard.request-contract.commitment-adapter
-  adapter_version: v2
-  adapter_capability_id: worldguard.behavior-commitment.replay.v2
-  target_id: policy-access-execution
-  target_revision: policy-revision-1
-  input_refs:
-  - input_id: request:policy-access-execution:policy-revision-1
-    input_kind: request_contract
-    observation_mode: local_content
-    locator: support/policy-access-behavior-request-contract.json
-    target_id: policy-access-execution
-    target_revision: policy-revision-1
-    content_fingerprint: sha256:d28479d32b8c74dfbcf63220c75d8431e5378d09b74927950c5fbe0c32b01164
-  - input_id: target-material:policy-access-execution:policy-revision-1
-    input_kind: target_material
-    observation_mode: local_content
-    locator: support/policy-access-target-material.json
-    target_id: policy-access-execution
-    target_revision: policy-revision-1
-    content_fingerprint: sha256:d675225db7d5fbae0f856674eeae016fcd939babb087452948d87c5913320077
-  - input_id: target-semantics:policy-access-execution:policy-revision-1
-    input_kind: target_semantic_authority
-    observation_mode: local_content
-    locator: support/policy-access-target-semantic-authority.json
-    target_id: policy-access-execution
-    target_revision: policy-revision-1
-    content_fingerprint: sha256:cf588e692ca177029748073d6a14f1d780df6161ce5654eb879c2d747283aa55
-  claim_boundary: field access policy execution revision 1 only
 declared_gaps: []
-blueprint_fingerprint: 880c586007a449a56332aaa6634444188a06a45a9d4529258fab7ade102acf3a
+blueprint_fingerprint: 2422b05ea7af46e1e845d243acb6fc976634a14f2a4f70e1829b08f9ee28e5e8

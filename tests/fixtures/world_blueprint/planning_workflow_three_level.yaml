@@ -4,38 +4,6 @@ target_id: planning-workflow
 target_revision: revision-1
 declared_boundary: planning workflow revision 1 only
 root_node_id: plan_root
-commitment_inventory:
-  inventory_id: planning-workflow:commitments:revision-1
-  authority_owner_id: planning-request-contract-owner
-  locator: support/behavior-commitments.json
-  adapter_id: worldguard.request-contract.commitment-adapter
-  adapter_version: v2
-  adapter_capability_id: worldguard.behavior-commitment.replay.v2
-  target_id: planning-workflow
-  target_revision: revision-1
-  input_refs:
-  - input_id: request:planning-workflow:revision-1
-    input_kind: request_contract
-    observation_mode: local_content
-    locator: support/behavior-request-contract.json
-    target_id: planning-workflow
-    target_revision: revision-1
-    content_fingerprint: sha256:60e749fabfee4116c57e6a0074ebdbe3f60e34d1418674ce77b9a6ea0c2729d3
-  - input_id: target-material:planning-workflow:revision-1
-    input_kind: target_material
-    observation_mode: local_content
-    locator: support/target-material.json
-    target_id: planning-workflow
-    target_revision: revision-1
-    content_fingerprint: sha256:ee9451801594ca70f36a7d003c7efaaacb444de4fc9ebe084f6646dc4921dd02
-  - input_id: target-semantics:planning-workflow:revision-1
-    input_kind: target_semantic_authority
-    observation_mode: local_content
-    locator: support/target-semantic-authority.json
-    target_id: planning-workflow
-    target_revision: revision-1
-    content_fingerprint: sha256:5192c877afd8d0e0efaf06684950c1ed81ae3cdcc3a9d745090a406fe0da0bc7
-  claim_boundary: planning workflow revision 1 only
 nodes:
 - node_id: plan_root
   title: Plan objective and externally visible outcome
@@ -1965,4 +1933,4 @@ declared_outputs:
   node_id: plan_root
   port_id: root_plan_outcome
 declared_gaps: []
-blueprint_fingerprint: 7ff0fdf4525d452b944a954e0f767219f507368c1653a0e7c1361dd0cf697e9d
+blueprint_fingerprint: 1511bfeb2e02144468558a0f9245a87819b36e3df3ccdc03d98c770c0010806b

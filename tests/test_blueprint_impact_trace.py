@@ -263,9 +263,6 @@ def test_every_stable_blueprint_object_kind_is_an_impact_seed() -> None:
         "resource",
         "declared_input",
         "declared_output",
-        "commitment_inventory",
-        "behavior_commitment",
-        "behavior",
         "declared_gap",
     }
     assert set(indexes.kinds.values()) == expected_kinds
@@ -312,15 +309,6 @@ def test_dependency_and_declared_output_seed_affect_both_relation_endpoints() ->
         output.materialized_ids
     )
 
-    commitment = blueprint_impact(
-        blueprint,
-        changed_ids=["commitment:declared-plan-outcome"],
-    )
-    assert {
-        "declared_plan_outcome",
-        "root_plan_outcome",
-        "plan_root",
-    } <= set(commitment.materialized_ids)
 
 
 def test_broken_parent_child_hop_rejects_the_query_source_before_trace() -> None:
@@ -342,19 +330,12 @@ def test_broken_parent_child_hop_rejects_the_query_source_before_trace() -> None
     _assert_unqualified_query_source(blueprint)
 
 
-@pytest.mark.parametrize("source_defect", ["cache", "binding", "native", "provider"])
+@pytest.mark.parametrize("source_defect", ["binding", "native", "provider"])
 def test_impact_and_trace_reject_each_unqualified_source_class(
     source_defect: str,
 ) -> None:
     payload = _payload()
-    if source_defect == "cache":
-        request_ref = next(
-            row
-            for row in payload["commitment_inventory"]["input_refs"]
-            if row["input_kind"] == "request_contract"
-        )
-        request_ref["content_fingerprint"] = "sha256:" + "0" * 64
-    elif source_defect == "binding":
+    if source_defect == "binding":
         binding = next(
             row for row in payload["bindings"] if row["binding_id"] == "assignment_evidence"
         )

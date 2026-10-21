@@ -44,7 +44,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:52489c86e0529fc04eb87e2c1a3ff4fc1e07dfe82f84205ba7c43e75ec9d28bb"
+      "fingerprint": "sha256:d20c6a2cb368d33aff20a80c8e49f135c531259045b6e20ef45a181111e84d84"
     },
     {
       "id": "worldguard.core",
@@ -202,6 +202,7 @@
       "summary": "WorldBlueprint hierarchy, behavior cases, impact and trace (repository author tool, not in the skill)",
       "responsibilities": [
         "Validate hierarchical world elements and typed input/output/dependency bindings",
+        "Require one current binding for every role an element declares and derive claim contributors from the declared output lineage",
         "Execute actual behavior cases and the selected external test and evidence records",
         "Answer affected impact and reverse trace from one current qualified blueprint"
       ],
@@ -232,12 +233,11 @@
         "tests/test_world_blueprint.py",
         "tests/test_world_blueprint_freeze_blockers.py",
         "tests/test_world_blueprint_policy_target.py",
-        "tests/test_world_blueprint_seven_guard_matrix.py",
-        "tests/test_world_blueprint_target_semantic_authority.py"
+        "tests/test_world_blueprint_seven_guard_matrix.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:9162c80c0f713552a64a2fa1f61f14582173957609f880466c01221087196c32"
+      "fingerprint": "sha256:ea86ed63714d8011fe0fa83b8dd82653479ec6fc0fb1aa78064aa411c1fe5758"
     },
     {
       "id": "worldguard.revision",
@@ -371,7 +371,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:f396b69e5e52eaa417303d636688cd1b0bbbf72f924746fba49786c931180b59"
+      "fingerprint": "sha256:3e98a6913fe69e70ac541b4812e6b677d2f86836228de33f8c26a456c991e9ce"
     },
     {
       "id": "skills.worldguard.scripts",

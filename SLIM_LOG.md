@@ -726,3 +726,25 @@ Status: completed.
 | `pytest` | 0 | 292 passed in 34.48s (`WG-37/pytest.log`) |
 
 Adaptations: SKILL 实际 3113 字节；保留 WG26 已批准的未提供摘要元数据空值说明，不为匹配参考字节数删除有效边界。测试比文档多 5 项为此前真实输入与 per-node scope 回归。
+
+### WG-38: 蓝图删除完整性层：承诺清单重放、目标语义权威和四角色 N/A 分母
+
+Status: completed.
+
+退役蓝图承诺清单重放、目标语义权威与四角色 N/A 分母；改为 declared_outputs 派生贡献者、元素自声明必需角色恰好一个 current 绑定。67 项蓝图专项、269 项完整测试和 3 个模型通过，三个真实夹具 PASS True，生成器逐字节幂等。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `regenerate` | 0 | regenerated (`WG-38/regenerate.log`) |
+| `focused` | 0 | 67 passed in 15.29s (`WG-38/focused.log`) |
+| `inventory` | 0 | actual lines 6623 920 (`WG-38/inventory.log`) |
+| `idempotence` | 0 | all fixture bytes idempotent; exactly3 modified+9 removed (`WG-38/idempotence.log`) |
+| `blueprint-three` | 0 | seven_guard_portable_handoff.json PASS True (`WG-38/blueprint-three.log`) |
+| `map-initial` | 0 | check: 0 error(s), 3 warning(s), 0 info (`WG-38/map-initial.log`) |
+| `confirm` | 0 | confirmed 3 component(s) (`WG-38/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-38/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-38/release.log`) |
+| `owner-boundaries` | 0 | changed only4 authorized owners; removed17 authority owners; preserved 57 other owners (`WG-38/owner-boundaries.log`) |
+| `pytest` | 0 | 269 passed in 25.20s (`WG-38/pytest.log`) |
+
+Adaptations: 按本项明确授权删除 17 个 authority owner、9 个支持文件及对应过时测试。AST 对照只改变 WorldBlueprintContract/check/indexes/reverse-trace 四个既有 owner，其余 57 个 owner 不变，原生执行/行为用例/选中外部测试与证据执行均保持。 实际 blueprint/generator 为 6623/920 行，保留非语义空行差异，不为匹配参考行数做额外清理；导出确为110、支持文件13、限定 active surfaces 残留零。未将历史测试的授权退役宣称为简单改名等价。
