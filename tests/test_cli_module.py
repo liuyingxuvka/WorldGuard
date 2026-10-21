@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -148,3 +149,54 @@ def test_default_output_is_a_summary_and_json_is_full():
     assert {row["guard"] for row in failing["non_pass_guards"]} == {"ConflictGuard", "NormGuard"}
     full = subprocess.run([*command, "--json"], text=True, capture_output=True)
     assert "child_results" in json.loads(full.stdout)["reports"][0]
+
+
+
+
+def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    target = tmp_path / "skills"
+    installer = [sys.executable, str(root / "scripts" / "install_skill.py"), "--target", str(target)]
+    done = subprocess.run(installer, text=True, capture_output=True)
+    assert done.returncode == 0, done.stderr
+    launcher = target / "worldguard" / "scripts" / "run_worldguard.py"
+    example = target / "worldguard" / "assets" / "examples" / "trip_ferry.yaml"
+    env = {key: value for key, value in os.environ.items() if key != "PYTHONDONTWRITEBYTECODE"}
+    done = subprocess.run([sys.executable, str(launcher), "check", "--contract", str(example)], cwd=tmp_path, env=env, text=True, capture_output=True)
+    assert done.returncode == 0, done.stdout[-500:]
+    assert not list((target / "worldguard").rglob("__pycache__"))
+    check = subprocess.run([*installer, "--check"], text=True, capture_output=True)
+    assert check.returncode == 0, check.stdout
+
+    skill_text = target / "worldguard" / "SKILL.md"
+    original = skill_text.read_bytes()
+    original_stat = skill_text.stat()
+    changed = original.replace(b"WorldGuard", b"WorldGuarX", 1)
+    assert changed != original and len(changed) == len(original)
+    skill_text.write_bytes(changed)
+    os.utime(skill_text, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    drift = subprocess.run([*installer, "--check"], text=True, capture_output=True)
+    assert drift.returncode == 1
+    assert "differs: SKILL.md" in drift.stdout
+
+
+def test_launcher_reads_json_without_pyyaml(tmp_path):
+    skill = Path(__file__).resolve().parents[1] / "skills" / "worldguard"
+    example = skill / "assets" / "examples" / "trip_ferry.yaml"
+    as_json = tmp_path / "trip.json"
+    as_json.write_text(json.dumps(yaml.safe_load(example.read_text(encoding="utf-8"))), encoding="utf-8")
+
+    def run_without_yaml(contract):
+        probe = (
+            "import runpy, sys; sys.modules['yaml'] = None; "
+            f"sys.argv = ['run_worldguard.py', 'check', '--contract', {str(contract)!r}]; "
+            f"runpy.run_path({str(skill / 'scripts' / 'run_worldguard.py')!r}, run_name='__main__')"
+        )
+        return subprocess.run([sys.executable, "-c", probe], cwd=tmp_path, text=True, capture_output=True)
+
+    done = run_without_yaml(as_json)
+    assert done.returncode == 0, done.stderr[-500:]
+    assert json.loads(done.stdout)["status"] == "PASS"
+    done = run_without_yaml(example)
+    assert done.returncode == 2
+    assert "PyYAML" in json.loads(done.stdout)["error"]["message"]

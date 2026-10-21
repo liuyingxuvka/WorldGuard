@@ -139,12 +139,14 @@ mesh_report = run_model_mesh(mesh)
 
 ## Codex Skill
 
-The repository includes a Codex skill copy under `skills/worldguard/`. It describes how to build `GuardContract` and `ModelMeshContract` inputs, run the helper script, and report non-pass evidence without converting it into a weak pass.
+The repository includes the WorldGuard skill under `skills/worldguard/`. It explains how to write a world model and run it with the portable launcher `skills/worldguard/scripts/run_worldguard.py`, and how to report non-pass results without turning them into a weak pass.
 
-For a local Codex installation, place the skill under:
+Install it into an agent's skills directory (Python 3.11 or newer; YAML world models also need PyYAML, JSON ones do not):
 
-```text
-$CODEX_HOME/skills/worldguard
+```bash
+python -m pip install PyYAML
+python scripts/install_skill.py --target "$CODEX_HOME/skills"          # or ~/.claude/skills
+python scripts/install_skill.py --target "$CODEX_HOME/skills" --check  # exit 1 if the copy differs
 ```
 
 ## What This Is Not

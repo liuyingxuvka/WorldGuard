@@ -5,8 +5,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from yaml import YAMLError
-
 from .io import dump_json, load_mapping
 
 
@@ -209,7 +207,7 @@ def main(argv: list[str] | None = None) -> int:
                 target_revision=contract.world_model.model_version,
             )
             report = run_worldguard(contract, context=context)
-        except (OSError, UnicodeError, ValueError, YAMLError) as exc:
+        except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("check", args.contract, exc)
         _emit(report.to_dict(), _unit_summary, args.json)
         return 0 if report.status.value == "PASS" else 1
@@ -217,7 +215,7 @@ def main(argv: list[str] | None = None) -> int:
         from .mesh import ModelMeshContract, run_model_mesh
         try:
             mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh)))
-        except (OSError, UnicodeError, ValueError, YAMLError) as exc:
+        except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("mesh-check", args.mesh, exc)
         _emit(mesh_report.to_dict(), _mesh_summary, args.json)
         return 0 if mesh_report.status.value == "PASS" else 1
@@ -270,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
             return 2
-        except (OSError, UnicodeError, ValueError, YAMLError) as exc:
+        except (OSError, UnicodeError, ValueError) as exc:
             print(
                 dump_json(
                     {

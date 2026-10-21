@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import yaml
 
 
 def load_mapping(path: str | Path) -> dict[str, Any]:
@@ -13,7 +12,14 @@ def load_mapping(path: str | Path) -> dict[str, Any]:
     if path.suffix.lower() == ".json":
         data = json.loads(text)
     else:
-        data = yaml.safe_load(text)
+        try:
+            import yaml
+        except ImportError as exc:
+            raise ValueError(f"{path}: reading YAML needs PyYAML (python -m pip install PyYAML); JSON input does not") from exc
+        try:
+            data = yaml.safe_load(text)
+        except yaml.YAMLError as exc:
+            raise ValueError(f"{path} is not valid YAML: {exc}") from exc
     if not isinstance(data, dict):
         raise ValueError(f"{path} did not contain a mapping")
     return data

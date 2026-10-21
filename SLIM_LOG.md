@@ -127,7 +127,7 @@ Minimal contracts now default contract_id to claim_id and missing model_version 
 |---|---:|---|
 | `mirror` | 0 | mirror-ok (`WG-06/mirror.log`) |
 | `focused` | 0 | 7 passed in 4.38s (`WG-06/focused.log`) |
-| `input-errors` | 0 | mesh-check 2 WORLDGUARD_INPUT_INVALID [Errno 2] No such file or directory: '/workspace/guard-repair-20261021/results/WorldGuard/WG-06/missing-mesh.yaml' (`WG-06/input-errors.log`) |
+| `input-errors` | 0 | mesh-check 2 WORLDGUARD_INPUT_INVALID [Errno 2] No such file or directory: 'WG-06/missing-mesh.yaml' (`WG-06/input-errors.log`) |
 | `pytest` | 0 | 378 passed in 30.83s (`WG-06/pytest.log`) |
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-06/map.log`) |
 
@@ -170,7 +170,7 @@ Adaptations: None; reference purpose and implementation retained.
 
 Status: completed.
 
-Deleted only the unused, drifted top-level examples/fuel_cell YAML copy and pointed the repository layout to the packaged canonical example. examples/model_mesh, packaged data and package-data configuration are unchanged. Running the installed fuel-cell module from an unrelated /tmp working directory succeeds.
+Deleted only the unused, drifted top-level examples/fuel_cell YAML copy and pointed the repository layout to the packaged canonical example. examples/model_mesh, packaged data and package-data configuration are unchanged. Running the installed fuel-cell module from an unrelated temporary working directory succeeds.
 
 | Check | Exit | Actual result / log |
 |---|---:|---|
@@ -604,3 +604,25 @@ Status: completed.
 | `mirror-final` | 0 | mirror-ok (`WG-31/mirror-final.log`) |
 
 Adaptations: WG21 已提前随 reader 删除其两个独占导入，本项不重复删除；首次 map 实证 root→worldguard.guards 失效依赖，删除唯一该边后 map 0 errors。源码行数精确 441/1000，与清单一致。
+
+### WG-32: 安装脚本 scripts/install_skill.py；启动器不再往技能目录写字节码；JSON 输入不再需要 PyYAML
+
+Status: completed.
+
+新增临时目标技能安装器及检查/预览，启动器禁止写字节码，JSON 输入无需 PyYAML，YAML 缺依赖/语法错误仍 typed2。10 项 CLI、294 项完整测试与 3 个模型通过；临时/符号链接父目录安装、dry-run/未设变量拒绝、无字节码和基线 LW current_pass 均实测。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-32/mirror.log`) |
+| `install-identity-initial` | 1 | AssertionError: installation checker must detect actual content drift even with equal size and mtime (`WG-32/install-identity-initial.log`) |
+| `install-identity-final` | 0 | } (`WG-32/install-identity-final.log`) |
+| `cli` | 0 | 10 passed in 6.98s (`WG-32/cli.log`) |
+| `baseline-lw-preflight` | 0 | } (`WG-32/baseline-lw-preflight.log`) |
+| `portable-install` | 0 | } (`WG-32/portable-install.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-32/change.log`) |
+| `pytest` | 0 | 294 passed in 36.60s (`WG-32/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 10 warning(s), 0 info (`WG-32/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-32/models.log`) |
+| `mirror-final` | 0 | mirror-ok (`WG-32/mirror-final.log`) |
+
+Adaptations: 实测发现参考 dircmp 浅比较会把同长度/mtime 的单字节漂移报 installed current；在原 differences owner 对 common_files 直接比较 bytes，类型/不可读条目也列差异，既有安装测试补原负例，最终 exit1，首次漏报日志保留。未使用有 stat-key 缓存的内容捷径。日志历史绝对证据前缀仅改为相对路径，外部原始日志不变；没有改历史版本或退役记录。
