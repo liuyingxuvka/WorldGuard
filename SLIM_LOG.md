@@ -788,3 +788,24 @@ Status: completed.
 | `pytest` | 0 | 269 passed in 38.46s (`WG-40/pytest.log`) |
 
 Adaptations: 本项明确退役指纹过期机制测试；保留 no_match/ambiguous、字段归属冲突、槽位缺失/多余、未知校验器及真实 Guard/mesh 构造测试。实际源码875行，不为参考871行额外格式清理。模型仍为抽象边界，WG43将连接真实代码。
+
+### WG-41: 模型文件的 sha256 由 freeze 记录，compare 用冻结记录检查模型没被改过
+
+Status: completed.
+
+freeze 自动读取并记录模型 sha256，输出完整 frozen prediction；compare 接受 freeze 输出并拒绝无记录或冻结后变更。33 项修订专项、271 项完整测试与 3 模型通过，保留显式 sha256 旧输入。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-41/read.log`) |
+| `no-hash-before` | 1 | 2 failed, 31 deselected in 0.38s (`WG-41/no-hash-before.log`) |
+| `focused` | 0 | 33 passed in 0.33s (`WG-41/focused.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-41/change.log`) |
+| `confirm` | 0 | confirmed 2 component(s) (`WG-41/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-41/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-41/release.log`) |
+| `cli-and-revision` | 1 | AssertionError (`WG-41/cli-and-revision.log`) |
+| `pytest` | 0 | 271 passed in 45.83s (`WG-41/pytest.log`) |
+| `cli-and-revision-final` | 0 | ] (`WG-41/cli-and-revision-final.log`) |
+
+Adaptations: 真实 foreign-cwd CLI 四例验证 freeze/compare 成功和两种拒绝；revision base/candidate/rollback 省略 sha256 可成功，base 冻结后改动仍 blocked。初始外部 probe 错把 launcher stderr 当 stdout，产品已按参考拒绝；修正 probe 后输出保存在独立 cli-final 目录，原输出保留。领域匹配/失配分类、WG20 once-run/per-node 验收未放宽。

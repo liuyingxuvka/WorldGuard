@@ -697,3 +697,35 @@ def test_revision_keeps_node_local_scopes_from_one_fresh_mesh(tmp_path, monkeypa
     assert "receipt_fingerprint" not in row["prediction_receipt"]
     assert "receipt_fingerprint" not in row["comparison_receipt"]
     assert "receipt_fingerprint" not in result
+
+
+
+def test_freeze_records_the_model_sha256_and_compare_uses_the_frozen_record(tmp_path: Path) -> None:
+    model = _model(tmp_path, "v1.json", "{}")
+    recorded = model.pop("sha256")
+    frozen = freeze_prediction_snapshot(PredictionSnapshot.from_dict(_prediction(model)), base_dir=tmp_path)
+    assert frozen["status"] == "pass"
+    assert frozen["model_identity"]["sha256"] == recorded
+    assert frozen["prediction"]["model"]["sha256"] == recorded
+    observation = ObservedWorldSnapshot.from_dict(_observation())
+    with pytest.raises(ValueError, match="frozen prediction"):
+        compare_observed_world(PredictionSnapshot.from_dict(_prediction(model)), observation, base_dir=tmp_path)
+    frozen_prediction = PredictionSnapshot.from_dict(frozen["prediction"])
+    assert compare_observed_world(frozen_prediction, observation, base_dir=tmp_path)["status"] == "pass"
+    (tmp_path / model["path"]).write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="not current"):
+        compare_observed_world(frozen_prediction, observation, base_dir=tmp_path)
+
+
+def test_task_model_cli_compares_the_freeze_output(tmp_path: Path, capsys) -> None:
+    model = _model(tmp_path, "v1.json", "{}")
+    model.pop("sha256")
+    prediction_path = tmp_path / "prediction.json"
+    frozen_path = tmp_path / "frozen.json"
+    observation_path = tmp_path / "observation.json"
+    prediction_path.write_text(json.dumps(_prediction(model)), encoding="utf-8")
+    observation_path.write_text(json.dumps(_observation()), encoding="utf-8")
+    assert main(["task-model", "freeze", str(prediction_path)]) == 0
+    frozen_path.write_text(capsys.readouterr().out, encoding="utf-8")
+    assert main(["task-model", "compare", str(frozen_path), str(observation_path)]) == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "pass"

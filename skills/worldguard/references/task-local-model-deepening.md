@@ -6,13 +6,13 @@ Load this reference for the `task_local_revision` shape: compare a frozen predic
 
 Use `schema_version: worldguard.task_local_revision.v2`. A `PredictionSnapshot` names a task id and purpose, a coverage universe (`coverage_universe_id`, `coverage_universe_owner_id`, `coverage_universe_source_ref`, and `coverage_ids` equal to the expectation ids), non-empty `assumptions` and `unknowns`, a finite budget (`iteration`, `max_iterations`), and its predecessor `predecessor_iteration_fingerprint` (`root` for iteration 0; for a later iteration the `revision_fingerprint` printed by the previous `revision`, plus the exact `prior_gap_ids`). WorldGuard computes `coverage_universe_fingerprint` and the prior-gap fingerprint itself; you may omit them.
 
-The prediction also names the model it was made from (`model`: `model_id`, `model_version`, `path`, and the `sha256` of the model file, for example from `sha256sum`), a `prediction_sequence`, the declared `initial_state` and `intervention`, finite `expected_values` with absolute tolerances, `expected_relationships` (`left`/`relation`/`right`), and `weakening_conditions`. Every expectation declares one mismatch category: `initial_state`, `transition`, `causal_relation`, `resource`, `agent`, `observation_mapping`, or `other`.
+The prediction also names the model it was made from (`model`: `model_id`, `model_version`, `path`; `freeze` records the model file's `sha256`, so you may omit it), a `prediction_sequence`, the declared `initial_state` and `intervention`, finite `expected_values` with absolute tolerances, `expected_relationships` (`left`/`relation`/`right`), and `weakening_conditions`. Every expectation declares one mismatch category: `initial_state`, `transition`, `causal_relation`, `resource`, `agent`, `observation_mapping`, or `other`.
 
 An `ObservedWorldSnapshot` names the prediction, uses a strictly later `observation_sequence`, a non-empty `source_ref` and `evidence_id`, and carries actual values, relationships, or exact external-input requirements. WorldGuard computes its `evidence_fingerprint`.
 
 ## Compare and revise
 
-`compare` checks only declared expectations. Every missing or contradicted expectation keeps its mismatch category; the result never closes the task by itself. Revise by writing a separate candidate model; never overwrite the predecessor.
+Save the output of `freeze` and pass it to `compare`; `compare` refuses a prediction without the recorded `sha256` and blocks when the model file changed after `freeze`. It checks only declared expectations. Every missing or contradicted expectation keeps its mismatch category; the result never closes the task by itself. Revise by writing a separate candidate model; never overwrite the predecessor.
 
 A `CandidateWorldModelRevision` names the base and candidate models (separate files), the frozen prediction and its comparison (the outputs of `freeze` and `compare` for the base model), `candidate_build_evidence_fingerprints` (the `observation_evidence_fingerprint` of every observation used to build the candidate), exactly two revalidations - `original_scenario` and `real_holdout_observation`, each written as `{check_id, role, empirical_comparison}` where `empirical_comparison` is the output of `compare` for the candidate - plus `candidate_applied`, `rollback_model` and `external_inputs`.
 
@@ -34,7 +34,7 @@ A passing candidate is `accepted`; a failed unapplied candidate is `rejected`; a
 
 ```bash
 python <skill-root>/scripts/run_worldguard.py task-model freeze <prediction.yaml>
-python <skill-root>/scripts/run_worldguard.py task-model compare <prediction.yaml> <observation.yaml>
+python <skill-root>/scripts/run_worldguard.py task-model compare <frozen.json> <observation.yaml>
 python <skill-root>/scripts/run_worldguard.py task-model revision <candidate-revision.yaml>
 ```
 

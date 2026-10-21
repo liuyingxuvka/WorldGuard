@@ -12,7 +12,7 @@ import hashlib
 import json
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Mapping
@@ -171,7 +171,7 @@ class WorldModelIdentity:
             model_id=_text(data.get("model_id"), "model_id"),
             model_version=_text(data.get("model_version"), "model_version"),
             path=_text(data.get("path"), "path"),
-            sha256=_sha256_text(data.get("sha256"), "sha256"),
+            sha256=_sha256_text(data.get("sha256"), "sha256") if str(data.get("sha256") or "").strip() else "",
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -739,20 +739,24 @@ class CandidateWorldModelRevision:
 def _identity_receipt(identity: WorldModelIdentity, base_dir: Path) -> dict[str, Any]:
     path = _resolve_path(base_dir, identity.path)
     actual = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ""
+    recorded = identity.sha256 or actual
     return {
         **identity.to_dict(),
+        "sha256": recorded,
         "resolved_path": str(path.resolve()) if path.exists() else str(path),
         "actual_sha256": actual,
-        "status": "current" if actual == identity.sha256 else "stale",
+        "status": "current" if actual and actual == recorded else "stale",
     }
 
 
-def _same_identity(left: WorldModelIdentity, right: WorldModelIdentity) -> bool:
-    return left.to_dict() == right.to_dict()
+def _same_identity(left: Mapping[str, Any], right: Mapping[str, Any]) -> bool:
+    return all(left.get(key) == right.get(key) for key in ("model_id", "model_version", "path", "sha256"))
 
 
 def freeze_prediction_snapshot(prediction: PredictionSnapshot, *, base_dir: Path) -> dict[str, Any]:
     model = _identity_receipt(prediction.model, base_dir)
+    if not prediction.model.sha256 and model["sha256"]:
+        prediction = replace(prediction, model=replace(prediction.model, sha256=model["sha256"]))
     return (
         {
             "artifact_kind": "worldguard_prediction_snapshot_receipt",
@@ -778,6 +782,7 @@ def freeze_prediction_snapshot(prediction: PredictionSnapshot, *, base_dir: Path
             "prediction_sequence": prediction.prediction_sequence,
             "model_identity": model,
             "prediction_fingerprint": _fingerprint(prediction.to_dict()),
+            "prediction": prediction.to_dict(),
             "expected_value_count": len(prediction.expected_values),
             "expected_relationship_count": len(prediction.expected_relationships),
             "weakening_conditions": list(prediction.weakening_conditions),
@@ -810,6 +815,8 @@ def compare_observed_world(
         raise ValueError("observation prediction_id does not match the prediction snapshot")
     if observation.observation_sequence <= prediction.prediction_sequence:
         raise ValueError("observation_sequence must be strictly later than prediction_sequence")
+    if not prediction.model.sha256:
+        raise ValueError("compare needs the frozen prediction: pass the output of task-model freeze, which records the model sha256")
     frozen = freeze_prediction_snapshot(prediction, base_dir=base_dir)
     if frozen["status"] != "pass":
         raise ValueError("prediction snapshot model identity is not current")
@@ -932,16 +939,16 @@ def _load_candidate_mesh(candidate_model: WorldModelIdentity, base_dir: Path):
     return ModelMeshContract.from_dict(raw)
 
 
-def _comparison_binds_model(comparison: Mapping[str, Any], model: WorldModelIdentity) -> bool:
+def _comparison_binds_model(comparison: Mapping[str, Any], model: Mapping[str, Any]) -> bool:
     identity = comparison.get("model_identity")
     if not isinstance(identity, Mapping):
         return False
     return (
-        str(identity.get("model_id", "")) == model.model_id
-        and str(identity.get("model_version", "")) == model.model_version
-        and str(identity.get("path", "")) == model.path
-        and str(identity.get("sha256", "")).lower() == model.sha256
-        and str(identity.get("actual_sha256", "")).lower() == model.sha256
+        str(identity.get("model_id", "")) == model["model_id"]
+        and str(identity.get("model_version", "")) == model["model_version"]
+        and str(identity.get("path", "")) == model["path"]
+        and str(identity.get("sha256", "")).lower() == model["sha256"]
+        and str(identity.get("actual_sha256", "")).lower() == model["sha256"]
         and str(identity.get("status", "")).lower() == "current"
     )
 
@@ -986,7 +993,7 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         findings.append("prediction_receipt_non_pass")
     if comparison_body.get("task_id") != task_id or comparison_body.get("coverage_universe_fingerprint") != coverage_fingerprint:
         findings.append("comparison_task_or_coverage_mismatch")
-    if not _comparison_binds_model(comparison_body, revision.base_model):
+    if not _comparison_binds_model(comparison_body, base):
         findings.append("comparison_base_model_identity_mismatch")
     candidate_mesh = None
     mesh_report = None
@@ -1031,7 +1038,7 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
             issues.append("empirical_comparison_non_pass")
         if comparison_receipt.get("task_id") != task_id or comparison_receipt.get("coverage_universe_fingerprint") != coverage_fingerprint:
             issues.append("empirical_task_or_coverage_mismatch")
-        if not _comparison_binds_model(comparison_receipt, revision.candidate_model):
+        if not _comparison_binds_model(comparison_receipt, candidate):
             issues.append("empirical_comparison_candidate_identity_mismatch")
         check_results.append(
             {
@@ -1098,7 +1105,7 @@ def evaluate_candidate_world_revision(revision: CandidateWorldModelRevision, *, 
         else:
             assert revision.rollback_model is not None
             rollback = _identity_receipt(revision.rollback_model, base_dir)
-            if rollback["status"] == "current" and _same_identity(revision.rollback_model, revision.base_model):
+            if rollback["status"] == "current" and _same_identity(rollback, base):
                 disposition = "rolled_back"
                 terminal_reason = "candidate_rolled_back"
             else:

@@ -331,7 +331,10 @@ def main(argv: list[str] | None = None) -> int:
             receipt = freeze_prediction_snapshot(prediction, base_dir=path.parent)
         elif args.task_model_command == "compare":
             prediction_path = Path(args.prediction)
-            prediction = PredictionSnapshot.from_dict(load_mapping(prediction_path))
+            frozen = load_mapping(prediction_path)
+            if frozen.get("artifact_kind") == "worldguard_prediction_snapshot_receipt":
+                frozen = frozen.get("prediction", {})
+            prediction = PredictionSnapshot.from_dict(frozen)
             observation = ObservedWorldSnapshot.from_dict(
                 load_mapping(args.observation)
             )

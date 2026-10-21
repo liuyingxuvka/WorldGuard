@@ -44,7 +44,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:d20c6a2cb368d33aff20a80c8e49f135c531259045b6e20ef45a181111e84d84"
+      "fingerprint": "sha256:dc890a96c6e9f9a3fffea479b7376f34bb61dfd7fa12721173eca845a4e2cd66"
     },
     {
       "id": "worldguard.core",
@@ -244,7 +244,7 @@
       "layer": "",
       "summary": "Task-local prediction, reversible revision and fact transactions",
       "responsibilities": [
-        "Freeze prediction before observation and compare declared world coverage",
+        "Freeze prediction before observation, recording the model file sha256, and compare declared world coverage against that frozen record",
         "Run the candidate mesh once and bind independent original and holdout observations to candidate revisions",
         "Preview subordinate four-valued fact transactions and activate only against current evidence"
       ],
@@ -279,7 +279,7 @@
         ".flowguard/fact_revision/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:494f04098f73c08b7feeba8a497506d542c66a1202892353ef8df3bd9612e726"
+      "fingerprint": "sha256:03fe59b2de9c010692cb774597785904ed93696131c7bff4b4e40b222169ea9d"
     },
     {
       "id": "worldguard.templates",
