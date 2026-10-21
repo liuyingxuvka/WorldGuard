@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GuardContract
+from worldguard.semantic import event_precondition_failures
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -220,6 +221,18 @@ def run(contract: GuardContract):
                     "A bounded state-machine rollout needs at least one initial state.",
                 )
             ],
+        )
+
+    unmet = event_precondition_failures(events, event_model.get("initial_states", []))
+    if unmet:
+        return result(
+            contract,
+            guard,
+            GuardStatus.FAIL,
+            channel="event",
+            impact="supports_fail",
+            errors=[error("EVENT_PRECONDITION_UNMET", "An event happens while a fluent it requires does not hold.")],
+            counterexamples=[{"kind": "trace", "steps": unmet}],
         )
 
     return result(

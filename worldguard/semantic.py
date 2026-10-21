@@ -55,6 +55,33 @@ def missing_bdi_fields(record: Mapping[str, Any]) -> list[str]:
     return missing
 
 
+def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str = ""):
+    """Yield (event, fluents holding before it, fluents holding after it) for one scenario, in time order."""
+    holding = frozenset(_fluent_values(initial_fluents))
+    applicable = [
+        event for event in events
+        if isinstance(event, dict) and (not event.get("scenario_id") or str(event["scenario_id"]) == scenario_id)
+    ]
+    for event in sorted(applicable, key=lambda item: _event_time_key(item.get("at", ""))):
+        ended = set(_fluent_values(event.get("terminates"))) | set(_fluent_values(event.get("releases")))
+        after = frozenset((holding - ended) | set(_fluent_values(event.get("initiates"))))
+        yield event, holding, after
+        holding = after
+
+
+def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) -> list[dict[str, Any]]:
+    """Return every event whose `requires` fluents do not hold when it happens."""
+    scenario_ids = sorted({str(event["scenario_id"]) for event in events if isinstance(event, dict) and event.get("scenario_id")})
+    failures: list[dict[str, Any]] = []
+    for scenario_id in scenario_ids or [""]:
+        for event, before, _ in event_replay(events, initial_fluents, scenario_id):
+            missing = sorted(set(_fluent_values(event.get("requires"))) - before)
+            if missing:
+                row = {"event_id": event.get("event_id"), "at": event.get("at"), "missing_fluents": missing, "holding_fluents": sorted(before)}
+                failures.append({**row, "scenario_id": scenario_id} if scenario_id else row)
+    return failures
+
+
 def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
     """Return (actor, action) groups whose active norms both forbid and permit/require it."""
     groups: dict[tuple[str, str], list[Any]] = {}
@@ -350,6 +377,9 @@ def _event(contract: GuardContract):
                 missing.append({"transition": index, "field": name})
     if missing:
         return SemanticStatus.GAP, [_finding("SEM_EVENT_MISSING_AXIOM", "Event records lack required temporal or fluent axioms.", evidence={"missing": missing})], consumed, {}
+    unmet = event_precondition_failures(events, event_model.get("initial_states", []))
+    if unmet:
+        return SemanticStatus.FAIL, [_finding("SEM_EVENT_PRECONDITION_UNMET", "An event happens while a fluent it requires does not hold.", evidence={"events": unmet})], consumed, {}
 
     if transitions and not states:
         return SemanticStatus.GAP, [

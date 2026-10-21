@@ -1,5 +1,6 @@
 # Scene: Jonas gives Mara the key (t1), Mara unlocks the archive door (t2), Iris slips in behind her (t3).
-# Moving the iris_enter transition above mara_unlock makes the check FAIL (Iris would enter before the door is open).
+# Moving the iris_enter transition above mara_unlock makes the check FAIL (Iris would enter before the door is open);
+# so does giving the key at t3 (e_mara_unlock requires mara_has_key at t2).
 contract_id: scene-archive-001
 claim:
   claim_id: c_iris_enters
@@ -7,10 +8,11 @@ claim:
   requested_semantics: [event, resource, agent]
 world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only]}
 inputs:
+  event_model: {initial_states: [jonas_has_key, door_locked]}
   events:
-    - {event_id: e_give_key, at: t1, initiates: mara_has_key, terminates: jonas_has_key}
-    - {event_id: e_mara_unlock, at: t2, initiates: door_unlocked, terminates: door_locked}
-    - {event_id: e_iris_enter, at: t3, initiates: iris_in_archive}
+    - {event_id: e_give_key, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
+    - {event_id: e_mara_unlock, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
+    - {event_id: e_iris_enter, at: t3, requires: [door_unlocked], initiates: iris_in_archive}
   beliefs:
     Mara:  {agent_id: Mara,  beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
     Jonas: {agent_id: Jonas, beliefs: [mara_trustworthy], desires: [protect_archive], intentions: [give_key]}

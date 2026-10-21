@@ -13,15 +13,18 @@ reports `BOUNDARY_EXCEEDED`. The ids are listed per Guard.
 ## EventGuard
 
 ```yaml
+event_model: {initial_states: [door_locked]}
 events:
-  - {event_id: e_unlock, at: t1, initiates: door_open, terminates: door_locked}
-  - {event_id: e_enter, at: t2, initiates: iris_inside}
+  - {event_id: e_unlock, at: t1, requires: [door_locked], initiates: door_open, terminates: door_locked}
+  - {event_id: e_enter, at: t2, requires: [door_open], initiates: iris_inside}
 ```
 
 `event_id` is unique; `at` is a number, `t<number>` or an ISO date-time, and events run in that order;
-`initiates`, `terminates`, `releases` name fluents (one id or a list). Optional:
-`event_model.contradictory_fluents`. Catches: one event that starts and ends the same fluent, declared
-contradictory fluents. Does not check that a fluent holds before an event uses it (use ResourceGuard for that).
+`initiates`, `terminates`, `releases` name fluents (one id or a list). Optional: `requires` (fluents that must
+hold when the event happens), `event_model.initial_states` (fluents that hold before the first event),
+`event_model.contradictory_fluents`. Catches: an event whose required fluent does not hold at its time
+(`EVENT_PRECONDITION_UNMET`, for example a door opened with a key handed over later), one event that starts and
+ends the same fluent, declared contradictory fluents.
 Boundary ids: `numeric_dynamics`, `thermodynamics`, `continuous_dynamics`.
 
 ## AgentGuard

@@ -915,3 +915,24 @@ Status: completed.
 | `pytest` | 0 | 272 passed in 26.21s (`WG-46/pytest.log`) |
 
 Adaptations: 只扩展既有runner/模型owner，不改三份原始model.py场景/不变量；WG43逐terminal比较与WG45真实激活重放保留。
+
+### WG-47: EventGuard 检查事件前提 events[].requires：前提不成立的事件报 EVENT_PRECONDITION_UNMET
+
+Status: completed.
+
+EventGuard和语义层共享时间顺序requires重放；场景加入真实前提。晚给钥匙真实CLI从旧PASS0变为EVENT_PRECONDITION_UNMET FAIL1，8专项/273完整测试与3模型通过，catalog为80个坏例子。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-47/read.log`) |
+| `late-key-before` | 0 | actual CLI before exit 0 PASS (`WG-47/late-key-before.log`) |
+| `focused` | 0 | 8 passed in 0.78s (`WG-47/focused.log`) |
+| `late-key-after` | 0 | actual CLI after exit 1 FAIL (`WG-47/late-key-after.log`) |
+| `catalog` | 0 | status=pass purposes=7 goods=7 failures=80 known_bads=80 (`WG-47/catalog.log`) |
+| `change` | 0 | ARCH WARN large_file worldguard.core: worldguard/semantic.py: 1262 LOC (limit 800) (`WG-47/change.log`) |
+| `confirm` | 0 | confirmed 2 component(s) (`WG-47/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-47/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-47/release.log`) |
+| `pytest` | 0 | 273 passed in 39.79s (`WG-47/pytest.log`) |
+
+Adaptations: 保留已有Event错误与时间排序，新增前提检查不读取主张句子；旧未检查前提的真实通过结果和修复后缺mara_has_key反例都保存。
