@@ -153,8 +153,3 @@ def test_binding_change_changes_instance_fingerprint() -> None:
     assert first.receipt.binding_fingerprint != second.receipt.binding_fingerprint
     assert first.receipt.output_fingerprint != second.receipt.output_fingerprint
     assert first.receipt.instance_fingerprint != second.receipt.instance_fingerprint
-
-def test_source_and_bundled_template_pack_runtime_are_exactly_equal() -> None:
-    source = ROOT / 'worldguard' / 'template_packs.py'
-    bundled = ROOT / 'skills' / 'worldguard' / 'runtime' / 'worldguard' / 'template_packs.py'
-    assert bundled.read_bytes() == source.read_bytes()

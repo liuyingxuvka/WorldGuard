@@ -45,9 +45,3 @@ def test_causal_guard_rejects_partially_defined_structural_equations():
     assert result.status is GuardStatus.GAP
     assert [item['code'] for item in result.errors] == ['CAUSAL_MISSING_STRUCTURAL_EQUATION']
     assert result.missing_slots == [{'variable': 'y', 'needed': 'structural_equation'}]
-
-
-def test_bundled_guard_model_contract_matches_the_canonical_runtime():
-    source = ROOT / 'worldguard' / 'guard_model_contract.py'
-    bundled = ROOT / 'skills' / 'worldguard' / 'runtime' / 'worldguard' / 'guard_model_contract.py'
-    assert bundled.read_bytes() == source.read_bytes()

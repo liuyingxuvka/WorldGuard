@@ -584,10 +584,6 @@ def test_task_model_cli_freezes_and_compares(tmp_path: Path, capsys) -> None:
 
 
 
-def test_bundled_task_local_runtime_matches_source_and_version() -> None:
-    bundled_root = ROOT / "skills" / "worldguard" / "runtime" / "worldguard"
-    for relative_path in ("task_local_revision.py", "fact_revision.py", "cli.py", "__init__.py"):
-        assert (ROOT / "worldguard" / relative_path).read_bytes() == (bundled_root / relative_path).read_bytes()
 
 
 

@@ -2,15 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
-import sys
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from scripts.sync_worldguard_portable_runtime import audit_projection
 
 from worldguard.blueprint import (
     NATIVE_SEMANTIC_FIELDS,
@@ -680,46 +677,3 @@ def test_causal_claim_scopes_are_requested_evaluated_and_licensed_honestly() -> 
     assert mechanism_truth["evaluated_claim_scope"] == "graph_only"
     assert mechanism_truth["qualified_subscope"] == "graph_only"
     assert "licensed_claim_scope" not in mechanism_truth
-
-
-def test_source_and_bundled_runtime_have_all_file_parity_and_isolated_import(
-    tmp_path: Path,
-) -> None:
-    projection_report = audit_projection(ROOT)
-    assert projection_report["ok"], projection_report["failures"]
-    assert projection_report["action"] == "check"
-    assert projection_report["transaction_state"] == "read_only"
-    assert projection_report["write_performed"] is False
-    assert projection_report["authority"]["direction"] == (
-        "author_source_to_derived_projection_only"
-    )
-
-    bundled_root = ROOT / "skills/worldguard/runtime/worldguard"
-
-    script = f"""
-import json
-import pathlib
-import sys
-sys.path.insert(0, {str(bundled_root.parent)!r})
-import worldguard
-from worldguard.blueprint import NATIVE_SEMANTIC_FIELDS, NATIVE_SEMANTIC_FIELD_DISPOSITIONS
-print(json.dumps({{
-    "module_path": str(pathlib.Path(worldguard.__file__).resolve()),
-    "field_kinds": sorted(NATIVE_SEMANTIC_FIELDS),
-    "disposition_kinds": sorted(NATIVE_SEMANTIC_FIELD_DISPOSITIONS),
-}}, sort_keys=True))
-"""
-    completed = subprocess.run(
-        [sys.executable, "-c", script],
-        cwd=tmp_path,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert completed.returncode == 0, completed.stderr
-    observed = json.loads(completed.stdout)
-    assert Path(observed["module_path"]).is_relative_to(bundled_root)
-    assert observed["field_kinds"] == sorted(NATIVE_SEMANTIC_FIELDS)
-    assert observed["disposition_kinds"] == sorted(
-        NATIVE_SEMANTIC_FIELD_DISPOSITIONS
-    )

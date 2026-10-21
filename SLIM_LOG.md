@@ -565,3 +565,22 @@ Status: completed.
 | `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-29/mirror.log`) |
 
 Adaptations: 不再将逐字节副本当成第二份业务代码进行重复架构告警；实际仍有原生大文件/辅助函数重复提示，未把它们伪称零警告。确认继续按 WG35 时点统一处理。
+
+### WG-30: 镜像同步脚本缩成 60 行；1 个一致性测试代替 14 个事务测试和 4 个逐文件比对测试
+
+Status: completed.
+
+镜像同步器缩为 60 行，统一目录库存/字节一致性测试替代重复事务和逐文件比对。真实注入 io.py 漂移后 check 精确报 differs/exit1，sync 恢复原字节/exit0，非法用法 exit2；292 项完整测试和 3 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `drift` | 0 | } (`WG-30/drift.log`) |
+| `lines` | 0 | 60 scripts/sync_worldguard_portable_runtime.py (`WG-30/lines.log`) |
+| `change` | 0 | ARCH WARN large_file scripts: scripts/refresh_world_blueprint_external_dna_fixtures.py: 1220 LOC (limit 800) (`WG-30/change.log`) |
+| `pytest` | 0 | 292 passed in 34.08s (`WG-30/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 10 warning(s), 0 info (`WG-30/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-30/models.log`) |
+| `diff-check-initial` | 2 | tests/test_world_blueprint_seven_guard_matrix.py:680: new blank line at EOF. (`WG-30/diff-check-initial.log`) |
+| `diff-check-final` | 0 | (no output) (`WG-30/diff-check-final.log`) |
+
+Adaptations: 漂移只针对本库派生副本，恢复严格使用 canonical sync；最终 skills 跟踪差异为 0，未执行任何全库 restore/clean。提交前 diff check 检出删除尾部测试遗留的三个多余空行，规范 EOF 后通过，不改行为。

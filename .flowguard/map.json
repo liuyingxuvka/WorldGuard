@@ -359,7 +359,7 @@
         "scripts/*.py"
       ],
       "entrypoints": [
-        "scripts/sync_worldguard_portable_runtime.py:audit_projection"
+        "scripts/sync_worldguard_portable_runtime.py:differences"
       ],
       "state": [
         "Projection staging and backup paths"
