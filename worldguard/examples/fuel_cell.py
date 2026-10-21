@@ -21,7 +21,7 @@ def build_contracts() -> list[GuardContract]:
     state = world['initial_world_state']
     scope_limits = story['scope_limits']
     contracts = []
-    inputs = {'events': world['events'], 'beliefs': state['agents'], 'spatial_relations': state['rcc8_relations'], 'resources': state['resources'], 'causal_model': {'variables': state['causal_variables'], 'equations': state['causal_equations']}, 'game_model': {'payoffs': state['conflict_payoffs']}, 'norms': state['norms'], 'facts': ['c_precheck_complete', 'nda_active']}
+    inputs = {'events': world['events'], 'beliefs': state['agents'], 'spatial_relations': state['rcc8_relations'], 'resources': state['resources'], 'causal_model': {'variables': state['causal_variables'], 'equations': state['causal_equations'], 'scenarios': {'demo_day': {}}}, 'game_model': {'payoffs': state['conflict_payoffs']}, 'norms': state['norms'], 'facts': [{'fact_id': 'c_precheck_complete', 'value': True}, {'fact_id': 'nda_active', 'value': True}]}
     model = {'model_id': world['model_id'], 'model_version': world['model_version'], 'scope_limits': scope_limits}
     for claim in story['claims']:
         task_contract_id = f"fuel-cell:{claim['claim_id']}"
@@ -37,8 +37,9 @@ def run_check() -> dict[str, Any]:
     statuses = [report.status.value for report in reports]
     scope_notes = [*story['scope_limits'], *ledger_outputs['artifact_scope_note']['no_real_world_claims']]
     toy_boundaries_ok = all((any((boundary in item for item in scope_notes)) or boundary in str(scope_notes) for boundary in BOUNDARY_STRINGS))
-    ok = set(guards_seen) == set(REQUIRED_GUARDS) and expected.get('aggregate_status') == 'FAIL' and ('FAIL' in statuses) and toy_boundaries_ok
-    return {'ok': ok, 'example': 'fuel_cell', 'guards_verified': guards_seen, 'claim_statuses': statuses, 'expected_aggregate_status': expected.get('aggregate_status'), 'toy_boundaries_verified': BOUNDARY_STRINGS, 'reports': [report.to_dict() for report in reports]}
+    mismatches = [{'claim_id': claim['claim_id'], 'expected': claim.get('expected_status'), 'actual': status} for claim, status in zip(story['claims'], statuses) if claim.get('expected_status') != status]
+    ok = set(guards_seen) == set(REQUIRED_GUARDS) and expected.get('aggregate_status') == 'FAIL' and ('FAIL' in statuses) and toy_boundaries_ok and not mismatches
+    return {'ok': ok, 'example': 'fuel_cell', 'guards_verified': guards_seen, 'claim_statuses': statuses, 'mismatches': mismatches, 'expected_aggregate_status': expected.get('aggregate_status'), 'toy_boundaries_verified': BOUNDARY_STRINGS, 'reports': [report.to_dict() for report in reports]}
 
 def main(argv: list[str] | None=None) -> int:
     parser = argparse.ArgumentParser()

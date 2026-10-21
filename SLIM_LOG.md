@@ -46,3 +46,19 @@ Removed self-DNA, unused execution-depth evidence bridge, runtime identity autho
 | `portable-help` | 0 |   --example {fuel_cell} (`WG-01/portable-help.log`) |
 
 Adaptations: Only scheduling changed: root explicitly opened WG-01–WG-08 in parallel with RG-01–RG-10 after verifying there is no actual dependency; all action-local ordering and checks remain intact.
+
+### WG-02: 修复燃料电池示例：改成当前输入格式，自检逐条比对期望状态
+
+Status: completed.
+
+Updated the packaged fuel-cell world to current agent, causal and boolean-fact inputs. Each story claim declares an expected status and run_check compares every claim instead of accepting any FAIL; the portable invocation now yields True / PASS,PASS,FAIL / no mismatches. Preserved BOUNDARY_STRINGS and expected_guard_report for WG-03.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-02/mirror.log`) |
+| `fuel-cell` | 0 | True ['PASS', 'PASS', 'FAIL'] [] (`WG-02/fuel-cell.log`) |
+| `pytest` | 0 | 375 passed in 34.45s (`WG-02/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 4 warning(s), 0 info (`WG-02/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-02/models.log`) |
+
+Adaptations: None; reference purpose and implementation retained.

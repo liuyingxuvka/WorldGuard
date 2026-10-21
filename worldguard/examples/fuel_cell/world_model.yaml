@@ -5,18 +5,23 @@ world_model:
     time: t0
     agents:
       CompanyA.lead_engineer:
+        agent_id: CompanyA.lead_engineer
         beliefs: [c_precheck_complete, stack_ready, nda_active]
         desires: [show_voltage_output, protect_membrane_recipe]
         capabilities: [install_stack, start_demo, share_redacted_log]
         intentions: [i_install_stack, i_start_demo, i_share_full_log]
       CompanyB.test_operator:
+        agent_id: CompanyB.test_operator
         beliefs: [bench_available, expects_demo_log]
         desires: [receive_complete_demo_log]
         capabilities: [operate_bench]
+        intentions: [i_operate_bench]
       CompanyC.safety_auditor:
+        agent_id: CompanyC.safety_auditor
         beliefs: [nda_active, precheck_required]
         desires: [prevent_recipe_leak, allow_safe_demo]
         capabilities: [approve_precheck, block_recipe_release]
+        intentions: [i_approve_precheck]
     lab_spaces:
       lab_A_stack_room: Company A assembly room
       lab_B_test_bench: Company B shared validation bench
@@ -43,9 +48,10 @@ world_model:
             - {place: voltage_trace, color: demo_voltage, qty: 1}
     causal_variables: [precheck_complete, cell_running, voltage_output, recipe_disclosed]
     causal_equations:
-      cell_running: f(precheck_complete, run_demo)
-      voltage_output: g(cell_running)
-      recipe_disclosed: h(share_full_log)
+      precheck_complete: "1"
+      cell_running: precheck_complete
+      voltage_output: cell_running
+      recipe_disclosed: "0"
     conflict_payoffs:
       - state: demo_ready
         joint_action: [A_share_full_log, B_accept_full_log, C_block_recipe_release]
