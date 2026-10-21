@@ -83,15 +83,6 @@ __all__ = [
     "run_model_mesh",
     "qualification_context_for_node",
     "run_worldguard",
-    "build_flowguard_projection",
-    "build_flowguard_provider_profile",
-    "require_flowguard_toolchain",
-    "FlowGuardProjectionError",
-    "FLOWGUARD_PROJECTION_PROVIDER_ID",
-    "FLOWGUARD_PROJECTION_PROVIDER_VERSION",
-    "FLOWGUARD_PROJECTION_CAPABILITY_ID",
-    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID",
-    "FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION",
     "qualify_guard_contract",
     "CandidateWorldModelRevision",
     "TASK_LOCAL_REVISION_OWNER_ID",
@@ -241,15 +232,6 @@ _EXPORTS = {
     'activate_fact_revision': 'worldguard.fact_revision',
     'preview_fact_revision': 'worldguard.fact_revision',
     'run_worldguard': 'worldguard.kernel',
-    'FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID': 'worldguard.flowguard_projection',
-    'FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION': 'worldguard.flowguard_projection',
-    'FLOWGUARD_PROJECTION_CAPABILITY_ID': 'worldguard.flowguard_projection',
-    'FLOWGUARD_PROJECTION_PROVIDER_ID': 'worldguard.flowguard_projection',
-    'FLOWGUARD_PROJECTION_PROVIDER_VERSION': 'worldguard.flowguard_projection',
-    'FlowGuardProjectionError': 'worldguard.flowguard_projection',
-    'build_flowguard_projection': 'worldguard.flowguard_projection',
-    'build_flowguard_provider_profile': 'worldguard.flowguard_projection',
-    'require_flowguard_toolchain': 'worldguard.flowguard_projection',
     'ModelMeshContract': 'worldguard.mesh',
     'MeshReport': 'worldguard.mesh',
     'SemanticCoverageContract': 'worldguard.mesh',
@@ -307,7 +289,7 @@ _EXPORTS = {
     'template_slot': 'worldguard.template_packs',
 }
 
-_EXPORT_ALIASES = (('FLOWGUARD_PROJECTION_EXECUTION_OWNER_ID', 'EXECUTION_OWNER_ID'), ('FLOWGUARD_PROJECTION_EXECUTION_OWNER_VERSION', 'EXECUTION_OWNER_VERSION'), ('FLOWGUARD_PROJECTION_CAPABILITY_ID', 'PROVIDER_CAPABILITY_ID'), ('FLOWGUARD_PROJECTION_PROVIDER_ID', 'PROVIDER_ID'), ('FLOWGUARD_PROJECTION_PROVIDER_VERSION', 'PROVIDER_VERSION'))
+_EXPORT_ALIASES = ()
 
 
 def __getattr__(name: str):

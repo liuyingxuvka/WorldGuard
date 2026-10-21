@@ -310,3 +310,20 @@ Status: completed.
 | `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-16/map.log`) |
 
 Adaptations: 实际总数比文档多 3，来自已独立复核的 WG06 输入形状边界补测。
+
+### WG-17: 删除已经失效的 FlowGuard 投影模块
+
+Status: completed.
+
+删除仅产生永久 gap 的旧 FlowGuard 投影适配器及 9 个导出、对应测试，保留原生蓝图。140 个剩余导出可加载，361 项测试和 6 个选中模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-17/mirror.log`) |
+| `exports` | 0 | 140 ok (`WG-17/exports.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-17/change.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-17/models.log`) |
+| `pytest` | 0 | 361 passed in 72.27s (0:01:12) (`WG-17/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-17/map.log`) |
+
+Adaptations: 完整测试实际 72.27 秒，未用文档预计时长替代实测。
