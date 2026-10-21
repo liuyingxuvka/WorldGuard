@@ -1,40 +1,30 @@
 ---
 name: worldguard
-description: Model-first checks for claims about events, agents, space, resources, causality, conflicts, norms, predictions, model meshes, hierarchical world blueprints, task-local reality revision, or WorldGuard template packs. Use when a conclusion must be licensed by an explicit world model and visible evidence boundary.
+description: Check that a story, trip, plan or process world is consistent by writing it as a small executable model (events, agents, places, resources, causes, norms). For code structure use flowguard.
 ---
 
 # WorldGuard
 
-Check a world claim against an explicit executable model. Keep model consistency, empirical evidence, factual truth, and software/publication identity separate. Existing models run directly through their native owners; ordinary use needs no checker-purpose declaration or good/bad proof ceremony.
+Write the world as a small executable model (events, agents, places, resources, causes, norms) and let WorldGuard check that the model is consistent. WorldGuard does not read the claim sentence: every fact the claim depends on must be in the model, for example the order of actions as an ordered `resources.transitions` list. A consistent model is not proof that the world is factually true.
 
-WorldGuard is the single public skill and console. EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard, and NormGuard are internal semantic owners. A failure preserves its own result; another Guard is not a retry.
+EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard and NormGuard are internal checks of this one skill. WorldGuard picks them from `claim.requested_semantics` (`event`, `agent`, `spatial`, `resource`, `causal`, `conflict`, `norm`; `predictive` adds EventGuard and CausalGuard); `claim.target_guards` is optional. Unknown semantics stay visible as a gap.
 
 ## Start
 
-Pick the shape that fits the request and read its reference:
+Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`.
 
-| Shape | Work | Selected reference |
-|---|---|---|
-| `unit_contract` | One claim and current world model | [worldguard-contracts.md](references/worldguard-contracts.md) |
-| `model_mesh` | Multiple nodes, authority, freshness, handoff, coverage | [model-mesh.md](references/model-mesh.md) |
-| `world_blueprint` | One in-memory `create`, `update`, `check`, `impact`, or `trace` operation | [world-blueprint.md](references/world-blueprint.md) |
-| `task_local_revision` | Frozen prediction, later observation, finite model revision | [task-local-model-deepening.md](references/task-local-model-deepening.md) |
-| `template_pack` | Select and compose reusable WorldGuard scaffolding | [template-packs.md](references/template-packs.md) |
+| Shape | Use for | Command: `python <skill-root>/scripts/run_worldguard.py ...` | Reference |
+|---|---|---|---|
+| `unit_contract` | One claim against one world model | `check --contract <file.yaml>` | [worldguard-contracts.md](references/worldguard-contracts.md) |
+| `model_mesh` | Several linked models (scenes, trip legs, handoffs) | `mesh-check --mesh <file.yaml>` | [model-mesh.md](references/model-mesh.md) |
+| `world_blueprint` | A hierarchical world model and change impact | `blueprint check`, `blueprint impact`, `blueprint trace` | [world-blueprint.md](references/world-blueprint.md) |
+| `task_local_revision` | Compare a frozen prediction with a later observation | `task-model freeze`, `task-model compare`, `task-model revision` | [task-local-model-deepening.md](references/task-local-model-deepening.md) |
+| `template_pack` | Optional: scaffold a single-Guard contract | Python API | [template-packs.md](references/template-packs.md) |
 
-WorldGuard derives the Guards to run from `claim.requested_semantics` (and atom semantics); `claim.target_guards` is optional. A predictive claim adds EventGuard and CausalGuard. Unknown semantics stay visible as a gap.
+Load [fact-revision.md](references/fact-revision.md) only when the support of a fact changes, [model-authority.md](references/model-authority.md) only for questions about which model owns a fact, and [closure-report.md](references/closure-report.md) only as an optional checklist when reporting a mesh.
 
-## First native action
+## Results
 
-For a current unit contract, execute `run_worldguard` directly; qualification reconciles the complete Guard set and runs the structural and semantic owners. The portable launcher is `python <skill-root>/scripts/run_worldguard.py check --contract <contract.yaml>`. For mesh, inspect declared nodes/edges and run `mesh-check`; add [handoff-contracts.md](references/handoff-contracts.md) only for handoffs.
+Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.
 
-For a blueprint, retain the exact target/revision/boundary and operation-specific identity. Read only its selected reference and explicit `affected_guard_ids`. Actual behavior cases and external tests remain executable evidence, not a checker-understanding exercise. Keep `native_domain_qualified` separate from `object_dna_qualified`: the latter needs independent frozen-input census discovery, current signed discovery, caller trust, exact target coverage, real external-test execution, and aligned evidence. Missing object-DNA evidence leaves native modeling available. Optional FlowGuard projection needs its independent registered provider; missing/stale provider remains a boundary.
-
-For prediction, freeze before observing and load task-local deepening. Add [fact-revision.md](references/fact-revision.md) only for fact-support revision. Templates construct and validate shape/routes; follow them with the selected world check. Model-authority and final-reporting references are conditional on those operations.
-
-## Results and limits
-
-Preserve `PASS`, `FAIL`, `GAP`, and `BOUNDARY_EXCEEDED`. Keep structural, semantic, provider, rollout/depth, predictive-license, and task-local results separate. `PASS` requires current native execution within the declared boundary. Preserve missing inputs, contradictions, counterexamples, stale identities, unavailable providers, and unsupported scope.
-
-One child or field presence cannot license a whole mesh or prediction. Preserve each node/variable's current depth, time coverage, branches, perturbations, interventions, counterfactuals, and holdouts where applicable. Blueprint checks preserve hierarchy, interfaces, role-separated bindings, actual behavior/output/effect cases, census trust, and affected-only query semantics. Template zero/many matches, stale identity, overlapping ownership, and unresolved slots block. Fact activation returns to the same task-local owner; only that owner can close a task after zero current gaps and independent original/holdout revalidation. No task modifies global defaults or installed rules.
-
-Report the selected shape/source facts, derived Guard set/fingerprint, native actions and exact statuses, evidence identities and boundaries, failures/gaps, skipped checks, and residual uncertainty. For blueprint work report native and object-DNA qualification separately. Never promote prompt loading, family regression fixtures, source tests, or model consistency into factual truth, installation, or Release evidence.
+Report the status, the gap codes, and for each non-PASS Guard its errors and counterexample. Do not copy fingerprints or receipts.

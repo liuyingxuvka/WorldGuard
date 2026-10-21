@@ -248,3 +248,19 @@ Added the 4759-byte Guard input reference with all seven executable input exampl
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-12/map.log`) |
 
 Adaptations: Full-suite count includes the three retained WG06 supplemental regressions (363 versus reference 360); all action conclusions match.
+
+### WG-13: 改写 SKILL.md：一张带命令的形状表 + 输入参考入口 + 结果规则（约 3 KB）
+
+Status: completed.
+
+Replaced the entry skill with the exact 2959-byte native-use guide: five stable shapes, copyable portable commands, input reference, optional supporting references, four preserved statuses and exit meanings. name: worldguard and the real launcher are unchanged. All referenced files exist; only the explicit instruction not to copy fingerprints/receipts remains. Reconciled cumulative changes against the audited baseline with flowguard change, full tests and all six currently retained models.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `prompt-and-links` | 0 | ['Report the status, the gap codes, and for each non-PASS Guard its errors and counterexample. Do not copy fingerprints or receipts.'] (`WG-13/prompt-and-links.log`) |
+| `change-cumulative` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-13/change-cumulative.log`) |
+| `pytest` | 0 | 363 passed in 39.80s (`WG-13/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-13/map.log`) |
+| `models-cumulative` | 0 | models: 6 passed, 0 failed (`WG-13/models-cumulative.log`) |
+
+Adaptations: The cumulative change check also records pre-existing dynamic-import/duplicate portable mirror observations; no map errors were hidden and stale confirmations remain deferred to WG35 as explicitly required.
