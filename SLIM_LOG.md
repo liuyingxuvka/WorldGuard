@@ -214,3 +214,20 @@ Root authorized this bounded correction after WG-10 and before WG-11, with a sep
 | Models | 0 | 6 passed, 0 failed |
 
 Finite controls include null and list values for claim/world_model/inputs; malformed nodes, edges and snapshots; a bad node-contract mapping; preserved explicit contract:null GAP; and a native TypeError that must not become an input error. Detailed logs: WG-06-followup/.
+
+Independent exact-snapshot retest of supplemental commit `a17463d` passed the original four malformed cases, valid minimal PASS/0, contractless GAP/1 and the internal TypeError control. Root closed the bounded input-shapes finding; evidence: external CrossReview/WG-input-shape-retest-a17463d.json. This does not claim exhaustive malformed-input coverage.
+
+### WG-11: FlowGuard 维护依赖只在 pyproject.toml 声明一次；删除测试和 README 里的版本号钉子
+
+Status: completed.
+
+Declared FlowGuard maintenance/test dependency once in pyproject.toml using the owner GitHub baseline tag, not PyPI. AGENTS references that declaration without another version number. Removed README and portable-version test pins; added one ordinary test comparing VERSION, project metadata and canonical __version__ without pinning a release number. No remote dependency download was run.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `dependency` | 0 | {'test': ['pytest', 'flowguard @ git+https://github.com/liuyingxuvka/FlowGuard.git@v0.70.6']} (`WG-11/dependency.log`) |
+| `version-references` | 0 | worldguard/__init__.py:5:__version__ = "0.7.15" (`WG-11/version-references.log`) |
+| `pytest` | 0 | 360 passed in 54.40s (`WG-11/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-11/map.log`) |
+
+Adaptations: The reference grep shows its five intended source/dependency lines plus three historical baseline/override lines in SLIM_LOG; those history records are intentionally preserved. Full-suite count is 360 rather than 357 because the independently requested WG06 supplemental correction added three meaningful regressions.

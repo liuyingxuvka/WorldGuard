@@ -8,3 +8,5 @@
 6. Before release run `python -m flowguard release` and the full project suite once; synchronize portable runtime only from canonical source.
 
 Domain operations use the portable WorldGuard skill and its native runtime directly. No author-supervision framework or receipt is required.
+
+Maintenance needs FlowGuard from the owner's repository: `python -m pip install -e ".[test]"`. Its minimum version is declared once, in `pyproject.toml`; the PyPI package named `flowguard` is a different project.

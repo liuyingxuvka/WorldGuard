@@ -45,7 +45,8 @@
       ],
       "tests": [
         "tests/test_cli_module.py",
-        "tests/test_fuel_cell_demo.py"
+        "tests/test_fuel_cell_demo.py",
+        "tests/test_version.py"
       ],
       "models": [],
       "status": "confirmed",

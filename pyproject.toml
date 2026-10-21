@@ -10,6 +10,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["PyYAML>=6.0"]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "flowguard @ git+https://github.com/liuyingxuvka/FlowGuard.git@v0.70.6",
+]
+
 [project.urls]
 Homepage = "https://github.com/liuyingxuvka/worldguard"
 Repository = "https://github.com/liuyingxuvka/worldguard"
