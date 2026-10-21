@@ -299,10 +299,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         if args.task_model_command == "fact-revision-preview":
             from .fact_revision import (
-                FactRevisionActivationRequest,
                 FactRevisionTransaction,
                 FactWorldSnapshot,
-                activate_fact_revision,
                 preview_fact_revision,
             )
             base = FactWorldSnapshot.from_dict(load_mapping(args.base))
@@ -318,7 +316,6 @@ def main(argv: list[str] | None = None) -> int:
                 FactRevisionTransaction,
                 FactWorldSnapshot,
                 activate_fact_revision,
-                preview_fact_revision,
             )
             base = FactWorldSnapshot.from_dict(load_mapping(args.base))
             transaction = FactRevisionTransaction.from_dict(

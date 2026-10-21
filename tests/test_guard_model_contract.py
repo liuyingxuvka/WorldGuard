@@ -4,8 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 import pytest
 from worldguard.contracts import GuardContract
-import worldguard.guard_model_contract as purpose_authority
-from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES, MESH_RUNTIME_FAILURES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, guard_family_purpose_contract_fingerprint, run_guard_model_contract
+from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES, MESH_RUNTIME_FAILURES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, run_guard_model_contract
 from worldguard.guards import GUARD_RUNNERS
 from worldguard.kernel import run_worldguard
 from worldguard.semantic import execute_semantic
@@ -25,7 +24,6 @@ def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
     assert set(declared) == expected
     assert report['protected_failure_count'] == report['known_bad_count'] == len(expected)
     assert report['executed_case_count'] == len(expected) + len(NATIVE_GOOD_CASES)
-    assert {item['family_contract_fingerprint'] for item in report['observations']} == {guard_family_purpose_contract_fingerprint()}
     bad_observations = [item for item in report['observations'] if 'failure_id' in item]
     assert len(bad_observations) == len(expected)
     assert all((item['observed_status'] == item['expected_status'] for item in bad_observations))

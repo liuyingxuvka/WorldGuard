@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import hashlib
 import importlib
 import json
 from collections import Counter
@@ -21,7 +20,7 @@ from typing import Any, Mapping
 
 from .contracts import GuardContract
 from .guards import GUARD_RUNNERS
-from .semantic import EXECUTOR_REGISTRY, SemanticStatus, execute_semantic
+from .semantic import EXECUTOR_REGISTRY, SemanticStatus
 from .status import GuardStatus
 
 
@@ -367,49 +366,6 @@ def _failure_key(case: ProtectedFailureClass) -> tuple[str, str, str]:
     return case.guard, case.layer, case.code
 
 
-def _canonical_fingerprint(payload: Mapping[str, Any]) -> str:
-    body = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(body.encode("utf-8")).hexdigest()
-
-
-def _native_oracle_id(case: ProtectedFailureClass) -> str:
-    return f"oracle:worldguard:{case.guard}:{case.layer}:{case.code}"
-
-
-
-
-
-
-
-
-
-
-def guard_family_purpose_contract_payload() -> dict[str, Any]:
-    return {
-        "schema_version": "worldguard.guard_family_purpose_contract.v1",
-        "purposes": [item.to_dict() for item in GUARD_MODEL_PURPOSES],
-        "good_cases": [item.to_dict() for item in NATIVE_GOOD_CASES],
-        "failure_classes": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
-        "mesh_runtime_failures": MESH_RUNTIME_FAILURES,
-    }
-
-
-def guard_family_purpose_contract_fingerprint() -> str:
-    return _canonical_fingerprint(guard_family_purpose_contract_payload())
-
-
-
-
-
-
-
-
-
-
-def _fingerprint() -> str:
-    return guard_family_purpose_contract_fingerprint()
-
-
 def run_guard_model_contract() -> dict[str, Any]:
     """Run every catalog case once; never calibrate the checker inside a case."""
     failures: list[dict[str, Any]] = []
@@ -425,7 +381,6 @@ def run_guard_model_contract() -> dict[str, Any]:
     declared = [_failure_key(case) for case in PROTECTED_FAILURE_CLASSES]
     if len(declared) != len(set(declared)) or set(declared) != expected:
         failures.append({"code": "PROTECTED_FAILURE_UNIVERSE_MISMATCH"})
-    family_fingerprint = guard_family_purpose_contract_fingerprint()
     for case in NATIVE_GOOD_CASES:
         contract = _contract(case.case_id, case.guard, case.text, case.inputs)
         if case.coverage_context:
@@ -433,8 +388,7 @@ def run_guard_model_contract() -> dict[str, Any]:
         structural = GUARD_RUNNERS[case.guard](contract)
         semantic_status, _, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
         observed = {"case_id": case.case_id, "guard": case.guard,
-                    "guard_status": structural.status.value, "semantic_status": semantic_status.value,
-                    "family_contract_fingerprint": family_fingerprint}
+                    "guard_status": structural.status.value, "semantic_status": semantic_status.value}
         observations.append(observed)
         if structural.status is not GuardStatus.PASS or semantic_status is not SemanticStatus.PASS:
             failures.append({"code": "NATIVE_GOOD_REJECTED", **observed})
@@ -450,8 +404,7 @@ def run_guard_model_contract() -> dict[str, Any]:
             status, codes = result.value, [str(row.get("code", "")) for row in findings]
         observed = {"failure_id": case.failure_id, "guard": case.guard, "layer": case.layer,
                     "expected_status": case.expected_status, "observed_status": status,
-                    "expected_code": case.code, "observed_codes": codes,
-                    "family_contract_fingerprint": family_fingerprint}
+                    "expected_code": case.code, "observed_codes": codes}
         observations.append(observed)
         if status != case.expected_status or codes != [case.code]:
             failures.append({"code": "NATIVE_BAD_ORACLE_MISMATCH", **observed})
@@ -459,7 +412,7 @@ def run_guard_model_contract() -> dict[str, Any]:
             "status": "pass" if not failures else "fail", "ok": not failures,
             "purpose_count": len(guards), "native_good_count": len(NATIVE_GOOD_CASES),
             "protected_failure_count": len(expected), "known_bad_count": len(PROTECTED_FAILURE_CLASSES),
-            "executed_case_count": len(observations), "universe_fingerprint": family_fingerprint,
+            "executed_case_count": len(observations),
             "purposes": [item.to_dict() for item in GUARD_MODEL_PURPOSES],
             "protected_failures": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
             "mesh_runtime_failures": MESH_RUNTIME_FAILURES, "observations": observations, "failures": failures,

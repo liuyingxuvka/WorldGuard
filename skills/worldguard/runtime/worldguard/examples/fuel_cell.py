@@ -4,7 +4,6 @@ from importlib.resources import files
 from typing import Any
 import yaml
 from worldguard.contracts import GuardContract
-from worldguard.guard_model_contract import PROTECTED_FAILURE_CLASSES
 from worldguard.io import dump_json
 from worldguard.kernel import run_worldguard
 REQUIRED_GUARDS = ['EventGuard', 'AgentGuard', 'SpaceGuard', 'ResourceGuard', 'CausalGuard', 'ConflictGuard', 'NormGuard']

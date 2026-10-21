@@ -34,7 +34,6 @@
       "depends_on": [
         "worldguard.blueprint",
         "worldguard.core",
-        "worldguard.guards",
         "worldguard.mesh",
         "worldguard.qualification",
         "worldguard.revision",

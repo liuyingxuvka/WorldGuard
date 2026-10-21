@@ -6,7 +6,6 @@ from typing import Any
 
 from .contracts import (
     GuardContract,
-    claim_semantics,
     derive_guard_requirements,
 )
 from .guards import GUARD_RUNNERS

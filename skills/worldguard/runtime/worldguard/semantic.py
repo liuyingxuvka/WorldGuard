@@ -7,7 +7,7 @@ import math
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import StrEnum
 from typing import Any, Callable, Mapping
 
@@ -1130,7 +1130,6 @@ def _conflict(contract: GuardContract):
 def _norm(contract: GuardContract):
     norms = contract.inputs.get("norms", [])
     facts = contract.inputs.get("facts", [])
-    norm_model = {"norms": norms, "facts": facts}
     consumed = _semantic_consumed_inputs("NormGuard", contract)
     if not norms:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_MODEL", "No norms were supplied.")], consumed, {}

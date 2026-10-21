@@ -584,3 +584,23 @@ Status: completed.
 | `diff-check-final` | 0 | (no output) (`WG-30/diff-check-final.log`) |
 
 Adaptations: 漂移只针对本库派生副本，恢复严格使用 canonical sync；最终 skills 跟踪差异为 0，未执行任何全库 restore/clean。提交前 diff check 检出删除尾部测试遗留的三个多余空行，规范 EOF 后通过，不改行为。
+
+### WG-31: 删除死代码：模板包自检函数、目录指纹、没人用的导入
+
+Status: completed.
+
+删除无调用的模板自检与 Guard 目录指纹，清理失效导入，保留所有故障目录和真实自检。自检精确 7 purposes/7 goods/78 failures/78 known_bads，292 项完整测试与 3 个模型通过，mirror-ok。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-31/mirror.log`) |
+| `residue` | 0 | (no output) (`WG-31/residue.log`) |
+| `guard-catalog` | 0 |  1441 total (`WG-31/guard-catalog.log`) |
+| `map-initial` | 1 | check: 1 error(s), 10 warning(s), 0 info (`WG-31/map-initial.log`) |
+| `map` | 0 | check: 0 error(s), 10 warning(s), 0 info (`WG-31/map.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-31/change.log`) |
+| `pytest` | 0 | 292 passed in 33.73s (`WG-31/pytest.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-31/models.log`) |
+| `mirror-final` | 0 | mirror-ok (`WG-31/mirror-final.log`) |
+
+Adaptations: WG21 已提前随 reader 删除其两个独占导入，本项不重复删除；首次 map 实证 root→worldguard.guards 失效依赖，删除唯一该边后 map 0 errors。源码行数精确 441/1000，与清单一致。
