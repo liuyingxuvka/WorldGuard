@@ -708,3 +708,21 @@ Status: completed.
 | `pytest` | 0 | 292 passed in 34.27s (`WG-36/pytest.log`) |
 
 Adaptations: 参考 fallback 在缺 runtime 时实际误用 ambient editable 包，原失败保留；经 root 授权仅在真实仓库含 worldguard/__init__.py 时允许 repo fallback，缺失安装 runtime 明确拒绝。保留 WG32 相同 size/mtime 的字节漂移负例。 首次 change 的 28 个 UNMAPPED 均是明确退役的 deleted runtime 路径，分类证据外置，不重新登记死路径；随后 map 0 error/0 warning，release PASS。未过滤残留 grep 的 26 个命中全属 SLIM_LOG 历史记录，active surface 为零。 exact baseline LogicWriting 的 repo layout 缺 runtime 属 XR11 前预期 provider_unavailable；临时真实安装 layout 为 current_pass。未修改 LogicWriting 或实际用户技能。
+
+### WG-37: 蓝图形状撤出 AI 技能：SKILL.md 和 references 不再讲蓝图，说明移到 docs/ 作为仓库作者工具
+
+Status: completed.
+
+将蓝图文档移到仓库作者 docs，从技能四个形状和条件引用中撤出蓝图；canonical 引擎与 blueprint CLI 无改动，真实蓝图 PASS True，292 测试、3 模型与 map 0/0。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | skill blueprint hits 0; author docs present; SKILL bytes 3113 (`WG-37/inventory.log`) |
+| `blueprint` | 0 | PASS True (`WG-37/blueprint.log`) |
+| `map-initial` | 0 | check: 0 error(s), 2 warning(s), 0 info (`WG-37/map-initial.log`) |
+| `confirm` | 0 | confirmed 2 component(s) (`WG-37/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-37/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-37/release.log`) |
+| `pytest` | 0 | 292 passed in 34.48s (`WG-37/pytest.log`) |
+
+Adaptations: SKILL 实际 3113 字节；保留 WG26 已批准的未提供摘要元数据空值说明，不为匹配参考字节数删除有效边界。测试比文档多 5 项为此前真实输入与 per-node scope 回归。

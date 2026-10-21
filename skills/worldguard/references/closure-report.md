@@ -17,7 +17,6 @@ Optional checklist when reporting a multi-model (mesh) WorldGuard check.
 - For predictive work, did both normal and holdout scenarios execute across a non-degenerate horizon with the effective square-root representative timepoint floor, required coverage ratio, native early/middle/late coverage, acceptable maximum normalized time gap, states, transitions, branches, perturbations, interventions, and counterfactuals for every expected model node rather than only in aggregate?
 - For every exposed variable or signal, did its own temporal child universe independently meet the native dynamic count and early/middle/late floors, and is that per-object floor present in the WorldGuard report without a conflicting fixed ratio?
 - Are any old, stale, replaced, or superseded models still being used without disposition?
-- For `impact`, were only the deterministic dependency/interface descendants returned, with unaffected siblings excluded and path reasons preserved? For `trace`, did every reverse hop end in a declared input or current binding, with cycles and broken hops reported?
 
 ## Status Rules
 
@@ -35,7 +34,6 @@ Optional checklist when reporting a multi-model (mesh) WorldGuard check.
 - One event, one or two convenient timepoints, enough points concentrated in only one phase, a rich aggregate with one shallow child, one equation, or one convenient scenario may pass a
   local bounded check, but cannot license prediction. Predictive closure needs
   `predictive_claim_licensed: true` in the current mesh report.
-- A blueprint query proves only read-only impact or provenance for the supplied current blueprint. It does not execute a provider, mutate a target, widen to the whole blueprint, prove a target implementation, or establish external facts.
 
 ## Report Shape
 
@@ -49,7 +47,6 @@ Return:
 - freshness findings;
 - cycle findings;
 - component statuses and, for predictive work, the predictive license and gaps;
-- missing fields and stale evidence, if any;
-- for blueprint work: target id/revision, qualified depth, first unresolved layer, affected-only paths or reverse provenance, and declared gaps.
+- missing fields and stale evidence, if any.
 
 Do not copy adapter-specific terms into the core closure report unless they appear only as opaque labels supplied by an upstream adapter.

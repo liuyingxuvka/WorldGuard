@@ -1,6 +1,6 @@
 # WorldBlueprint
 
-Load this reference only for the typed `world_blueprint` shape. A WorldBlueprint is WorldGuard's target-neutral model of a world, workflow, experiment, policy, operational system, or other behavior-bearing target: its parts, semantic dependencies, coarse-to-fine interfaces, and supporting material/evidence/checks. It is not a source-code inventory and assumes neither software nor a language. FlowGuard owns generic implementation/test topology; WorldGuard owns world-domain elements and relations.
+Repository author tool, not part of the installed WorldGuard skill: the CLI keeps `blueprint check|impact|trace`, and `scripts/refresh_world_blueprint_external_dna_fixtures.py` builds the maintained fixtures. A WorldBlueprint is WorldGuard's target-neutral model of a world, workflow, experiment, policy, operational system, or other behavior-bearing target: its parts, semantic dependencies, coarse-to-fine interfaces, and supporting material/evidence/checks. It is not a source-code inventory and assumes neither software nor a language. FlowGuard owns generic implementation/test topology; WorldGuard owns world-domain elements and relations.
 
 ## Select one operation
 

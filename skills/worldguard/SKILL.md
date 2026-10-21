@@ -17,7 +17,6 @@ Pick the shape that fits the request and read its reference. Field formats for e
 |---|---|---|---|
 | `unit_contract` | One claim against one world model | `check --contract <file.yaml>` | [worldguard-contracts.md](references/worldguard-contracts.md) |
 | `model_mesh` | Several linked models (scenes, trip legs, handoffs) | `mesh-check --mesh <file.yaml>` | [model-mesh.md](references/model-mesh.md) |
-| `world_blueprint` | A hierarchical world model and change impact | `blueprint check`, `blueprint impact`, `blueprint trace` | [world-blueprint.md](references/world-blueprint.md) |
 | `task_local_revision` | Compare a frozen prediction with a later observation | `task-model freeze`, `task-model compare`, `task-model revision` | [task-local-model-deepening.md](references/task-local-model-deepening.md) |
 | `template_pack` | Optional: scaffold a single-Guard contract | Python API | [template-packs.md](references/template-packs.md) |
 
@@ -27,4 +26,4 @@ Load [fact-revision.md](references/fact-revision.md) only when the support of a 
 
 Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.
 
-`check`, `mesh-check` and `blueprint` print a short JSON summary: `status`, `semantic_status`, `gaps`, the non-PASS Guards with their errors and counterexamples, and `scope_limits`. Add `--json` only when you need the full report. Empty metadata fields mean that the full report does not provide them; they never imply `PASS` or predictive license. Report the status, the gap codes, and for each non-PASS Guard its errors and counterexample. Do not copy fingerprints or receipts.
+`check` and `mesh-check` print a short JSON summary: `status`, `semantic_status`, `gaps`, the non-PASS Guards with their errors and counterexamples, and `scope_limits`. Add `--json` only when you need the full report. Empty metadata fields mean that the full report does not provide them; they never imply `PASS` or predictive license. Report the status, the gap codes, and for each non-PASS Guard its errors and counterexample. Do not copy fingerprints or receipts.

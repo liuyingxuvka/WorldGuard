@@ -31,8 +31,6 @@ Required canonical fields:
 - `input_ports` and `output_ports`: typed `port_id`, `value_type`, and `cardinality` inventories
 - `contract`: optional embedded `GuardContract`
 
-This legacy `ModelMesh` transfer contract remains unchanged. `WorldBlueprint` ports use the stricter `schema_id`/`schema_version`/`refines` compatibility proof defined in `world-blueprint.md`; do not project that proof back to plain `value_type` equality.
-
 ## ModelEdge Fields
 
 - `edge_id`

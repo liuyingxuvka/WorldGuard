@@ -199,14 +199,15 @@
     {
       "id": "worldguard.blueprint",
       "layer": "",
-      "summary": "WorldBlueprint hierarchy, behavior cases, impact and trace",
+      "summary": "WorldBlueprint hierarchy, behavior cases, impact and trace (repository author tool, not in the skill)",
       "responsibilities": [
         "Validate hierarchical world elements and typed input/output/dependency bindings",
         "Execute actual behavior cases and the selected external test and evidence records",
         "Answer affected impact and reverse trace from one current qualified blueprint"
       ],
       "files": [
-        "worldguard/blueprint.py"
+        "worldguard/blueprint.py",
+        "docs/world-blueprint.md"
       ],
       "entrypoints": [
         "worldguard/blueprint.py:check_world_blueprint",
@@ -236,7 +237,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:caa687af560c317a6a86d80cea3d57fbc8a5992a6bf2c4772d8d6f40f282a514"
+      "fingerprint": "sha256:9162c80c0f713552a64a2fa1f61f14582173957609f880466c01221087196c32"
     },
     {
       "id": "worldguard.revision",
@@ -378,12 +379,11 @@
       "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
         "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
-        "Keep contract, blueprint and reporting instructions aligned with the CLI"
+        "Keep contract and reporting instructions aligned with the CLI"
       ],
       "files": [
         "skills/worldguard/scripts/*.py",
         "skills/worldguard/references/closure-report.md",
-        "skills/worldguard/references/world-blueprint.md",
         "skills/worldguard/references/worldguard-contracts.md"
       ],
       "entrypoints": [],
@@ -400,7 +400,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:1af2fc7bda6520ef26dc50830dbd3c3119f2c75e77b4c5ecde01e3b206158013"
+      "fingerprint": "sha256:b2c7fc2ee31ae1787f239009186148b608a90f61c3e2c75fc892a9772fe7647a"
     }
   ],
   "flows": [],

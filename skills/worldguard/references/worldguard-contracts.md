@@ -28,4 +28,4 @@ Each Guard result keeps its exact `status`, missing slots, boundary findings, er
 
 ## Conditional work
 
-Prediction/task revision fields, original and independent holdout observations, gap progression and finite stopping rules are in `task-local-model-deepening.md`. Fact-support transactions, four-valued states, previews and activation gates are in `fact-revision.md`. Load these only on their declared triggers. Hierarchical blueprints are in `world-blueprint.md`; reusable construction is in `template-packs.md`.
+Prediction/task revision fields, original and independent holdout observations, gap progression and finite stopping rules are in `task-local-model-deepening.md`. Fact-support transactions, four-valued states, previews and activation gates are in `fact-revision.md`. Load these only on their declared triggers. Reusable construction is in `template-packs.md`.

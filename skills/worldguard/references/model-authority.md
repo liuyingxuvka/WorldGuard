@@ -2,8 +2,6 @@
 
 Model authority defines what a model node is allowed to support.
 
-For a `WorldBlueprint`, authority is also structural: every domain element has one node owner; every contribution crosses a schema-bound port; and every element output is consumed, derived, or explicitly terminal.
-
 ## ModelAuthority Fields
 
 - `owns`: semantics this model can support.
@@ -16,8 +14,6 @@ For a `WorldBlueprint`, authority is also structural: every domain element has o
 - If a claim requests a semantic in `excludes`, return `BOUNDARY_EXCEEDED`.
 - If a model is silent about a needed semantic, return `GAP` unless another current, allowed handoff provides it.
 - Do not use narrative plausibility to expand authority.
-- Do not infer authority from hierarchy depth alone. Depth says how far current evidence is continuous; ownership, typed interfaces, derivations, and current bindings say what that depth can support.
-- A declared blueprint gap narrows the qualified boundary and the deepest continuous layer. It is not erased by a passing sibling or parent.
 
 ## Examples
 
@@ -31,5 +27,3 @@ For a `WorldBlueprint`, authority is also structural: every domain element has o
 ## Adapter Boundary
 
 Upper-layer adapters may use domain labels, but they must translate them into core authority semantics before calling WorldGuard.
-
-Blueprint element kinds and dependency relations are a closed, target-neutral vocabulary. Unknown kinds or relations are visible schema errors; adapter labels remain opaque metadata and never create a new semantic owner.
