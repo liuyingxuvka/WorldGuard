@@ -1153,3 +1153,19 @@ Template model now explores missing claim-derived Guard routes, reaches the reje
 | `pytest` | 0 | 282 passed in 35.81s (`WG-58/pytest.log`) |
 
 Adaptations: Optional OpenSpec CLI unavailable and explicitly skipped. Corruption verification runs the single new test rather than redundantly rerunning all13 unchanged tests while code is intentionally broken; the normal template14/full282 checks cover their preservation.
+
+### WG-59: AGENTS.md 写实测的全量测试时间（约 30 秒）
+
+Status: completed.
+
+AGENTS timing now explicitly says about30seconds on this shared host. Actual WG58 was282passed35.81s; WG59 was282passed27.41s. No tests or runner changed; bothFG maps0/0 and releases3/3 pass.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `actual-timing-document` | 0 |  1 file changed, 1 insertion(+), 1 deletion(-) (`WG-59/actual-timing-document.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-59/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-59/release.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-59/new-fg.log`) |
+| `pytest` | 0 | 282 passed in 27.41s (`WG-59/pytest.log`) |
+
+Adaptations: Root approved purpose-preserving timing adaptation: reference15seconds is not reproduced here, recent fulls vary23–46seconds under concurrent host load. Exact observations archivedWG-59/timing-observations.json; commit subject reflects actual about30 rather than false15. XR04 notified of exact new AGENTS line.

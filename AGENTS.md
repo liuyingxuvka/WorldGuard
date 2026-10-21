@@ -3,7 +3,7 @@
 1. Read the current map with `python -m flowguard read` before non-trivial changes.
 2. Find the existing owner before adding behavior; keep one canonical implementation in `worldguard/`.
 3. Update affected model/code/test bindings and run `python -m flowguard change`.
-4. Run the full suite `python -m pytest -q` (about 30 seconds) and `python -m flowguard map models`; report actual failures and skipped boundaries.
+4. Run the full suite `python -m pytest -q` (about 30 seconds on this shared host) and `python -m flowguard map models`; report actual failures and skipped boundaries.
 5. Re-read and confirm affected components; stale input or model pointers never become current by relabeling results.
 6. Before release run `python -m flowguard release` and the full project suite once. The skill has no committed runtime copy: `scripts/install_skill.py` copies `worldguard/` into the installed skill.
 
