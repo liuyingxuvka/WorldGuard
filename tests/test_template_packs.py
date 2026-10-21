@@ -13,10 +13,10 @@ def _event_bindings() -> dict[str, object]:
     task_contract_id = 'template:event-contract'
     run_id = 'template:event-run'
     model_id = 'template:event-model'
-    return {'contract_id': task_contract_id, 'run_id': run_id, 'claim_id': 'claim:event-template', 'claim_text': 'a declared event initiates readiness', 'target_guards': ['EventGuard'], 'requested_semantics': ['event'], 'claim_atoms': [{'atom_id': 'atom:event', 'text': 'the event initiates readiness', 'requested_semantics': ['event'], 'predictive_intent': False}], 'model_id': model_id, 'model_version': 'v1', 'event_inputs': [{'event_id': 'event:ready', 'at': 't0', 'initiates': 'ready'}]}
+    return {'contract_id': task_contract_id, 'run_id': run_id, 'claim_id': 'claim:event-template', 'claim_text': 'a declared event initiates readiness', 'target_guards': ['EventGuard'], 'requested_semantics': ['event'], 'claim_atoms': [{'atom_id': 'atom:event', 'text': 'the event initiates readiness', 'requested_semantics': ['event'], 'predictive_intent': False}], 'claim_asserts': [{'holds': 'ready', 'at': 't0'}], 'model_id': model_id, 'model_version': 'v1', 'event_inputs': [{'event_id': 'event:ready', 'at': 't0', 'initiates': 'ready'}]}
 
 def _base_guard_bindings() -> dict[str, object]:
-    return {'contract_id': 'template:base-contract', 'run_id': 'template:base-run', 'claim_id': 'claim:base', 'claim_text': 'unrouted bounded input', 'target_guards': [], 'requested_semantics': [], 'claim_atoms': [], 'model_id': 'template:base-model', 'model_version': 'v1'}
+    return {'contract_id': 'template:base-contract', 'run_id': 'template:base-run', 'claim_id': 'claim:base', 'claim_text': 'unrouted bounded input', 'target_guards': [], 'requested_semantics': [], 'claim_atoms': [], 'claim_asserts': [], 'model_id': 'template:base-model', 'model_version': 'v1'}
 
 def test_builtin_guard_pack_selects_and_validates_deterministically() -> None:
     registry = builtin_template_registry()
@@ -74,6 +74,8 @@ def test_two_base_templates_are_rejected_before_selection() -> None:
 
 def test_template_construction_never_substitutes_for_semantic_provider_or_depth() -> None:
     instance = build_template_instance(builtin_template_registry(), contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=_event_bindings())
+    assert instance.data['claim']['asserts'] == [{'holds': 'ready', 'at': 't0'}]
+    assert run_worldguard(instance.data).status == GuardStatus.PASS
     provider_missing = run_worldguard(instance.data, context=QualificationContext(provider_availability={'EventGuard': False}))
     assert provider_missing.structural_status == GuardStatus.PASS
     assert provider_missing.semantic_status == SemanticStatus.NOT_RUN

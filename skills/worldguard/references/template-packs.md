@@ -22,7 +22,7 @@ For a Guard-specific child, pass one exact fact such as `guard:EventGuard` only 
 
 | Contract kind | Base slots | Candidate fact and added slot |
 |---|---|---|
-| `guard_contract` | `contract_id`, `run_id`, `claim_id`, `claim_text`, `target_guards`, `requested_semantics`, `claim_atoms`, `model_id`, `model_version` | `guard:EventGuard` → `event_inputs`; `AgentGuard` → `agent_inputs`; `SpaceGuard` → `space_inputs`; `ResourceGuard` → `resource_inputs`; `CausalGuard` → `causal_inputs`; `ConflictGuard` → `conflict_inputs`; `NormGuard` → `norms` + `facts` |
+| `guard_contract` | `contract_id`, `run_id`, `claim_id`, `claim_text`, `target_guards`, `requested_semantics`, `claim_atoms`, `claim_asserts`, `model_id`, `model_version` | `guard:EventGuard` → `event_inputs`; `AgentGuard` → `agent_inputs`; `SpaceGuard` → `space_inputs`; `ResourceGuard` → `resource_inputs`; `CausalGuard` → `causal_inputs`; `ConflictGuard` → `conflict_inputs`; `NormGuard` → `norms` + `facts` |
 | `model_mesh_contract` | `mesh_id`, `run_id`, `nodes`, `expected_model_node_ids` | `coverage:bounded` or `coverage:predictive` adds only the explicit coverage profile |
 
 The Guard base is a non-selectable shared construction fragment. It is composed only after exactly one Guard candidate matches. Guard candidates add only the appropriate input slots. The caller supplies current claim, model and domain inputs.
@@ -46,6 +46,7 @@ instance = build_template_instance(
         "target_guards": ["EventGuard"],
         "requested_semantics": ["event"],
         "claim_atoms": claim_atoms,
+        "claim_asserts": [{"holds": "ready", "at": "t0"}],
         "model_id": model_id,
         "model_version": model_version,
         "event_inputs": task_owned_events,

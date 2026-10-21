@@ -362,7 +362,7 @@ def native_conformance() -> dict[str, object]:
     event = {
         "contract_id": "conformance:event", "run_id": "conformance:run", "claim_id": "claim:event",
         "claim_text": "a declared event initiates readiness", "target_guards": ["EventGuard"],
-        "requested_semantics": ["event"], "claim_atoms": [], "model_id": "conformance:model",
+        "requested_semantics": ["event"], "claim_atoms": [], "claim_asserts": [{"holds": "ready", "at": "t0"}], "model_id": "conformance:model",
         "model_version": "v1", "event_inputs": [{"event_id": "event:ready", "at": "t0", "initiates": "ready"}],
     }
     candidate = TemplatePackManifest.build(

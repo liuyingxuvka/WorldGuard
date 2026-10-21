@@ -775,6 +775,7 @@ def builtin_template_registry() -> TemplatePackRegistry:
                     "target_guards": template_slot("target_guards"),
                     "requested_semantics": template_slot("requested_semantics"),
                     "atoms": template_slot("claim_atoms"),
+                    "asserts": template_slot("claim_asserts"),
                 },
                 "world_model": {
                     "model_id": template_slot("model_id"),

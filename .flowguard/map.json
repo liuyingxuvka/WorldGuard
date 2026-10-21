@@ -286,7 +286,7 @@
       "summary": "Native template registry, exact selection and instance construction",
       "responsibilities": [
         "Select zero, one or many native template fragments with explicit ownership",
-        "Compose fragments, resolve typed slots and validate native Guard/mesh routes",
+        "Compose fragments, resolve typed slots (including the claim assertions) and validate native Guard/mesh routes",
         "Report construction only; a built contract still runs through run_worldguard or run_model_mesh"
       ],
       "files": [
@@ -314,7 +314,7 @@
         ".flowguard/template_selection/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:aab36c3bb77ba2d9cc6ab7b65d2345f284abb56b937081b989c9d2c756b566ab"
+      "fingerprint": "sha256:2fec888d5bbded92868e569ab0bfb8214fbca1dc6741fca801b193f67e744ac5"
     },
     {
       "id": "release",

@@ -981,3 +981,20 @@ Claim.asserts now binds all eight supported assertion kinds to actual native inp
 | `pytest` | 0 | 279 passed in 28.30s (`WG-49/pytest.log`) |
 
 Adaptations: Existing assertion test owner additionally covers unresolved inputs without adding a test platform; unbound claims intentionally retain the pre-WG51 status until that ordered action. Test total includes eight previously recorded purpose-preserving additional cases.
+
+### WG-50: 模板包的 Guard 合同骨架加 claim_asserts 槽
+
+Status: completed.
+
+The base Guard template now requires claim_asserts and preserves the supplied rows in the built contract. Existing true Event assertion executes native PASS, native model checks remain 5/5 with 9 real cases; template tests 13 passed, full 279 passed, release 3/3 and map 0/0.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `focused` | 0 | 13 passed in 0.22s (`WG-50/focused.log`) |
+| `native-model` | 0 | FLOWGUARD_RUNNER_DONE {"exit_code": 0, "checked": 5} (`WG-50/native-model.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-50/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-50/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-50/release.log`) |
+| `pytest` | 0 | 279 passed in 27.43s (`WG-50/pytest.log`) |
+
+Adaptations: None; reference purpose and implementation retained.
