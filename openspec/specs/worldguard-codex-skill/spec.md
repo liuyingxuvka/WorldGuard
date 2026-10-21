@@ -1,7 +1,7 @@
 # worldguard-codex-skill Specification
 
 ## Purpose
-TBD - created by archiving change productize-worldguard-mvp. Update Purpose after archive.
+Ship one small WorldGuard skill that tells an agent how to write a world model, run it, and report the four statuses honestly.
 ## Requirements
 ### Requirement: Local WorldGuard Skill
 The system SHALL install a local Codex skill named `worldguard` under the user skill directory with valid `SKILL.md` frontmatter and concise usage instructions.
@@ -32,13 +32,13 @@ The WorldGuard skill SHALL provide guidance for calling the installed runtime fo
 - **WHEN** the local skill is inspected
 - **THEN** it includes a `mesh-check` command example and references for ModelMesh, authority, handoff, and closure concepts.
 
-### Requirement: Codex entry is a thin executable shell
-The `worldguard` Codex skill SHALL keep only purpose, use and do-not-use boundaries, minimum task facts, exact public task-shape selection, complete claim-derived internal Guard coverage, first actions, conditional reference loading, terminal statuses, and claim boundaries in its always-loaded shell. Detailed commands, examples, mesh rules, template rules, and task-local revision rules SHALL remain in shape- or Guard-selected references.
+### Requirement: Codex entry is a short shape table
+The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh, template, task-local revision and fact revision rules SHALL stay in their references and SHALL be loaded only for that shape.
 
 #### Scenario: Ordinary bounded check enters WorldGuard
-- **WHEN** Codex receives enough typed facts for one bounded WorldGuard task shape and its structured claim semantics
-- **THEN** it can select the shape, derive every required Guard, and start their native actions without loading unrelated mesh, template, or predictive protocols
+- **WHEN** an agent needs one claim checked against one world model
+- **THEN** it can write the contract from the Guard input reference and run `check --contract` without loading mesh, template, or predictive references
 
-#### Scenario: Deep route is selected
-- **WHEN** the selected shape or any derived Guard declares a deepening trigger that is true
-- **THEN** Codex loads the declared deep reference before making any closure claim
+#### Scenario: Predictive claim needs coverage rules
+- **WHEN** a mesh claim is predictive
+- **THEN** the agent loads the predictive coverage reference before reporting a predictive license

@@ -1,7 +1,7 @@
 # worldguard-runtime Specification
 
 ## Purpose
-TBD - created by archiving change productize-worldguard-mvp. Update Purpose after archive.
+Provide the installable `worldguard` package: contracts, seven Guard runners, kernel, ModelMesh, CLI and the fuel-cell toy example.
 ## Requirements
 ### Requirement: Installable WorldGuard Runtime
 The system SHALL provide an installable Python package named `worldguard` with contract, ledger, Guard runner, Kernel, CLI, ModelMesh, example, and test surfaces.
@@ -55,4 +55,4 @@ The runtime SHALL provide CLI entrypoints for both single-contract checks and me
 
 #### Scenario: Mesh CLI runs
 - **WHEN** `worldguard mesh-check --mesh <path>` runs
-- **THEN** it emits a JSON `MeshReport`.
+- **THEN** it emits a short JSON summary, and the full JSON `MeshReport` when `--json` is added.

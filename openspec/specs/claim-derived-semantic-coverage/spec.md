@@ -1,7 +1,7 @@
 # claim-derived-semantic-coverage Specification
 
 ## Purpose
-TBD - created by archiving change enforce-claim-derived-semantic-coverage. Update Purpose after archive.
+Derive the required Guards from claim semantics and decide predictive readiness only from current native coverage of the declared world.
 ## Requirements
 ### Requirement: Target-owned Guard-model prevention contract
 WorldGuard SHALL declare, for every registered Guard, the invalid claim class the Guard prevents, the boundary it does not license, and exactly one native good case that passes both the Guard runner and its semantic executor.
@@ -15,7 +15,7 @@ WorldGuard SHALL source-discover every literal Guard-runner error code and per-G
 
 #### Scenario: Failure class is missing, duplicated, or shallowly represented
 - **WHEN** the declared inventory differs from the source-discovered inventory, a failure class has zero or multiple bad cases, or a bad case emits a different status/code set
-- **THEN** the native Guard-model contract and its FlowGuard exhaustion child SHALL fail closed
+- **THEN** the native Guard-model contract SHALL fail closed
 
 #### Scenario: Mesh lifecycle failure is encountered
 - **WHEN** executor registration or provider availability fails
@@ -32,18 +32,16 @@ WorldGuard SHALL have one current target-native closure behavior in which requir
 - **WHEN** a claim is bounded rather than predictive
 - **THEN** WorldGuard SHALL still execute all required Guard semantics and SHALL limit only the claim boundary, not the validation depth
 
-### Requirement: Router-visible native ownership
-
-#### Scenario: Router compiles the current contract
-- **WHEN** the global router inspects WorldGuard's current contract source
-- **THEN** it SHALL discover the complete native route and check sets and SHALL NOT block WorldGuard merely because those bindings exist only inside a nested profile
-
 ### Requirement: Claim-derived Guard routes
-WorldGuard SHALL derive required Guards and semantic routes from structured claim atoms and SHALL compare them with every caller-declared target route.
+WorldGuard SHALL derive required Guards and semantic routes from structured claim semantics and SHALL always run the complete derived set. Caller-declared `target_guards` are reported back but SHALL NOT shrink, extend or block the derived set.
 
-#### Scenario: Caller omits required Guard
-- **WHEN** a claim atom requires a semantic route whose owning Guard is absent from the target mesh
-- **THEN** WorldGuard SHALL return a concrete coverage `GAP` and SHALL NOT license prediction
+#### Scenario: Caller omits a required Guard
+- **WHEN** structured claim semantics require a Guard that `target_guards` does not name
+- **THEN** WorldGuard SHALL still run that Guard and SHALL report it in `omitted_guards`
+
+#### Scenario: Claim semantics are unknown
+- **WHEN** a requested semantic maps to no Guard
+- **THEN** WorldGuard SHALL report `QUALIFICATION_SEMANTIC_UNMAPPED` as a gap instead of falling back to the caller's Guard list
 
 ### Requirement: Expected semantic coverage universe
 WorldGuard SHALL bind expected model nodes, semantic children, scenarios, holdout scenarios, time horizon, branches, perturbations, and claim atoms to the current mesh fingerprint and native depth receipt.
@@ -132,36 +130,9 @@ WorldGuard SHALL preserve every expected but unexecuted semantic child with a ty
 - **WHEN** an expected semantic child cannot run because its provider is unavailable
 - **THEN** the receipt SHALL name the child, provider state, skip reason, missing coverage, and bounded claim statement
 
-### Requirement: Target-run native receipt
-WorldGuard SHALL emit a per-run receipt containing the expected and executed coverage universe, claim-derived routes, predictive adequacy, quantitative coverage, gaps, a boolean predictive license bound to the current mesh fingerprint, and exact content-addressed native observations for every executed semantic child and governed depth obligation.
+### Requirement: Current-run predictive license
+WorldGuard SHALL decide `predictive_claim_licensed` only from the depth report of the current mesh run, bound to the current mesh and coverage fingerprints. A repository regression suite, an earlier report or a caller statement SHALL NOT substitute for that run.
 
-#### Scenario: Static regression is green
-- **WHEN** repository engine-health regressions pass but the current target mesh receipt is absent or stale
-
-- **WHEN** a non-trivial or predictive WorldGuard conclusion is requested
-- **THEN** the exact current target input SHALL produce target-owned dynamic inventories for every horizon step, required Guard scenario/holdout object, predictive axis class, model-node policy, and claim atom
-- **AND** the depth receipt SHALL use the target-owned `scheduled_production` evidence domain bound to the current verified installation identity carried inside exactly one current target-owned mesh input; identity-shaped fields present only in the generic supervisor request SHALL NOT be consumed, and repository fixtures SHALL NOT substitute for target execution
-- **AND** an `AGENTS.md` maintenance declaration, repository link, local semantic PASS, or regression suite SHALL NOT substitute for that supervised receipt
-- **AND** the runtime evidence SHALL reconcile discovered, declared, and excluded mesh nodes and SHALL prove that excluded nodes contributed to neither object results nor covered claim scope
-
-#### Scenario: Summary-only predictive receipt
-- **WHEN** a receipt reports passing counts or exact object names but omits the native content, evidence ref, or content hash for an executed semantic child, temporal child, scenario/holdout portfolio, predictive axis, native floor, or claim route
-- **THEN** that obligation SHALL remain unverifiable and predictive closure SHALL be blocked
-
-### Requirement: Native evidence projection integrity
-WorldGuard SHALL preserve its exact target-owned selected, evaluated, and validated sets and SHALL bind contribution evidence to exact native observations rather than transport placeholders, catalogs, or mechanically generated ordinal spans.
-
-#### Scenario: Shallow predictive universe has no validated observation
-- **WHEN** a native predictive universe has an empty validated set because its floor, phase, object, or scenario requirement failed
-- **THEN** the projection SHALL keep the result empty and blocked and SHALL NOT insert `bridge-health` or any other synthetic success witness
-
-
-#### Scenario: Narrow completion receipt misses old runtime files
-- **THEN** the receipt SHALL be invalid and WorldGuard closure SHALL remain blocked
-
-### Requirement: Receipt-only OpenSpec verification
-OpenSpec SHALL consume the exact current WorldGuard parent receipt and MUST NOT rerun, resume, or reconstruct any native declared-check, installation, or full-suite owner.
-
-#### Scenario: Parent receipt is missing or stale
-- **WHEN** the portable parent receipt is missing, partial, stale, tampered, or identity-mismatched
-- **THEN** verification SHALL fail closed without executing a missing owner
+#### Scenario: Earlier report is offered
+- **WHEN** a caller supplies a previous depth report or a passing test suite instead of running the current mesh
+- **THEN** WorldGuard SHALL run the current mesh and SHALL NOT license prediction from the supplied material

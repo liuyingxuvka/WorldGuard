@@ -1,14 +1,18 @@
 # task-local-world-revision Specification
 
 ## Purpose
-TBD - created by archiving change add-task-local-world-revision-loop. Update Purpose after archive.
+Compare a frozen prediction with a later observation and decide, task-locally and reversibly, whether a separate candidate model closes the task.
 ## Requirements
 ### Requirement: Prediction snapshot is frozen before observation
 The system SHALL bind each prediction snapshot to an exact base world-model id, version, file hash, and prediction sequence before accepting its observation.
 
 #### Scenario: Current prediction is frozen
-- **WHEN** the base world-model artifact matches its declared SHA-256 and the prediction is structurally complete
-- **THEN** the system emits a stable prediction fingerprint
+- **WHEN** the base world-model file is readable and the prediction is structurally complete
+- **THEN** `freeze` records the file SHA-256 (or checks a declared one) and emits a stable prediction fingerprint
+
+#### Scenario: Model changes after freeze
+- **WHEN** the base world-model file changes after `freeze`
+- **THEN** `compare` with the frozen prediction rejects the stale model identity
 
 #### Scenario: Observation is not later than prediction
 - **WHEN** an observation sequence is equal to or earlier than the prediction sequence
@@ -48,7 +52,7 @@ The system SHALL require distinct current base and candidate world-model artifac
 - **THEN** revision validation fails because no reversible candidate exists
 
 ### Requirement: Candidate revalidation includes original scenario and real holdout
-Candidate acceptance SHALL require at least one current original-scenario receipt and one current real-holdout-observation receipt. Each receipt MUST bind the candidate model and show both WorldGuard semantic rollout and empirical prediction comparison passing.
+Candidate acceptance SHALL require exactly one original-scenario revalidation and exactly one real-holdout-observation revalidation, each written as `{check_id, role, empirical_comparison}` for the candidate. Evaluation SHALL run the candidate mesh once and require current native semantic execution of both declared scenario scopes plus passing independent empirical comparisons.
 
 #### Scenario: Both revalidation roles pass
 - **WHEN** the original scenario and real holdout receipts are current and both statuses pass

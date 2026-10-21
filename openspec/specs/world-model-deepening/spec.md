@@ -7,7 +7,7 @@ decisions.
 ## Requirements
 ### Requirement: Predictions carry task and coverage identity
 
-Every current `PredictionSnapshot` SHALL bind a non-empty task id and purpose, an independently owned coverage-universe id/source/inventory/fingerprint whose ids exactly equal the prediction expectations, non-empty assumptions and declared unknowns, a finite iteration budget, and an exact predecessor iteration fingerprint. Later iterations SHALL also carry exact prior gap ids and a fingerprint that binds that set. Pre-0.7 shapes and empty/defaulted bindings SHALL be rejected.
+Every current `PredictionSnapshot` SHALL bind a task id and purpose, an independently owned coverage universe whose ids equal the prediction expectations, non-empty assumptions and unknowns, a finite iteration budget, and its predecessor; later iterations SHALL also carry the exact prior gap ids. WorldGuard computes the coverage and prior-gap fingerprints. Older shapes SHALL be rejected.
 
 #### Scenario: Shallow prediction
 - **GIVEN** a prediction has one expected value but no task coverage or unknown boundary
@@ -19,24 +19,24 @@ Every current `PredictionSnapshot` SHALL bind a non-empty task id and purpose, a
 - **WHEN** the prediction is parsed or frozen
 - **THEN** it is rejected rather than upgraded, defaulted, or accepted through a compatibility path
 
-### Requirement: Observations and native depth are immutable typed evidence
+### Requirement: Observations are typed evidence and the candidate runs once
 
-Every observation SHALL carry a content-addressed evidence identity computed from its actual values, relationships, source, and sequence, plus a content fingerprint independent of renameable ids and source labels. Candidate evaluation SHALL consume one exact current `worldguard.native_depth.v2` task-bound execution-depth receipt and SHALL derive every state, transition, branch, perturbation, intervention, counterfactual, and holdout gap from one of those exact seven prefixes.
+Every observation SHALL carry an evidence identity computed from its actual values, relationships, source, and sequence, plus a content fingerprint independent of renameable ids and source labels. Candidate evaluation SHALL run the candidate mesh once and SHALL derive every state, transition, branch, perturbation, intervention, counterfactual, and holdout gap from that run.
 
 #### Scenario: Caller reports no predictive gaps
-- **GIVEN** the current native depth receipt contains a predictive gap
+- **GIVEN** the candidate run contains a predictive gap
 - **AND** the caller supplies no separate remaining-gap list
 - **WHEN** candidate closure is evaluated
 - **THEN** the native gap remains open and the caller cannot suppress it
 
-#### Scenario: Stale or tampered native receipt
-- **GIVEN** a depth binding has a wrong task, candidate, coverage universe, or source-receipt fingerprint
+#### Scenario: Candidate is not a runnable mesh
+- **GIVEN** the candidate model file is not a current native mesh
 - **WHEN** candidate closure is evaluated
-- **THEN** closure is blocked with the exact binding finding
+- **THEN** closure is blocked with the exact finding
 
 ### Requirement: Predictive gaps force candidate continuation
 
-Candidate evaluation SHALL continue when the bound native `predictive_gaps` contain addressable state, transition, branch, perturbation, intervention, counterfactual, or holdout gaps. A native receipt that does not license the predictive claim SHALL contribute an open gap even when its raw gap list is empty.
+Candidate evaluation SHALL continue when the candidate run's `predictive_gaps` contain addressable state, transition, branch, perturbation, intervention, counterfactual, or holdout gaps. A candidate run that does not license the predictive claim SHALL contribute an open gap even when its raw gap list is empty.
 
 #### Scenario: Fact revision without predictive revalidation
 - **GIVEN** a fact transaction activates successfully
@@ -46,7 +46,7 @@ Candidate evaluation SHALL continue when the bound native `predictive_gaps` cont
 
 ### Requirement: Iterations preserve candidate identity and gap transitions
 
-Every iteration SHALL record base/candidate identities, the exact predecessor, input/resolved/persisted/introduced gap ids, native receipt identities, and terminal reason. Those transitions and progress SHALL be computed from the current comparison, native receipt, and revalidation receipts; caller-authored transition maps or boolean progress claims have no authority.
+Every iteration SHALL record base/candidate identities, the exact predecessor, input/resolved/persisted/introduced gap ids, and terminal reason. Those transitions and progress SHALL be computed from the current comparison, the candidate run, and the two revalidations; caller-authored transition maps or boolean progress claims have no authority.
 
 #### Scenario: New gap after candidate
 - **GIVEN** a candidate resolves one mismatch but exposes a new branch gap
@@ -60,9 +60,9 @@ Every iteration SHALL record base/candidate identities, the exact predecessor, i
 
 ### Requirement: Original and holdout revalidation are typed and independent
 
-Candidate acceptance SHALL require exactly one typed original-scenario receipt and exactly one typed real-holdout receipt. Each SHALL bind the same task and candidate, a typed semantic execution receipt, and a content-addressed empirical observation receipt. The two observations SHALL have different identities, sources, and content fingerprints, and the holdout fingerprint SHALL NOT occur in candidate-construction evidence.
+Candidate acceptance SHALL require exactly one original-scenario revalidation and exactly one real-holdout revalidation, each written as `{check_id, role, empirical_comparison}` for the candidate. The candidate run SHALL execute both the declared original and holdout scenarios. The two observations SHALL have different identities, sources, and content fingerprints, and the holdout fingerprint SHALL NOT occur in candidate-construction evidence.
 
-#### Scenario: Semantic pass string without receipt
+#### Scenario: Semantic pass string instead of a comparison
 - **GIVEN** a revalidation contains only `semantic_rollout_status: PASS`
 - **WHEN** the current revision schema is parsed
 - **THEN** the legacy shape is rejected
@@ -83,21 +83,10 @@ If a required observation or world fact is unavailable outside the current tools
 
 ### Requirement: Fact activation re-enters the same task-local owner
 
-A successful fact activation SHALL preserve its four-valued candidate and SHALL emit a typed handoff bound to the same task, the sole `worldguard.task_local_world_revision` owner, and the activated candidate fingerprint. Fact activation SHALL always require current prediction, native-depth, original, and holdout revalidation and SHALL never emit `model_closed_for_task`.
+A successful fact activation SHALL preserve its four-valued candidate and SHALL emit a typed handoff bound to the same task, the sole `worldguard.task_local_world_revision` owner, and the activated candidate fingerprint. Fact activation SHALL always require a current prediction, a candidate run, and original and holdout revalidation and SHALL never emit `model_closed_for_task`.
 
 #### Scenario: Fact-only activation is green
 - **GIVEN** a fact transaction and its fact regression/holdout checks pass
 - **WHEN** activation succeeds
 - **THEN** the activation receipt ends at `task_local_revalidation_required`
 - **AND** only the same task-local owner may later decide task closure
-
-### Requirement: Predictive deepening is entered through route evidence
-The task-local model-deepening loop SHALL be loaded when the selected EventGuard or CausalGuard capsule identifies predictive intent, causal intervention, unresolved predictive coverage, or a current counterexample. The selected route MUST load the full existing deepening protocol before evaluating closure and MUST NOT use a model-authored understanding label as evidence.
-
-#### Scenario: Bounded event check has no predictive intent
-- **WHEN** EventGuard checks only a bounded declared event and no predictive trigger is true
-- **THEN** WorldGuard runs the bounded native action without loading the task-local predictive loop
-
-#### Scenario: Current evidence exposes a predictive gap
-- **WHEN** a bounded or predictive run exposes a state, transition, branch, intervention, counterfactual, or holdout gap
-- **THEN** the selected route loads task-local deepening and preserves the gap until native evidence resolves it or returns an explicit terminal

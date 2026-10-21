@@ -1,7 +1,7 @@
 # semantic-rollout-status Specification
 
 ## Purpose
-TBD - created by archiving change separate-structural-pass-from-semantic-rollout. Update Purpose after archive.
+Keep structural, semantic, provider and rollout status separate so that no layer can stand in for another.
 ## Requirements
 ### Requirement: Separate structural and semantic status
 WorldGuard SHALL report structural contract status separately from semantic execution and provider availability.
@@ -35,23 +35,13 @@ WorldGuard SHALL reject missing event axioms, incomplete BDI, RCC8 conflict, res
 - **WHEN** two transitions consume the same finite resource beyond the available quantity
 - **THEN** resource semantic status SHALL fail with a conservation finding
 
-### Requirement: Native WorldGuard depth receipt
-WorldGuard SHALL emit a receipt containing structural checks, claim atoms, required and executed semantic children, provider states, bindings, findings, discovered/declared/excluded model-node reconciliation, expected/skipped nodes, scenario/horizon/branch/perturbation coverage, per-variable/signal temporal child coverage, native dynamic-floor receipts, predictive gaps, a predictive-license decision, and aggregate claim boundary bound to the current mesh fingerprint.
+### Requirement: Native WorldGuard depth report
+WorldGuard SHALL emit a depth report containing structural checks, claim atoms, required and executed semantic children, provider states, findings, discovered/declared/excluded model-node reconciliation, expected/skipped nodes, scenario/horizon/branch/perturbation coverage, per-variable/signal temporal child coverage, native dynamic-floor receipts, predictive gaps, a predictive-license decision, and aggregate claim boundary bound to the current mesh fingerprint.
 
-#### Scenario: Structural-only request
-- **WHEN** the caller explicitly requests structural-only validation
-- **THEN** the receipt SHALL identify every skipped semantic child and SHALL NOT claim semantic rollout or prediction
+#### Scenario: Semantic child is skipped
+- **WHEN** an expected semantic child cannot run because its provider is unavailable
+- **THEN** the report SHALL identify that skipped child and SHALL NOT claim semantic rollout or prediction
 
 #### Scenario: Bounded semantic pass
 - **WHEN** a narrow supported executor checks only its declared local subset
-- **THEN** the receipt SHALL preserve semantic `PASS` if appropriate but SHALL distinguish it from predictive readiness
-
-### Requirement: Installed portable native evaluator authority
-
-#### Scenario: Installed runtime file is absent from the contract
-- **WHEN** a bundled native runtime source exists but is absent from implementation authority or any depth/calibration input set
-- **THEN** compilation, source audit, installed parity, or formal closure SHALL fail closed
-
-#### Scenario: External checkout can replace the installed evaluator
-- **WHEN** the bundled runtime is missing or bypassed and an editable WorldGuard checkout remains importable
-- **THEN** formal scheduled-production closure SHALL remain blocked rather than accepting the external import
+- **THEN** the report SHALL preserve semantic `PASS` if appropriate but SHALL distinguish it from predictive readiness

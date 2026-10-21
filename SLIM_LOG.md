@@ -854,3 +854,23 @@ Status: completed.
 | `real-runner-results` | 0 | template_selection {"cases": 9, "findings": [], "ok": true} FLOWGUARD_RUNNER_DONE {"exit_code": 0, "checked": 3} (`WG-43/real-runner-results.log`) |
 
 Adaptations: 参考 task runner 只比较关闭布尔量，真实模型非关闭终态错误仍 ok:true；保留该漏检复现。经 root 授权在同一 runner 按终态精确核对，仅 holdout_not_independent 明确映射 candidate_rejected，新版识别6个错误非关闭结果；不是 native领域算法错误，也不改model.py场景/不变量。 坏代码 probe 首次发现 progress_stalled 源文本有2处而非1处，在任何修改前停止；修正计数后依参考演示同时替换，两例均拒绝且通过finally逐字节恢复，原失败日志保留。fact原生 findings AST保持。
+
+### WG-44: OpenSpec 继续使用：删除 SkillGuard 变更和描述已删功能的规格，修正与新规则冲突的规格
+
+Status: completed.
+
+保留9份现行 OpenSpec 规格，退役2个 SkillGuard 历史变更和3份已删功能规格；规则对齐当前 derived Guards、fresh candidate run、freeze哈希及模板构造结果。272完整测试、3模型release、map0/0通过；12个其他历史变更、配置和4个OpenSpec技能原样保留。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-44/read.log`) |
+| `inventory` | 0 | 9 current specs; 12 other archives unchanged; 4 OpenSpec skills+config unchanged; retired-spec residual hits0 (`WG-44/inventory.log`) |
+| `openspec-cli` | 0 | SKIPPED: openspec command unavailable in this execution environment; no official OpenSpec validation claimed (`WG-44/openspec-cli.log`) |
+| `change` | 0 | tests to run (0 of 27): - (`WG-44/change.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-44/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-44/release.log`) |
+| `pytest` | 0 | 272 passed in 26.47s (`WG-44/pytest.log`) |
+| `final-doc-cli` | 0 | actual bare summary PASS; --json full PASS and full-only fields confirmed; exact-two roles/fresh mesh prose aligned; no runtime/test/config/skill changes (`WG-44/final-doc-cli.log`) |
+| `final-map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-44/final-map.log`) |
+
+Adaptations: WG34真实归档日期为2026-10-21，因此按实际同名路径删除两项目标，非参考2026-10-20；不动其余历史。OpenSpec CLI在本执行环境不存在，按清单明确跳过官方 validate，没有声称9项官方通过。 经root批准补齐参考遗漏的两段active规格矛盾：mesh bare为summary/full需--json，修订为exact-two角色记录+fresh mesh；文案后真实CLI字段对照与map复验通过，无源码/测试改动，因此不重复全量。初次手工CLI探针用了不存在的skill目录mesh例子，返回正确typed输入拒绝；最终使用仓库examples/model_mesh/basic_mesh.yaml验证。

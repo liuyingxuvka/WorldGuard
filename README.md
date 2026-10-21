@@ -162,7 +162,7 @@ worldguard/examples/fuel_cell/  Toy unit-check fixture (packaged with the runtim
 examples/model_mesh/         Generic mesh-check fixture
 tests/                       Runtime and regression tests
 skills/worldguard/           Codex skill copy
-openspec/                    Historical change proposals and specs
+openspec/                    Current OpenSpec specs and archived change proposals
 docs/                        Historical audit notes
 assets/readme-hero/          README visual assets
 ```

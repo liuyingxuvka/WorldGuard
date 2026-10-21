@@ -1,7 +1,7 @@
 # worldguard-model-mesh Specification
 
 ## Purpose
-TBD - created by archiving change add-worldguard-model-mesh-core. Update Purpose after archive.
+Check several linked models together: authority, read-only handoffs, freshness, cycles and preserved child evidence.
 ## Requirements
 ### Requirement: ModelMesh Contract
 The runtime SHALL expose a generic `ModelMeshContract` that groups model nodes, model edges, and optional world-state snapshots without replacing `GuardContract`.
@@ -54,4 +54,4 @@ The CLI SHALL provide `worldguard mesh-check --mesh <path>` for generic mesh che
 
 #### Scenario: Mesh check emits JSON
 - **WHEN** the CLI runs against a valid mesh file
-- **THEN** it prints a JSON mesh report containing `status`, `node_reports`, `findings`, and `aggregate_ledger`.
+- **THEN** it prints a short JSON summary containing `status`, gaps and non-pass nodes; adding `--json` emits the full report with `node_reports`, `findings`, and `aggregate_ledger`.

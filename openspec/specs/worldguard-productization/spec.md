@@ -1,7 +1,7 @@
 # worldguard-productization Specification
 
 ## Purpose
-TBD - created by archiving change productize-worldguard-mvp. Update Purpose after archive.
+Keep the public package surface small and reproducible from source.
 ## Requirements
 ### Requirement: Public Package Surface
 The project SHALL define a public package surface through `pyproject.toml`, `README.md`, package data, examples, tests, and ignore rules.
