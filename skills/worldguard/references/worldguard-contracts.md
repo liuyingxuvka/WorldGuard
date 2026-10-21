@@ -16,7 +16,7 @@ Keep `contract_id`, `schema_version`, `run_id`, `claim`, `world_model`, `inputs`
 | ConflictGuard | Agents, actions, payoffs and conflict model |
 | NormGuard | Norms, facts and rule priorities |
 
-The exact supported branch fields and limits are in the selected route capsule and `guard-model-contract.md`. Missing consumed inputs produce typed gaps.
+Field formats and copyable examples: [guard-inputs.md](guard-inputs.md). Missing consumed inputs produce typed gaps.
 
 Use `derive_guard_requirements(claim)` as the single semantics-to-Guard authority. Its denominator, unmapped semantics, and canonical fingerprint are shared by unit, mesh, and prompt audit. `claim.target_guards` must exactly reconcile with the denominator. Omitted derived Guards make the aggregate `GAP`; the native owner may still execute the derived set to provide diagnostics. Unexpected declared Guards block execution. `claim.target_guard` is retired. Prediction derives EventGuard plus CausalGuard. Unknown semantics do not fall back to the caller's Guard list.
 

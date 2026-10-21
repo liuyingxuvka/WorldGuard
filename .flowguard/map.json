@@ -112,8 +112,7 @@
         "worldguard/guard_model_contract.py",
         "skills/worldguard/runtime/worldguard/guards/*.py",
         "skills/worldguard/runtime/worldguard/guard_model_contract.py",
-        "skills/worldguard/references/guard-boundaries.md",
-        "skills/worldguard/references/guard-model-contract.md"
+        "skills/worldguard/references/guard-inputs.md"
       ],
       "entrypoints": [
         "worldguard/guard_model_contract.py:run_guard_model_contract",
@@ -137,7 +136,8 @@
         "tests/guards/test_status_matrix.py",
         "tests/test_claim_prose_is_not_semantics.py",
         "tests/test_guard_model_contract.py",
-        "tests/test_guard_semantic_dna_closure.py"
+        "tests/test_guard_semantic_dna_closure.py",
+        "tests/test_skill_examples.py"
       ],
       "models": [],
       "status": "confirmed",

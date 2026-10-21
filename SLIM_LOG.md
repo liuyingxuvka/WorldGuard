@@ -231,3 +231,20 @@ Declared FlowGuard maintenance/test dependency once in pyproject.toml using the 
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-11/map.log`) |
 
 Adaptations: The reference grep shows its five intended source/dependency lines plus three historical baseline/override lines in SLIM_LOG; those history records are intentionally preserved. Full-suite count is 360 rather than 357 because the independently requested WG06 supplemental correction added three meaningful regressions.
+
+### WG-12: 一份真正写明输入格式的 Guard 参考，附两个可直接复制的示例世界（并有测试守住）
+
+Status: completed.
+
+Added the 4759-byte Guard input reference with all seven executable input examples and two complete portable scene/trip worlds. Tests execute both portable worlds and every documented Guard block. The swapped train-arrival/ferry-out transition probe produces real FAIL/exit 1. Removed obsolete guard-boundaries/catalog-only references and bound new reference/test files to the existing guard owner.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `reference-size` | 0 | 4759 (`WG-12/reference-size.log`) |
+| `focused` | 0 | 3 passed in 0.71s (`WG-12/focused.log`) |
+| `trip-order-negative` | 0 | 1 FAIL (`WG-12/trip-order-negative.log`) |
+| `residue` | 0 | (no output) (`WG-12/residue.log`) |
+| `pytest` | 0 | 363 passed in 61.39s (0:01:01) (`WG-12/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-12/map.log`) |
+
+Adaptations: Full-suite count includes the three retained WG06 supplemental regressions (363 versus reference 360); all action conclusions match.
