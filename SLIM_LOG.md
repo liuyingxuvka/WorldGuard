@@ -626,3 +626,22 @@ Status: completed.
 | `mirror-final` | 0 | mirror-ok (`WG-32/mirror-final.log`) |
 
 Adaptations: 实测发现参考 dircmp 浅比较会把同长度/mtime 的单字节漂移报 installed current；在原 differences owner 对 common_files 直接比较 bytes，类型/不可读条目也列差异，既有安装测试补原负例，最终 exit1，首次漏报日志保留。未使用有 stat-key 缓存的内容捷径。日志历史绝对证据前缀仅改为相对路径，外部原始日志不变；没有改历史版本或退役记录。
+
+### WG-33: 加最小 CI，发布等待同一提交的 CI 成功；删掉发布工作流里的死代码；修正重复的 v0.7.11 标题
+
+Status: completed.
+
+新增 Python3.11/3.13 CI 定义，publisher 等同一 SHA 的 main CI 成功后才发布，并保留标签/版本/单次发布等边界；修正历史重复 v0.7.11 标题。真实 Python3.11.17 下 294 项测试、镜像/临时安装检查与 3 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `python311` | 0 | flowguard 0.70.6 /workspace/skill-review/repos/guard-baseline/flowguard/flowguard/__init__.py (`WG-33/python311.log`) |
+| `workflow-definition` | 0 | } (`WG-33/workflow-definition.log`) |
+| `change` | 0 | REVIEW release: its files changed; update its description if behavior changed, then confirm release (`WG-33/change.log`) |
+| `pytest` | 0 | 294 passed in 25.68s (`WG-33/pytest.log`) |
+| `mirror` | 0 | mirror-ok (`WG-33/mirror.log`) |
+| `portable-install` | 0 | } (`WG-33/portable-install.log`) |
+| `map` | 0 | check: 0 error(s), 11 warning(s), 0 info (`WG-33/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-33/models.log`) |
+
+Adaptations: 本库私有 .venv 从既有3.12切到缓存3.11，并仍使用隔离 exact baseline FG0.70.6，安装日志外置；没有共享/全局安装改动。未发现本地3.13，未声称运行。CI YAML/内嵌 Python 编译及四个本地 stub gate 正反例通过，未运行 hosted CI/未推送，release 按 WG35 后才运行。历史 v0.7.10 修正是本项明确要求，其余历史不改。

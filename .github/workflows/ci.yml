@@ -1,0 +1,49 @@
+name: WorldGuard CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - name: Checkout the triggering source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install WorldGuard with its test extra
+        run: python -m pip install -e ".[test]"
+
+      - name: Full test suite
+        run: python -m pytest -q
+
+      - name: Portable runtime copy is exact
+        run: python scripts/sync_worldguard_portable_runtime.py check
+
+      - name: FlowGuard map, lint and models
+        if: matrix.python == '3.11'
+        run: python -m flowguard release
+
+      - name: Install the skill into a scratch directory and check it
+        if: matrix.python == '3.11'
+        run: |
+          python scripts/install_skill.py --target "$RUNNER_TEMP/skills"
+          python scripts/install_skill.py --target "$RUNNER_TEMP/skills" --check

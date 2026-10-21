@@ -330,6 +330,7 @@
         "Create stable GitHub tag and Release at that same commit"
       ],
       "files": [
+        ".github/workflows/ci.yml",
         ".github/workflows/publish-release.yml"
       ],
       "entrypoints": [],

@@ -39,11 +39,11 @@
   FlowGuard authority without adding a standalone DNA bundle or routine
   reconstruction step.
 
-## v0.7.11 - 2026-08-12
+## v0.7.10 - 2026-08-12
 
 - Repair the current FlowGuard authority chain from the last complete verified head.
 - Keep the native directory/model/code/test binding as the DNA; remove no alternate compatibility path.
-- Refresh the release-gate and bundled-runtime version bindings to `0.7.11`.
+- Refresh the release-gate and bundled-runtime version bindings to `0.7.10`.
 
 ## v0.7.9 - 2026-08-12
 

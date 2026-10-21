@@ -49,13 +49,11 @@ jobs:
         run: |
           python - <<'PY'
           import ast
-          from email.parser import Parser
           import json
           import os
           from pathlib import Path
           import re
           import subprocess
-          import sys
           import tempfile
           import time
           import tomllib
@@ -110,25 +108,35 @@ jobs:
           index = selected[0]
           notes = changes[headings[index].start():headings[index + 1].start() if index + 1 < len(headings) else None].strip()
           ci_url = None
-
+          deadline = time.monotonic() + 1200
+          while time.monotonic() < deadline:
+              runs = api(f"actions/workflows/ci.yml/runs?head_sha={source_sha}&per_page=30")["workflow_runs"]
+              candidates = [run for run in runs if run["head_sha"].lower() == source_sha and run["head_branch"] == "main"
+                            and run["event"] in {"push", "workflow_dispatch"} and run["path"].split("@")[0] == ".github/workflows/ci.yml"]
+              if candidates:
+                  current = max(candidates, key=lambda run: (run["run_number"], run.get("run_attempt", 1)))
+                  if current["status"] == "completed":
+                      assert current["conclusion"] == "success", f"exact-source CI did not succeed: {current['html_url']}"
+                      ci_url = current["html_url"]
+                      break
+              print(f"Waiting for complete ci.yml success at {source_sha}", flush=True)
+              time.sleep(15)
+          else:
+              raise RuntimeError("exact-source ci.yml did not complete successfully within 20 minutes")
 
           # Recheck main and dereference annotated tags; target_commitish alone is insufficient.
           assert api("git/ref/heads/main")["object"]["sha"].lower() == source_sha, "main advanced; publish its final frozen source instead"
           existing_tag = tag_commit(tag)
           assert existing_tag in (None, source_sha), "existing tag points to a different commit"
-          expected_assets = []
           existing = api(f"releases/tags/{tag}", missing_ok=True)
           if existing is not None:
               assert existing_tag == source_sha and existing["tag_name"] == tag, "existing release tag identity mismatch"
               assert not existing["draft"] and not existing["prerelease"], "existing release is not stable; do not overwrite it automatically"
-              assets = {asset["name"]: asset for asset in existing["assets"]}
-              assert all(name in assets and assets[name]["size"] > 0 for name in expected_assets), "existing release lacks expected assets; do not clobber or silently repair it"
               print(f"Existing stable release is unchanged: {existing['html_url']}")
               raise SystemExit(0)
 
           with tempfile.TemporaryDirectory(prefix="worldguard-release-", dir=os.environ["RUNNER_TEMP"]) as temporary:
               work = Path(temporary)
-              assets = []
 
               notes += f"\n\nSource commit: `{source_sha}`.\n"
               if ci_url:
@@ -136,7 +144,7 @@ jobs:
               notes_path = work / "release-notes.md"
               notes_path.write_text(notes, encoding="utf-8")
               # This is the sole publication action. gh creates a missing tag at --target.
-              command = ["gh", "release", "create", tag, *map(str, assets), "--repo", repository,
+              command = ["gh", "release", "create", tag, "--repo", repository,
                          "--target", source_sha, "--title", f"WorldGuard {tag}", "--notes-file", str(notes_path),
                          "--draft=false", "--prerelease=false", "--latest"]
               if existing_tag is not None:
@@ -145,6 +153,5 @@ jobs:
           assert tag_commit(tag) == source_sha, "published tag does not resolve to the selected source"
           published = api(f"releases/tags/{tag}")
           assert published["tag_name"] == tag and not published["draft"] and not published["prerelease"], "published release is not stable"
-          assert set(expected_assets) <= {asset["name"] for asset in published["assets"]}, "published release assets are incomplete"
           print(published["html_url"])
           PY
