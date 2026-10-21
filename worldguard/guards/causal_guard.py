@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GuardContract
+from worldguard.semantic import causal_constraint_findings
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -142,6 +143,28 @@ def run(contract: GuardContract):
                     "An equation-model claim needs at least one declared behavior that can be executed.",
                 )
             ],
+        )
+
+    violations, unevaluable = causal_constraint_findings(causal_model)
+    if unevaluable:
+        return result(
+            contract,
+            guard,
+            GuardStatus.GAP,
+            channel="gap",
+            impact="creates_gap",
+            missing_slots=unevaluable,
+            errors=[error("CAUSAL_CONSTRAINT_UNEVALUABLE", "A declared constraint cannot be evaluated.")],
+        )
+    if violations:
+        return result(
+            contract,
+            guard,
+            GuardStatus.FAIL,
+            channel="causal",
+            impact="supports_fail",
+            errors=[error("CAUSAL_CONSTRAINT_VIOLATED", "A declared constraint does not hold in an evaluated scenario.")],
+            counterexamples=[{"kind": "model_conflict", "steps": violations}],
         )
 
     return result(

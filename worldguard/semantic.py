@@ -887,6 +887,66 @@ def _evaluate_equations(
     return environment, errors
 
 
+_CONSTRAINT_AST = (*_ALLOWED_AST, ast.Compare, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq)
+
+
+def causal_scenario_values(causal: Mapping[str, Any]) -> dict[str, dict[str, float]]:
+    """Evaluate every scenario and holdout scenario of a complete scalar equation model; {} when it is incomplete."""
+    variables = [str(item) for item in causal.get("variables", [])]
+    equations = causal.get("equations", {}) if isinstance(causal.get("equations"), dict) else {}
+    known = set(variables) | {str(item) for item in causal.get("exogenous", [])}
+    if not variables or any(variable not in equations or _equation_error(equations[variable], known) for variable in variables):
+        return {}
+    seeds = {**_scenario_records(causal.get("scenarios", {})), **_scenario_records(causal.get("holdout_scenarios", {}))}
+    runs: dict[str, dict[str, float]] = {}
+    for scenario_id, seed in seeds.items():
+        values, errors = _evaluate_equations(variables, equations, seed)
+        if not errors:
+            runs[scenario_id] = values
+    return runs
+
+
+def causal_constraint_findings(causal: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Check each `constraints` comparison in every evaluated scenario; return (violations, unevaluable)."""
+    constraints = [str(item) for item in causal.get("constraints", []) or []]
+    if not constraints:
+        return [], []
+    runs = causal_scenario_values(causal)
+    if not runs:
+        return [], [{"constraint": text, "error": "constraints need scalar equations and at least one scenario"} for text in constraints]
+    known = {str(item) for item in causal.get("variables", [])} | {str(item) for item in causal.get("exogenous", [])}
+    violations: list[dict[str, Any]] = []
+    unevaluable: list[dict[str, Any]] = []
+    for text in constraints:
+        try:
+            tree = ast.parse(text, mode="eval")
+        except SyntaxError:
+            tree = None
+        names = sorted({node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}) if tree else []
+        if tree is None or not isinstance(tree.body, ast.Compare) or set(names) - known or any(
+            not isinstance(node, _CONSTRAINT_AST)
+            or (isinstance(node, ast.Constant) and (
+                isinstance(node.value, bool)
+                or not isinstance(node.value, (int, float))
+                or (isinstance(node.value, float) and not math.isfinite(node.value))
+            ))
+            for node in ast.walk(tree)
+        ):
+            unevaluable.append({"constraint": text, "error": "a constraint compares declared variables and numbers, for example 'slack_h >= 0'"})
+            continue
+        check = compile(tree, "<worldguard-constraint>", "eval")
+        for scenario_id, values in sorted(runs.items()):
+            try:
+                holds = eval(check, {"__builtins__": {}}, dict(values))
+            except (NameError, TypeError, ValueError, ZeroDivisionError, OverflowError) as exc:
+                unevaluable.append({"constraint": text, "scenario_id": scenario_id,
+                                    "error": f"{type(exc).__name__}: {exc}"})
+                continue
+            if not holds:
+                violations.append({"constraint": text, "scenario_id": scenario_id, "values": {name: values.get(name) for name in names}})
+    return violations, unevaluable
+
+
 def _causal(contract: GuardContract):
     causal = contract.inputs.get("causal_model", {})
     variable_timepoints = _variable_timepoint_map(contract)
@@ -910,6 +970,10 @@ def _causal(contract: GuardContract):
                     "Graph-only evaluation requires declared variables and exact graph edges.",
                     evidence={"malformed_edges": malformed},
                 )
+            ], consumed, {}
+        if causal.get("constraints"):
+            return SemanticStatus.GAP, [
+                _finding("SEM_CAUSAL_UNEVALUABLE_CONSTRAINT", "A declared constraint cannot be evaluated.", evidence={"constraints": causal.get("constraints")})
             ], consumed, {}
         return SemanticStatus.PASS, [], consumed, {
             "evaluated_graph_edges": len(graph),
@@ -1044,6 +1108,15 @@ def _causal(contract: GuardContract):
             "executed_counterfactual_ids": executed_counterfactuals,
             "observed_variable_timepoints": variable_timepoints,
         }
+    violations, unevaluable = causal_constraint_findings(causal)
+    if unevaluable:
+        return SemanticStatus.GAP, [
+            _finding("SEM_CAUSAL_UNEVALUABLE_CONSTRAINT", "A declared constraint cannot be evaluated.", evidence={"constraints": unevaluable})
+        ], consumed, {}
+    if violations:
+        return SemanticStatus.FAIL, [
+            _finding("SEM_CAUSAL_CONSTRAINT_VIOLATED", "A declared constraint does not hold in an evaluated scenario.", evidence={"violations": violations})
+        ], consumed, {}
     return SemanticStatus.PASS, [], consumed, {
         "evaluated_equations": len(variables),
         "executed_scenario_ids": executed_scenarios,

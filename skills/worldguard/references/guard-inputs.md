@@ -73,11 +73,14 @@ causal_model:
   variables: [train_arrival_h, ferry_out_h, slack_h]
   equations: {train_arrival_h: "10.08", ferry_out_h: "11.0", slack_h: "ferry_out_h - train_arrival_h"}
   scenarios: {timetable: {}}
+  constraints: ["slack_h >= 0"]
 ```
 
 Every variable needs a scalar equation over numbers and other variables; at least one of `scenarios`,
-`holdout_scenarios`, `interventions` or `counterfactuals` is required. Catches: missing or unsafe equations,
-cycles, scenarios that fail to evaluate. Does not check limits such as `slack_h >= 0`.
+`holdout_scenarios`, `interventions` or `counterfactuals` is required. Optional `constraints`: comparisons of
+variables and numbers that must hold in every scenario and holdout scenario. Catches: a constraint that fails
+(`CAUSAL_CONSTRAINT_VIOLATED`, for example a negative transfer time), missing or unsafe equations, cycles,
+scenarios that fail to evaluate.
 Boundary ids: `temporal_story`.
 
 ## ConflictGuard

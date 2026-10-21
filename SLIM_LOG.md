@@ -936,3 +936,26 @@ EventGuard和语义层共享时间顺序requires重放；场景加入真实前�
 | `pytest` | 0 | 273 passed in 39.79s (`WG-47/pytest.log`) |
 
 Adaptations: 保留已有Event错误与时间排序，新增前提检查不读取主张句子；旧未检查前提的真实通过结果和修复后缺mara_has_key反例都保存。
+
+### WG-48: CausalGuard 检查 causal_model.constraints：约束不成立报 CAUSAL_CONSTRAINT_VIOLATED；渡轮行程示例写上约束和事件前提
+
+Status: completed.
+
+CausalGuard与语义层共享场景/留出约束求值；渡轮加入requires和换乘约束。真实CLI正常PASS、09:30渡轮同时Event/Causal FAIL、晚回程Causal FAIL；12专项/277完整测试、catalog84与3模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-48/read.log`) |
+| `reference-unevaluable` | 1 | ZeroDivisionError: float division by zero (`WG-48/reference-unevaluable.log`) |
+| `reference-native-red` | 1 | ZeroDivisionError: float division by zero (`WG-48/reference-native-red.log`) |
+| `focused` | 0 | 12 passed in 1.92s (`WG-48/focused.log`) |
+| `catalog` | 0 | status=pass purposes=7 goods=7 failures=84 known_bads=84 (`WG-48/catalog.log`) |
+| `constraint-native-gap` | 0 |  (`WG-48/constraint-native-gap.log`) |
+| `change` | 0 | ARCH WARN large_file worldguard.core: worldguard/semantic.py: 1329 LOC (limit 800) (`WG-48/change.log`) |
+| `confirm` | 0 | confirmed 2 component(s) (`WG-48/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-48/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-48/release.log`) |
+| `pytest` | 0 | 277 passed in 38.19s (`WG-48/pytest.log`) |
+| `ferry-cli-boundaries` | 0 | protected scalar/equation/AST owners unchanged (`WG-48/ferry-cli-boundaries.log`) |
+
+Adaptations: 参考实现真实native除零崩溃已保留RED；经root批准仅constraint helper限制常量为有限数字，并局部捕获NameError/TypeError/ValueError/ZeroDivisionError/OverflowError为UNEVALUABLE GAP。三个参数负例覆盖缺值、除零、错type，两层精确新错误码。 AST核实_safe_scalar_eval/_evaluate_equations/_ALLOWED_AST不变；不广吞实现异常，不改变干预/反事实。新增3个必要回归使本项比参考多8个累计测试，真实计数保留。

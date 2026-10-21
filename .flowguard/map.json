@@ -52,7 +52,7 @@
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
         "Derive required Guards from claim semantics and validate shared contract shapes",
-        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions",
+        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints",
         "Keep shared ledgers, reports and status aggregation"
       ],
       "files": [
@@ -83,14 +83,14 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:3aef8a6482cd2fda383a535043d9b394f274d6b56d929ceafb23a1051b1b2ab9"
+      "fingerprint": "sha256:a916c20e18db6c5007dcd070a8918b9e579c9c5b972a9b013cfd6993516f1063"
     },
     {
       "id": "worldguard.guards",
       "layer": "",
       "summary": "Seven structural Guards and their native family oracle catalog",
       "responsibilities": [
-        "Run the seven named structural Guard checks, including event preconditions, with shared errors and ledgers",
+        "Run the seven named structural Guard checks, including event preconditions and causal constraints, with shared errors and ledgers",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -125,7 +125,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:9e5816d5cbd9867bfb8ff0a0ae7c4cde8234d8708be428612a18267cc244c662"
+      "fingerprint": "sha256:fbf95c8de5ad662ce64e56a6d96d583a56f3f9dae653d06c63a60e28a5baddd9"
     },
     {
       "id": "worldguard.qualification",
