@@ -24,6 +24,23 @@ def _add_object_census_trust_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _input_error(operation: str, input_path: str, exc: Exception) -> int:
+    print(
+        dump_json(
+            {
+                "operation": operation,
+                "status": "error",
+                "error": {
+                    "code": "WORLDGUARD_INPUT_INVALID",
+                    "message": str(exc),
+                    "details": {"input_path": input_path, "error_type": type(exc).__name__},
+                },
+            }
+        )
+    )
+    return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="worldguard")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -128,18 +145,25 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if not args.contract:
             parser.error("check requires --contract or --example fuel_cell")
-        contract = GuardContract.from_dict(load_mapping(args.contract))
-        context = QualificationContext(
-            node_id=contract.world_model.model_id or contract.contract_id,
-            target_id=contract.world_model.model_id or contract.contract_id,
-            target_revision=contract.world_model.model_version,
-        )
-        print(dump_json(run_worldguard(contract, context=context).to_dict()))
+        try:
+            contract = GuardContract.from_dict(load_mapping(args.contract))
+            context = QualificationContext(
+                node_id=contract.world_model.model_id or contract.contract_id,
+                target_id=contract.world_model.model_id or contract.contract_id,
+                target_revision=contract.world_model.model_version,
+            )
+            report = run_worldguard(contract, context=context)
+        except (OSError, UnicodeError, ValueError, YAMLError) as exc:
+            return _input_error("check", args.contract, exc)
+        print(dump_json(report.to_dict()))
         return 0
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh
-        mesh = ModelMeshContract.from_dict(load_mapping(args.mesh))
-        print(dump_json(run_model_mesh(mesh).to_dict()))
+        try:
+            mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh)))
+        except (OSError, UnicodeError, ValueError, YAMLError) as exc:
+            return _input_error("mesh-check", args.mesh, exc)
+        print(dump_json(mesh_report.to_dict()))
         return 0
     if args.command == "blueprint":
         from .blueprint import (

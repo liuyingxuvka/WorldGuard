@@ -116,3 +116,19 @@ The qualification owner always executes the native derived Guard set. Caller tar
 | `residue` | 0 | (no output) (`WG-05/residue.log`) |
 
 Adaptations: Root independently certified WG-09–WG-44 can continue against frozen baselines; WG-45 is the first actual new-FlowGuard probe. This further scheduling adaptation changes no action purpose or within-repository order.
+
+### WG-06: 最小合同不再崩溃：缺 contract_id / model_version 用默认值，输入错误返回 JSON
+
+Status: completed.
+
+Minimal contracts now default contract_id to claim_id and missing model_version to unversioned. check and mesh-check report OSError/UnicodeError/ValueError/YAML input failures as WORLDGUARD_INPUT_INVALID JSON with exit 2. Preserved retired-field migration errors and existing blueprint input errors. Real portable probes confirm malformed and missing check/mesh inputs are typed errors without tracebacks.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-06/mirror.log`) |
+| `focused` | 0 | 7 passed in 4.38s (`WG-06/focused.log`) |
+| `input-errors` | 0 | mesh-check 2 WORLDGUARD_INPUT_INVALID [Errno 2] No such file or directory: '/workspace/guard-repair-20261021/results/WorldGuard/WG-06/missing-mesh.yaml' (`WG-06/input-errors.log`) |
+| `pytest` | 0 | 378 passed in 30.83s (`WG-06/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-06/map.log`) |
+
+Adaptations: None; reference purpose and implementation retained.

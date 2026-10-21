@@ -216,7 +216,10 @@ class GuardContract:
         world_model = dict(data.get('world_model', {}))
         inputs = dict(data.get('inputs', {}))
         _reject_retired_runtime_input_paths(world_model, inputs)
-        return cls(contract_id=str(data.get('contract_id', '')), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=Claim.from_dict(data.get('claim', {})), world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')))
+        if not str(world_model.get('model_version', '')).strip():
+            world_model['model_version'] = 'unversioned'
+        claim = Claim.from_dict(data.get('claim', {}))
+        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')))
 
     def for_guard(self, guard: str, upstream_results: list[Any] | None=None) -> 'GuardContract':
         """Bind one child to the same current model and read-only upstream inputs."""

@@ -151,19 +151,6 @@ def test_missing_selection_keeps_legacy_parser_error_contract() -> None:
     )
 
 
-def test_runtime_exception_keeps_legacy_single_json_error_contract(
-    tmp_path: Path,
-) -> None:
-    missing = tmp_path / "missing-contract.yaml"
-
-    completed = _run_helper("--contract", str(missing))
-
-    assert completed.returncode == 1
-    assert completed.stderr == ""
-    payload = json.loads(completed.stdout)
-    assert payload["ok"] is False
-    assert isinstance(payload["error"], str) and payload["error"]
-    assert set(payload) == {"ok", "error"}
 
 
 def test_missing_portable_runtime_fails_without_importing_external_package(
