@@ -366,8 +366,9 @@ def _native_semantic_field_errors(kind: str, fields: Mapping[str, Any]) -> list[
             errors.append("mechanism_claim_scope:unsupported_scope")
     elif kind == "agent":
         require_text("agent_id")
-        for field_name in ("beliefs", "desires", "intentions"):
+        for field_name in ("beliefs", "desires"):
             require_text_list(field_name)
+        require_text_list("intentions", minimum=0)
         require_text_list("conflicting_intentions", minimum=0)
     elif kind == "conflict":
         require_text_list("participant_ids", minimum=2)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GuardContract
+from worldguard.semantic import missing_bdi_fields
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -73,16 +74,9 @@ def run(contract: GuardContract):
         )
 
     incomplete = [
-        {
-            "agent_id": str(agent_key),
-            "missing": [
-                field_name
-                for field_name in ("beliefs", "desires", "intentions")
-                if not record.get(field_name)
-            ],
-        }
+        {"agent_id": str(agent_key), "missing": missing_bdi_fields(record)}
         for agent_key, record in agents.items()
-        if any(not record.get(name) for name in ("beliefs", "desires", "intentions"))
+        if missing_bdi_fields(record)
     ]
     if incomplete:
         return result(
@@ -95,7 +89,7 @@ def run(contract: GuardContract):
             errors=[
                 error(
                     "AGENT_INCOMPLETE_BDI",
-                    "Every declared agent needs beliefs, desires, and intentions.",
+                    "Every declared agent needs beliefs, desires, and an intentions list (it may be empty).",
                 )
             ],
         )

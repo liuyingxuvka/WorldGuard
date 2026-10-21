@@ -47,6 +47,14 @@ def _event_time_key(value: Any) -> tuple[int, Any]:
         return (2, text)
 
 
+def missing_bdi_fields(record: Mapping[str, Any]) -> list[str]:
+    """Beliefs and desires must be non-empty; intentions must be present but may be empty."""
+    missing = [name for name in ("beliefs", "desires") if not record.get(name)]
+    if record.get("intentions") is None:
+        missing.append("intentions")
+    return missing
+
+
 def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
     """Return (actor, action) groups whose active norms both forbid and permit/require it."""
     groups: dict[tuple[str, str], list[Any]] = {}
@@ -590,7 +598,7 @@ def _agent(contract: GuardContract):
         if not isinstance(record, dict):
             missing.append({"agent": index, "fields": ["beliefs", "desires", "intentions"]})
             continue
-        absent = [name for name in ("beliefs", "desires", "intentions") if not record.get(name)]
+        absent = missing_bdi_fields(record)
         if absent:
             missing.append({"agent": record.get("agent_id", index), "fields": absent})
     if missing:

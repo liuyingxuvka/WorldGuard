@@ -31,7 +31,7 @@ beliefs:
   Mara: {agent_id: Mara, beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
 ```
 
-The map key must equal `agent_id`; `beliefs`, `desires` and `intentions` must be non-empty lists. Optional:
+The map key must equal `agent_id`; `beliefs` and `desires` must be non-empty lists; `intentions` must be present but may be `[]` (for example a bystander with no plan). Optional:
 `agent_model.conflicting_intentions`. Catches: identity mismatch, incomplete belief/desire/intention records,
 declared conflicting intentions. Boundary ids: `payoff`, `equilibrium`, `causal_effect`, `permission`.
 

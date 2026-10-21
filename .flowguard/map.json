@@ -85,7 +85,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:5af48805b3b2ac5dee0228c53603db55dc6df182818ad3de6fd937209acb3795"
+      "fingerprint": "sha256:d2dd20d23183d16302c789739c4d312b2d29f3214d00f7d186e8ecb502ce31ff"
     },
     {
       "id": "worldguard.guards",
@@ -127,7 +127,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:76661604837dcb6163d60c660978127003e901cac771252fabe3dd0487198541"
+      "fingerprint": "sha256:80577548c0ce1165d2e60a0f5c1520b4e25dd719e454e03042d1153c72299f51"
     },
     {
       "id": "worldguard.qualification",
@@ -237,7 +237,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:94a894206bfafb931a5c968fe564a785fd29493e86298719377462b19194a52d"
+      "fingerprint": "sha256:42828d8e1593e6d113daba298e0f753f7e2f9b747ca4fac7e01105867c698c94"
     },
     {
       "id": "worldguard.revision",

@@ -809,3 +809,24 @@ freeze 自动读取并记录模型 sha256，输出完整 frozen prediction；com
 | `cli-and-revision-final` | 0 | ] (`WG-41/cli-and-revision-final.log`) |
 
 Adaptations: 真实 foreign-cwd CLI 四例验证 freeze/compare 成功和两种拒绝；revision base/candidate/rollback 省略 sha256 可成功，base 冻结后改动仍 blocked。初始外部 probe 错把 launcher stderr 当 stdout，产品已按参考拒绝；修正 probe 后输出保存在独立 cli-final 目录，原输出保留。领域匹配/失配分类、WG20 once-run/per-node 验收未放宽。
+
+### WG-42: AgentGuard 接受空的 intentions 列表，只有缺少这个键才报 GAP
+
+Status: completed.
+
+结构与语义共享 BDI 缺项判断；intentions 可显式为空，缺少仍 GAP，蓝图 agent 字段同步。新增测试先失败后通过，25 项专项、272 项完整测试、七 Guard goods7/known_bads78 与 3 模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-42/read.log`) |
+| `empty-intentions-before` | 1 | 1 failed, 24 deselected in 0.15s (`WG-42/empty-intentions-before.log`) |
+| `focused` | 0 | 25 passed in 0.15s (`WG-42/focused.log`) |
+| `catalog` | 0 | status=pass purposes=7 goods=7 failures=78 known_bads=78 (`WG-42/catalog.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.blueprint: 2 identical bodies (188 AST nodes) in ['worldguard.blueprint']: worldguard/blueprint.py:_local_binding_json_payload, worldguard/blueprint.py:_local_binding_json_object (`WG-42/change.log`) |
+| `confirm` | 0 | confirmed 3 component(s) (`WG-42/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-42/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-42/release.log`) |
+| `scene` | 0 | [{"case": "empty", "exit": 0, "status": "PASS", "errors": []}, {"case": "missing", "exit": 1, "status": "GAP", "errors": ["AGENT_INCOMPLETE_BDI"]}] (`WG-42/scene.log`) |
+| `pytest` | 0 | 272 passed in 47.49s (`WG-42/pytest.log`) |
+
+Adaptations: 真实场景 foreign-cwd CLI：路人 intentions=[] 返回 PASS/0，删该键返回 AGENT_INCOMPLETE_BDI GAP/1；beliefs/desires 非空、身份冲突、意图冲突及目录失败类别保持。
