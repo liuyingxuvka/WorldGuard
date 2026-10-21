@@ -422,3 +422,232 @@ def scenarios() -> tuple[Scenario, ...]:
 
 
 __all__ = ["INVARIANTS", "build_workflow", "scenarios"]
+
+
+# Contract: what this model is about in the real code, its known-bad variants, and the replay on that code.
+
+from pathlib import Path  # noqa: E402
+import sys  # noqa: E402
+
+from flowguard.explorer import Explorer  # noqa: E402
+
+MODEL_ID = "fact_revision"
+COMPONENTS = ["worldguard.revision"]
+ROOT = Path(__file__).resolve().parents[2]
+IMPLEMENTED_BY = {
+    "BuildFactRevisionPreview": "worldguard/fact_revision.py:preview_fact_revision",
+    "ActivateFactRevision": "worldguard/fact_revision.py:activate_fact_revision",
+}
+TESTED_BY = {
+    "fact_revision_requires_current_base": ["tests/test_fact_revision.py:test_stale_base_fingerprint_blocks_preview"],
+    "fact_revision_preserves_declared_facts": ["tests/test_fact_revision.py:test_preserved_fact_change_blocks_with_support_delta"],
+    "fact_revision_surfaces_contradictions": ["tests/test_fact_revision.py:test_positive_and_negative_support_yield_both_without_explosion"],
+    "fact_revision_activation_is_evidence_bound": [
+        "tests/test_fact_revision.py:test_activation_requires_current_regression_and_holdout_evidence",
+        "tests/test_fact_revision.py:test_missing_holdout_evidence_keeps_activation_blocked",
+    ],
+    "fact_revision_activation_returns_to_same_task_owner": ["tests/test_fact_revision.py:test_fact_activation_cannot_claim_model_closed_for_task"],
+}
+SAFE = tuple(scenario for scenario in scenarios() if scenario.expected.expected_status == "ok")
+SAFE_INPUTS = tuple(dict.fromkeys(request for scenario in SAFE for request in scenario.external_input_sequence))
+REQUIRED_LABELS = tuple(dict.fromkeys(label for scenario in SAFE for label in scenario.expected.required_trace_labels))
+
+
+def _explorer(blocks, inputs=SAFE_INPUTS, invariant_names=None, labels=REQUIRED_LABELS) -> Explorer:
+    return Explorer(
+        workflow=Workflow(tuple(blocks), name="worldguard_fact_revision"),
+        initial_states=(RevisionState(),),
+        external_inputs=tuple(inputs),
+        invariants=tuple(item for item in INVARIANTS if invariant_names is None or item.name in invariant_names),
+        max_sequence_length=2,
+        required_labels=tuple(labels),
+    )
+
+
+def build_explorer() -> Explorer:
+    """Every ordered pair of the safe scenario inputs (preview, then activate, and every other order)."""
+    return _explorer(build_workflow().blocks)
+
+
+class _ActivatesWithoutHoldout(ActivateFactRevision):
+    """Known bad: activation goes ahead without current holdout evidence."""
+
+    def apply(self, request, state):
+        for result in super().apply(replace(request, holdout_current=True), state):
+            yield replace(result, new_state=replace(result.new_state, holdout_current=request.holdout_current))
+
+
+class _ActivatesUnacknowledgedContradiction(ActivateFactRevision):
+    """Known bad: activation goes ahead although the visible contradiction was not acknowledged."""
+
+    def apply(self, request, state):
+        for result in super().apply(replace(request, contradiction_acknowledged=True), state):
+            yield replace(result, new_state=replace(result.new_state, contradiction_acknowledged=request.contradiction_acknowledged))
+
+
+def broken_variants() -> dict[str, Explorer]:
+    """Known-bad variants, each explored with only the invariants that must catch it.
+
+    Two replace the activation block; the scenario that expects a violation (an activation without preview or
+    evidence) is a known-bad input to the design itself.
+    """
+    def swapped(broken):
+        return tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
+
+    variants = {
+        "activates_without_holdout": _explorer(
+            swapped(_ActivatesWithoutHoldout()), invariant_names={"fact_revision_activation_is_evidence_bound"}, labels=()),
+        "activates_unacknowledged_contradiction": _explorer(
+            swapped(_ActivatesUnacknowledgedContradiction()), invariant_names={"fact_revision_surfaces_contradictions"}, labels=()),
+    }
+    for scenario in scenarios():
+        if scenario.expected.expected_status == "violation":
+            variants[scenario.name] = _explorer(
+                build_workflow().blocks, inputs=scenario.external_input_sequence,
+                invariant_names=set(scenario.expected.expected_violation_names), labels=())
+    return variants
+
+
+class ReplayReport:
+    """Conformance result: how many model cases ran on the real code, and the mismatches."""
+
+    def __init__(self, checked: int, mismatches: list[str]) -> None:
+        self.checked = checked
+        self.mismatches = tuple(mismatches)
+        self.ok = not self.mismatches
+
+    def format_text(self, max_examples: int | None = None) -> str:
+        lines = [f"conformance: {self.checked - len(self.mismatches)}/{self.checked} model cases match the real code"]
+        return "\n".join(lines + [f"  mismatch: {line}" for line in self.mismatches[:max_examples]])
+
+
+def _four_valued_findings() -> list[str]:
+    """The preview keeps a contradiction as 'both', leaves unrelated facts alone and does not change the base."""
+    from worldguard.fact_revision import (
+        FactPolarity,
+        FactRevisionTransaction,
+        FactSupport,
+        FactWorldSnapshot,
+        SignedFact,
+        StrictFactRule,
+        WorldFact,
+        preview_fact_revision,
+    )
+
+    rain, wet, unrelated = WorldFact("rain"), WorldFact("wet"), WorldFact("unrelated")
+    positive_rain = FactSupport("support:rain", rain.fact_id, FactPolarity.POSITIVE, "source:observation", "evidence:rain")
+    negative_rain = FactSupport("support:not-rain", rain.fact_id, FactPolarity.NEGATIVE, "source:counterevidence", "evidence:not-rain")
+    rule = StrictFactRule("rule:rain-wet", (SignedFact(rain.fact_id, FactPolarity.POSITIVE),),
+                          SignedFact(wet.fact_id, FactPolarity.POSITIVE), "source:strict-rule", "evidence:rain-wet")
+    base = FactWorldSnapshot(snapshot_id="base", facts=(rain, wet, unrelated), supports=(positive_rain,), rules=(rule,))
+    transaction = FactRevisionTransaction(
+        transaction_id="tx", base_fingerprint=base.fingerprint, additions=(negative_rain,),
+        task_id="task:flowguard-fact-revision", task_local_owner_id="worldguard.task_local_world_revision",
+        iteration=0, predecessor_iteration_fingerprint="root",
+    )
+    preview = preview_fact_revision(base, transaction)
+    findings = []
+    states = {item.fact_id: item.state.value for item in preview.after_states}
+    if not preview.contradiction_fact_ids:
+        findings.append("the preview did not expose the rain contradiction")
+    if states.get(rain.fact_id) != "both":
+        findings.append("the preview collapsed 'both' into a binary state")
+    if states.get(unrelated.fact_id) != "neither":
+        findings.append("the preview exploded a contradiction into an unrelated fact")
+    if {item.fact_id: item.state.value for item in preview.before_states}.get(rain.fact_id) != "true":
+        findings.append("the preview mutated the base snapshot")
+    return findings
+
+
+def _model_terminal(scenario) -> str:
+    state = scenario.initial_state
+    for request in scenario.external_input_sequence:
+        for block in build_workflow().blocks:
+            state = next(iter(block.apply(request, state))).new_state
+    return state.terminal_status or state.phase
+
+
+def conformance() -> ReplayReport:
+    """Replay every model scenario once on the real preview and activation code, plus the four-valued sample."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from tests.test_fact_revision import _base, _transaction
+    from worldguard.fact_revision import (
+        FactPolarity,
+        FactRevisionActivationRequest,
+        FactRevisionEvidenceBinding,
+        FactRevisionEvidenceKind,
+        FactSupport,
+        FactWorldSnapshot,
+        activate_fact_revision,
+        preview_fact_revision,
+    )
+    from worldguard.task_local_revision import TASK_LOCAL_REVISION_OWNER_ID
+
+    def negative(fact_id: str) -> FactSupport:
+        return FactSupport(f"support:{fact_id}-negative", fact_id, FactPolarity.NEGATIVE, "source:counterevidence", f"evidence:{fact_id}")
+
+    def real(preview, activate) -> str:
+        base = _base()
+        additions = (negative("fact:a"),) if preview is not None and preview.has_contradiction else ()
+        if preview is not None and not preview.preservation_ok:
+            additions = (negative("fact:b"),)
+        transaction = _transaction(transaction_id="revision:conformance", base_fingerprint=base.fingerprint,
+                                   additions=additions, preserved_fact_ids=("fact:b",))
+        current = base
+        if preview is not None and not preview.base_current:
+            extra = FactSupport("support:unrelated-positive", "fact:unrelated", FactPolarity.POSITIVE, "source:new", "evidence:new")
+            current = FactWorldSnapshot(snapshot_id="world:changed", facts=base.facts, supports=(*base.supports, extra), rules=base.rules)
+        frozen = preview_fact_revision(current, transaction)
+        if "stale_base_fingerprint" in frozen.finding_codes:
+            return "stale_base"
+        if "preserved_fact_changed" in frozen.finding_codes:
+            return "preservation"
+        if activate is None:
+            return "previewed" if preview is not None else "not_run"
+
+        def binding(kind, name: str, current: bool = True):
+            return FactRevisionEvidenceBinding(f"evidence:{name}", kind, "pass", current, frozen.fingerprint)
+
+        evidence = [binding(FactRevisionEvidenceKind.REGRESSION, "regression", activate.regression_current)]
+        if activate.holdout_current:
+            evidence.append(binding(FactRevisionEvidenceKind.HOLDOUT, "holdout"))
+        if not activate.evidence_cardinality_exact:
+            evidence.append(binding(FactRevisionEvidenceKind.REGRESSION, "regression-two"))
+        if preview is None:
+            evidence = []
+        receipt = activate_fact_revision(current, transaction, FactRevisionActivationRequest(
+            activation_id="activation:conformance",
+            task_id="task-1" if activate.task_owner_current else "task-other",
+            task_local_owner_id=TASK_LOCAL_REVISION_OWNER_ID,
+            expected_preview_fingerprint=frozen.fingerprint,
+            expected_candidate_model_fingerprint=frozen.candidate_snapshot.fingerprint,
+            acknowledged_contradiction_fact_ids=frozen.contradiction_fact_ids if activate.contradiction_acknowledged else (),
+            evidence=tuple(evidence),
+        )).receipt
+        if receipt.activated:
+            return receipt.terminal_reason
+        if "contradiction_visibility_not_acknowledged" in receipt.finding_codes:
+            return "contradiction_acknowledgement"
+        return "evidence"
+
+    four_valued = _four_valued_findings()
+    mismatches = ["four-valued sample: " + "; ".join(four_valued)] if four_valued else []
+    for scenario in scenarios():
+        steps = {request.action: request for request in scenario.external_input_sequence}
+        observed = real(steps.get("preview"), steps.get("activate") or steps.get("unsafe_activate"))
+        expected = _model_terminal(scenario)
+        if scenario.expected.expected_status == "violation":
+            agrees = observed != "task_local_revalidation_required"
+        else:
+            agrees = observed == expected
+        if not agrees:
+            mismatches.append(f"{scenario.name}: model {expected!r}, real code {observed!r}")
+    return ReplayReport(len(scenarios()) + 1, mismatches)
+
+
+if __name__ == "__main__":
+    print(build_explorer().explore().format_text())
+    for name, variant in broken_variants().items():
+        print(f"known-bad {name}: {'caught' if not variant.explore().ok else 'MISSED'}")
+    print(conformance().format_text())

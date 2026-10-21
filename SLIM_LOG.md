@@ -1092,3 +1092,23 @@ Task-local revision is now a FlowGuard contract model, preserving the original15
 | `pytest` | 0 | 281 passed in 24.13s (`WG-55/pytest.log`) |
 
 Adaptations: The WG43 strict per-terminal comparison and sole holdout alias survive conversion; the external in-memory wrong-nonclosure control adds no product/model mutation. Native corruption restored by exact saved bytes, never global restore.
+
+### WG-56: fact_revision 自模型改成合约模型：探索安全输入的两两顺序、三个已知坏变体、在真实预览和激活代码上重放每个场景
+
+Status: completed.
+
+Fact revision is a contract model preserving15556 original model bytes, all56 safe sequences/105 traces and seven required labels, three targeted known-bad variants and8/8 actual preview/activation/four-valued cases. Removing real missing-evidence rejection fails6/8 in bothFG versions; restored exact bytes. Full281 passed, maps0/0 and releases3/3; trackedFGfiles6.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-56/read.log`) |
+| `original-model-preserved` | 0 | } (`WG-56/original-model-preserved.log`) |
+| `contract-model` | 0 | conformance: 8/8 model cases match the real code (`WG-56/contract-model.log`) |
+| `native-corruption` | 0 | native owner restored byte-for-byte (`WG-56/native-corruption.log`) |
+| `change` | 0 | ARCH WARN large_file worldguard.revision: worldguard/task_local_revision.py: 1096 LOC (limit 800) (`WG-56/change.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-56/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-56/release.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-56/new-fg.log`) |
+| `pytest` | 0 | 281 passed in 23.00s (`WG-56/pytest.log`) |
+
+Adaptations: NewFG also emits informational model warnings for design invariants not violated by any of the three prescribed known-bad variants (including fact_revision_requires_current_base); these warnings are retained in raw evidence, not represented as universal mutation coverage. No variants added or protected rules changed.

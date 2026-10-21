@@ -275,7 +275,7 @@
       ],
       "models": [
         ".flowguard/models/worldguard_task_local_revision_model.py",
-        ".flowguard/fact_revision/run_checks.py"
+        ".flowguard/models/worldguard_fact_revision_model.py"
       ],
       "status": "confirmed",
       "fingerprint": "sha256:03fe59b2de9c010692cb774597785904ed93696131c7bff4b4e40b222169ea9d"
