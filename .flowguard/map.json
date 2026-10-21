@@ -44,14 +44,14 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:dc890a96c6e9f9a3fffea479b7376f34bb61dfd7fa12721173eca845a4e2cd66"
+      "fingerprint": "sha256:8200e951b883bed5b585f5721c6c2922cd333d55efce9660f8b91d13e8f6caa5"
     },
     {
       "id": "worldguard.core",
       "layer": "",
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
-        "Derive required Guards from claim semantics and validate shared contract shapes",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes",
         "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints",
         "Keep shared ledgers, reports and status aggregation"
       ],
@@ -83,7 +83,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:a916c20e18db6c5007dcd070a8918b9e579c9c5b972a9b013cfd6993516f1063"
+      "fingerprint": "sha256:2b46d9812a1c9c272614d53b403d48599142cf2a8e7899270963c78841cac747"
     },
     {
       "id": "worldguard.guards",
@@ -125,20 +125,22 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:fbf95c8de5ad662ce64e56a6d96d583a56f3f9dae653d06c63a60e28a5baddd9"
+      "fingerprint": "sha256:3b8529a0302243bbba1cd93ab089ce05292df3297ce965e8b576b5594252228a"
     },
     {
       "id": "worldguard.qualification",
       "layer": "",
-      "summary": "Unit qualification that runs the derived Guards directly",
+      "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
         "Qualify a unit by executing its derived Guard obligations structurally and semantically",
+        "Evaluate each claim.asserts row against the world model; a false row fails the claim and an unresolved row is a gap",
         "Keep structural status, semantic status and provider availability separate",
         "Expose the run_worldguard kernel through one qualification owner"
       ],
       "files": [
         "worldguard/qualification.py",
-        "worldguard/kernel.py"
+        "worldguard/kernel.py",
+        "worldguard/claim_binding.py"
       ],
       "entrypoints": [
         "worldguard/kernel.py:run_worldguard",
@@ -153,12 +155,13 @@
         "worldguard.guards"
       ],
       "tests": [
+        "tests/test_kernel_handoff.py",
         "tests/test_qualification.py",
-        "tests/test_kernel_handoff.py"
+        "tests/test_world_model_language.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:a25937165607feda998f6d2eb309b20f3cdd921534dfedfb46ac107eecac02bb"
+      "fingerprint": "sha256:eaab65658976f396d3f4f903470480d1f6416e5b1f94a31d3330f946e0e7a65d"
     },
     {
       "id": "worldguard.mesh",

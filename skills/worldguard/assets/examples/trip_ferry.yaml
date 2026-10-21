@@ -6,6 +6,11 @@ claim:
   claim_id: c_trip_plan
   text: Take the 08:00 train, the 11:00 ferry out on day 1, and the 15:00 ferry back on day 2 for the 16:30 last train.
   requested_semantics: [event, resource, causal]
+  asserts:   # what the claim says, checked against the model below
+    - {holds: on_island, at: "2026-11-02T12:00"}
+    - {event: d2_ferry_arr, before: d2_last_train}
+    - {variable: slack_back_h, op: ">=", value: 0}
+    - {place: home, color: traveler, qty: 1}
 world_model: {model_id: island-trip, model_version: draft-2, scope_limits: [published timetable, no delays]}
 inputs:
   event_model: {initial_states: [at_city]}

@@ -94,6 +94,7 @@ class GuardedReport:
             "aggregate_ledger",
             "scope_limits",
             "claim_boundary",
+            "claim_binding",
         }
     )
 
@@ -123,6 +124,7 @@ class GuardedReport:
     aggregate_ledger: list[LedgerEntry]
     scope_limits: list[str] = field(default_factory=list)
     claim_boundary: str = ""
+    claim_binding: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "status", coerce_status(self.status))
@@ -214,4 +216,5 @@ class GuardedReport:
             "aggregate_ledger": [entry.to_dict() for entry in self.aggregate_ledger],
             "scope_limits": self.scope_limits,
             "claim_boundary": self.claim_boundary,
+            "claim_binding": self.claim_binding,
         }

@@ -7,6 +7,11 @@ depends on must be in `inputs`. Each block below passes as written; copy it unde
 Two complete, passing worlds: `assets/examples/scene_locked_door.yaml` (story) and
 `assets/examples/trip_ferry.yaml` (trip).
 
+Bind the claim to the model with `claim.asserts`, a list of rows checked against the model (each Guard below
+shows its row; a row also selects its Guard). A false row is `FAIL` (`CLAIM_ASSERTION_FALSE`, with the observed
+value); a row naming something the model does not declare is `GAP` (`CLAIM_ASSERTION_UNRESOLVED`); a claim
+without `asserts` is `GAP` (`CLAIM_NOT_BOUND`: claim not bound to the world model).
+
 To mark a part of the claim that a Guard does not own, add its id to `requested_semantics`; that Guard then
 reports `BOUNDARY_EXCEEDED`. The ids are listed per Guard.
 
@@ -18,6 +23,9 @@ events:
   - {event_id: e_unlock, at: t1, requires: [door_locked], initiates: door_open, terminates: door_locked}
   - {event_id: e_enter, at: t2, requires: [door_open], initiates: iris_inside}
 ```
+
+Claim assertion: `{holds: iris_inside, at: t2}` (after every event at or before `at`; add `value: false` for
+"does not hold") or `{event: e_unlock, before: e_enter}`.
 
 `event_id` is unique; `at` is a number, `t<number>` or an ISO date-time, and events run in that order;
 `initiates`, `terminates`, `releases` name fluents (one id or a list). Optional: `requires` (fluents that must
@@ -34,6 +42,8 @@ beliefs:
   Mara: {agent_id: Mara, beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
 ```
 
+Claim assertion: `{agent: Mara, intends: unlock_door}` (or `believes`, `desires`).
+
 The map key must equal `agent_id`; `beliefs` and `desires` must be non-empty lists; `intentions` must be present but may be `[]` (for example a bystander with no plan). Optional:
 `agent_model.conflicting_intentions`. Catches: identity mismatch, incomplete belief/desire/intention records,
 declared conflicting intentions. Boundary ids: `payoff`, `equilibrium`, `causal_effect`, `permission`.
@@ -45,6 +55,8 @@ spatial_relations:
   - {at: t1, x: key, y: box, relation: NTPP}
   - {at: t1, x: box, y: room, relation: NTPP}
 ```
+
+Claim assertion: `{relation: NTPP, x: key, y: box, at: t1}` (a declared relation or its converse).
 
 `relation` is an RCC8 name: `DC`, `EC`, `PO`, `EQ`, `TPP`, `NTPP`, `TPPI`, `NTPPI`. Catches: two different
 relations for one pair at one time, wrong converses, a non-`EQ` relation of an object to itself, and
@@ -61,6 +73,9 @@ resources:
     - {id: board, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: on_ferry, color: traveler, qty: 1}]}
 ```
 
+Claim assertion: `{place: on_ferry, color: traveler, qty: 1}` (tokens after all transitions; add
+`after: <transition id>` for an earlier point).
+
 `places` hold the starting tokens (`color`, `qty`). `transitions` fire in list order: the list is the story or
 clock order, and each step can only consume tokens that earlier steps left. `capacities` (optional) cap tokens
 per place. Catches: a step that needs a token that is not there (locked door, missed ferry, someone in two
@@ -75,6 +90,8 @@ causal_model:
   scenarios: {timetable: {}}
   constraints: ["slack_h >= 0"]
 ```
+
+Claim assertion: `{variable: slack_h, op: ">=", value: 0.5}` (in every scenario, or add `scenario: <id>`).
 
 Every variable needs a scalar equation over numbers and other variables; at least one of `scenarios`,
 `holdout_scenarios`, `interventions` or `counterfactuals` is required. Optional `constraints`: comparisons of
@@ -94,6 +111,8 @@ game_model:
   payoffs: [{state: s, reward: {a: 1, b: 1}}]
 ```
 
+Claim assertion: `{player: a, state: s, reward: 1}`.
+
 All five parts are required. Catches: probabilities that do not sum to 1, duplicate players, references to
 undeclared states or players. Boundary ids: `obligation`, `permission`, `deontic`.
 
@@ -107,6 +126,9 @@ facts:
   - {fact_id: storm_cleared, value: true}
   - {fact_id: storm_uncleared, value: false}
 ```
+
+Claim assertion: `{actor: pilot, action: leave_harbor, modality: permitted}` (an active norm with that
+modality and none of the opposite one).
 
 `modality` is `permitted`, `obligatory`, `forbidden` or `prohibited`; every `condition` names a fact with a
 boolean `value`. A norm whose condition is false is inactive. Write a claimed permission as a `permitted` norm.

@@ -72,3 +72,39 @@ def test_unevaluable_causal_constraints_report_native_gaps(constraint, exogenous
     assert [error["code"] for error in causal.errors] == ["CAUSAL_CONSTRAINT_UNEVALUABLE"]
     semantic = next(receipt for receipt in report.semantic_receipts if receipt.guard == "CausalGuard")
     assert [finding["code"] for finding in semantic.findings] == ["SEM_CAUSAL_UNEVALUABLE_CONSTRAINT"]
+
+
+def _gap_codes(report) -> list[str]:
+    return [gap["code"] for gap in report.gaps]
+
+
+def test_the_claim_is_checked_against_the_model_not_its_sentence() -> None:
+    scene = _world("scene_locked_door.yaml")
+    wrong_order = copy.deepcopy(scene)  # the world is consistent, but the claim says Iris got in before Mara unlocked
+    wrong_order["claim"]["asserts"] = [{"event": "e_iris_enter", "before": "e_mara_unlock"}]
+    report = run_worldguard(wrong_order)
+    assert report.status.value == "FAIL"
+    assert report.structural_status.value == "PASS"
+    assert _gap_codes(report) == ["CLAIM_ASSERTION_FALSE"]
+    assert report.gaps[0]["observed"] == {"e_iris_enter": "t3", "e_mara_unlock": "t2"}
+
+    unknown = copy.deepcopy(scene)
+    unknown["claim"]["asserts"] = [{"holds": "window_open", "at": "t3"}]
+    report = run_worldguard(unknown)
+    assert report.status.value == "GAP"
+    assert _gap_codes(report) == ["CLAIM_ASSERTION_UNRESOLVED"]
+
+
+def test_trip_claims_are_checked_against_the_timetable_model() -> None:
+    trip = _world("trip_ferry.yaml")
+    island_too_early = copy.deepcopy(trip)
+    island_too_early["claim"]["asserts"] = [{"holds": "on_island", "at": "2026-11-02T10:30"}]  # still at the port
+    report = run_worldguard(island_too_early)
+    assert report.status.value == "FAIL"
+    assert report.gaps[0]["observed"]["holding_fluents"] == ["at_port"]
+
+    hour_of_slack = copy.deepcopy(trip)
+    hour_of_slack["claim"]["asserts"] = [{"variable": "slack_back_h", "op": ">=", "value": 1}]  # 45 minutes, not an hour
+    report = run_worldguard(hour_of_slack)
+    assert report.status.value == "FAIL"
+    assert report.gaps[0]["observed"] == {"published_timetable": 0.75}

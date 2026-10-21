@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from .claim_binding import evaluate_claim_binding
 from .contracts import (
     GuardContract,
     derive_guard_requirements,
@@ -246,6 +247,12 @@ def qualify_guard_contract(
     semantic_status = aggregate_semantic_status(semantic_receipts)
     if unmapped and semantic_status != SemanticStatus.FAIL:
         semantic_status = SemanticStatus.GAP
+    claim_binding = evaluate_claim_binding(contract)
+    binding_status = claim_binding["status"] if claim_binding["bound"] else GuardStatus.PASS.value
+    if binding_status == GuardStatus.FAIL.value:
+        semantic_status = SemanticStatus.FAIL
+    elif binding_status != GuardStatus.PASS.value and semantic_status != SemanticStatus.FAIL:
+        semantic_status = SemanticStatus.GAP
     provider_status = aggregate_provider_status(
         semantic_receipts,
         required=bool(effective),
@@ -275,6 +282,15 @@ def qualify_guard_contract(
                 **row,
             }
         )
+    for row in claim_binding["assertions"]:
+        if row["status"] != GuardStatus.PASS.value:
+            gaps.append(
+                {
+                    "gap_id": f"qualification:claim:assertion:{row['index']}",
+                    "code": "CLAIM_ASSERTION_FALSE" if row["status"] == GuardStatus.FAIL.value else "CLAIM_ASSERTION_UNRESOLVED",
+                    **row,
+                }
+            )
     for result in child_results:
         if result.status != GuardStatus.PASS:
             gaps.append(
@@ -363,6 +379,7 @@ def qualify_guard_contract(
         "rollout_status": rollout_status.value,
         "depth_state": depth_state,
         "gaps": gaps,
+        "claim_binding": claim_binding,
         "final_status": status.value,
         "claim_boundary": claim_boundary,
     }
@@ -395,6 +412,7 @@ def qualify_guard_contract(
         aggregate_ledger=aggregate_ledger,
         scope_limits=list(contract.world_model.scope_limits),
         claim_boundary=claim_boundary,
+        claim_binding=claim_binding,
     )
 
 

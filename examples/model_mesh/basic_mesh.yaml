@@ -21,6 +21,8 @@ nodes:
         text: operator starts the process after precheck
         target_guards: [EventGuard]
         requested_semantics: [event]
+        asserts:
+          - {holds: precheck_complete, at: t0}
       world_model:
         model_id: event-source
         model_version: v1
@@ -80,6 +82,8 @@ nodes:
         text: operator may start
         target_guards: [NormGuard]
         requested_semantics: [norm]
+        asserts:
+          - {action: start, modality: permitted}
       world_model:
         model_id: norm-target
         model_version: v1

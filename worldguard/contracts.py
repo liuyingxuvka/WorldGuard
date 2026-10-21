@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
+CLAIM_ASSERTION_KINDS: dict[str, str] = {'holds': 'event', 'before': 'event', 'place': 'resource', 'variable': 'causal', 'agent': 'agent', 'relation': 'spatial', 'modality': 'norm', 'player': 'conflict'}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
 RETIRED_WORLD_MODEL_INPUT_FIELDS = {'event_line', 'agents', 'rcc8_relations', 'resources', 'causal_variables', 'causal_equations', 'causal_graph', 'conflict_players', 'conflict_actions', 'conflict_states', 'conflict_payoffs', 'conflict_transitions', 'norms', 'facts', 'variable_observations', 'signal_observations'}
 RETIRED_TOP_LEVEL_INPUT_FIELDS = {'agents', 'norm_model', 'signal_observations', 'time_series_observations', 'scenarios', 'holdout_scenarios', 'interventions', 'counterfactuals'}
@@ -64,6 +65,11 @@ def _reject_retired_runtime_input_paths(world_model: dict[str, Any], inputs: dic
         if isinstance(condition, dict) and 'fact' in condition:
             raise ValueError(f'inputs.norms[{index}].condition.fact is retired; use fact_id')
 
+def claim_assertion_kind(assertion: Any) -> str:
+    """The one key that says what a claim assertion is about, or '' when it has none or several."""
+    keys = [key for key in CLAIM_ASSERTION_KINDS if isinstance(assertion, dict) and key in assertion]
+    return keys[0] if len(keys) == 1 else ''
+
 @dataclass(frozen=True)
 class ClaimAtom:
     atom_id: str
@@ -91,6 +97,7 @@ class Claim:
     target_guards: list[str] = field(default_factory=list)
     requested_semantics: list[str] = field(default_factory=list)
     atoms: list[ClaimAtom] = field(default_factory=list)
+    asserts: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'Claim':
@@ -103,12 +110,18 @@ class Claim:
         if isinstance(requested_semantics, str):
             requested_semantics = [requested_semantics]
         atoms = [ClaimAtom.from_dict(item) for item in data.get('atoms', [])]
-        if not requested_semantics and (not atoms):
-            raise ValueError('claim requires current requested_semantics or structured atoms')
-        return cls(claim_id=str(data.get('claim_id', '')), text=str(data.get('text', '')), target_guards=list(target_guards), requested_semantics=[str(item) for item in requested_semantics], atoms=atoms)
+        asserts = data.get('asserts', [])
+        if not isinstance(asserts, list) or not all((isinstance(item, dict) for item in asserts)):
+            raise ValueError('claim.asserts must be a list of mappings')
+        if not requested_semantics and (not atoms) and (not asserts):
+            raise ValueError('claim requires current requested_semantics or structured atoms (or claim.asserts)')
+        return cls(claim_id=str(data.get('claim_id', '')), text=str(data.get('text', '')), target_guards=list(target_guards), requested_semantics=[str(item) for item in requested_semantics], atoms=atoms, asserts=[dict(item) for item in asserts])
 
     def to_dict(self) -> dict[str, Any]:
-        return {'claim_id': self.claim_id, 'text': self.text, 'target_guards': self.target_guards, 'requested_semantics': self.requested_semantics, 'atoms': [atom.to_dict() for atom in self.atoms]}
+        result = {'claim_id': self.claim_id, 'text': self.text, 'target_guards': self.target_guards, 'requested_semantics': self.requested_semantics, 'atoms': [atom.to_dict() for atom in self.atoms]}
+        if self.asserts:
+            result['asserts'] = self.asserts
+        return result
 
 def claim_predictive_intent(claim: Claim) -> bool:
     semantics = {str(item).strip().lower() for item in claim.requested_semantics if str(item).strip()}
@@ -118,6 +131,7 @@ def claim_predictive_intent(claim: Claim) -> bool:
 def claim_semantics(claim: Claim) -> tuple[str, ...]:
     values = [*claim.requested_semantics]
     values.extend((item for atom in claim.atoms for item in atom.requested_semantics))
+    values.extend((CLAIM_ASSERTION_KINDS[kind] for kind in map(claim_assertion_kind, claim.asserts) if kind))
     if claim_predictive_intent(claim):
         values.append('predictive')
     return tuple(dict.fromkeys((str(item).strip().lower() for item in values if str(item).strip())))
@@ -230,7 +244,7 @@ class GuardContract:
     def for_guard(self, guard: str, upstream_results: list[Any] | None=None) -> 'GuardContract':
         """Bind one child to the same current model and read-only upstream inputs."""
         dependencies = GuardDependencies(upstream_results=upstream_results or [], read_only=True)
-        return GuardContract(contract_id=f'{self.contract_id}:{guard}', schema_version=self.schema_version, run_id=self.run_id, claim=Claim(claim_id=self.claim.claim_id, text=self.claim.text, target_guards=[guard], requested_semantics=self.claim.requested_semantics, atoms=self.claim.atoms), world_model=self.world_model, inputs=self.inputs, dependencies=dependencies, output_requirements=self.output_requirements)
+        return GuardContract(contract_id=f'{self.contract_id}:{guard}', schema_version=self.schema_version, run_id=self.run_id, claim=Claim(claim_id=self.claim.claim_id, text=self.claim.text, target_guards=[guard], requested_semantics=self.claim.requested_semantics, atoms=self.claim.atoms, asserts=self.claim.asserts), world_model=self.world_model, inputs=self.inputs, dependencies=dependencies, output_requirements=self.output_requirements)
 
     def to_dict(self) -> dict[str, Any]:
         result = {'contract_id': self.contract_id, 'schema_version': self.schema_version, 'run_id': self.run_id, 'claim': self.claim.to_dict(), 'world_model': self.world_model.to_dict(), 'inputs': self.inputs, 'dependencies': self.dependencies.to_dict(), 'output_requirements': self.output_requirements.to_dict()}

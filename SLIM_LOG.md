@@ -959,3 +959,25 @@ CausalGuard与语义层共享场景/留出约束求值；渡轮加入requires和
 | `ferry-cli-boundaries` | 0 | protected scalar/equation/AST owners unchanged (`WG-48/ferry-cli-boundaries.log`) |
 
 Adaptations: 参考实现真实native除零崩溃已保留RED；经root批准仅constraint helper限制常量为有限数字，并局部捕获NameError/TypeError/ValueError/ZeroDivisionError/OverflowError为UNEVALUABLE GAP。三个参数负例覆盖缺值、除零、错type，两层精确新错误码。 AST核实_safe_scalar_eval/_evaluate_equations/_ALLOWED_AST不变；不广吞实现异常，不改变干预/反事实。新增3个必要回归使本项比参考多8个累计测试，真实计数保留。
+
+### WG-49: 主张用 claim.asserts 绑定到世界模型：逐行在模型上求值，假的报 FAIL，模型里没有的报 GAP
+
+Status: completed.
+
+Claim.asserts now binds all eight supported assertion kinds to actual native inputs; explicit false assertions reject with FAIL and unresolved members with GAP while structural truth remains independently reported. Actual CLI wrong-order control changed from PASS to FAIL; every Guard retains true/false/unresolved controls. Full pytest: 279 passed; old/new model release 3/3; map 0 errors/0 warnings.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-49/read.log`) |
+| `wrong-claim-before` | 0 | before wrong-order CLI exit 0 PASS (`WG-49/wrong-claim-before.log`) |
+| `focused` | 0 | 11 passed in 1.53s (`WG-49/focused.log`) |
+| `focused-final` | 0 | 11 passed in 1.06s (`WG-49/focused-final.log`) |
+| `claim-cli-after` | 0 | after unknown-model-member CLI exit 1 GAP (`WG-49/claim-cli-after.log`) |
+| `fuel-cell` | 0 | True ['PASS', 'PASS', 'FAIL'] CLAIM_ASSERTION_FALSE (`WG-49/fuel-cell.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-49/change.log`) |
+| `confirm` | 0 | confirmed 4 component(s) (`WG-49/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-49/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-49/release.log`) |
+| `pytest` | 0 | 279 passed in 28.30s (`WG-49/pytest.log`) |
+
+Adaptations: Existing assertion test owner additionally covers unresolved inputs without adding a test platform; unbound claims intentionally retain the pre-WG51 status until that ordered action. Test total includes eight previously recorded purpose-preserving additional cases.

@@ -82,6 +82,30 @@ def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) ->
     return failures
 
 
+def norm_activity(norms: list[Any], facts: list[Any]) -> tuple[list[Any], list[dict[str, Any]]]:
+    """Return (active norms, norms whose condition fact is not declared) for boolean condition facts."""
+    fact_values = {str(item["fact_id"]): item["value"] for item in facts if isinstance(item, dict) and item.get("fact_id")}
+    missing = []
+    active = []
+    for index, norm in enumerate(norms):
+        condition = norm.get("condition") if isinstance(norm, dict) else None
+        needed = ""
+        expected: bool | None = None
+        if isinstance(condition, str) and condition:
+            needed = condition
+            expected = True
+        elif isinstance(condition, dict):
+            needed = str(condition.get("fact_id", ""))
+            expected_value = condition.get("equals", condition.get("value", True))
+            if isinstance(expected_value, bool):
+                expected = expected_value
+        if not needed or expected is None or needed not in fact_values:
+            missing.append({"norm": index, "condition": condition, "needed_fact": needed or "condition fact"})
+        elif fact_values[needed] is expected:
+            active.append(norm)
+    return active, missing
+
+
 def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
     """Return (actor, action) groups whose active norms both forbid and permit/require it."""
     groups: dict[tuple[str, str], list[Any]] = {}
@@ -1293,32 +1317,7 @@ def _norm(contract: GuardContract):
         ], consumed, {}
 
     fact_values = {str(item["fact_id"]): item["value"] for item in facts}
-    missing = []
-    active = []
-    for index, norm in enumerate(norms):
-        condition = norm.get("condition") if isinstance(norm, dict) else None
-        needed = ""
-        expected: bool | None = None
-        if isinstance(condition, str) and condition:
-            needed = condition
-            expected = True
-        elif isinstance(condition, dict):
-            needed = str(condition.get("fact_id", ""))
-            expected_value = condition.get(
-                "equals", condition.get("value", True)
-            )
-            if isinstance(expected_value, bool):
-                expected = expected_value
-        if not needed or expected is None or needed not in fact_values:
-            missing.append(
-                {
-                    "norm": index,
-                    "condition": condition,
-                    "needed_fact": needed or "condition fact",
-                }
-            )
-        elif fact_values[needed] is expected:
-            active.append(norm)
+    active, missing = norm_activity(norms, facts)
     if missing:
         return SemanticStatus.GAP, [_finding("SEM_NORM_MISSING_CONDITION_FACT", "Norm applicability cannot be evaluated without declared condition facts.", evidence={"missing": missing})], consumed, {}
     conflicts = active_norm_conflicts(active)
