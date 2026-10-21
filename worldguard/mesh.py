@@ -1802,6 +1802,11 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
     ]
     semantic_required = True
     semantic_status = aggregate_semantic_status(semantic_receipts)
+    claim_bindings = {report.claim_binding.get("status") for report in node_reports.values()}
+    if GuardStatus.FAIL.value in claim_bindings:
+        semantic_status = SemanticStatus.FAIL
+    elif claim_bindings - {GuardStatus.PASS.value} and semantic_status != SemanticStatus.FAIL:
+        semantic_status = SemanticStatus.GAP
     predictive_gaps, predictive_licensed, quantitative_coverage = _predictive_assessment(
         mesh,
         coverage_state,

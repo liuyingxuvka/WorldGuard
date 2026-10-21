@@ -114,6 +114,7 @@ def _predictive_mesh() -> dict:
                                 "predictive_intent": True,
                             }
                         ],
+                        "asserts": [{"holds": "ready", "at": "t0"}],
                     },
                     "world_model": {"model_id": "world-model", "model_version": "v1"},
                     "inputs": {
@@ -309,7 +310,12 @@ def test_rich_prediction_still_blocks_when_one_guard_skips_holdout_scenario() ->
 def test_rich_prediction_still_blocks_when_structured_claim_atom_is_missing() -> None:
     mesh = _predictive_mesh()
     mesh["nodes"][0]["contract"]["claim"]["atoms"] = []
+    report = run_model_mesh(mesh)
+    assert report.status == GuardStatus.GAP
+    assert report.depth_receipt is not None
+    assert "structured_claim_atoms_missing" in report.depth_receipt.predictive_gaps
 
+    mesh["nodes"][0]["contract"]["claim"]["asserts"] = []
     with pytest.raises(
         ValueError,
         match="claim requires current requested_semantics or structured atoms",

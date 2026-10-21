@@ -52,6 +52,7 @@ def pass_mesh():
                         "text": "operator starts after precheck",
                         "target_guards": ["EventGuard"],
                         "requested_semantics": ["event"],
+                        "asserts": [{"holds": "ready", "at": "t0"}],
                     },
                     "world_model": {"model_id": "event-model", "model_version": "v1"},
                     "inputs": {
@@ -77,6 +78,7 @@ def pass_mesh():
                         "text": "operator may start",
                         "target_guards": ["NormGuard"],
                         "requested_semantics": ["norm"],
+                        "asserts": [{"action": "start", "modality": "permitted"}],
                     },
                     "world_model": {"model_id": "norm-model", "model_version": "v1"},
                     "inputs": {
@@ -325,3 +327,16 @@ def test_cli_mesh_check_outputs_json(tmp_path, capsys):
 
     assert data["status"] == "PASS"
     assert set(data["node_reports"]) == {"event-source", "norm-target"}
+
+
+def test_mesh_node_claims_must_be_bound_to_their_models():
+    unbound = pass_mesh()
+    del unbound["nodes"][1]["contract"]["claim"]["asserts"]
+    report = run_model_mesh(unbound)
+    assert report.status == GuardStatus.GAP
+    assert [gap["code"] for gap in report.node_reports["norm-target"].gaps] == ["CLAIM_NOT_BOUND"]
+
+    contradicted = pass_mesh()
+    contradicted["nodes"][1]["contract"]["claim"]["asserts"] = [{"action": "start", "modality": "forbidden"}]
+    report = run_model_mesh(contradicted)
+    assert report.status == GuardStatus.FAIL

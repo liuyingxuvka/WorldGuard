@@ -28,7 +28,13 @@
               "EventGuard",
               "CausalGuard"
             ],
-            "text": "forecast state under declared scenarios"
+            "text": "forecast state under declared scenarios",
+            "asserts": [
+              {
+                "holds": "running",
+                "at": "t32"
+              }
+            ]
           },
           "contract_id": "native-world-deep-contract",
           "inputs": {

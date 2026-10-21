@@ -169,7 +169,7 @@
       "summary": "Model mesh ownership, handoffs and predictive depth",
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
-        "Run per-node native qualification with complete per-variable/timepoint predictive coverage",
+        "Run per-node native qualification with complete per-variable/timepoint predictive coverage; a node claim that is false or not bound to its model fails or gaps the mesh",
         "Report predictive gaps and the predictive license from one fresh run"
       ],
       "files": [
@@ -194,7 +194,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:088f622ff42564913316693239f5c3d4839dd0ea83499ef75ba811b693df58f2"
+      "fingerprint": "sha256:246c0ed57739fa63842a2d707e0ba9d372f25d5f929ba2e71908ff1eb80783dd"
     },
     {
       "id": "worldguard.blueprint",

@@ -1016,3 +1016,22 @@ A claim without assertions now reports GAP/CLAIM_NOT_BOUND, semantic GAP and str
 | `pytest` | 0 | 280 passed in 46.08s (`WG-51/pytest.log`) |
 
 Adaptations: The reference stopped after three edits because WG03 had reformatted the CLI fixture into a single-quoted one-line literal; continued remaining edits with the unique claim text anchor only (WG-51/reference-anchor-adaptation.json). LogicWriting adapter synchronization belongs to XR12; no foreign-repository edit.
+
+### WG-52: 网格结论算上每个节点主张的绑定：节点主张为假则网格 FAIL，没绑定则 GAP
+
+Status: completed.
+
+Mesh semantic and final verdict now include every node claim binding: native CLI unbound node changed PASS/0 to GAP/1, false norm assertion FAIL/1, unchanged true mesh PASS/0. Twenty-five focused and 281 full tests passed; three real models and map 0/0 pass.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `unbound-mesh-before` | 1 | KeyError: 'gaps' (`WG-52/unbound-mesh-before.log`) |
+| `unbound-mesh-before-summary` | 0 | before unbound 0 PASS [('norm-target', 'CLAIM_NOT_BOUND')] (`WG-52/unbound-mesh-before-summary.log`) |
+| `focused` | 0 | 25 passed in 0.32s (`WG-52/focused.log`) |
+| `mesh-cli-after` | 0 | after true 0 PASS [] (`WG-52/mesh-cli-after.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-52/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-52/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-52/release.log`) |
+| `pytest` | 0 | 281 passed in 25.73s (`WG-52/pytest.log`) |
+
+Adaptations: The first external CLI probe incorrectly looked for summary gaps in full --json output and raised KeyError; product returned valid full PASS showing the original mesh aggregation bug. Corrected probe uses the documented default summary; initial output and failed-probe log retained. No product exception was involved.
