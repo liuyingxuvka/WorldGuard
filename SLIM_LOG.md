@@ -280,3 +280,18 @@ Status: completed.
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-14/map.log`) |
 
 Adaptations: 按统一规则保留 SLIM_LOG.md 中历史术语；本项扫描只针对三个现行引用文件。
+
+### WG-15: 精简合同和网格参考：预测覆盖规则单独成篇，交接规则并入 model-mesh.md
+
+Status: completed.
+
+预测覆盖规则迁至按需引用；网格交接规则合并为单一参考，合同说明反映可选 target_guards 的真实行为。363 项测试通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `references` | 0 | 12288 total (`WG-15/references.log`) |
+| `change` | 0 | REVIEW skills.worldguard.scripts: its files changed; update its description if behavior changed, then confirm skills.worldguard.scripts (`WG-15/change.log`) |
+| `pytest` | 0 | 363 passed in 36.25s (`WG-15/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-15/map.log`) |
+
+Adaptations: predictive-coverage.md 实际 4532 字节（文档约 4533）；逐段语义保持，预测实现和网格交接执行未改。
