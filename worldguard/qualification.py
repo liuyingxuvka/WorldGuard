@@ -389,7 +389,7 @@ def qualify_guard_contract(
     derived = list(guard_derivation.guard_ids)
     omitted = [guard for guard in derived if guard not in declared]
     unexpected = [guard for guard in declared if guard not in derived]
-    effective = [] if unexpected else list(derived)
+    effective = list(derived)
     unmapped = _semantic_gap_rows(contract, guard_derivation.unmapped_semantics)
     target_id = context.target_id or contract.world_model.model_id or contract.contract_id
     target_revision = context.target_revision or contract.world_model.model_version
@@ -527,25 +527,6 @@ def qualify_guard_contract(
         rollout_status = semantic_status
 
     gaps: list[dict[str, Any]] = []
-    for guard in omitted:
-        gaps.append(
-            {
-                "gap_id": f"qualification:omitted-guard:{guard}",
-                "code": "QUALIFICATION_DERIVED_GUARD_OMITTED",
-                "guard": guard,
-                "affected_claim_ids": [contract.claim.claim_id],
-            }
-        )
-    for guard in unexpected:
-        gaps.append(
-            {
-                "gap_id": f"qualification:unexpected-guard:{guard}",
-                "code": "QUALIFICATION_DECLARED_GUARD_UNEXPECTED",
-                "guard": guard,
-                "affected_claim_ids": [contract.claim.claim_id],
-                "execution_disposition": "not_executed_outside_derived_denominator",
-            }
-        )
     for row in unmapped:
         gaps.append(
             {
@@ -593,7 +574,7 @@ def qualify_guard_contract(
         _provider_guard_status(provider_status),
         _guard_status(rollout_status),
     ]
-    if omitted or unexpected or unmapped:
+    if unmapped:
         final_axes.append(GuardStatus.GAP)
     status = aggregate_statuses(final_axes)
 

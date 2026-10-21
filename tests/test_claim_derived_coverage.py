@@ -213,25 +213,20 @@ def test_structured_claim_atoms_derive_required_guards() -> None:
     assert contract.to_dict()["claim"]["atoms"][0]["predictive_intent"] is True
 
 
-def test_omitted_claim_derived_guard_fails_closed() -> None:
+def test_omitted_target_guard_does_not_skip_the_derived_guard_in_a_mesh() -> None:
     mesh = _predictive_mesh()
     mesh["nodes"][0]["contract"]["claim"]["target_guards"] = ["EventGuard"]
 
     report = run_model_mesh(mesh)
 
-    assert report.semantic_status == SemanticStatus.PASS
-    assert report.rollout_status == SemanticStatus.GAP
-    assert report.status == GuardStatus.GAP
-    assert any(
+    assert report.status == run_model_mesh(_predictive_mesh()).status
+    assert not any(
         finding.code == "MESH_CLAIM_DERIVED_GUARD_MISSING"
         for finding in report.findings
     )
+    assert "CausalGuard" in report.node_reports["world"].effective_guards
     assert report.depth_receipt is not None
-    assert report.depth_receipt.missing_guards == {"world": ["CausalGuard"]}
-    assert any(
-        item["reason"] == "claim_derived_guard_missing"
-        for item in report.depth_receipt.skipped_children
-    )
+    assert report.depth_receipt.missing_guards == {}
 
 
 def test_expected_contractless_node_is_counted_and_blocks_aggregate_pass() -> None:

@@ -933,35 +933,8 @@ def _coverage_route_state(mesh: ModelMeshContract) -> dict[str, Any]:
                     evidence={"unmapped_semantics": unknown},
                 )
             )
-        for guard in set(declared).union(required):
+        for guard in required:
             expected_children.add(f"{node_id}:{guard}")
-        missing = [guard for guard in required if guard not in declared]
-        if missing:
-            missing_guards[node_id] = missing
-            findings.append(
-                _finding(
-                    mesh,
-                    GuardStatus.GAP,
-                    "MESH_CLAIM_DERIVED_GUARD_MISSING",
-                    "A Guard required by structured claim semantics is absent from caller-declared routes.",
-                    node_id=node_id,
-                    evidence={
-                        "required_guards": required,
-                        "declared_guards": declared,
-                        "missing_guards": missing,
-                    },
-                )
-            )
-            skipped_children.extend(
-                {
-                    "child_id": f"{node_id}:{guard}",
-                    "node_id": node_id,
-                    "guard": guard,
-                    "reason": "claim_derived_guard_missing",
-                    "coverage_impact": "required_semantic_child_not_executed",
-                }
-                for guard in missing
-            )
 
     return {
         "expected_nodes": expected_nodes,

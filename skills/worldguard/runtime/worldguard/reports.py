@@ -141,11 +141,8 @@ class GuardedReport:
             raise ValueError("qualification omitted_guards do not match the derived denominator")
         if set(self.unexpected_guards) != set(self.declared_guards).difference(self.derived_guards):
             raise ValueError("qualification unexpected_guards do not match declarations")
-        expected_effective = [] if self.unexpected_guards else self.derived_guards
-        if self.effective_guards != expected_effective:
-            raise ValueError(
-                "qualification effective_guards violate the fail-closed derived denominator"
-            )
+        if self.effective_guards != self.derived_guards:
+            raise ValueError("qualification effective_guards must equal the derived Guards")
 
         child_guards = [result.guard for result in self.child_results]
         semantic_guards = [receipt.guard for receipt in self.semantic_receipts]

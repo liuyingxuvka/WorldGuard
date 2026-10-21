@@ -27,7 +27,7 @@ Baseline tracked size: 638 files / 18566156 bytes; canonical Python 23403 lines;
 
 ## Actions
 
-The coordinator opened WG-01–WG-08 under the user's parallel authorization: inspection found no runtime dependency on RG-01–RG-10 because both use isolated exact baselines. This changes cross-repository scheduling only; numeric action order and verification remain unchanged. WG-09 onward still waits for RG-38 and the complete new FlowGuard action list.
+The coordinator opened WG-01–WG-08 under the user's parallel authorization: inspection found no runtime dependency on RG-01–RG-10 because both use isolated exact baselines. This changes cross-repository scheduling only; numeric action order and verification remain unchanged. A later independent XR dependency review opened WG-09–WG-44 on the same exact baseline dependencies too: this range reads no new RG source and first probes the new FlowGuard at WG-45. After WG-44, wait for the coordinator's complete new FlowGuard signal. WG-32/WG-36 continue reading the frozen LogicWriting baseline; an unavailable repository-only portable layout after WG-36 remains expected until XR-11, while installed portable execution must pass.
 
 ### WG-01: 删除 self-DNA、执行深度“证据桥”和运行时身份审计
 
@@ -98,3 +98,21 @@ Guard boundaries and predictive intent now use explicit requested semantic ids o
 | `residue` | 0 | (no output) (`WG-04/residue.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-05: claim.target_guards 改为可选：引擎总是运行自己推导出的 Guard 集合
+
+Status: completed.
+
+The qualification owner always executes the native derived Guard set. Caller target_guards remain readable, omitted/unexpected sets remain visible, and neither echo mismatch blocks execution. Mesh coverage uses the derived set too; unknown semantics still create a visible GAP. Actual portable scene probes with missing target_guards and an extra SpaceGuard both pass while executing EventGuard/ResourceGuard/AgentGuard exactly.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-05/mirror.log`) |
+| `focused` | 0 | 79 passed in 0.64s (`WG-05/focused.log`) |
+| `target-guards` | 0 | extra PASS ['EventGuard', 'ResourceGuard', 'AgentGuard'] ['SpaceGuard'] (`WG-05/target-guards.log`) |
+| `pytest` | 0 | 378 passed in 53.14s (`WG-05/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-05/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-05/models.log`) |
+| `residue` | 0 | (no output) (`WG-05/residue.log`) |
+
+Adaptations: Root independently certified WG-09–WG-44 can continue against frozen baselines; WG-45 is the first actual new-FlowGuard probe. This further scheduling adaptation changes no action purpose or within-repository order.

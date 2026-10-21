@@ -112,7 +112,7 @@ def test_derived_guard_omission_is_visible_even_when_owner_can_execute() -> None
     assert len(report.semantic_receipts) == 1
     assert report.structural_status == GuardStatus.PASS
     assert report.semantic_status == SemanticStatus.PASS
-    assert report.status == GuardStatus.GAP
+    assert report.status == GuardStatus.PASS
 
 
 def test_unmapped_atom_preserves_claim_and_atom_identity() -> None:
@@ -262,32 +262,17 @@ def test_partial_supplied_provider_result_is_blocked_before_semantic_execution(
     assert report.provider_status == ProviderStatus.STALE
 
 
-def test_unexpected_declared_guard_blocks_all_execution(monkeypatch) -> None:
+def test_extra_declared_guard_is_reported_and_the_derived_set_runs() -> None:
     contract = _event_contract()
     contract["claim"]["target_guards"] = ["EventGuard", "AgentGuard"]
-    contract
-
-    def forbidden_execution(*args, **kwargs):
-        raise AssertionError("no owner may execute after an unexpected Guard declaration")
-
-    monkeypatch.setattr(qualification_module, "execute_semantic", forbidden_execution)
-    monkeypatch.setitem(qualification_module.GUARD_RUNNERS, "EventGuard", forbidden_execution)
-    monkeypatch.setitem(qualification_module.GUARD_RUNNERS, "AgentGuard", forbidden_execution)
 
     report = run_worldguard(contract)
 
     assert report.derived_guards == ["EventGuard"]
     assert report.unexpected_guards == ["AgentGuard"]
-    assert report.effective_guards == []
-    assert report.child_results == []
-    assert report.semantic_receipts == []
-    assert report.provider_evidence == {}
-    assert any(
-        gap["code"] == "QUALIFICATION_DECLARED_GUARD_UNEXPECTED"
-        and gap["guard"] == "AgentGuard"
-        for gap in report.gaps
-    )
-    assert report.status == GuardStatus.GAP
+    assert report.effective_guards == ["EventGuard"]
+    assert [result.guard for result in report.child_results] == ["EventGuard"]
+    assert report.status == GuardStatus.PASS
 
 
 def test_exact_input_repetition_has_stable_qualification_identity() -> None:
