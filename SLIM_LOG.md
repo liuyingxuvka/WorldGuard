@@ -663,3 +663,23 @@ Status: completed.
 | `models` | 0 | models: 3 passed, 0 failed (`WG-34/models.log`) |
 
 Adaptations: 归档日期实际 2026-10-21；保留原有 archive、CHANGELOG 历史与旧生成物忽略规则。未过滤 grep 实际 0 命中，原日志外置；没有通过广泛 Markdown 排除制造零残留。
+
+### WG-35: 更新被改动组件的描述，确认地图，flowguard release 恢复 PASS
+
+Status: completed.
+
+更新九个组件的真实职责，统一 confirm 11 个组件。map 精确 0 error/0 warning；release 3 declared/3 executed PASS，完整测试 294 通过，mirror-ok。逐字段核对所有 files/tests/models/depends_on/entrypoints 原样保留。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-35/read.log`) |
+| `descriptions` | 0 | descriptions updated: 9 (`WG-35/descriptions.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-35/change.log`) |
+| `confirm` | 0 | confirmed 11 component(s) (`WG-35/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-35/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-35/release.log`) |
+| `pytest` | 0 | 294 passed in 39.13s (`WG-35/pytest.log`) |
+| `mirror` | 0 | mirror-ok (`WG-35/mirror.log`) |
+| `map-only` | 0 |  M .flowguard/map.json (`WG-35/map-only.log`) |
+
+Adaptations: 确认前 diff 仅 map 描述与工具生成指纹；提交按总规则另记 SLIM_LOG。模型 abstract boundary 提示仍明确保留为已知范围，并未被 map 的零警告掩盖。未做 GitHub 发布。

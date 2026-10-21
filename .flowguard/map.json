@@ -10,10 +10,10 @@
     {
       "id": "worldguard",
       "layer": "",
-      "summary": "Public lazy API, CLI dispatch and fuel-cell example",
+      "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
         "Expose the native API through literal lazy owner exports",
-        "Dispatch CLI leaves to qualification, mesh, blueprint, revision and identity owners",
+        "Dispatch CLI leaves to qualification, mesh, blueprint and revision owners; print a short summary by default and the full report with --json",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
       "files": [
@@ -29,7 +29,7 @@
       ],
       "state": [],
       "side_effects": [
-        "Read declared CLI inputs; emit native reports"
+        "Read declared CLI inputs; print a summary or the full JSON report"
       ],
       "depends_on": [
         "worldguard.blueprint",
@@ -46,16 +46,16 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:4c40714b4ee06c1542f1d4f1bf7d1ef8d56b81d682119195a8bb550c5a48af81"
+      "fingerprint": "sha256:52489c86e0529fc04eb87e2c1a3ff4fc1e07dfe82f84205ba7c43e75ec9d28bb"
     },
     {
       "id": "worldguard.core",
       "layer": "",
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
-        "Derive required Guards from claim atoms and validate shared contract shapes",
+        "Derive required Guards from claim semantics and validate shared contract shapes",
         "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics",
-        "Keep shared ledgers, reports, provider/current-input identities and status aggregation"
+        "Keep shared ledgers, reports and status aggregation"
       ],
       "files": [
         "worldguard/contracts.py",
@@ -71,10 +71,10 @@
         "worldguard/status.py:aggregate_statuses"
       ],
       "state": [
-        "Immutable contract, report and execution-evidence values"
+        "Immutable contract and report values"
       ],
       "side_effects": [
-        "Read declared mapping files and emit JSON only when requested"
+        "Read declared mapping files (YAML only when PyYAML is installed) and emit JSON only when requested"
       ],
       "depends_on": [
         "worldguard"
@@ -87,7 +87,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:2d41e4e8a8fdd4e20a89977ecf86f6cfbe03eeff118a95b3025140537ec312bf"
+      "fingerprint": "sha256:5af48805b3b2ac5dee0228c53603db55dc6df182818ad3de6fd937209acb3795"
     },
     {
       "id": "worldguard.guards",
@@ -129,15 +129,15 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:8ec771ba36d3648c6dde3c7847a5639bb17f3bd52b9962ceb55ae2c024ad36a0"
+      "fingerprint": "sha256:76661604837dcb6163d60c660978127003e901cac771252fabe3dd0487198541"
     },
     {
       "id": "worldguard.qualification",
       "layer": "",
-      "summary": "Unit qualification and exact provider/currentness boundaries",
+      "summary": "Unit qualification that runs the derived Guards directly",
       "responsibilities": [
-        "Qualify a unit from its derived Guard obligations and supplied provider evidence",
-        "Keep native semantic status, provider identity and current-input gaps separate",
+        "Qualify a unit by executing its derived Guard obligations structurally and semantically",
+        "Keep structural status, semantic status and provider availability separate",
         "Expose the run_worldguard kernel through one qualification owner"
       ],
       "files": [
@@ -162,7 +162,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:be8e6d8909fb415cd15c5f58d51237d5d832831972f594c73ee1b0f533e5196c"
+      "fingerprint": "sha256:a25937165607feda998f6d2eb309b20f3cdd921534dfedfb46ac107eecac02bb"
     },
     {
       "id": "worldguard.mesh",
@@ -171,8 +171,7 @@
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Run per-node native qualification with complete per-variable/timepoint predictive coverage",
-        "Build native execution-depth evidence without author-tool transport",
-        "Validate the existing native depth producer shape and current mesh/coverage identity without rerunning owners"
+        "Report predictive gaps and the predictive license from one fresh run"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -181,7 +180,7 @@
         "worldguard/mesh.py:run_model_mesh"
       ],
       "state": [
-        "Model and evidence identities carried in immutable mesh reports"
+        "Mesh and coverage fingerprints carried in immutable mesh reports"
       ],
       "side_effects": [
         "Execute declared native mesh nodes and emit in-memory evidence"
@@ -197,17 +196,16 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:aedf3b9d0014e79721f45fb4bab6c302c0fe0663d189059093d20ab17b455112"
+      "fingerprint": "sha256:088f622ff42564913316693239f5c3d4839dd0ea83499ef75ba811b693df58f2"
     },
     {
       "id": "worldguard.blueprint",
       "layer": "",
-      "summary": "WorldBlueprint hierarchy, behavior cases, census, impact and trace",
+      "summary": "WorldBlueprint hierarchy, behavior cases, impact and trace",
       "responsibilities": [
         "Validate hierarchical world elements and typed input/output/dependency bindings",
-        "Execute actual behavior cases and preserve independent test/evidence and signed census boundaries",
-        "Answer affected impact and reverse trace from qualified current-input identities",
-        "Expose optional FlowGuard identity projection without claiming independent provider execution"
+        "Execute actual behavior cases and the selected external test and evidence records",
+        "Answer affected impact and reverse trace from one current qualified blueprint"
       ],
       "files": [
         "worldguard/blueprint.py"
@@ -218,7 +216,7 @@
         "worldguard/blueprint.py:blueprint_reverse_trace"
       ],
       "state": [
-        "Blueprint identities and independently signed object census values"
+        "Blueprint identities and binding content hashes"
       ],
       "side_effects": [
         "Read declared evidence files; execute explicit behavior/test bindings; return reports"
@@ -240,7 +238,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:8699b6f9ffab8f1b4c15bc4fb9d9e3036e9d895a10452a4c388f71b9e851b177"
+      "fingerprint": "sha256:caa687af560c317a6a86d80cea3d57fbc8a5992a6bf2c4772d8d6f40f282a514"
     },
     {
       "id": "worldguard.revision",
@@ -248,7 +246,7 @@
       "summary": "Task-local prediction, reversible revision and fact transactions",
       "responsibilities": [
         "Freeze prediction before observation and compare declared world coverage",
-        "Validate complete reusable native mesh receipts against current candidate bytes/coverage and bind independent holdout evidence to candidate revisions",
+        "Run the candidate mesh once and bind independent original and holdout observations to candidate revisions",
         "Preview subordinate four-valued fact transactions and activate only against current evidence"
       ],
       "files": [
@@ -282,7 +280,7 @@
         ".flowguard/fact_revision/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:e83cfca5a1f765f0243b2b74a94c06d4bf10fba8acfda234eff4e604dcc976aa"
+      "fingerprint": "sha256:494f04098f73c08b7feeba8a497506d542c66a1202892353ef8df3bd9612e726"
     },
     {
       "id": "worldguard.templates",
@@ -319,15 +317,15 @@
         ".flowguard/template_selection/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:09e1cb010f542e04c4ba8009b234e4daee5ff010f9bffb77f639421a6e53f356"
+      "fingerprint": "sha256:25fadd911f65c5bb0d0568148e084cb07c4939bd06558302cae8634ebecf945c"
     },
     {
       "id": "release",
       "layer": "",
-      "summary": "Publish one validated source patch identity",
+      "summary": "CI on every push and publication of one CI-checked source",
       "responsibilities": [
-        "Check source/version/changelog identity and frozen main",
-        "Create stable GitHub tag and Release at that same commit"
+        "Run the test suite, mirror check, FlowGuard release check and skill install check on every push",
+        "Check source/version/changelog identity, wait for CI success on the exact SHA, and create the stable tag and Release at that commit"
       ],
       "files": [
         ".github/workflows/ci.yml",
@@ -338,22 +336,22 @@
         "Remote tag and Release identity"
       ],
       "side_effects": [
-        "Explicit release commit or manual workflow publishes with GitHub token"
+        "CI is read-only; an explicit release commit or manual workflow publishes with GitHub token"
       ],
       "depends_on": [],
       "tests": [],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:a4e7b622a2a57e15e9bacfa0ee2eef4f90b152d9d8ea12ea35d5bc03c8635b9f"
+      "fingerprint": "sha256:ac7fbfd170b4c2d4dfec01a1c923405a3801d61c19d4211f8070f1a4df7bc636"
     },
     {
       "id": "scripts",
       "layer": "",
-      "summary": "Canonical runtime projection and read-only identity utilities",
+      "summary": "Runtime mirror sync, skill installer and fixture refresh",
       "responsibilities": [
-        "Synchronize the portable runtime only from canonical worldguard source",
-        "Compare current source/package/explicit installation bytes across the full runtime tree",
-        "Refresh bounded native test fixtures through their existing utilities"
+        "Copy the canonical worldguard source into the portable runtime and check that the copy is exact",
+        "Install the skill into an agent skills directory and check an installed copy",
+        "Regenerate the blueprint test fixtures from their raw inputs"
       ],
       "files": [
         "scripts/*.py"
@@ -361,11 +359,9 @@
       "entrypoints": [
         "scripts/sync_worldguard_portable_runtime.py:differences"
       ],
-      "state": [
-        "Projection staging and backup paths"
-      ],
+      "state": [],
       "side_effects": [
-        "Explicit sync replaces the portable projection; identity audit remains read-only"
+        "sync replaces the portable runtime copy; install replaces the target skill copy; check modes are read-only"
       ],
       "depends_on": [
         "worldguard",
@@ -377,16 +373,15 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:899e110471f50b592ace2ba0bba36ab931068556afa2b33d8fd9785fa791fccd"
+      "fingerprint": "sha256:2bbcda107a7b5fdc04becd8aadb2ff9887744204a63008d2ab2e670138ca56a8"
     },
     {
       "id": "skills.worldguard.scripts",
       "layer": "",
-      "summary": "Portable skill launchers and routing audits",
+      "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
-        "Select the bundled CLI without a package fallback",
-        "Audit exact internal Guard routes, task shapes and conditional references",
-        "Keep selected contract, blueprint and final-reporting instructions aligned with native execution and target-local evidence boundaries"
+        "Select the bundled runtime without a package fallback and without writing bytecode",
+        "Keep contract, blueprint and reporting instructions aligned with the CLI"
       ],
       "files": [
         "skills/worldguard/scripts/*.py",
@@ -397,7 +392,7 @@
       "entrypoints": [],
       "state": [],
       "side_effects": [
-        "Run only the selected native CLI and emit routing reports"
+        "Run only the bundled native CLI"
       ],
       "depends_on": [
         "worldguard"
@@ -408,7 +403,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:85c46e4129d2de886aa8946fc8146951ad54bad910c0e5bea9b73c19f613bff0"
+      "fingerprint": "sha256:3df66a271788c98aca24e6912ebb3edf0aba44b4c3f5b3ebf9bde6d15448b50e"
     }
   ],
   "flows": [],
