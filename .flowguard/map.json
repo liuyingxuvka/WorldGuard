@@ -74,9 +74,7 @@
       "side_effects": [
         "Read declared mapping files (YAML only when PyYAML is installed) and emit JSON only when requested"
       ],
-      "depends_on": [
-        "worldguard"
-      ],
+      "depends_on": [],
       "tests": [
         "tests/test_claim_derived_coverage.py",
         "tests/test_contracts.py",
@@ -115,7 +113,6 @@
         "Return structural results; explicit family check executes its finite native cases"
       ],
       "depends_on": [
-        "worldguard",
         "worldguard.core"
       ],
       "tests": [
@@ -184,7 +181,6 @@
         "Execute declared native mesh nodes and emit in-memory evidence"
       ],
       "depends_on": [
-        "worldguard",
         "worldguard.core",
         "worldguard.qualification"
       ],
@@ -266,7 +262,6 @@
         "Return candidate activation or rollback results without an implicit persistent store"
       ],
       "depends_on": [
-        "worldguard",
         "worldguard.core",
         "worldguard.mesh"
       ],
@@ -305,7 +300,6 @@
         "Construct deterministic in-memory native contract scaffolding"
       ],
       "depends_on": [
-        "worldguard",
         "worldguard.core",
         "worldguard.mesh"
       ],

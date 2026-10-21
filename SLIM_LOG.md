@@ -874,3 +874,25 @@ Status: completed.
 | `final-map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-44/final-map.log`) |
 
 Adaptations: WG34真实归档日期为2026-10-21，因此按实际同名路径删除两项目标，非参考2026-10-20；不动其余历史。OpenSpec CLI在本执行环境不存在，按清单明确跳过官方 validate，没有声称9项官方通过。 经root批准补齐参考遗漏的两段active规格矛盾：mesh bare为summary/full需--json，修订为exact-two角色记录+fresh mesh；文案后真实CLI字段对照与map复验通过，无源码/测试改动，因此不重复全量。初次手工CLI探针用了不存在的skill目录mesh例子，返回正确typed输入拒绝；最终使用仓库examples/model_mesh/basic_mesh.yaml验证。
+
+### WG-45: 三个自模型在新旧两版 FlowGuard 下都通过：地图去掉没有导入证据的根依赖，fact_revision 在真实激活代码上重放每个场景
+
+Status: completed.
+
+修正5条无导入证据的根依赖；fact_revision七场景逐一接到真实预览/激活。272完整测试、三模型，新旧FG地图0/0且release均PASS；真实移除holdout证据检查后运行器exit1，源字节恢复。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `environments` | 0 | newFG source commit bc8c519be928cfc18292a7c66b47ece27b10d31a (`WG-45/environments.log`) |
+| `read` | 0 |   uses: worldguard (`WG-45/read.log`) |
+| `new-before` | 1 | check: 5 error(s), 0 warning(s), 0 info (`WG-45/new-before.log`) |
+| `conformance` | 0 | FLOWGUARD_RUNNER_DONE {"exit_code": 0, "checked": 9} (`WG-45/conformance.log`) |
+| `change` | 0 | ARCH WARN duplicate_code worldguard.mesh: 2 identical bodies (47 AST nodes) in ['worldguard.mesh', 'worldguard.qualification']: worldguard/mesh.py:_semantic_guard_status, worldguard/qualification.py:_guard_status (`WG-45/change.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-45/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-45/release.log`) |
+| `new-map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-45/new-map.log`) |
+| `new-release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-45/new-release.log`) |
+| `pytest` | 0 | 272 passed in 34.17s (`WG-45/pytest.log`) |
+| `native-corruption` | 0 | {"missing_holdout_guard_corruption_exit": 1, "exact_restored_sha256": "177e54330bb97314d3da3cb0f19f4626a615a6a44450839bdbc2bdd70abe9028"} (`WG-45/native-corruption.log`) |
+
+Adaptations: 新FG按用户版本覆盖为0.70.7，真实非editable安装冻结bc8c519源到独立Python3.11环境site-packages，pytest齐备；未用PYTHONPATH替代安装。旧0.70.6保持exact基线。修改前新FG真实5条dep_unused失败留存，WG43逐terminal匹配原样保持。
