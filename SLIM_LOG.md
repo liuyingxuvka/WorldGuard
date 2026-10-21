@@ -264,3 +264,19 @@ Replaced the entry skill with the exact 2959-byte native-use guide: five stable 
 | `models-cumulative` | 0 | models: 6 passed, 0 failed (`WG-13/models-cumulative.log`) |
 
 Adaptations: The cumulative change check also records pre-existing dynamic-import/duplicate portable mirror observations; no map errors were hidden and stale confirmations remain deferred to WG35 as explicitly required.
+
+### WG-14: 参考文档去掉签名普查、对象 DNA、投影和“收据”要求（蓝图、模型权威、收尾清单三篇）
+
+Status: completed.
+
+移除 blueprint/authority/closure 文档中的签名、DNA 与额外信任仪式，保留层级、端口、角色绑定、行为与影响追踪；363 项测试通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `residue` | 0 | (no output) (`WG-14/residue.log`) |
+| `sizes` | 0 | 16644 total (`WG-14/sizes.log`) |
+| `change` | 0 | REVIEW skills.worldguard.scripts: its files changed; update its description if behavior changed, then confirm skills.worldguard.scripts (`WG-14/change.log`) |
+| `pytest` | 0 | 363 passed in 33.97s (`WG-14/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-14/map.log`) |
+
+Adaptations: 按统一规则保留 SLIM_LOG.md 中历史术语；本项扫描只针对三个现行引用文件。

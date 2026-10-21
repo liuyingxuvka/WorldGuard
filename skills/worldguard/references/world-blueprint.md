@@ -4,7 +4,7 @@ Load this reference only for the typed `world_blueprint` shape. A WorldBlueprint
 
 ## Select one operation
 
-Do not infer an operation from keywords. Every operation needs preserved request spans and exact target id/revision/boundary; operation-specific inputs are:
+Every operation needs the exact target id/revision/boundary; operation-specific inputs are:
 
 | `blueprint_operation` | Required input and result |
 |---|---|
@@ -14,7 +14,7 @@ Do not infer an operation from keywords. Every operation needs preserved request
 | `impact` | current identity/fingerprint, request fingerprint, changed ids; return the exact affected closure |
 | `trace` | current identity/fingerprint, request fingerprint, one target; reverse-trace exact support |
 
-Missing, stale, unknown, or mixed identity blocks without widening or retry. `affected_guard_ids` may name only current Event/Agent/Space/Resource/Causal/Conflict/Norm Guard ids and controls conditional prompt loading only; it is not impact evidence. Load the shared Guard contract reference once only when this set is non-empty, never all Guard material merely because several element kinds exist.
+Missing, stale, unknown, or mixed identity blocks without widening or retry. `affected_guard_ids` may name only current Event/Agent/Space/Resource/Causal/Conflict/Norm Guard ids and controls conditional prompt loading only; it is not impact evidence. For the input fields of those Guards read `guard-inputs.md`.
 
 ## Canonical contract
 
@@ -26,22 +26,13 @@ The hierarchy is one strict rooted tree: one depth-zero root, one parent per non
 
 The closed v1 element kinds are `entity`, `property`, `relation`, `event`, `state`, `transition`, `resource`, `causal_link`, `agent`, `conflict`, and `norm`. Each element has one stable id/owner node, typed ports, dependencies, one `native_semantic`, and contribution/role assertions.
 
-One registered adapter replays one local request contract, target material, target-semantic authority, external object-census source, and signed object census. Every reference binds kind, safe locator/mode, target/revision, and observed hash. Semantic authority freezes element semantics, Guard/executor and binding responsibilities, N/A reasons, and complete material-leaf assertions. The census source is derived only from the frozen raw request/target inputs; its current discovery receipt binds source identity, owner, target/revision, input fingerprints, denominator, discovery mode, and producer. The separate signed census freezes which nodes/elements exist, their owners, Guard/role/derivation dispositions, those independent input fingerprints, and `integrated_target` versus capability-fixture kind. Runtime verifies signatures and receipts but carries no private key and grants no trust.
+One registered adapter replays one local request contract, its target material and its target-semantic authority. Every reference binds kind, safe locator/mode, target/revision, and observed hash. Semantic authority freezes element semantics, Guard/executor and binding responsibilities, N/A reasons, and complete material-leaf assertions.
 
 Child-supported summaries freeze target element, owner node, derivation id, parent output port, and exact child/owned-output sources; derivation ids cannot cross elements. Replay reconciles current registries and regenerated cache bidirectionally, so candidate/cache rewrites cannot shrink, relabel, or manufacture N/A.
 
-- `native_domain_qualified`: internally consistent candidate; useful for lightweight modeling, not whole-object completeness.
-- `object_dna_qualified`: native qualification plus independent discovery, a current matching discovery receipt, exact census coverage, `integrated_target`, executable external tests, semantically aligned current evidence, and caller trust in the exact authority or producer fingerprint. Exact-authority trust freezes one record. Producer trust permits that producer but never skips the discovery receipt or other gates on later revisions.
-
-Planning and policy are bounded integrated-target fixtures. The seven-Guard matrix is `oracle_carrying_capability_fixture` and therefore never object DNA.
+`native_domain_qualified` reports whether the candidate is internally consistent. It is not proof that the model covers the whole target.
 
 `native_semantic` binds exact ids/fields/hash/boundary and, where a Guard applies, one purpose with a known-good and one known-bad per selected failure. Each case freezes `Input x PreState -> Output x PostState`, effects, failure, and oracle. `admission_bad` proves parser rejection only. Execution validates the target-local `BlueprintTaskPurpose` case/oracle identities, then follows parent declaration -> `for_guard` -> structural and semantic owners -> comparison of the current target output/poststate/effects/failure with its own oracle. These actual target behavior cases remain required; no author checker-calibration proof is inserted. `worldguard.blueprint_native_execution.v2` accounts every field; ownerless containers are `NOT_APPLICABLE`. Event ids appear only as `executed_event_ids`; fluent and state identities remain separate. Consumed input never proves reachability, effects, factual truth, resolution, or mechanism truth; causal receipts keep requested/evaluated/licensed scope separate.
-
-This object-DNA result is not WorldGuard's own software DNA. WorldGuard's
-repository self-DNA is a separate FlowGuard-owned model and qualification
-surface. A cross-artifact projection is explicit and receipt-bound; it does
-not run during ordinary blueprint checks and it never turns a native-domain
-pass into an object-DNA or full-projection pass.
 
 ## Typed interfaces
 
@@ -63,19 +54,19 @@ These rules are provider- and language-neutral. WorldGuard checks identity/conte
 
 ## Understanding depth
 
-`check` reports inventory, hierarchy, interfaces, semantics, bindings, native checks, and cross-artifact projection separately as `proven`, `gap`, `boundary`, or `not_run`. Projection needs a registered independent producer, exact lossless in-memory source/payload partition, and an in-memory terminal receipt; no disk artifact is produced.
+`check` reports inventory, hierarchy, interfaces, semantics, bindings, and native checks separately as `proven`, `gap`, `boundary`, or `not_run`.
 
-`deepest_continuously_proven_layer` is the uninterrupted root-to-leaf prefix; `first_unresolved_layer` stops the continuous claim and makes deeper layers `not_run` for it. Native, object-DNA, and full projection qualification remain separate. `partial_model_usable` may name a sound prefix, but no parent claim borrows unproven child depth.
+`deepest_continuously_proven_layer` is the uninterrupted root-to-leaf prefix; `first_unresolved_layer` stops the continuous claim and makes deeper layers `not_run` for it. `partial_model_usable` may name a sound prefix, but no parent claim borrows unproven child depth.
 
 ## Native commands
 
-```powershell
-worldguard blueprint check --blueprint <blueprint> [--trust-object-census-authority <sha256> | --trust-object-census-producer <sha256>]
-worldguard blueprint impact --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --changed-id <id>
-worldguard blueprint trace --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --target-id <id>
+```bash
+python <skill-root>/scripts/run_worldguard.py blueprint check --blueprint <blueprint>
+python <skill-root>/scripts/run_worldguard.py blueprint impact --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --changed-id <id>
+python <skill-root>/scripts/run_worldguard.py blueprint trace --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --target-id <id>
 ```
 
-`blueprint_query_request_fingerprint` binds impact/trace requests and census-trust identities. Unreadable input/query errors exit 2; a valid trace with gaps exits 1. Target-object composition and cross-artifact projection stay in memory under the native directory; no export, bundle, materialization root, copied resource, or standalone package exists. Native, object-DNA, and full projection qualification remain separate.
+Unreadable input/query errors exit 2; a valid trace with gaps exits 1. The model stays in memory; no export, bundle, copied resource, or standalone package exists.
 
 ## Impact semantics
 
@@ -91,4 +82,4 @@ A repeated dependency produces a deterministic cycle witness and is not followed
 
 ## Claim boundary
 
-WorldBlueprint qualification proves only current model closure for the declared target boundary. `create` structures caller-supplied material and authority; neither WorldGuard nor an AI generates the target's truth merely by writing a blueprint. A valid signature proves integrity and signer possession, not that the caller accepts the signer or that the described object is factually complete. Object-DNA qualification additionally demonstrates independent denominator discovery plus current target-local test/evidence execution for that bounded object; it still does not prove universal target coverage. The maintained planning workflow and field-access policy are bounded integrated-target examples; the seven-Guard matrix is only a capability fixture. Qualification does not by itself prove factual truth beyond the executed contracts, external implementation equivalence beyond the bound observations, installation state, Git state, release state, or future behavior. Prompt routing proves only that these current instructions were selected; native reports, discovery receipts, census trust, test/evidence receipts, and current identities are still required for the corresponding claim.
+WorldBlueprint qualification proves only current model closure for the declared target boundary. `create` structures caller-supplied material and authority; neither WorldGuard nor an AI generates the target's truth merely by writing a blueprint. Qualification does not by itself prove factual truth beyond the executed contracts, external implementation equivalence beyond the bound observations, installation state, Git state, release state, or future behavior.
