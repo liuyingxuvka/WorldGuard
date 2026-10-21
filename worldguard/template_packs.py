@@ -9,9 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
-from dataclasses import dataclass, replace
-import hashlib
-import json
+from dataclasses import dataclass
 from typing import Any
 
 from .contracts import GuardContract, derive_required_guards
@@ -44,26 +42,6 @@ class TemplatePackError(ValueError):
         super().__init__(f"{code}: {message}")
         self.code = code
         self.details = dict(details or {})
-
-
-def _jsonable(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {str(key): _jsonable(item) for key, item in sorted(value.items(), key=lambda row: str(row[0]))}
-    if isinstance(value, (list, tuple)):
-        return [_jsonable(item) for item in value]
-    if isinstance(value, (set, frozenset)):
-        return sorted((_jsonable(item) for item in value), key=lambda item: json.dumps(item, sort_keys=True))
-    return value
-
-
-def content_fingerprint(value: Any) -> str:
-    body = json.dumps(
-        _jsonable(value),
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
 def template_slot(slot_id: str) -> dict[str, str]:
@@ -176,7 +154,6 @@ class TemplatePackManifest:
     fragments: tuple[TemplateFragment, ...]
     native_validator_ids: tuple[str, ...]
     claim_boundary: str
-    manifest_fingerprint: str
     schema_version: str = TEMPLATE_PACK_SCHEMA_VERSION
 
     @classmethod
@@ -203,9 +180,7 @@ class TemplatePackManifest:
             fragments=tuple(fragments),
             native_validator_ids=tuple(native_validator_ids),
             claim_boundary=claim_boundary,
-            manifest_fingerprint="",
         )
-        manifest = replace(manifest, manifest_fingerprint=manifest.current_fingerprint())
         manifest.validate()
         return manifest
 
@@ -221,11 +196,10 @@ class TemplatePackManifest:
             fragments=tuple(TemplateFragment.from_dict(item) for item in data.get("fragments", [])),
             native_validator_ids=tuple(str(item) for item in data.get("native_validator_ids", [])),
             claim_boundary=str(data.get("claim_boundary", "")),
-            manifest_fingerprint=str(data.get("manifest_fingerprint", "")),
             schema_version=str(data.get("schema_version", "")),
         )
 
-    def fingerprint_payload(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": self.schema_version,
             "pack_id": self.pack_id,
@@ -239,8 +213,6 @@ class TemplatePackManifest:
             "claim_boundary": self.claim_boundary,
         }
 
-    def current_fingerprint(self) -> str:
-        return content_fingerprint(self.fingerprint_payload())
 
     def validate(self) -> None:
         if self.schema_version != TEMPLATE_PACK_SCHEMA_VERSION:
@@ -328,25 +300,12 @@ class TemplatePackManifest:
                 "A manifest names a validator not registered by WorldGuard.",
                 details={"pack_id": self.pack_id, "validator_ids": unknown},
             )
-        current = self.current_fingerprint()
-        if self.manifest_fingerprint != current:
-            raise TemplatePackError(
-                "TEMPLATE_MANIFEST_STALE",
-                "The declared manifest fingerprint does not match current content.",
-                details={
-                    "pack_id": self.pack_id,
-                    "declared_fingerprint": self.manifest_fingerprint,
-                    "current_fingerprint": current,
-                },
-            )
 
     def matches(self, fact_ids: frozenset[str]) -> bool:
         return set(self.required_fact_ids).issubset(fact_ids) and not set(
             self.excluded_fact_ids
         ).intersection(fact_ids)
 
-    def to_dict(self) -> dict[str, Any]:
-        return {**self.fingerprint_payload(), "manifest_fingerprint": self.manifest_fingerprint}
 
 
 @dataclass(frozen=True)
@@ -357,8 +316,6 @@ class TemplateSelection:
     base_pack_id: str
     candidate_pack_ids: tuple[str, ...]
     selected_pack_id: str
-    registry_fingerprint: str
-    selection_fingerprint: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -368,34 +325,21 @@ class TemplateSelection:
             "base_pack_id": self.base_pack_id,
             "candidate_pack_ids": list(self.candidate_pack_ids),
             "selected_pack_id": self.selected_pack_id,
-            "registry_fingerprint": self.registry_fingerprint,
-            "selection_fingerprint": self.selection_fingerprint,
         }
 
 
 @dataclass(frozen=True)
 class TemplatePackRegistry:
     manifests: tuple[TemplatePackManifest, ...]
-    registry_fingerprint: str
     schema_version: str = TEMPLATE_REGISTRY_SCHEMA_VERSION
 
     @classmethod
     def build(cls, manifests: Sequence[TemplatePackManifest]) -> "TemplatePackRegistry":
-        registry = cls(tuple(manifests), "")
-        registry = replace(registry, registry_fingerprint=registry.current_fingerprint())
+        registry = cls(tuple(manifests))
         registry.validate()
         return registry
 
-    def fingerprint_payload(self) -> dict[str, Any]:
-        return {
-            "schema_version": self.schema_version,
-            "manifests": [
-                item.to_dict() for item in sorted(self.manifests, key=lambda row: row.pack_id)
-            ],
-        }
 
-    def current_fingerprint(self) -> str:
-        return content_fingerprint(self.fingerprint_payload())
 
     def validate(self) -> None:
         if self.schema_version != TEMPLATE_REGISTRY_SCHEMA_VERSION:
@@ -418,13 +362,6 @@ class TemplatePackRegistry:
                     "A contract kind may have at most one current base template.",
                     details={"contract_kind": contract_kind, "base_pack_ids": sorted(bases)},
                 )
-        current = self.current_fingerprint()
-        if self.registry_fingerprint != current:
-            raise TemplatePackError(
-                "TEMPLATE_REGISTRY_STALE",
-                "Template registry fingerprint does not match current manifests.",
-                details={"declared_fingerprint": self.registry_fingerprint, "current_fingerprint": current},
-            )
 
     def by_id(self, pack_id: str) -> TemplatePackManifest:
         matches = [item for item in self.manifests if item.pack_id == pack_id]
@@ -469,15 +406,6 @@ class TemplatePackRegistry:
         else:
             outcome = "ambiguous"
             selected_id = ""
-        payload = {
-            "contract_kind": contract_kind,
-            "fact_ids": list(normalized),
-            "outcome": outcome,
-            "base_pack_id": base_id,
-            "candidate_pack_ids": list(candidate_ids),
-            "selected_pack_id": selected_id,
-            "registry_fingerprint": self.registry_fingerprint,
-        }
         return TemplateSelection(
             contract_kind=contract_kind,
             fact_ids=normalized,
@@ -485,8 +413,6 @@ class TemplatePackRegistry:
             base_pack_id=base_id,
             candidate_pack_ids=candidate_ids,
             selected_pack_id=selected_id,
-            registry_fingerprint=self.registry_fingerprint,
-            selection_fingerprint=content_fingerprint(payload),
         )
 
 
@@ -513,7 +439,6 @@ class TemplateComposition:
     pack_ids: tuple[str, ...]
     field_owners: dict[str, str]
     payload: dict[str, Any]
-    composition_fingerprint: str
 
 
 def compose_template_packs(manifests: Sequence[TemplatePackManifest]) -> TemplateComposition:
@@ -552,18 +477,11 @@ def compose_template_packs(manifests: Sequence[TemplatePackManifest]) -> Templat
                     )
                 owners[field_id] = owner_id
             _deep_merge(payload, fragment.payload)
-    identity = {
-        "contract_kind": next(iter(kinds)),
-        "pack_fingerprints": [item.manifest_fingerprint for item in ordered],
-        "field_owners": owners,
-        "payload": payload,
-    }
     return TemplateComposition(
         contract_kind=next(iter(kinds)),
         pack_ids=tuple(item.pack_id for item in ordered),
         field_owners=owners,
         payload=payload,
-        composition_fingerprint=content_fingerprint(identity),
     )
 
 
@@ -604,18 +522,14 @@ def resolve_template_slots(payload: Mapping[str, Any], bindings: Mapping[str, An
 class NativeTemplateValidationReceipt:
     validator_id: str
     contract_kind: str
-    payload_fingerprint: str
     details: dict[str, Any]
-    receipt_fingerprint: str
     status: str = "pass"
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "validator_id": self.validator_id,
             "contract_kind": self.contract_kind,
-            "payload_fingerprint": self.payload_fingerprint,
             "details": deepcopy(self.details),
-            "receipt_fingerprint": self.receipt_fingerprint,
             "status": self.status,
         }
 
@@ -643,7 +557,6 @@ def _validate_guard_shape(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require_guard_identity(contract)
     return {
         "contract_id": contract.contract_id,
-        "canonical_contract_fingerprint": content_fingerprint(contract.to_dict()),
         "claim_boundary": "Canonical GuardContract construction only; no claim PASS is licensed.",
     }
 
@@ -679,7 +592,6 @@ def _validate_mesh_shape(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "mesh_id": mesh.mesh_id,
         "model_node_ids": [item.model_id for item in mesh.nodes],
-        "canonical_mesh_fingerprint": content_fingerprint(mesh.to_dict()),
         "claim_boundary": "Canonical ModelMeshContract construction only; mesh execution remains required.",
     }
 
@@ -709,7 +621,6 @@ def run_native_template_validators(
     payload: Mapping[str, Any],
     validator_ids: Sequence[str],
 ) -> tuple[NativeTemplateValidationReceipt, ...]:
-    payload_fingerprint = content_fingerprint(payload)
     receipts: list[NativeTemplateValidationReceipt] = []
     for validator_id in validator_ids:
         validator = NATIVE_VALIDATORS.get(validator_id)
@@ -729,20 +640,11 @@ def run_native_template_validators(
                 "A WorldGuard-native construction validator rejected the instance.",
                 details={"validator_id": validator_id, "error": str(exc)},
             ) from exc
-        receipt_payload = {
-            "validator_id": validator_id,
-            "contract_kind": contract_kind,
-            "payload_fingerprint": payload_fingerprint,
-            "details": details,
-            "status": "pass",
-        }
         receipts.append(
             NativeTemplateValidationReceipt(
                 validator_id=validator_id,
                 contract_kind=contract_kind,
-                payload_fingerprint=payload_fingerprint,
                 details=details,
-                receipt_fingerprint=content_fingerprint(receipt_payload),
             )
         )
     return tuple(receipts)
@@ -752,12 +654,8 @@ def run_native_template_validators(
 class TemplateInstanceReceipt:
     contract_kind: str
     selection: TemplateSelection
-    pack_fingerprints: tuple[str, ...]
-    composition_fingerprint: str
-    binding_fingerprint: str
-    output_fingerprint: str
+    pack_ids: tuple[str, ...]
     validator_receipts: tuple[NativeTemplateValidationReceipt, ...]
-    instance_fingerprint: str
     claim_boundary: str
     schema_version: str = TEMPLATE_INSTANCE_SCHEMA_VERSION
 
@@ -766,12 +664,8 @@ class TemplateInstanceReceipt:
             "schema_version": self.schema_version,
             "contract_kind": self.contract_kind,
             "selection": self.selection.to_dict(),
-            "pack_fingerprints": list(self.pack_fingerprints),
-            "composition_fingerprint": self.composition_fingerprint,
-            "binding_fingerprint": self.binding_fingerprint,
-            "output_fingerprint": self.output_fingerprint,
+            "pack_ids": list(self.pack_ids),
             "validator_receipts": [item.to_dict() for item in self.validator_receipts],
-            "instance_fingerprint": self.instance_fingerprint,
             "claim_boundary": self.claim_boundary,
         }
 
@@ -825,34 +719,15 @@ def build_template_instance(
         )
     )
     validator_receipts = run_native_template_validators(contract_kind, resolved, validator_ids)
-    pack_fingerprints = tuple(item.manifest_fingerprint for item in manifests)
-    binding_fingerprint = content_fingerprint(dict(slot_bindings))
-    output_fingerprint = content_fingerprint(resolved)
-    claim_boundary = (
-        "Template-pack construction integrity only. WorldGuard semantic execution, native depth, "
-        "provider readiness and any author-side maintenance closure remain separate evidence."
-    )
-    instance_payload = {
-        "schema_version": TEMPLATE_INSTANCE_SCHEMA_VERSION,
-        "contract_kind": contract_kind,
-        "selection": selection.to_dict(),
-        "pack_fingerprints": list(pack_fingerprints),
-        "composition_fingerprint": composition.composition_fingerprint,
-        "binding_fingerprint": binding_fingerprint,
-        "output_fingerprint": output_fingerprint,
-        "validator_receipts": [item.to_dict() for item in validator_receipts],
-        "claim_boundary": claim_boundary,
-    }
     receipt = TemplateInstanceReceipt(
         contract_kind=contract_kind,
         selection=selection,
-        pack_fingerprints=pack_fingerprints,
-        composition_fingerprint=composition.composition_fingerprint,
-        binding_fingerprint=binding_fingerprint,
-        output_fingerprint=output_fingerprint,
+        pack_ids=composition.pack_ids,
         validator_receipts=validator_receipts,
-        instance_fingerprint=content_fingerprint(instance_payload),
-        claim_boundary=claim_boundary,
+        claim_boundary=(
+            "Template construction only. Run the built contract with run_worldguard or "
+            "run_model_mesh for any verdict."
+        ),
     )
     return TemplateInstance(data=resolved, receipt=receipt)
 

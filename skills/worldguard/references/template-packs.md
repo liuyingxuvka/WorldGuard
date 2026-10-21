@@ -4,7 +4,7 @@ Optional: scaffold a single-Guard `GuardContract` or a `ModelMeshContract` cover
 
 ## Fixed boundary
 
-- WorldGuard owns every pack, applicability fact, field fragment, validator binding, and receipt meaning.
+- WorldGuard owns every pack, applicability fact, field fragment, and validator binding.
 - A downstream authoring tool may validate the declared WorldGuard check but never selects a pack or interprets Guard semantics.
 - A template does not derive required Guards, create behavior evidence, execute the claim, or license prediction.
 
@@ -55,12 +55,12 @@ instance = build_template_instance(
 
 Supply every discovered slot exactly once. Missing slots block with `TEMPLATE_SLOT_MISSING`; extra bindings block with `TEMPLATE_BINDING_UNUSED`. Callers cannot overlay arbitrary fields after composition because that would bypass field ownership and identity.
 
-## Composition and freshness
+## Composition
 
-Each fragment's `owned_field_ids` must exactly equal its payload leaves. Equal fields and ancestor/descendant overlaps block with `TEMPLATE_FIELD_OWNERSHIP_CONFLICT`; there is no last-writer-wins route. The manifest fingerprint covers its schema, applicability, fragments, validators, and claim boundary. A changed manifest or nested fragment with an old fingerprint is stale and rejected.
+Each fragment's `owned_field_ids` must exactly equal its payload leaves. Equal fields and ancestor/descendant overlaps block with `TEMPLATE_FIELD_OWNERSHIP_CONFLICT`; there is no last-writer-wins route.
 
-## Native validation and receipt
+## Native validation
 
 Guard instances run canonical GuardContract shape validation and complete claim-derived route validation. ModelMesh instances run canonical mesh validation and route validation for embedded Guard contracts. Unknown validator ids block; no fallback validator is selected.
 
-Retain the receipt's registry, selection, pack, composition, binding, output, validator, and final instance fingerprints. Its claim boundary is construction integrity only. Continue through `run_worldguard` or `run_model_mesh` and target-native depth evaluation where required before making a broader conclusion.
+The instance's `receipt` lists the selection, the composed pack ids and each validator's result; it covers construction only. Run the built contract with `run_worldguard` or `run_model_mesh` before drawing any conclusion.

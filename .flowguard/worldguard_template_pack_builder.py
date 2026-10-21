@@ -17,7 +17,6 @@ from flowguard.explorer import Explorer
 class BuildRequest:
     candidate_count: int = 1
     base_present: bool = True
-    manifest_current: bool = True
     field_ownership_exact: bool = True
     field_conflict: bool = False
     native_validators_bound: bool = True
@@ -78,9 +77,6 @@ class SelectTemplatePack:
             composed=False,
             native_validated=False,
         )
-        if not request.manifest_current:
-            yield FunctionResult(Blocked("template_manifest_stale"), state, "stale_manifest_blocked")
-            return
         if request.candidate_count < 0:
             yield FunctionResult(Blocked("candidate_count_invalid"), state, "invalid_candidate_count_blocked")
             return
@@ -155,7 +151,7 @@ class ValidateTemplateInstance:
     accepted_input_type = CompositionReady
     input_description = "Resolved contract payload x WorldGuard native validator registry"
     output_description = "TemplateInstanceReady or Blocked"
-    idempotency = "Exact payload, validator ids, and WorldGuard runtime identity yield one validation receipt."
+    idempotency = "The same payload and validator ids yield the same validation result."
 
     def apply(self, composed: CompositionReady, state: State) -> Iterable[FunctionResult]:
         if not state.composed:
@@ -218,7 +214,6 @@ EXTERNAL_INPUTS = (
     BuildRequest(candidate_count=2),
     BuildRequest(candidate_count=0, base_present=False),
     BuildRequest(candidate_count=1, base_present=False),
-    BuildRequest(manifest_current=False),
     BuildRequest(field_ownership_exact=False),
     BuildRequest(field_conflict=True),
     BuildRequest(native_validators_bound=False),
@@ -274,7 +269,6 @@ def review_template_pack_builder():
             "one_candidate_selected",
             "multiple_candidates_blocked",
             "candidate_base_missing_blocked",
-            "stale_manifest_blocked",
             "field_ownership_mismatch_blocked",
             "field_conflict_blocked",
             "native_validator_missing_blocked",

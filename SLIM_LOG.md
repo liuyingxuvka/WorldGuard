@@ -769,3 +769,22 @@ Status: completed.
 | `hash-boundaries` | 0 | whole JSON formatting invariant; content change rejects; invalid JSON typed reason; selected record unchanged; non-JSON remains byte hash (`WG-39/hash-boundaries.log`) |
 
 Adaptations: 额外有限边界核验覆盖实际内容变更、无效 JSON、缺 selector、非 JSON 字节变更；夹具仅 seven_guard 文件更新且再次生成字节幂等。
+
+### WG-40: 模板包保留，删除构造收据里的指纹字段和“指纹过期”检查
+
+Status: completed.
+
+删除模板构造的自算自比指纹及 stale 分支，保留选择/组合/槽位和四个原生校验器。构造收据精确六键，13 项专项、269 项完整测试、3 模型与 map 0/0。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-40/read.log`) |
+| `focused` | 0 | 13 passed in 0.31s (`WG-40/focused.log`) |
+| `receipt-shape` | 0 | actual template lines 875 (`WG-40/receipt-shape.log`) |
+| `change` | 0 | REVIEW worldguard.templates: its files changed; update its description if behavior changed, then confirm worldguard.templates (`WG-40/change.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-40/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-40/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-40/release.log`) |
+| `pytest` | 0 | 269 passed in 38.46s (`WG-40/pytest.log`) |
+
+Adaptations: 本项明确退役指纹过期机制测试；保留 no_match/ambiguous、字段归属冲突、槽位缺失/多余、未知校验器及真实 Guard/mesh 构造测试。实际源码875行，不为参考871行额外格式清理。模型仍为抽象边界，WG43将连接真实代码。

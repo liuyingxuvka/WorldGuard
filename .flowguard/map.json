@@ -288,7 +288,7 @@
       "responsibilities": [
         "Select zero, one or many native template fragments with explicit ownership",
         "Compose fragments, resolve typed slots and validate native Guard/mesh routes",
-        "Keep construction identity separate from semantic, provider and predictive closure"
+        "Report construction only; a built contract still runs through run_worldguard or run_model_mesh"
       ],
       "files": [
         "worldguard/template_packs.py"
@@ -299,7 +299,7 @@
         "worldguard/template_packs.py:build_template_instance"
       ],
       "state": [
-        "Template registry, manifest and instance fingerprints"
+        "Built-in template registry and immutable manifests"
       ],
       "side_effects": [
         "Construct deterministic in-memory native contract scaffolding"
@@ -316,7 +316,7 @@
         ".flowguard/template_selection/run_checks.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:25fadd911f65c5bb0d0568148e084cb07c4939bd06558302cae8634ebecf945c"
+      "fingerprint": "sha256:aab36c3bb77ba2d9cc6ab7b65d2345f284abb56b937081b989c9d2c756b566ab"
     },
     {
       "id": "release",

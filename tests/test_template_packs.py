@@ -18,7 +18,7 @@ def _event_bindings() -> dict[str, object]:
 def _base_guard_bindings() -> dict[str, object]:
     return {'contract_id': 'template:base-contract', 'run_id': 'template:base-run', 'claim_id': 'claim:base', 'claim_text': 'unrouted bounded input', 'target_guards': [], 'requested_semantics': [], 'claim_atoms': [], 'model_id': 'template:base-model', 'model_version': 'v1'}
 
-def test_builtin_guard_pack_selects_validates_and_fingerprints_stably() -> None:
+def test_builtin_guard_pack_selects_and_validates_deterministically() -> None:
     registry = builtin_template_registry()
     first = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=_event_bindings())
     second = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=_event_bindings())
@@ -27,8 +27,8 @@ def test_builtin_guard_pack_selects_validates_and_fingerprints_stably() -> None:
     assert first.data['inputs']['events'][0]['event_id'] == 'event:ready'
     assert GuardContract.from_dict(first.data).contract_id == 'template:event-contract'
     assert len(first.receipt.validator_receipts) == 2
-    assert first.receipt.instance_fingerprint == second.receipt.instance_fingerprint
-    assert len(first.receipt.instance_fingerprint) == 64
+    assert first.receipt.pack_ids == ('worldguard.guard-contract.base', 'worldguard.guard-contract.event')
+    assert first.to_dict() == second.to_dict()
 
 def test_no_candidate_blocks_instead_of_activating_the_shared_scaffold() -> None:
     registry = builtin_template_registry()
@@ -67,8 +67,7 @@ def test_one_matching_candidate_without_base_is_a_typed_blocker() -> None:
 
 def test_two_base_templates_are_rejected_before_selection() -> None:
     current = builtin_template_registry().by_id('worldguard.guard-contract.base')
-    second = replace(current, pack_id='worldguard.guard-contract.second-base', manifest_fingerprint='')
-    second = replace(second, manifest_fingerprint=second.current_fingerprint())
+    second = replace(current, pack_id='worldguard.guard-contract.second-base')
     with pytest.raises(TemplatePackError) as caught:
         TemplatePackRegistry.build((current, second))
     assert caught.value.code == 'TEMPLATE_BASE_AMBIGUOUS'
@@ -99,20 +98,6 @@ def test_fragment_rejects_undeclared_or_phantom_owned_fields() -> None:
         fragment.validate()
     assert caught.value.code == 'TEMPLATE_FRAGMENT_FIELD_OWNERSHIP_MISMATCH'
 
-def test_stale_manifest_and_stale_registry_are_rejected() -> None:
-    current = builtin_template_registry()
-    manifest_data = current.by_id('worldguard.guard-contract.event').to_dict()
-    manifest_data['pack_version'] = '2'
-    stale_manifest = TemplatePackManifest.from_dict(manifest_data)
-    with pytest.raises(TemplatePackError) as caught:
-        stale_manifest.validate()
-    assert caught.value.code == 'TEMPLATE_MANIFEST_STALE'
-    mutable_registry = builtin_template_registry()
-    mutable_registry.manifests[0].fragments[0].payload['schema_version'] = 'changed'
-    with pytest.raises(TemplatePackError) as caught:
-        mutable_registry.validate()
-    assert caught.value.code in {'TEMPLATE_MANIFEST_STALE', 'TEMPLATE_REGISTRY_STALE'}
-
 def test_missing_and_unused_slot_bindings_fail_closed() -> None:
     missing = _event_bindings()
     missing.pop('model_id')
@@ -129,8 +114,7 @@ def test_missing_and_unused_slot_bindings_fail_closed() -> None:
 
 def test_unknown_native_validator_blocks_registry_admission() -> None:
     current = builtin_template_registry().by_id('worldguard.guard-contract.base')
-    unknown = replace(current, native_validator_ids=('worldguard.unknown.v1',), manifest_fingerprint='')
-    unknown = replace(unknown, manifest_fingerprint=unknown.current_fingerprint())
+    unknown = replace(current, native_validator_ids=('worldguard.unknown.v1',))
     with pytest.raises(TemplatePackError) as caught:
         TemplatePackRegistry.build((unknown,))
     assert caught.value.code == 'TEMPLATE_NATIVE_VALIDATOR_UNKNOWN'
@@ -143,13 +127,13 @@ def test_model_mesh_pack_builds_canonical_bounded_scaffold() -> None:
     assert instance.receipt.selection.selected_pack_id == 'worldguard.model-mesh.bounded'
     assert len(instance.receipt.validator_receipts) == 2
 
-def test_binding_change_changes_instance_fingerprint() -> None:
+def test_binding_change_changes_the_built_contract() -> None:
     registry = builtin_template_registry()
     first_bindings = _event_bindings()
     second_bindings = _event_bindings()
     second_bindings['claim_text'] = 'a different task-local event claim'
     first = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=first_bindings)
     second = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=second_bindings)
-    assert first.receipt.binding_fingerprint != second.receipt.binding_fingerprint
-    assert first.receipt.output_fingerprint != second.receipt.output_fingerprint
-    assert first.receipt.instance_fingerprint != second.receipt.instance_fingerprint
+    assert first.data['claim']['text'] == 'a declared event initiates readiness'
+    assert second.data['claim']['text'] == 'a different task-local event claim'
+    assert first.receipt.to_dict() == second.receipt.to_dict()
