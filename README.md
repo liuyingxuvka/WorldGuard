@@ -22,7 +22,7 @@ English comes first; a Chinese mirror follows below.
 
 ## Development and installation checks
 
-WorldGuard uses ordinary native checks and pytest. No author-supervision tool or compiled author contract is needed. The living `.flowguard/map.json` binds source, tests, and ten executable models; previous snapshots are historical records only.
+WorldGuard uses ordinary native checks and pytest. No author-supervision tool or compiled author contract is needed. The living `.flowguard/map.json` binds source, tests, and the executable models; `python -m flowguard map models` runs them.
 
 ```bash
 python -m pytest -q

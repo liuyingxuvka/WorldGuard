@@ -513,3 +513,20 @@ check/mesh/blueprint 默认摘要，--json 保持原生完整报告，task-model
 | `metadata-prose` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-26/metadata-prose.log`) |
 
 Adaptations: 参考片段未给蓝图提供承诺的通用字段；摘要 status/semantic_status/scope_limits 均取原生值，缺省为空字符串/空列表，不制造 PASS 或许可，SKILL 明确空值含义。完整 suite 后仅补空值含义文案，重验提示词大小和 map；未重复无行为变化的全量。外部 probe 首次误估 blueprint GAP 退出码为 0（实际 1），再次假设 impact full 含 status（实际不含）；均属 probe 假设错误，非产品 crash，原日志/输出目录完整保留。LogicWriting 同步由其 owner/XR 负责，本库未改兄弟仓库。
+
+### WG-27: 删除 .flowguard/ 里 FlowGuard ≤0.69 时代的旧账本（约 14 MB）
+
+Status: completed.
+
+删除 301 个已退役的旧账本/历史快照文件，README 指向当前 map models。当前 .flowguard 跟踪库存精确 27 个文件、117423 字节；312 项完整测试和现行 6 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | } (`WG-27/inventory.log`) |
+| `residue` | 0 | {'unfiltered_hits': 0, 'journal_only': 0, 'active_hits': 0, 'openspec': 'document archive exception'} (`WG-27/residue.log`) |
+| `change` | 0 | tests to run (0 of 31): - (`WG-27/change.log`) |
+| `pytest` | 0 | 312 passed in 48.96s (`WG-27/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-27/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-27/models.log`) |
+
+Adaptations: 原始未过滤残留 grep 保存在 legacy-grep-unfiltered.log：实际 0 命中（不是把日志命中报成无匹配）；仅采用文档 openspec 例外和统一 root SLIM_LOG 历史日志例外，现行产品零残留。
