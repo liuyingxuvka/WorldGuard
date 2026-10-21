@@ -141,8 +141,9 @@ def main(argv: list[str] | None = None) -> int:
         from .qualification import QualificationContext
         if args.example == "fuel_cell":
             from .examples.fuel_cell import run_check as run_fuel_cell_check
-            print(dump_json(run_fuel_cell_check()))
-            return 0
+            example = run_fuel_cell_check()
+            print(dump_json(example))
+            return 0 if example["ok"] else 1
         if not args.contract:
             parser.error("check requires --contract or --example fuel_cell")
         try:
@@ -156,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, UnicodeError, ValueError, YAMLError) as exc:
             return _input_error("check", args.contract, exc)
         print(dump_json(report.to_dict()))
-        return 0
+        return 0 if report.status.value == "PASS" else 1
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh
         try:
@@ -164,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, UnicodeError, ValueError, YAMLError) as exc:
             return _input_error("mesh-check", args.mesh, exc)
         print(dump_json(mesh_report.to_dict()))
-        return 0
+        return 0 if mesh_report.status.value == "PASS" else 1
     if args.command == "blueprint":
         from .blueprint import (
             BlueprintError,
@@ -222,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
                     ),
                 )
                 print(dump_json(report.to_dict()))
-                return 0
+                return 0 if not report.gaps else 1
             if operation == "trace":
                 expected_request_fingerprint = blueprint_query_request_fingerprint(
                     "trace",

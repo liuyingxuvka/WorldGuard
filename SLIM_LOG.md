@@ -148,3 +148,20 @@ Semantic EventGuard orders numeric/prefixed-numeric times and ISO date-times chr
 | `models` | 0 | models: 6 passed, 0 failed (`WG-07/models.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-08: 统一退出码：0 = PASS，1 = 非通过，2 = 输入错误
+
+Status: completed.
+
+Unified check and mesh-check exits to 0 for PASS and 1 for non-pass, with existing typed input errors at 2. Example exits according to its expected-case self-check; blueprint impact exits 1 for gaps. Existing blueprint/task-model error and exit shapes are retained. Real valid/broken resource-scene tests and portable success/help probes pass.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-08/mirror.log`) |
+| `focused` | 0 | 38 passed in 4.87s (`WG-08/focused.log`) |
+| `portable-pass` | 0 | unit-and-example-ok (`WG-08/portable-pass.log`) |
+| `portable-help` | 0 |   --example {fuel_cell} (`WG-08/portable-help.log`) |
+| `pytest` | 0 | 380 passed in 46.56s (`WG-08/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-08/map.log`) |
+
+Adaptations: None; reference purpose and implementation retained.
