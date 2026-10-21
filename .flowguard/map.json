@@ -434,8 +434,8 @@
         "worldguard"
       ],
       "tests": [
-        "tests/test_prompt_size.py",
-        "tests/test_run_worldguard_check_helper.py"
+        "tests/test_cli_module.py",
+        "tests/test_prompt_size.py"
       ],
       "models": [],
       "status": "confirmed",

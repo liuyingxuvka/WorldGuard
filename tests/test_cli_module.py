@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -112,3 +113,22 @@ def test_check_does_not_reclassify_an_internal_native_type_error(tmp_path, monke
     scene = Path(__file__).parent / "fixtures" / "scene_locked_door.yaml"
     with pytest.raises(TypeError, match="internal native defect"):
         main(["check", "--contract", str(scene)])
+
+
+def test_portable_launcher_runs_from_a_copied_skill(tmp_path):
+    skill = tmp_path / "worldguard"
+    shutil.copytree(
+        Path(__file__).resolve().parents[1] / "skills" / "worldguard",
+        skill,
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
+    launcher = skill / "scripts" / "run_worldguard.py"
+    done = subprocess.run([sys.executable, str(launcher), "check", "--help"], cwd=tmp_path, text=True, capture_output=True)
+    assert done.returncode == 0, done.stderr
+    assert "--contract" in done.stdout and "--example" in done.stdout
+    example = skill / "assets" / "examples" / "scene_locked_door.yaml"
+    done = subprocess.run([sys.executable, str(launcher), "check", "--contract", str(example)], cwd=tmp_path, text=True, capture_output=True)
+    assert done.returncode == 0, done.stdout[-500:]
+    probe = f"import sys; sys.path.insert(0, {str(skill / 'runtime')!r}); import worldguard.cli as c; print(c.__file__)"
+    done = subprocess.run([sys.executable, "-c", probe], cwd=tmp_path, text=True, capture_output=True)
+    assert Path(done.stdout.strip()).resolve().is_relative_to(skill / "runtime")

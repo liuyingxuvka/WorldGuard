@@ -327,3 +327,19 @@ Status: completed.
 | `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-17/map.log`) |
 
 Adaptations: 完整测试实际 72.27 秒，未用文档预计时长替代实测。
+
+### WG-18: 删除没人用的旧启动器；给 LogicWriting 真正依赖的便携启动器加测试
+
+Status: completed.
+
+删除未被技能引用的旧启动器；对真实启动器新增复制技能目录后执行 check 的行为测试，验证导入来自复制后的 runtime，357 项测试通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `launcher` | 0 | 7 passed in 3.73s (`WG-18/launcher.log`) |
+| `inventory` | 0 | ['skills/worldguard/scripts/run_worldguard.py'] (`WG-18/inventory.log`) |
+| `change` | 0 | REVIEW skills.worldguard.scripts: its files changed; update its description if behavior changed, then confirm skills.worldguard.scripts (`WG-18/change.log`) |
+| `pytest` | 0 | 357 passed in 39.85s (`WG-18/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-18/map.log`) |
+
+Adaptations: 脚本目录库存按 Git 跟踪文件核对，保留未跟踪的解释器缓存；真实启动器任何字节未改。
