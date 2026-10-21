@@ -62,14 +62,10 @@ def main(argv: list[str] | None = None) -> int:
     _add_object_census_trust_arguments(blueprint_check)
     blueprint_impact_command = blueprint_commands.add_parser("impact")
     blueprint_impact_command.add_argument("--blueprint", required=True)
-    blueprint_impact_command.add_argument("--blueprint-fingerprint", required=True)
-    blueprint_impact_command.add_argument("--request-fingerprint", required=True)
     blueprint_impact_command.add_argument("--changed-id", action="append", required=True)
     _add_object_census_trust_arguments(blueprint_impact_command)
     blueprint_trace_command = blueprint_commands.add_parser("trace")
     blueprint_trace_command.add_argument("--blueprint", required=True)
-    blueprint_trace_command.add_argument("--blueprint-fingerprint", required=True)
-    blueprint_trace_command.add_argument("--request-fingerprint", required=True)
     blueprint_trace_command.add_argument("--target-id", required=True)
     _add_object_census_trust_arguments(blueprint_trace_command)
     task_model = subparsers.add_parser(
@@ -146,7 +142,6 @@ def main(argv: list[str] | None = None) -> int:
         from .blueprint import (
             BlueprintError,
             blueprint_impact,
-            blueprint_query_request_fingerprint,
             blueprint_reverse_trace,
             check_world_blueprint,
             load_world_blueprint,
@@ -167,29 +162,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(dump_json(report.to_dict()))
                 return 0 if report.status.value == "PASS" else 1
             if operation == "impact":
-                expected_request_fingerprint = blueprint_query_request_fingerprint(
-                    "impact",
-                    blueprint_fingerprint=args.blueprint_fingerprint,
-                    changed_ids=args.changed_id,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
-                if args.request_fingerprint != expected_request_fingerprint:
-                    raise BlueprintError(
-                        "WORLD_BLUEPRINT_REQUEST_FINGERPRINT_STALE",
-                        "Impact request fingerprint does not match the current request.",
-                        details={
-                            "expected": expected_request_fingerprint,
-                            "observed": args.request_fingerprint,
-                        },
-                    )
                 report = blueprint_impact(
                     current_blueprint,
-                    blueprint_fingerprint=args.blueprint_fingerprint,
                     changed_ids=args.changed_id,
                     trusted_object_census_authority_fingerprints=(
                         args.trust_object_census_authority
@@ -201,29 +175,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(dump_json(report.to_dict()))
                 return 0 if not report.gaps else 1
             if operation == "trace":
-                expected_request_fingerprint = blueprint_query_request_fingerprint(
-                    "trace",
-                    blueprint_fingerprint=args.blueprint_fingerprint,
-                    target_id=args.target_id,
-                    trusted_object_census_authority_fingerprints=(
-                        args.trust_object_census_authority
-                    ),
-                    trusted_object_census_producer_descriptor_fingerprints=(
-                        args.trust_object_census_producer
-                    ),
-                )
-                if args.request_fingerprint != expected_request_fingerprint:
-                    raise BlueprintError(
-                        "WORLD_BLUEPRINT_REQUEST_FINGERPRINT_STALE",
-                        "Trace request fingerprint does not match the current request.",
-                        details={
-                            "expected": expected_request_fingerprint,
-                            "observed": args.request_fingerprint,
-                        },
-                    )
                 report = blueprint_reverse_trace(
                     current_blueprint,
-                    blueprint_fingerprint=args.blueprint_fingerprint,
                     target_id=args.target_id,
                     trusted_object_census_authority_fingerprints=(
                         args.trust_object_census_authority

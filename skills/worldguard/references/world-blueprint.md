@@ -11,8 +11,8 @@ Every operation needs the exact target id/revision/boundary; operation-specific 
 | `create` | caller-supplied target-material refs and authority; author one model without inventing target truth, then require native `check` before any qualification claim |
 | `update` | current identity, change intent, changed ids; edit only those members, then require native `check` |
 | `check` | current identity; qualify the complete denominator and report continuous depth/gaps |
-| `impact` | current identity/fingerprint, request fingerprint, changed ids; return the exact affected closure |
-| `trace` | current identity/fingerprint, request fingerprint, one target; reverse-trace exact support |
+| `impact` | current blueprint, changed ids; return the exact affected closure |
+| `trace` | current blueprint, one target; reverse-trace exact support |
 
 Missing, stale, unknown, or mixed identity blocks without widening or retry. `affected_guard_ids` may name only current Event/Agent/Space/Resource/Causal/Conflict/Norm Guard ids and controls conditional prompt loading only; it is not impact evidence. For the input fields of those Guards read `guard-inputs.md`.
 
@@ -62,8 +62,8 @@ These rules are provider- and language-neutral. WorldGuard checks identity/conte
 
 ```bash
 python <skill-root>/scripts/run_worldguard.py blueprint check --blueprint <blueprint>
-python <skill-root>/scripts/run_worldguard.py blueprint impact --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --changed-id <id>
-python <skill-root>/scripts/run_worldguard.py blueprint trace --blueprint <blueprint> --blueprint-fingerprint <sha256> --request-fingerprint <sha256> --target-id <id>
+python <skill-root>/scripts/run_worldguard.py blueprint impact --blueprint <blueprint> --changed-id <id>
+python <skill-root>/scripts/run_worldguard.py blueprint trace --blueprint <blueprint> --target-id <id>
 ```
 
 Unreadable input/query errors exit 2; a valid trace with gaps exits 1. The model stays in memory; no export, bundle, copied resource, or standalone package exists.
@@ -72,7 +72,7 @@ Unreadable input/query errors exit 2; a valid trace with gaps exits 1. The model
 
 `impact` indexes before traversing and materializes only the selected closure. Every stable public id is a seed: blueprint/target, commitment inventory/behavior/commitment, node, port, mapping, derivation, element, native semantic, dependency, binding/resource, declared input/output, or gap. It follows declared semantic/interface/ownership effects only, retaining one deterministic path and admitting edge per member.
 
-Unrelated siblings remain absent unless a declared dependency or interface path connects them. If any requested id is unknown, including one unknown mixed with known ids, the whole query blocks before traversal. Stale fingerprints also block. The operation does not mutate the blueprint, run a provider, discover new material, synthesize a binding, or repair a gap.
+Unrelated siblings remain absent unless a declared dependency or interface path connects them. If any requested id is unknown, including one unknown mixed with known ids, the whole query blocks before traversal. The operation does not mutate the blueprint, run a provider, discover new material, synthesize a binding, or repair a gap.
 
 ## Reverse trace semantics
 

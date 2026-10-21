@@ -14,12 +14,10 @@ def test_blueprint_queries_leave_contract_and_fixture_unchanged() -> None:
 
     blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["schedule_transition"],
     )
     blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="root_plan_outcome",
     )
 

@@ -405,3 +405,24 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-21/models.log`) |
 
 Adaptations: 随删除 reader 一并移除其独占的两个未使用导入；未改预测/时间深度/覆盖核对算法或剩余深度字段。
+
+### WG-22: 蓝图 impact/trace 只要蓝图路径：删除“请求指纹”和“蓝图指纹”两个参数
+
+Status: completed.
+
+impact/trace 删除两个调用方指纹参数，直接重验当前蓝图；未知 ID 原子拒绝及每查询一次原生 preflight 保留。29 项 queries、339 项完整测试及 6 个模型通过，便携 impact 0、trace PASS 无 gaps，134 个导出可加载。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-22/mirror.log`) |
+| `queries` | 1 | 6 failed, 23 passed in 15.10s (`WG-22/queries.log`) |
+| `queries-final` | 0 | 29 passed in 15.71s (`WG-22/queries-final.log`) |
+| `portable-impact` | 0 | (no output) (`WG-22/portable-impact.log`) |
+| `portable-trace` | 0 | trace PASS [] (`WG-22/portable-trace.log`) |
+| `residue` | 0 | 134 ok (`WG-22/residue.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-22/change.log`) |
+| `pytest` | 0 | 339 passed in 41.25s (`WG-22/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-22/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-22/models.log`) |
+
+Adaptations: 首次测试迁移误删错误详情的内容身份断言，6 个负例因 expected 字段缺失失败；恢复该现有断言后 29 项通过，产品仍保留报告里的 blueprint_fingerprint。原始失败日志不覆盖。

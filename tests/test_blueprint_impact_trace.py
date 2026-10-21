@@ -50,12 +50,10 @@ def _assert_unqualified_query_source(blueprint: WorldBlueprintContract) -> None:
     operations = (
         lambda: blueprint_impact(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             changed_ids=["schedule_transition"],
         ),
         lambda: blueprint_reverse_trace(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             target_id="root_plan_outcome",
         ),
     )
@@ -78,7 +76,6 @@ def test_leaf_change_has_exact_dependents_ancestors_interfaces_and_bindings() ->
 
     report = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["schedule_transition"],
     )
 
@@ -110,7 +107,6 @@ def test_leaf_change_has_exact_dependents_ancestors_interfaces_and_bindings() ->
 def test_multiple_changed_ids_and_repeat_are_deterministic() -> None:
     blueprint = load_world_blueprint(FIXTURE)
     args = {
-        "blueprint_fingerprint": blueprint.blueprint_fingerprint,
         "changed_ids": ["authorization_norm", "schedule_transition"],
     }
 
@@ -122,24 +118,16 @@ def test_multiple_changed_ids_and_repeat_are_deterministic() -> None:
     assert first.changed_ids == ("authorization_norm", "schedule_transition")
 
 
-def test_impact_rejects_unknown_id_and_stale_fingerprint_without_widening() -> None:
+def test_impact_rejects_unknown_id_without_widening() -> None:
     blueprint = load_world_blueprint(FIXTURE)
     with pytest.raises(BlueprintError) as caught:
         blueprint_impact(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             changed_ids=["schedule_transition", "not-in-blueprint"],
         )
     assert caught.value.code == "WORLD_BLUEPRINT_QUERY_ID_UNKNOWN"
     assert caught.value.details == {"unknown_ids": ["not-in-blueprint"]}
 
-    with pytest.raises(BlueprintError) as caught:
-        blueprint_impact(
-            blueprint,
-            blueprint_fingerprint="0" * 64,
-            changed_ids=["schedule_transition"],
-        )
-    assert caught.value.code == "WORLD_BLUEPRINT_QUERY_STALE"
 
 
 def test_each_query_runs_exactly_one_current_source_preflight(monkeypatch) -> None:
@@ -168,14 +156,12 @@ def test_each_query_runs_exactly_one_current_source_preflight(monkeypatch) -> No
 
     blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["schedule_transition"],
     )
     assert calls == [blueprint.blueprint_fingerprint]
 
     blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="root_plan_outcome",
     )
     assert calls == [
@@ -189,7 +175,6 @@ def test_root_output_reverse_trace_reaches_leaf_inputs_and_all_binding_roles() -
 
     report = blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="root_plan_outcome",
     )
 
@@ -232,7 +217,6 @@ def test_input_source_edges_drive_impact_and_reverse_trace() -> None:
 
     impact = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["external_plan_request"],
     )
     affected = set(impact.materialized_ids)
@@ -247,7 +231,6 @@ def test_input_source_edges_drive_impact_and_reverse_trace() -> None:
 
     trace = blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="assignment_transition",
     )
     relations = {edge["relation"] for edge in trace.traversed_edges}
@@ -311,14 +294,12 @@ def test_every_stable_blueprint_object_kind_is_an_impact_seed() -> None:
         member_id = representative_by_kind[kind]
         report = blueprint_impact(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             changed_ids=[member_id],
         )
         assert member_id in report.materialized_ids, kind
 
     semantic = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["semantic:schedule_transition"],
     )
     assert {"schedule_transition", "schedule_native", "plan_root"} <= set(
@@ -330,7 +311,6 @@ def test_dependency_and_declared_output_seed_affect_both_relation_endpoints() ->
     blueprint = load_world_blueprint(FIXTURE)
     dependency = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["dep_schedule_assignment"],
     )
     assert {"assignment_transition", "schedule_transition"} <= set(
@@ -339,7 +319,6 @@ def test_dependency_and_declared_output_seed_affect_both_relation_endpoints() ->
 
     output = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["declared_plan_outcome"],
     )
     assert {"plan_root", "root_plan_outcome", "planning-workflow"} <= set(
@@ -348,7 +327,6 @@ def test_dependency_and_declared_output_seed_affect_both_relation_endpoints() ->
 
     commitment = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["commitment:declared-plan-outcome"],
     )
     assert {
@@ -457,7 +435,6 @@ def test_dependency_feedback_reports_cycle_witness_and_terminates() -> None:
 
     report = blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="root_plan_outcome",
     )
 
@@ -470,23 +447,15 @@ def test_dependency_feedback_reports_cycle_witness_and_terminates() -> None:
     assert len(report.traced_members) < 200
 
 
-def test_reverse_trace_rejects_unknown_target_and_stale_identity() -> None:
+def test_reverse_trace_rejects_unknown_target() -> None:
     blueprint = load_world_blueprint(FIXTURE)
     with pytest.raises(BlueprintError) as caught:
         blueprint_reverse_trace(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             target_id="unknown-output",
         )
     assert caught.value.code == "WORLD_BLUEPRINT_QUERY_ID_UNKNOWN"
 
-    with pytest.raises(BlueprintError) as caught:
-        blueprint_reverse_trace(
-            blueprint,
-            blueprint_fingerprint="f" * 64,
-            target_id="root_plan_outcome",
-        )
-    assert caught.value.code == "WORLD_BLUEPRINT_QUERY_STALE"
 
 
 def test_reverse_trace_rejects_non_traceable_blueprint_container() -> None:
@@ -495,7 +464,6 @@ def test_reverse_trace_rejects_non_traceable_blueprint_container() -> None:
     with pytest.raises(BlueprintError) as caught:
         blueprint_reverse_trace(
             blueprint,
-            blueprint_fingerprint=blueprint.blueprint_fingerprint,
             target_id=blueprint.blueprint_id,
         )
 

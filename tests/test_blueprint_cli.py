@@ -12,7 +12,6 @@ from tests.object_census_fixtures import (
     OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT,
 )
 from worldguard.blueprint import (
-    blueprint_query_request_fingerprint,
     check_world_blueprint,
     load_world_blueprint,
 )
@@ -78,22 +77,12 @@ def test_blueprint_check_cli_rejects_malformed_census_trust(capsys) -> None:
     assert payload["error"]["code"] == "WORLD_BLUEPRINT_FINGERPRINT_INVALID"
 
 
-def test_blueprint_impact_cli_requires_both_current_fingerprints(capsys) -> None:
-    blueprint = load_world_blueprint(FIXTURE)
-    request_fingerprint = blueprint_query_request_fingerprint(
-        "impact",
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
-        changed_ids=["schedule_transition"],
-    )
+def test_blueprint_impact_cli_is_repeatable(capsys) -> None:
     argv = [
         "blueprint",
         "impact",
         "--blueprint",
         str(FIXTURE),
-        "--blueprint-fingerprint",
-        blueprint.blueprint_fingerprint,
-        "--request-fingerprint",
-        request_fingerprint,
         "--changed-id",
         "schedule_transition",
     ]
@@ -109,69 +98,13 @@ def test_blueprint_impact_cli_requires_both_current_fingerprints(capsys) -> None
     assert payload["operation"] == "impact"
     assert payload["changed_ids"] == ["schedule_transition"]
 
-    stale_code = main(
-        [
-            *argv[:7],
-            "0" * 64,
-            *argv[8:],
-        ]
-    )
-    stale = json.loads(capsys.readouterr().out)
-    assert stale_code == 2
-    assert stale["status"] == "error"
-    assert stale["error"]["code"] == "WORLD_BLUEPRINT_REQUEST_FINGERPRINT_STALE"
 
 
-def test_blueprint_impact_request_identity_binds_census_trust(capsys) -> None:
-    blueprint = load_world_blueprint(FIXTURE)
-    request_fingerprint = blueprint_query_request_fingerprint(
-        "impact",
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
-        changed_ids=["schedule_transition"],
-        trusted_object_census_producer_descriptor_fingerprints=[
-            OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT
-        ],
-    )
-    base = [
-        "blueprint",
-        "impact",
-        "--blueprint",
-        str(FIXTURE),
-        "--blueprint-fingerprint",
-        blueprint.blueprint_fingerprint,
-        "--request-fingerprint",
-        request_fingerprint,
-        "--changed-id",
-        "schedule_transition",
-    ]
-
-    stale_code = main(base)
-    stale = json.loads(capsys.readouterr().out)
-    trusted_code = main(
-        [
-            *base,
-            "--trust-object-census-producer",
-            OBJECT_CENSUS_TEST_PRODUCER_DESCRIPTOR_FINGERPRINT,
-        ]
-    )
-    trusted = json.loads(capsys.readouterr().out)
-
-    assert stale_code == 2
-    assert stale["error"]["code"] == "WORLD_BLUEPRINT_REQUEST_FINGERPRINT_STALE"
-    assert trusted_code == 0
-    assert trusted["operation"] == "impact"
 
 
 def test_blueprint_impact_cli_rejects_mixed_known_unknown_ids_atomically(
     capsys,
 ) -> None:
-    blueprint = load_world_blueprint(FIXTURE)
-    changed_ids = ["schedule_transition", "not-in-blueprint"]
-    request_fingerprint = blueprint_query_request_fingerprint(
-        "impact",
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
-        changed_ids=changed_ids,
-    )
 
     exit_code = main(
         [
@@ -179,10 +112,6 @@ def test_blueprint_impact_cli_rejects_mixed_known_unknown_ids_atomically(
             "impact",
             "--blueprint",
             str(FIXTURE),
-            "--blueprint-fingerprint",
-            blueprint.blueprint_fingerprint,
-            "--request-fingerprint",
-            request_fingerprint,
             "--changed-id",
             "schedule_transition",
             "--changed-id",
@@ -201,12 +130,6 @@ def test_blueprint_trace_cli_is_native_and_does_not_import_flowguard(
     capsys,
     monkeypatch,
 ) -> None:
-    blueprint = load_world_blueprint(FIXTURE)
-    request_fingerprint = blueprint_query_request_fingerprint(
-        "trace",
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
-        target_id="root_plan_outcome",
-    )
     real_import = builtins.__import__
 
     def reject_flowguard(name, *args, **kwargs):
@@ -221,10 +144,6 @@ def test_blueprint_trace_cli_is_native_and_does_not_import_flowguard(
             "trace",
             "--blueprint",
             str(FIXTURE),
-            "--blueprint-fingerprint",
-            blueprint.blueprint_fingerprint,
-            "--request-fingerprint",
-            request_fingerprint,
             "--target-id",
             "root_plan_outcome",
         ]
@@ -270,11 +189,6 @@ def test_blueprint_trace_cli_rejects_an_unqualified_source_atomically(
     mutated.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
     blueprint = load_world_blueprint(mutated)
     qualification = check_world_blueprint(blueprint)
-    request_fingerprint = blueprint_query_request_fingerprint(
-        "trace",
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
-        target_id="root_plan_outcome",
-    )
 
     exit_code = main(
         [
@@ -282,10 +196,6 @@ def test_blueprint_trace_cli_rejects_an_unqualified_source_atomically(
             "trace",
             "--blueprint",
             str(mutated),
-            "--blueprint-fingerprint",
-            blueprint.blueprint_fingerprint,
-            "--request-fingerprint",
-            request_fingerprint,
             "--target-id",
             "root_plan_outcome",
         ]

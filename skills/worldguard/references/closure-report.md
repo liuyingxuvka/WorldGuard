@@ -35,7 +35,7 @@ Optional checklist when reporting a multi-model (mesh) WorldGuard check.
 - One event, one or two convenient timepoints, enough points concentrated in only one phase, a rich aggregate with one shallow child, one equation, or one convenient scenario may pass a
   local bounded check, but cannot license prediction. Predictive closure needs
   `predictive_claim_licensed: true` in the current mesh report.
-- A blueprint query proves only read-only impact or provenance for the supplied current blueprint and canonical request fingerprints. It does not execute a provider, mutate a target, widen to the whole blueprint, prove a target implementation, or establish external facts.
+- A blueprint query proves only read-only impact or provenance for the supplied current blueprint. It does not execute a provider, mutate a target, widen to the whole blueprint, prove a target implementation, or establish external facts.
 
 ## Report Shape
 

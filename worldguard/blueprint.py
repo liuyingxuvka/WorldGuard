@@ -9922,19 +9922,6 @@ def _build_blueprint_indexes(blueprint: WorldBlueprintContract) -> _BlueprintInd
     )
 
 
-def _require_query_fingerprint(
-    blueprint: WorldBlueprintContract,
-    supplied_fingerprint: str,
-) -> None:
-    if supplied_fingerprint != blueprint.blueprint_fingerprint:
-        raise BlueprintError(
-            "WORLD_BLUEPRINT_QUERY_STALE",
-            "Blueprint query fingerprint does not match the current blueprint.",
-            details={
-                "expected": blueprint.blueprint_fingerprint,
-                "observed": supplied_fingerprint,
-            },
-        )
 
 
 def _require_qualified_query_source(
@@ -9970,66 +9957,17 @@ def _require_qualified_query_source(
     return report
 
 
-def blueprint_query_request_fingerprint(
-    operation: str,
-    *,
-    blueprint_fingerprint: str,
-    changed_ids: Sequence[str] = (),
-    target_id: str = "",
-    trusted_object_census_authority_fingerprints: Iterable[str] = (),
-    trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
-) -> str:
-    operation = str(operation).strip()
-    if operation not in {"impact", "trace"}:
-        raise BlueprintError(
-            "WORLD_BLUEPRINT_OPERATION_UNKNOWN",
-            f"Unknown blueprint query operation: {operation or '<missing>'}.",
-            details={"operation": operation},
-        )
-    payload: dict[str, Any] = {
-        "operation": operation,
-        "blueprint_fingerprint": _required_text(
-            blueprint_fingerprint, "query.blueprint_fingerprint"
-        ),
-        "object_census_trust": {
-            "authority_fingerprints": list(
-                _normalized_trust_fingerprints(
-                    trusted_object_census_authority_fingerprints,
-                    "trusted_object_census_authority_fingerprints",
-                )
-            ),
-            "producer_descriptor_fingerprints": list(
-                _normalized_trust_fingerprints(
-                    trusted_object_census_producer_descriptor_fingerprints,
-                    "trusted_object_census_producer_descriptor_fingerprints",
-                )
-            ),
-        },
-    }
-    if operation == "impact":
-        normalized = sorted(set(str(value) for value in changed_ids if str(value)))
-        if not normalized:
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_IMPACT_REQUEST_EMPTY",
-                "Impact request fingerprint requires changed ids.",
-            )
-        payload["changed_ids"] = normalized
-    else:
-        payload["target_id"] = _required_text(target_id, "query.target_id")
-    return fingerprint_mesh(payload)
 
 
 def blueprint_impact(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
     *,
-    blueprint_fingerprint: str,
     changed_ids: Sequence[str],
     trusted_object_census_authority_fingerprints: Iterable[str] = (),
     trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> BlueprintImpactReport:
     if not isinstance(blueprint, WorldBlueprintContract):
         blueprint = WorldBlueprintContract.from_dict(blueprint)
-    _require_query_fingerprint(blueprint, blueprint_fingerprint)
     _require_qualified_query_source(
         blueprint,
         trusted_object_census_authority_fingerprints=(
@@ -10109,14 +10047,12 @@ def blueprint_impact(
 def blueprint_reverse_trace(
     blueprint: WorldBlueprintContract | Mapping[str, Any],
     *,
-    blueprint_fingerprint: str,
     target_id: str,
     trusted_object_census_authority_fingerprints: Iterable[str] = (),
     trusted_object_census_producer_descriptor_fingerprints: Iterable[str] = (),
 ) -> BlueprintTraceReport:
     if not isinstance(blueprint, WorldBlueprintContract):
         blueprint = WorldBlueprintContract.from_dict(blueprint)
-    _require_query_fingerprint(blueprint, blueprint_fingerprint)
     blueprint_report = _require_qualified_query_source(
         blueprint,
         trusted_object_census_authority_fingerprints=(
@@ -10385,7 +10321,6 @@ __all__ = [
     "WorldBlueprintReport",
     "WorldElement",
     "blueprint_impact",
-    "blueprint_query_request_fingerprint",
     "blueprint_reverse_trace",
     "check_world_blueprint",
     "load_world_blueprint",

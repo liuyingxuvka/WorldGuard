@@ -108,12 +108,10 @@ def test_policy_target_runs_in_memory_impact_and_reverse_trace() -> None:
 
     impact = blueprint_impact(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         changed_ids=["access_policy_norm"],
     ).to_dict()
     reverse = blueprint_reverse_trace(
         blueprint,
-        blueprint_fingerprint=blueprint.blueprint_fingerprint,
         target_id="declared_policy_decision",
     ).to_dict()
 
