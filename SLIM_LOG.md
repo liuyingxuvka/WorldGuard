@@ -7,7 +7,7 @@
 - User version override: final WorldGuard **0.7.16**, new FlowGuard **0.70.7**. Historical baseline references remain unchanged.
 - Each action is implemented and verified in numeric order, then committed using its prescribed subject. Explicit approved removals supersede historical receipt/DNA preservation requirements.
 - Canonical source is `worldguard/`; WG-01–WG-35 synchronize its portable mirror. WG-36 onward installation generates the portable runtime.
-- No push, tag, release or global installation by this worker; root coordinates cross-repository completion.
+- No push, Git tag, GitHub Release publication or global skill installation by this worker; root coordinates cross-repository completion.
 
 ## Preparation and baseline
 
@@ -163,5 +163,20 @@ Unified check and mesh-check exits to 0 for PASS and 1 for non-pass, with existi
 | `portable-help` | 0 |   --example {fuel_cell} (`WG-08/portable-help.log`) |
 | `pytest` | 0 | 380 passed in 46.56s (`WG-08/pytest.log`) |
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-08/map.log`) |
+
+Adaptations: None; reference purpose and implementation retained.
+
+### WG-09: 删除仓库顶层已经漂移的燃料电池示例副本
+
+Status: completed.
+
+Deleted only the unused, drifted top-level examples/fuel_cell YAML copy and pointed the repository layout to the packaged canonical example. examples/model_mesh, packaged data and package-data configuration are unchanged. Running the installed fuel-cell module from an unrelated /tmp working directory succeeds.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | ['model_mesh'] (`WG-09/inventory.log`) |
+| `foreign-cwd` | 0 | foreign-cwd-ok (`WG-09/foreign-cwd.log`) |
+| `pytest` | 0 | 380 passed in 42.02s (`WG-09/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-09/map.log`) |
 
 Adaptations: None; reference purpose and implementation retained.

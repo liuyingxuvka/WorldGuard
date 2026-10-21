@@ -159,7 +159,7 @@ WorldGuard also does not include a domain-specific novel, academic-paper, or gam
 ```text
 worldguard/                  Python runtime and CLI
 worldguard/guards/           Guard implementations
-examples/fuel_cell/          Toy unit-check fixture
+worldguard/examples/fuel_cell/  Toy unit-check fixture (packaged with the runtime)
 examples/model_mesh/         Generic mesh-check fixture
 tests/                       Runtime and regression tests
 skills/worldguard/           Codex skill copy
