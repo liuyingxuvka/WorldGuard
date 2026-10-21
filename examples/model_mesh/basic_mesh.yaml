@@ -88,8 +88,9 @@ nodes:
         norms:
           - modality: permitted
             action: start
-            condition: precheck_complete
-        facts: [precheck_complete]
+            condition: {fact_id: precheck_complete, value: true}
+        facts:
+          - {fact_id: precheck_complete, value: true}
       guard_purpose_declarations:
         - schema_version: worldguard.task_guard_purpose.v1
           declaration_id: declaration:mesh:norm-target:NormGuard

@@ -472,3 +472,21 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-24/models.log`) |
 
 Adaptations: 外部只读 probe 包装实际两类 owner 逐绑定计数，所有 #selector 均执行且 whole-file 均不执行；三套便携报告均 PASS True 且无 census/dna 字段。blueprint.py 实际 8991 行，未为匹配文档 8984 行而改代码。作者脚本两次内存转换因 AST/签名完整性断言停止，未写源码或启动验收；修正后成功应用。地图仅余三处旧描述按 WG35 统一更新。
+
+### WG-25: 修好 README 里的网格示例 basic_mesh.yaml（现在返回 GAP），并加测试
+
+Status: completed.
+
+修正 README 网格示例的 NormGuard 条件与事实为布尔结构，保留原生规范判断。修前真实 GAP/exit1，修后便携 PASS/exit0；4 项示例、311 项完整测试和 6 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `pre-fix` | 1 | } (`WG-25/pre-fix.log`) |
+| `portable` | 0 | (no output) (`WG-25/portable.log`) |
+| `skill-examples` | 0 | 4 passed in 0.73s (`WG-25/skill-examples.log`) |
+| `change` | 0 | run: python -m pytest -q tests/test_skill_examples.py (`WG-25/change.log`) |
+| `pytest` | 0 | 311 passed in 37.70s (`WG-25/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-25/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-25/models.log`) |
+
+Adaptations: 额外保留修前实际 CLI JSON（pre-fix.log），没有以改松 NormGuard 取得通过。
