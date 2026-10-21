@@ -4,6 +4,7 @@ import ast
 import hashlib
 import json
 import math
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field, fields, replace
 from datetime import datetime, timezone
@@ -30,6 +31,20 @@ class ProviderStatus(StrEnum):
 
 
 NORM_MODALITIES = frozenset({"permitted", "obligatory", "forbidden", "prohibited"})
+
+
+def _event_time_key(value: Any) -> tuple[int, Any]:
+    """Order event times numerically (t9 before t10) and ISO date-times chronologically."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return (0, float(value))
+    text = str(value if value is not None else "").strip()
+    match = re.fullmatch(r"[A-Za-z_]*(-?\d+(?:\.\d+)?)", text)
+    if match:
+        return (0, float(match.group(1)))
+    try:
+        return (1, datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp())
+    except ValueError:
+        return (2, text)
 
 
 def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
@@ -528,7 +543,7 @@ def _event(contract: GuardContract):
         ]
         if not applicable:
             continue
-        for event in sorted(applicable, key=lambda item: str(item.get("at", ""))):
+        for event in sorted(applicable, key=lambda item: _event_time_key(item.get("at", ""))):
             rollout_steps += 1
             observed_timepoints.add(str(event.get("at")))
             event_id = str(event.get("event_id"))
@@ -582,7 +597,7 @@ def _event(contract: GuardContract):
         "evaluated_states": len(states),
         "evaluated_transition_specs": len(transitions),
         "rollout_steps": rollout_steps,
-        "observed_timepoints": sorted(observed_timepoints),
+        "observed_timepoints": sorted(observed_timepoints, key=_event_time_key),
         "observed_variable_timepoints": variable_timepoints,
         "executed_scenario_ids": executed_scenarios,
         "executed_holdout_scenario_ids": executed_holdouts,

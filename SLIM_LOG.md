@@ -132,3 +132,19 @@ Minimal contracts now default contract_id to claim_id and missing model_version 
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-06/map.log`) |
 
 Adaptations: None; reference purpose and implementation retained.
+
+### WG-07: EventGuard 按真实时间顺序推演事件（t9 在 t10 之前）
+
+Status: completed.
+
+Semantic EventGuard orders numeric/prefixed-numeric times and ISO date-times chronologically, including observed_timepoints. The real t9 lock / t10 unlock regression now ends unlocked and reports t9 before t10. Structural EventGuard and mesh time parsing remain unchanged; bound the new ordinary test to the existing semantic core owner.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | mirror-ok (`WG-07/mirror.log`) |
+| `focused` | 0 | 95 passed in 0.65s (`WG-07/focused.log`) |
+| `pytest` | 0 | 379 passed in 39.93s (`WG-07/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-07/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-07/models.log`) |
+
+Adaptations: None; reference purpose and implementation retained.

@@ -89,9 +89,10 @@
         "worldguard"
       ],
       "tests": [
+        "tests/test_claim_derived_coverage.py",
         "tests/test_contracts.py",
-        "tests/test_ledgers.py",
-        "tests/test_claim_derived_coverage.py"
+        "tests/test_event_time_order.py",
+        "tests/test_ledgers.py"
       ],
       "models": [],
       "status": "confirmed",
