@@ -371,3 +371,184 @@ def scenarios() -> tuple[Scenario, ...]:
 
 
 __all__ = ["INVARIANTS", "build_workflow", "scenarios"]
+
+
+# Contract: what this model is about in the real code, its known-bad variants, and the replay on that code.
+
+from pathlib import Path  # noqa: E402
+import sys  # noqa: E402
+import tempfile  # noqa: E402
+
+from flowguard.explorer import Explorer  # noqa: E402
+
+MODEL_ID = "task_local_revision"
+COMPONENTS = ["worldguard.revision"]
+ROOT = Path(__file__).resolve().parents[2]
+IMPLEMENTED_BY = {
+    "ValidateRevisionEvidence": "worldguard/task_local_revision.py:evaluate_candidate_world_revision",
+    "DecideTaskLocalTerminal": "worldguard/task_local_revision.py:evaluate_candidate_world_revision",
+}
+TESTED_BY = {
+    "task_local_closure_requires_current_typed_evidence": [
+        "tests/test_task_local_revision.py:test_candidate_closes_only_with_current_depth_and_independent_holdout",
+        "tests/test_task_local_revision.py:test_holdout_alias_or_construction_reuse_rejects_candidate",
+    ],
+    "task_local_open_native_gap_never_closes": [
+        "tests/test_task_local_revision.py:test_native_depth_gap_is_derived_and_forces_continuation",
+        "tests/test_task_local_revision.py:test_no_raw_gap_but_unlicensed_native_receipt_cannot_close",
+    ],
+    "fact_activation_returns_to_same_task_owner": [
+        "tests/test_fact_revision.py:test_fact_activation_cannot_claim_model_closed_for_task",
+    ],
+}
+SAFE = tuple(scenario for scenario in scenarios() if scenario.expected.expected_status == "ok")
+SAFE_INPUTS = tuple(dict.fromkeys(request for scenario in SAFE for request in scenario.external_input_sequence))
+REQUIRED_LABELS = tuple(dict.fromkeys(label for scenario in SAFE for label in scenario.expected.required_trace_labels))
+
+
+def _explorer(blocks, inputs=SAFE_INPUTS, invariant_names=None, labels=REQUIRED_LABELS) -> Explorer:
+    return Explorer(
+        workflow=Workflow(tuple(blocks), name="worldguard_task_local_revision"),
+        initial_states=(RevisionState(),),
+        external_inputs=tuple(inputs),
+        invariants=tuple(item for item in INVARIANTS if invariant_names is None or item.name in invariant_names),
+        max_sequence_length=1,
+        required_labels=tuple(labels),
+    )
+
+
+def build_explorer() -> Explorer:
+    """The intended design on every safe scenario input; every label those scenarios require must be reached."""
+    return _explorer(build_workflow().blocks)
+
+
+class _ClosesWithOpenGap(DecideTaskLocalTerminal):
+    """Known bad: the decision closes the task although a native gap is still open."""
+
+    def apply(self, request, state):
+        for result in super().apply(request, state):
+            if result.new_state.open_native_gap:
+                result = replace(result, new_state=replace(result.new_state, task_closed=True))
+            yield result
+
+
+class _AdmitsReusedHoldout(ValidateRevisionEvidence):
+    """Known bad: the evidence check admits a holdout that reuses construction evidence."""
+
+    def apply(self, request, state):
+        for result in super().apply(replace(request, holdout_independent=True), state):
+            yield replace(result, new_state=replace(result.new_state, holdout_independent=request.holdout_independent))
+
+
+def broken_variants() -> dict[str, Explorer]:
+    """Known-bad variants, each explored with only the invariant that must catch it.
+
+    Two replace a block of the design; the scenarios that expect a violation (a caller self-report, a fact
+    activation that closes the task) are known-bad inputs to the design itself.
+    """
+    def swapped(broken):
+        return tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
+
+    variants = {
+        "closes_with_open_gap": _explorer(
+            swapped(_ClosesWithOpenGap()), invariant_names={"task_local_open_native_gap_never_closes"}, labels=()),
+        "admits_reused_holdout": _explorer(
+            swapped(_AdmitsReusedHoldout()), invariant_names={"task_local_closure_requires_current_typed_evidence"}, labels=()),
+    }
+    for scenario in scenarios():
+        if scenario.expected.expected_status == "violation":
+            variants[scenario.name] = _explorer(
+                build_workflow().blocks, inputs=scenario.external_input_sequence,
+                invariant_names=set(scenario.expected.expected_violation_names), labels=())
+    return variants
+
+
+class ReplayReport:
+    """Conformance result: how many model cases ran on the real code, and the mismatches."""
+
+    def __init__(self, checked: int, mismatches: list[str]) -> None:
+        self.checked = checked
+        self.mismatches = tuple(mismatches)
+        self.ok = not self.mismatches
+
+    def format_text(self, max_examples: int | None = None) -> str:
+        lines = [f"conformance: {self.checked - len(self.mismatches)}/{self.checked} model cases match the real code"]
+        return "\n".join(lines + [f"  mismatch: {line}" for line in self.mismatches[:max_examples]])
+
+
+# Model terminal -> the terminal_reason the real code reports for it; they differ only for a reused holdout.
+CODE_TERMINAL = {"holdout_not_independent": "candidate_rejected"}
+
+
+def _model_terminal(request) -> str:
+    state = RevisionState()
+    for block in build_workflow().blocks:
+        state = next(iter(block.apply(request, state))).new_state
+    return state.terminal_reason
+
+
+def conformance() -> ReplayReport:
+    """Drive evaluate_candidate_world_revision with one real case per model terminal."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from tests.test_task_local_revision import _fp, _model, _native_source, _revision
+    from worldguard.task_local_revision import CandidateWorldModelRevision, evaluate_candidate_world_revision
+
+    def run(folder: Path, change) -> dict:
+        base = _model(folder, "v1.json", '{"version": 1}')
+        candidate = _model(folder, "v2.json", '{"version": 2}')
+        row = change(folder, base, candidate)
+        return evaluate_candidate_world_revision(CandidateWorldModelRevision.from_dict(row), base_dir=folder)
+
+    def stalled(folder, base, candidate):
+        _revision(folder, base, candidate, native_gaps=["transition:missing-edge"])
+        gaps = sorted("native:" + gap for gap in _native_source(folder, candidate)["predictive_gaps"])
+        return _revision(folder, base, candidate, native_gaps=["transition:missing-edge"], iteration=1,
+                         prior_gap_ids=gaps, prior_gap_fingerprints=[_fp(gaps)])
+
+    def external(folder, base, candidate):
+        row = _revision(folder, base, candidate, native_gaps=["holdout:unseen-regime"])
+        row["external_inputs"] = [{
+            "input_id": "external:holdout-observation", "owner_id": "owner:lab",
+            "reason": "the required regime is not observable with local tools",
+            "blocked_gap_ids": sorted("native:" + gap for gap in _native_source(folder, candidate)["predictive_gaps"]),
+            "affected_claim_ids": ["claim:future-regime"],
+        }]
+        return row
+
+    def reused_holdout(folder, base, candidate):
+        row = _revision(folder, base, candidate)
+        row["candidate_build_evidence_fingerprints"].append(
+            row["revalidations"][1]["empirical_comparison"]["observation_evidence_fingerprint"])
+        return row
+
+    request = RevisionRequest
+    cases = (
+        (request(), lambda f, b, c: _revision(f, b, c)),
+        (request(has_native_gap=True), lambda f, b, c: _revision(f, b, c, native_gaps=["branch:new-regime"])),
+        (request(predictive_licensed=False), lambda f, b, c: _revision(f, b, c, licensed=False)),
+        (request(has_native_gap=True, gap_changed=False, iteration=1), stalled),
+        (request(has_native_gap=True, iteration=1, max_iterations=2), lambda f, b, c: _revision(
+            f, b, c, native_gaps=["state:unknown"], iteration=1, max_iterations=2,
+            prior_gap_ids=["native:state:previous-gap"], prior_gap_fingerprints=[_fp(["native:state:previous-gap"])])),
+        (request(has_native_gap=True, external_boundary_exact=True), external),
+        (request(holdout_independent=False), reused_holdout),
+    )
+    mismatches = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for index, (model_request, change) in enumerate(cases):
+            folder = Path(tmp) / f"case-{index}"
+            folder.mkdir()
+            observed = run(folder, change)["terminal_reason"]
+            model_reason = _model_terminal(model_request)
+            expected = CODE_TERMINAL.get(model_reason, model_reason)
+            if observed != expected:
+                mismatches.append(f"case {index}: model {model_reason!r} means code {expected!r}, real code {observed!r}")
+    return ReplayReport(len(cases), mismatches)
+
+
+if __name__ == "__main__":
+    print(build_explorer().explore().format_text())
+    for name, variant in broken_variants().items():
+        print(f"known-bad {name}: {'caught' if not variant.explore().ok else 'MISSED'}")
+    print(conformance().format_text())

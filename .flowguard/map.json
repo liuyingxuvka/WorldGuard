@@ -274,7 +274,7 @@
         "tests/test_fact_revision.py"
       ],
       "models": [
-        ".flowguard/task_local_revision/run_checks.py",
+        ".flowguard/models/worldguard_task_local_revision_model.py",
         ".flowguard/fact_revision/run_checks.py"
       ],
       "status": "confirmed",

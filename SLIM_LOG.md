@@ -1071,3 +1071,24 @@ Canonical version fields agree at 0.7.16 and exactly one matching current change
 | `pytest` | 0 | 281 passed in 26.55s (`WG-54/pytest.log`) |
 
 Adaptations: User version override takes precedence over document0.8.0/newFG0.71.0: this release is WorldGuard0.7.16 with FlowGuard0.70.7, dated2026-10-21. No tag, push or publication performed.
+
+### WG-55: task_local_revision 自模型改成合约模型：探索安全输入、四个已知坏变体、在真实修订代码上逐个终态重放
+
+Status: completed.
+
+Task-local revision is now a FlowGuard contract model, preserving the original15068 model bytes exactly, all9 safe inputs/labels, four targeted known-bad variants, anchors and7 native terminal replays. Genuine7/7 passes; one wrong valid nonclosure label is rejected6/7; genuine stagnation corruption is rejected6/7 by bothFG versions and restored exactly. Full281 passed, bothFG maps0/0 and releases3/3, trackedFGfiles7.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-55/read.log`) |
+| `contract-model` | 0 | conformance: 7/7 model cases match the real code (`WG-55/contract-model.log`) |
+| `wrong-nonclosure` | 0 | all product/model source bytes unchanged; in-memory subclass only (`WG-55/wrong-nonclosure.log`) |
+| `native-corruption` | 0 | native owner restored byte-for-byte (`WG-55/native-corruption.log`) |
+| `change` | 0 | ARCH WARN large_file worldguard.revision: worldguard/task_local_revision.py: 1096 LOC (limit 800) (`WG-55/change.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-55/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-55/release.log`) |
+| `original-model-preserved` | 0 | } (`WG-55/original-model-preserved.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-55/new-fg.log`) |
+| `pytest` | 0 | 281 passed in 24.13s (`WG-55/pytest.log`) |
+
+Adaptations: The WG43 strict per-terminal comparison and sole holdout alias survive conversion; the external in-memory wrong-nonclosure control adds no product/model mutation. Native corruption restored by exact saved bytes, never global restore.
