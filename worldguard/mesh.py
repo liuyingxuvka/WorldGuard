@@ -26,8 +26,6 @@ from .semantic import (
     aggregate_provider_status,
     aggregate_semantic_status,
     fingerprint_mesh,
-    _semantic_consumed_inputs,
-    _variable_timepoint_map,
 )
 from .status import GuardStatus, aggregate_statuses, coerce_status
 
@@ -1877,121 +1875,6 @@ def _semantic_guard_status(status: SemanticStatus) -> GuardStatus:
     return GuardStatus.GAP
 
 
-def _native_obligation_observations(
-    *,
-    semantic_receipts: list[SemanticExecutionReceipt],
-    quantitative_coverage: dict[str, Any],
-    claim_atoms: list[dict[str, Any]],
-    required_guards: dict[str, list[str]],
-) -> list[dict[str, Any]]:
-    """Preserve exact WorldGuard-native content behind every depth obligation."""
-
-    observations: list[dict[str, Any]] = []
-
-    def add(
-        native_object_id: str,
-        obligation_ids: list[str],
-        content: dict[str, Any],
-    ) -> None:
-        observations.append(
-            {
-                "native_object_id": native_object_id,
-                "target_obligation_ids": obligation_ids,
-                "evidence_ref": f"worldguard:{native_object_id}",
-                "evidence_sha256": fingerprint_mesh(content),
-                "content": content,
-            }
-        )
-
-    for receipt in semantic_receipts:
-        add(
-            f"semantic-child:{receipt.node_id}:{receipt.guard}",
-            ["obligation:worldguard-semantic-universe"],
-            {"semantic_receipt": receipt.to_dict()},
-        )
-
-    for raw_node in quantitative_coverage.get("per_model_node_results", []):
-        if not isinstance(raw_node, Mapping):
-            continue
-        node_id = str(raw_node.get("model_node_id", ""))
-        timepoint_coverage = raw_node.get("timepoint_coverage", {})
-        if node_id and isinstance(timepoint_coverage, Mapping):
-            content = {
-                "model_node_id": node_id,
-                "timepoint_coverage": dict(timepoint_coverage),
-            }
-            add(
-                f"timepoints:{node_id}",
-                [
-                    "obligation:worldguard-timepoint-strata-depth",
-                    "obligation:worldguard-receipt-freshness",
-                ],
-                content,
-            )
-        for raw_variable in raw_node.get("per_variable_timepoint_results", []):
-            if not isinstance(raw_variable, Mapping):
-                continue
-            variable_id = str(raw_variable.get("variable_or_signal_id", ""))
-            variable_timepoints = raw_variable.get("timepoint_coverage", {})
-            if node_id and variable_id and isinstance(variable_timepoints, Mapping):
-                add(
-                    f"timepoints:{node_id}:variable:{variable_id}",
-                    [
-                        "obligation:worldguard-timepoint-strata-depth",
-                        "obligation:worldguard-receipt-freshness",
-                    ],
-                    {
-                        "model_node_id": node_id,
-                        "variable_or_signal_id": variable_id,
-                        "timepoint_coverage": dict(variable_timepoints),
-                    },
-                )
-
-    scenario_fields = {
-        key: value
-        for key, value in quantitative_coverage.items()
-        if "scenario" in key or "holdout" in key
-    }
-    add(
-        "scenario-holdout-portfolio",
-        ["obligation:worldguard-scenario-holdout-depth"],
-        scenario_fields,
-    )
-    predictive_axis_fields = {
-        key: value
-        for key, value in quantitative_coverage.items()
-        if any(
-            token in key
-            for token in (
-                "state",
-                "transition",
-                "event",
-                "fluent",
-                "branch",
-                "perturbation",
-                "intervention",
-                "counterfactual",
-                "horizon",
-            )
-        )
-    }
-    add(
-        "predictive-axes",
-        ["obligation:worldguard-predictive-axes"],
-        predictive_axis_fields,
-    )
-    for atom in claim_atoms:
-        node_id = str(atom.get("node_id", ""))
-        atom_id = str(atom.get("atom_id", ""))
-        add(
-            f"claim-route:{node_id}:{atom_id}",
-            ["obligation:worldguard-claim-routes"],
-            {
-                "claim_atom": atom,
-                "required_guards": list(required_guards.get(node_id, [])),
-            },
-        )
-    return observations
 
 
 def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, Any]) -> dict[str, Any]:
@@ -2022,61 +1905,8 @@ def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, An
     return {"mesh_fingerprint": fingerprint, "coverage_fingerprint": coverage_fingerprint, "claim_atoms": claim_atoms}
 
 
-def validate_semantic_receipt_for_mesh(source: Mapping[str, Any], mesh: ModelMeshContract) -> SemanticExecutionReceipt:
-    receipt = SemanticExecutionReceipt.from_dict(source)
-    node = next((node for node in mesh.nodes if node.model_id == receipt.node_id), None)
-    if node is None or node.contract is None or receipt.guard not in derive_required_guards(node.contract.claim):
-        raise ValueError("semantic source does not belong to a current candidate node/Guard")
-    variable_timepoints = _variable_timepoint_map(node.contract) if receipt.guard in {"EventGuard", "CausalGuard"} else {}
-    expected = _semantic_consumed_inputs(receipt.guard, node.contract, variable_timepoints=variable_timepoints)
-    if receipt.status not in {SemanticStatus.NOT_RUN, SemanticStatus.BOUNDARY_ONLY} and receipt.consumed_inputs != expected:
-        raise ValueError("semantic source consumed inputs do not match the current candidate")
-    return receipt
 
 
-def validate_native_depth_receipt(source: Mapping[str, Any], mesh: ModelMeshContract) -> NativeDepthReceipt:
-    """Validate a reusable native receipt against its exact current mesh inputs."""
-    receipt = NativeDepthReceipt.from_dict(source)
-    state = _coverage_route_state(mesh)
-    identity = _native_depth_identity(mesh, state)
-    expected = {
-        **identity, "mesh_id": mesh.mesh_id, "run_id": mesh.run_id,
-        "predictive_profile": mesh.semantic_coverage.profile,
-        "required_guards": state["required_guards"], "declared_guards": state["declared_guards"],
-        "missing_guards": state["missing_guards"], "expected_model_nodes": state["expected_nodes"],
-        "discovered_model_nodes": state["discovered_nodes"], "declared_model_nodes": state["declared_nodes"],
-        "excluded_model_nodes": state["excluded_models"], "model_node_reconciliation_gaps": state["reconciliation_gaps"],
-        "expected_semantic_children": state["expected_children"],
-    }
-    if any(source[key] != value for key, value in expected.items()):
-        raise ValueError("native depth source does not bind the current candidate mesh and coverage")
-    if not receipt.semantic_receipts:
-        raise ValueError("native depth source lacks reusable native semantic execution receipts")
-    executions = [validate_semantic_receipt_for_mesh(row, mesh) for row in receipt.semantic_receipts]
-    children = [f"{row.node_id}:{row.guard}" for row in executions]
-    if len(children) != len(set(children)) or set(children) != set(receipt.expected_semantic_children):
-        raise ValueError("native depth source semantic inventory is incomplete or duplicated")
-    gaps, licensed, quantitative = _predictive_assessment(mesh, state, executions)
-    if (receipt.predictive_gaps != gaps or receipt.predictive_claim_licensed != licensed
-            or receipt.quantitative_coverage != quantitative):
-        raise ValueError("native depth source coverage/license differs from native semantic outputs")
-    executed = [f"{row.node_id}:{row.guard}" for row in executions if row.status not in {SemanticStatus.NOT_RUN, SemanticStatus.BOUNDARY_ONLY}]
-    providers = {f"{row.node_id}:{row.guard}": row.provider_status.value for row in executions}
-    for row in receipt.skipped_children:
-        providers.setdefault(str(row.get("child_id", "")), "NOT_EXECUTED")
-    obligations = _native_obligation_observations(semantic_receipts=executions, quantitative_coverage=quantitative, claim_atoms=identity["claim_atoms"], required_guards=state["required_guards"])
-    if (receipt.executed_semantic_children != executed or receipt.provider_states != providers
-            or receipt.bindings != [row.binding.to_dict() for row in executions]
-            or receipt.native_obligation_evidence != obligations):
-        raise ValueError("native depth source execution projections are inconsistent")
-    summary = [row for row in receipt.findings if row.get("code") == "SEMANTIC_ROLLOUT_SUMMARY"]
-    if len(summary) != 1 or summary[0].get("predictive_gaps") != gaps or summary[0].get("predictive_claim_licensed") is not licensed:
-        raise ValueError("native depth summary and derived predictive license disagree")
-    if licensed and (any(row.get("status") != "PASS" for row in receipt.structural_checks)
-                     or {row.get("node_id") for row in receipt.structural_checks} != set(receipt.expected_model_nodes)
-                     or summary[0].get("structural_status") != "PASS"):
-        raise ValueError("native depth license requires complete passing structural checks")
-    return receipt
 
 
 def _depth_receipt(
@@ -2174,12 +2004,6 @@ def _depth_receipt(
         child_id = str(row.get("child_id", ""))
         if child_id:
             provider_states.setdefault(child_id, "NOT_EXECUTED")
-    bindings = [
-        {
-            **receipt.binding.to_dict(),
-        }
-        for receipt in semantic_receipts
-    ]
     identity = _native_depth_identity(mesh, coverage_state)
     fingerprint = identity["mesh_fingerprint"]
     coverage_fingerprint = identity["coverage_fingerprint"]
@@ -2198,7 +2022,6 @@ def _depth_receipt(
         structural_checks=structural_checks,
         executed_semantic_children=executed,
         provider_states=provider_states,
-        bindings=bindings,
         findings=semantic_findings,
         skipped_children=skipped,
         claim_boundary=boundary,
@@ -2220,14 +2043,7 @@ def _depth_receipt(
         expected_semantic_children=coverage_state["expected_children"],
         quantitative_coverage=quantitative_coverage,
         predictive_gaps=predictive_gaps,
-        native_obligation_evidence=_native_obligation_observations(
-            semantic_receipts=semantic_receipts,
-            quantitative_coverage=quantitative_coverage,
-            claim_atoms=claim_atoms,
-            required_guards=coverage_state["required_guards"],
-        ),
         predictive_claim_licensed=predictive_licensed,
-        semantic_receipts=[receipt.to_dict() for receipt in semantic_receipts],
     )
 
 

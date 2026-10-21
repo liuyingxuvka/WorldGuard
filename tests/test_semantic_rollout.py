@@ -188,8 +188,4 @@ def test_native_depth_receipt_binds_model_checks_executors_and_claim_boundary():
     assert len(receipt.mesh_fingerprint) == 64
     assert receipt.executed_semantic_children == ["event-node:EventGuard"]
     assert receipt.structural_checks == [{"node_id": "event-node", "status": "PASS"}]
-    assert receipt.bindings[0]["possible_consumed_input_fields"]
-    assert receipt.bindings[0]["output_fields"]
-    assert receipt.bindings[0]["supported_semantics"]
-    assert receipt.bindings[0]["unsupported_boundary"]
     assert "Bounded semantic rollout" in receipt.claim_boundary

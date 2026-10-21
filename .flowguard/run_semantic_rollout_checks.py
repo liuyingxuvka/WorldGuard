@@ -49,7 +49,6 @@ def _runtime_probe() -> dict[str, object]:
         and report.semantic_status != SemanticStatus.PASS
         and report.status.value != "PASS"
         and receipt is not None
-        and bool(receipt.bindings)
         and bool(receipt.findings)
         and bool(receipt.claim_boundary)
     )

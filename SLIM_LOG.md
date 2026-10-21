@@ -386,3 +386,22 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-20/models.log`) |
 
 Adaptations: 参考片段跨节点合并 scope 会丢失现有 per_model_node 边界；沿用现有按节点 scope 覆盖并匹配 fresh receipt.node_id，两个有限正反例均断言只执行一次。负例保留原生 PASS/license 与全局并集，仅本节点缺 holdout 输出，确由 semantic_role_scope_not_executed 拒绝。首次作者脚本在测试迁移前断言停止造成 collection failure，保留原记录；完成迁移后通过。实际测试总数比文档多 5（WG06 3＋本项 2）。
+
+### WG-21: 网格深度报告：删除收据回放、逐义务哈希和重复的语义收据
+
+Status: completed.
+
+深度报告保留真实模型检查、预测缺口、许可及当前内容身份，移除无调用者的收据回放入口和重复绑定/逐义务哈希/语义收据拷贝。46 项 focused、340 项完整测试及 6 个模型通过，basic_mesh 输出 33425 字节。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-21/mirror.log`) |
+| `rollout` | 0 | 46 passed in 0.48s (`WG-21/rollout.log`) |
+| `residue` | 0 | (no output) (`WG-21/residue.log`) |
+| `example` | 0 | 33425 (`WG-21/example.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.core: 2 identical bodies (115 AST nodes) in ['worldguard.core']: skills/worldguard/runtime/worldguard/status.py:aggregate_statuses, worldguard/status.py:aggregate_statuses (`WG-21/change.log`) |
+| `pytest` | 0 | 340 passed in 34.12s (`WG-21/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-21/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-21/models.log`) |
+
+Adaptations: 随删除 reader 一并移除其独占的两个未使用导入；未改预测/时间深度/覆盖核对算法或剩余深度字段。

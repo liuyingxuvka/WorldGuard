@@ -6,7 +6,7 @@ import json
 import math
 import re
 from collections import defaultdict
-from dataclasses import dataclass, field, fields, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any, Callable, Mapping
@@ -97,27 +97,6 @@ class SemanticExecutionReceipt:
     outputs: dict[str, Any] = field(default_factory=dict)
     skipped_reason: str = ""
 
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "SemanticExecutionReceipt":
-        """Read an existing native execution, not an arbitrary PASS envelope."""
-        if not isinstance(data, Mapping) or set(data) != {item.name for item in fields(cls)}:
-            raise ValueError("semantic source must have the complete native producer field set")
-        binding = data["binding"]
-        registration = EXECUTOR_REGISTRY.get(data["guard"])
-        if registration is None or binding != registration.binding.to_dict():
-            raise ValueError("semantic source binding is not the current native executor")
-        for key in ("node_id", "guard"):
-            if not isinstance(data[key], str) or not data[key].strip():
-                raise ValueError(f"semantic source {key} must be non-empty text")
-        if not isinstance(data["findings"], list) or any(not isinstance(row, dict) for row in data["findings"]):
-            raise ValueError("semantic source findings must be native rows")
-        if any(not isinstance(data[key], dict) for key in ("consumed_inputs", "outputs")) or not isinstance(data["skipped_reason"], str):
-            raise ValueError("semantic source inputs/outputs must be native mappings")
-        status = SemanticStatus(data["status"])
-        provider = ProviderStatus(data["provider_status"])
-        if status == SemanticStatus.PASS and (provider != ProviderStatus.AVAILABLE or data["skipped_reason"] or data["findings"]):
-            raise ValueError("semantic PASS needs an available, executed native provider")
-        return cls(**{**dict(data), "binding": registration.binding, "status": status, "provider_status": provider})
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -142,7 +121,6 @@ class NativeDepthReceipt:
     structural_checks: list[dict[str, Any]]
     executed_semantic_children: list[str]
     provider_states: dict[str, str]
-    bindings: list[dict[str, Any]]
     findings: list[dict[str, Any]]
     skipped_children: list[dict[str, Any]]
     claim_boundary: str
@@ -164,46 +142,8 @@ class NativeDepthReceipt:
     expected_semantic_children: list[str] = field(default_factory=list)
     quantitative_coverage: dict[str, Any] = field(default_factory=dict)
     predictive_gaps: list[str] = field(default_factory=list)
-    native_obligation_evidence: list[dict[str, Any]] = field(default_factory=list)
     predictive_claim_licensed: bool = False
-    semantic_receipts: list[dict[str, Any]] = field(default_factory=list)
 
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "NativeDepthReceipt":
-        """Read the complete native producer shape, without executing a mesh."""
-        expected = {item.name for item in fields(cls)}
-        if not isinstance(data, Mapping) or set(data) != expected:
-            raise ValueError("native depth source must have the complete current producer field set")
-        if data["receipt_version"] != "worldguard.native_depth.v2":
-            raise ValueError("native execution-depth receipt_version is not current")
-        for key in ("receipt_id", "mesh_id", "run_id", "claim_boundary", "generated_at"):
-            if not isinstance(data[key], str) or not data[key].strip():
-                raise ValueError(f"native depth {key} must be non-empty text")
-        for key in ("mesh_fingerprint", "coverage_fingerprint"):
-            value = data[key]
-            if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
-                raise ValueError(f"native depth {key} must be a lowercase SHA-256")
-        if data["predictive_profile"] not in {"bounded", "predictive"} or not isinstance(data["predictive_claim_licensed"], bool):
-            raise ValueError("native depth profile or predictive license is invalid")
-        text_lists = {"executed_semantic_children", "expected_model_nodes", "discovered_model_nodes", "declared_model_nodes", "model_node_reconciliation_gaps", "executed_model_nodes", "expected_semantic_children", "predictive_gaps"}
-        row_lists = {"structural_checks", "bindings", "findings", "skipped_children", "claim_atoms", "excluded_model_nodes", "skipped_model_nodes", "native_obligation_evidence", "semantic_receipts"}
-        for key in text_lists | row_lists:
-            value = data[key]
-            expected_type = str if key in text_lists else dict
-            if not isinstance(value, list) or any(not isinstance(row, expected_type) for row in value):
-                raise ValueError(f"native depth {key} has an invalid producer shape")
-            if key in text_lists and (any(not row.strip() for row in value) or len(value) != len(set(value))):
-                raise ValueError(f"native depth {key} must contain distinct non-empty identities")
-        for key in ("required_guards", "declared_guards", "missing_guards"):
-            if not isinstance(data[key], dict) or any(not isinstance(node, str) or not isinstance(guards, list) or any(not isinstance(guard, str) for guard in guards) for node, guards in data[key].items()):
-                raise ValueError(f"native depth {key} has an invalid producer shape")
-        if not isinstance(data["provider_states"], dict) or any(value not in {item.value for item in ProviderStatus} | {"NOT_EXECUTED"} for value in data["provider_states"].values()):
-            raise ValueError("native depth provider states are invalid")
-        if not isinstance(data["quantitative_coverage"], dict) or not data["quantitative_coverage"]:
-            raise ValueError("native depth quantitative_coverage must be a producer mapping")
-        if data["predictive_claim_licensed"] and data["predictive_gaps"]:
-            raise ValueError("native depth cannot license a predictive claim while gaps remain")
-        return cls(**dict(data))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -214,7 +154,6 @@ class NativeDepthReceipt:
             "structural_checks": self.structural_checks,
             "executed_semantic_children": self.executed_semantic_children,
             "provider_states": self.provider_states,
-            "bindings": self.bindings,
             "findings": self.findings,
             "skipped_children": self.skipped_children,
             "claim_boundary": self.claim_boundary,
@@ -236,9 +175,7 @@ class NativeDepthReceipt:
             "expected_semantic_children": self.expected_semantic_children,
             "quantitative_coverage": self.quantitative_coverage,
             "predictive_gaps": self.predictive_gaps,
-            "native_obligation_evidence": self.native_obligation_evidence,
             "predictive_claim_licensed": self.predictive_claim_licensed,
-            "semantic_receipts": self.semantic_receipts,
         }
 
 

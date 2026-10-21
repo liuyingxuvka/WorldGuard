@@ -333,25 +333,6 @@ def test_complete_supported_predictive_fixture_gets_mesh_bound_license() -> None
     assert report.depth_receipt.quantitative_coverage["executed_scenario_count"] == 1
     assert report.depth_receipt.quantitative_coverage["expected_holdout_scenario_count"] == 1
     assert report.depth_receipt.quantitative_coverage["executed_holdout_scenario_count"] == 1
-    observations = report.depth_receipt.native_obligation_evidence
-    assert observations
-    assert {
-        "obligation:worldguard-semantic-universe",
-        "obligation:worldguard-timepoint-strata-depth",
-        "obligation:worldguard-scenario-holdout-depth",
-        "obligation:worldguard-predictive-axes",
-        "obligation:worldguard-receipt-freshness",
-        "obligation:worldguard-claim-routes",
-    } <= {
-        obligation_id
-        for observation in observations
-        for obligation_id in observation["target_obligation_ids"]
-    }
-    for observation in observations:
-        assert observation["native_object_id"]
-        assert str(observation["evidence_ref"]).startswith("worldguard:")
-        assert len(observation["evidence_sha256"]) == 64
-        assert observation["evidence_sha256"] == observation["evidence_sha256"].lower()
 
 
 def _axis_disposition(mesh: dict, axis_id: str) -> dict:
@@ -549,26 +530,6 @@ def test_not_applicable_axis_blocks_when_runtime_still_observes_that_domain() ->
     } <= set(report.depth_receipt.predictive_gaps)
 
 
-def test_native_obligation_hash_tracks_exact_semantic_input() -> None:
-    baseline = run_model_mesh(_predictive_mesh()).depth_receipt
-    changed_mesh = deepcopy(_predictive_mesh())
-    changed_mesh["nodes"][0]["contract"]["inputs"]["events"][0]["action"] = (
-        "changed exact event action"
-    )
-    changed = run_model_mesh(changed_mesh).depth_receipt
-
-    assert baseline is not None and changed is not None
-    native_object_id = "semantic-child:world:EventGuard"
-    baseline_row = next(
-        item for item in baseline.native_obligation_evidence
-        if item["native_object_id"] == native_object_id
-    )
-    changed_row = next(
-        item for item in changed.native_obligation_evidence
-        if item["native_object_id"] == native_object_id
-    )
-    assert baseline_row["evidence_ref"] == changed_row["evidence_ref"]
-    assert baseline_row["evidence_sha256"] != changed_row["evidence_sha256"]
 
 
 def test_long_horizon_representative_timepoints_cover_floor_ratio_and_phases() -> None:
