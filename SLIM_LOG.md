@@ -896,3 +896,22 @@ Status: completed.
 | `native-corruption` | 0 | {"missing_holdout_guard_corruption_exit": 1, "exact_restored_sha256": "177e54330bb97314d3da3cb0f19f4626a615a6a44450839bdbc2bdd70abe9028"} (`WG-45/native-corruption.log`) |
 
 Adaptations: 新FG按用户版本覆盖为0.70.7，真实非editable安装冻结bc8c519源到独立Python3.11环境site-packages，pytest齐备；未用PYTHONPATH替代安装。旧0.70.6保持exact基线。修改前新FG真实5条dep_unused失败留存，WG43逐terminal匹配原样保持。
+
+### WG-46: 三个自模型各带两个必须失败的已知坏变体，证明不变量有牙齿
+
+Status: completed.
+
+三个模型各登记两个必须触发指定不变量的已知坏变体；安全输入上的设计探索通过。逐个关闭三个不变量后，运行器均exit1且显式指出对应missed variant，源字节恢复；272完整测试、新旧FG release3/3与map0/0。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-46/read.log`) |
+| `invariant-corruptions` | 0 | [{"invariant_disabled": "task-invariant", "runner_exit": 1, "missed_variant": "closes_with_open_gap", "exact_bytes_restored": true}, {"invariant_disabled": "fact-invariant", "runner_exit": 1, "missed_variant": "activates (`WG-46/invariant-corruptions.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-46/models.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-46/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-46/release.log`) |
+| `new-map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-46/new-map.log`) |
+| `new-release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-46/new-release.log`) |
+| `pytest` | 0 | 272 passed in 26.21s (`WG-46/pytest.log`) |
+
+Adaptations: 只扩展既有runner/模型owner，不改三份原始model.py场景/不变量；WG43逐terminal比较与WG45真实激活重放保留。

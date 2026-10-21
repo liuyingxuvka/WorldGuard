@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
 import sys
 
+from flowguard import Workflow
+from flowguard.explorer import Explorer
 from flowguard.review import review_scenarios
 
 
@@ -196,20 +199,61 @@ def native_conformance(model) -> dict:
     return {"ok": not findings, "cases": len(model.scenarios()), "findings": findings}
 
 
+def broken_variants(model) -> dict:
+    """Known-bad variants: name -> (broken block, invariants that must report a counterexample)."""
+
+    class ActivatesWithoutHoldout(model.ActivateFactRevision):
+        def apply(self, request, state):
+            for result in super().apply(replace(request, holdout_current=True), state):
+                yield replace(result, new_state=replace(result.new_state, holdout_current=request.holdout_current))
+
+    class ActivatesUnacknowledgedContradiction(model.ActivateFactRevision):
+        def apply(self, request, state):
+            for result in super().apply(replace(request, contradiction_acknowledged=True), state):
+                yield replace(result, new_state=replace(result.new_state, contradiction_acknowledged=request.contradiction_acknowledged))
+
+    return {
+        "activates_without_holdout": (ActivatesWithoutHoldout(), ("fact_revision_activation_is_evidence_bound",)),
+        "activates_unacknowledged_contradiction": (ActivatesUnacknowledgedContradiction(), ("fact_revision_surfaces_contradictions",)),
+    }
+
+
+def missed_variants(model) -> list[str]:
+    """Explore the intended design and every known-bad variant on the scenarios' safe inputs."""
+    inputs = tuple(dict.fromkeys(
+        request for scenario in model.scenarios() if scenario.expected.expected_status == "ok"
+        for request in scenario.external_input_sequence
+    ))
+
+    def explore(blocks, name):
+        return Explorer(workflow=Workflow(blocks, name=name), initial_states=(model.RevisionState(),),
+                        external_inputs=inputs, invariants=model.INVARIANTS, max_sequence_length=2).explore()
+
+    missed = [] if explore(model.build_workflow().blocks, "intended").ok else ["intended_design"]
+    for name, (broken, invariant_names) in broken_variants(model).items():
+        blocks = tuple(broken if isinstance(broken, type(block)) else block for block in model.build_workflow().blocks)
+        caught = {violation.invariant_name for violation in explore(blocks, name).violations}
+        if not set(invariant_names) <= caught:
+            missed.append(name)
+    return missed
+
+
 def main() -> int:
     model = _load_model()
     report = review_scenarios(model.scenarios())
     findings = _native_findings()
     conformance = native_conformance(model)
+    missed = missed_variants(model)
     print(report.format_text(max_counterexamples=8))
     print(
         json.dumps(
             {
                 "artifact_kind": "worldguard_fact_revision_flowguard_report",
-                "status": "pass" if report.ok and not findings and conformance["ok"] else "blocked",
+                "status": "pass" if report.ok and not findings and conformance["ok"] and not missed else "blocked",
                 "scenario_count": len(model.scenarios()),
                 "findings": findings,
                 "conformance": conformance,
+                "known_bad_variants": {"declared": sorted(broken_variants(model)), "missed": missed},
                 "claim_boundary": (
                     "The finite fact-revision workflow, with each scenario replayed once on the real preview and "
                     "activation code; it does not prove source truth."
@@ -219,7 +263,7 @@ def main() -> int:
             sort_keys=True,
         )
     )
-    return 0 if report.ok and not findings and conformance["ok"] else 1
+    return 0 if report.ok and not findings and conformance["ok"] and not missed else 1
 
 
 if __name__ == "__main__":

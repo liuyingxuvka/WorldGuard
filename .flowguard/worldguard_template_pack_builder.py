@@ -256,6 +256,56 @@ def terminal_predicate(current_input: object, state: State, trace: object) -> bo
     return isinstance(current_input, (Blocked, TemplateInstanceReady))
 
 
+class _AmbiguousSelectsFirst(SelectTemplatePack):
+    """Known bad: several matching candidates still select one of them."""
+
+    def apply(self, request: BuildRequest, state: State) -> Iterable[FunctionResult]:
+        for result in super().apply(request, state):
+            if result.new_state.selection_outcome == "ambiguous":
+                result = FunctionResult(
+                    SelectionReady(request, "selected"),
+                    replace(result.new_state, base_selected=True, candidate_selected=True),
+                    "multiple_candidates_blocked",
+                )
+            yield result
+
+
+class _NoMatchActivatesBase(SelectTemplatePack):
+    """Known bad: a request with no matching candidate still activates the shared base."""
+
+    def apply(self, request: BuildRequest, state: State) -> Iterable[FunctionResult]:
+        for result in super().apply(request, state):
+            if result.new_state.selection_outcome == "no_match":
+                result = replace(result, new_state=replace(result.new_state, base_selected=True))
+            yield result
+
+
+def broken_variants() -> dict[str, tuple[object, tuple[str, ...]]]:
+    """Known-bad variants: name -> (broken block, invariants that must report a counterexample)."""
+    return {
+        "ambiguous_selects_first": (_AmbiguousSelectsFirst(), ("ambiguity_never_constructs",)),
+        "no_match_activates_base": (_NoMatchActivatesBase(), ("no_match_never_constructs",)),
+    }
+
+
+def missed_variants() -> list[str]:
+    """Explore every known-bad variant; return the ones the invariants did not catch."""
+    missed = []
+    for name, (broken, invariant_names) in broken_variants().items():
+        blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
+        report = Explorer(
+            workflow=Workflow(blocks, name=name),
+            initial_states=(State(),),
+            external_inputs=EXTERNAL_INPUTS,
+            invariants=INVARIANTS,
+            max_sequence_length=1,
+            terminal_predicate=terminal_predicate,
+        ).explore()
+        if not set(invariant_names) <= {violation.invariant_name for violation in report.violations}:
+            missed.append(name)
+    return missed
+
+
 def review_template_pack_builder():
     return Explorer(
         workflow=build_workflow(),

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
 import sys
 import tempfile
 
+from flowguard import Workflow
+from flowguard.explorer import Explorer
 from flowguard.review import review_scenarios
 
 
@@ -112,25 +115,68 @@ def native_conformance(model) -> dict:
     return {"ok": not findings, "cases": len(cases), "findings": findings}
 
 
+def broken_variants(model) -> dict:
+    """Known-bad variants: name -> (broken block, invariants that must report a counterexample)."""
+
+    class ClosesWithOpenGap(model.DecideTaskLocalTerminal):
+        def apply(self, request, state):
+            for result in super().apply(request, state):
+                if result.new_state.open_native_gap:
+                    result = replace(result, new_state=replace(result.new_state, task_closed=True))
+                yield result
+
+    class AdmitsReusedHoldout(model.ValidateRevisionEvidence):
+        def apply(self, request, state):
+            for result in super().apply(replace(request, holdout_independent=True), state):
+                yield replace(result, new_state=replace(result.new_state, holdout_independent=request.holdout_independent))
+
+    return {
+        "closes_with_open_gap": (ClosesWithOpenGap(), ("task_local_open_native_gap_never_closes",)),
+        "admits_reused_holdout": (AdmitsReusedHoldout(), ("task_local_closure_requires_current_typed_evidence",)),
+    }
+
+
+def missed_variants(model) -> list[str]:
+    """Explore the intended design and every known-bad variant on the scenarios' safe inputs."""
+    inputs = tuple(dict.fromkeys(
+        request for scenario in model.scenarios() if scenario.expected.expected_status == "ok"
+        for request in scenario.external_input_sequence
+    ))
+
+    def explore(blocks, name):
+        return Explorer(workflow=Workflow(blocks, name=name), initial_states=(model.RevisionState(),),
+                        external_inputs=inputs, invariants=model.INVARIANTS, max_sequence_length=1).explore()
+
+    missed = [] if explore(model.build_workflow().blocks, "intended").ok else ["intended_design"]
+    for name, (broken, invariant_names) in broken_variants(model).items():
+        blocks = tuple(broken if isinstance(broken, type(block)) else block for block in model.build_workflow().blocks)
+        caught = {violation.invariant_name for violation in explore(blocks, name).violations}
+        if not set(invariant_names) <= caught:
+            missed.append(name)
+    return missed
+
+
 def main() -> int:
     model = _load_model()
     report = review_scenarios(model.scenarios())
     conformance = native_conformance(model)
+    missed = missed_variants(model)
     print(report.format_text(max_counterexamples=8))
     print(
         json.dumps(
             {
                 "artifact_kind": "worldguard_task_local_revision_flowguard_report",
-                "status": "pass" if report.ok and conformance["ok"] else "blocked",
+                "status": "pass" if report.ok and conformance["ok"] and not missed else "blocked",
                 "scenario_count": len(model.scenarios()),
                 "conformance": conformance,
+                "known_bad_variants": {"declared": sorted(broken_variants(model)), "missed": missed},
                 "claim_boundary": "The finite task-local workflow, with each terminal replayed once against evaluate_candidate_world_revision; it does not prove factual truth.",
             },
             indent=2,
             sort_keys=True,
         )
     )
-    return 0 if report.ok and conformance["ok"] else 1
+    return 0 if report.ok and conformance["ok"] and not missed else 1
 
 
 if __name__ == "__main__":

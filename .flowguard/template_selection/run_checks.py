@@ -11,7 +11,12 @@ if str(ROOT) not in sys.path:
 if str(ROOT.parent) not in sys.path:
     sys.path.insert(0, str(ROOT.parent))
 
-from worldguard_template_pack_builder import native_conformance, review_template_pack_builder  # noqa: E402
+from worldguard_template_pack_builder import (  # noqa: E402
+    broken_variants,
+    missed_variants,
+    native_conformance,
+    review_template_pack_builder,
+)
 
 IMPLEMENTED_BY = {
     "SelectTemplatePack": "worldguard/template_packs.py:TemplatePackRegistry.select",
@@ -29,8 +34,9 @@ def main() -> int:
     report = review_template_pack_builder()
     print(report.format_text())
     conformance = native_conformance()
-    print(json.dumps(conformance, indent=2, sort_keys=True))
-    return 0 if report.ok and conformance["ok"] else 1
+    missed = missed_variants()
+    print(json.dumps({**conformance, "known_bad_variants": {"declared": sorted(broken_variants()), "missed": missed}}, indent=2, sort_keys=True))
+    return 0 if report.ok and conformance["ok"] and not missed else 1
 
 
 if __name__ == "__main__":
