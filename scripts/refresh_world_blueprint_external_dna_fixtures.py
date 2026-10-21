@@ -143,6 +143,8 @@ def _selected_content(locator: str) -> bytes:
     path_text, separator, selector = locator.partition("#")
     content = (FIXTURE_ROOT / path_text).read_bytes()
     if not separator:
+        if path_text.endswith(".json"):
+            return _canonical_json_bytes(json.loads(content.decode("utf-8")))
         return content
     value = json.loads(content.decode("utf-8"))
     if not isinstance(value, dict) or selector not in value:

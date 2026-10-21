@@ -237,7 +237,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:ea86ed63714d8011fe0fa83b8dd82653479ec6fc0fb1aa78064aa411c1fe5758"
+      "fingerprint": "sha256:94a894206bfafb931a5c968fe564a785fd29493e86298719377462b19194a52d"
     },
     {
       "id": "worldguard.revision",
@@ -371,7 +371,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:3e98a6913fe69e70ac541b4812e6b677d2f86836228de33f8c26a456c991e9ce"
+      "fingerprint": "sha256:ab7d54e58d55c44ff6df005831aad4a19c20649eb4f326a56df320093e86fabd"
     },
     {
       "id": "skills.worldguard.scripts",

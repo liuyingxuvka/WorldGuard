@@ -2332,15 +2332,17 @@ def _local_binding_content_fingerprint(
     if not candidate.is_file():
         return "", "resource_missing"
     content = candidate.read_bytes()
-    if separator:
+    if separator or candidate.suffix == ".json":
         try:
             payload = json.loads(content.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError):
-            return "", "selector_requires_json_object"
-        if not isinstance(payload, Mapping) or selector not in payload:
-            return "", "resource_selector_missing"
+            return "", "selector_requires_json_object" if separator else "resource_invalid_json"
+        if separator:
+            if not isinstance(payload, Mapping) or selector not in payload:
+                return "", "resource_selector_missing"
+            payload = payload[selector]
         content = json.dumps(
-            payload[selector],
+            payload,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),

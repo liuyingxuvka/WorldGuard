@@ -677,3 +677,24 @@ def test_causal_claim_scopes_are_requested_evaluated_and_licensed_honestly() -> 
     assert mechanism_truth["evaluated_claim_scope"] == "graph_only"
     assert mechanism_truth["qualified_subscope"] == "graph_only"
     assert "licensed_claim_scope" not in mechanism_truth
+
+
+
+def test_whole_json_binding_hashes_content_not_formatting(tmp_path: Path) -> None:
+    import shutil
+
+    from worldguard.blueprint import check_world_blueprint
+    from worldguard.status import GuardStatus
+
+    shutil.copytree(MATRIX_FIXTURE.parent, tmp_path / "world_blueprint")
+    blueprint_path = tmp_path / "world_blueprint" / "seven_guard_portable_handoff.json"
+    matrix_path = tmp_path / "world_blueprint" / MATRIX_FIXTURE.name
+    matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
+    matrix_path.write_text(json.dumps(matrix, indent=4), encoding="utf-8")
+    assert check_world_blueprint(load_world_blueprint(blueprint_path)).status == GuardStatus.PASS
+
+    matrix["reviewed"] = True
+    matrix_path.write_text(json.dumps(matrix, indent=4), encoding="utf-8")
+    report = check_world_blueprint(load_world_blueprint(blueprint_path))
+    assert report.status == GuardStatus.FAIL
+    assert "WORLD_BLUEPRINT_BINDING_CONTENT_MISMATCH" in {gap.code for gap in report.gaps}

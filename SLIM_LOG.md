@@ -748,3 +748,24 @@ Status: completed.
 | `pytest` | 0 | 269 passed in 25.20s (`WG-38/pytest.log`) |
 
 Adaptations: 按本项明确授权删除 17 个 authority owner、9 个支持文件及对应过时测试。AST 对照只改变 WorldBlueprintContract/check/indexes/reverse-trace 四个既有 owner，其余 57 个 owner 不变，原生执行/行为用例/选中外部测试与证据执行均保持。 实际 blueprint/generator 为 6623/920 行，保留非语义空行差异，不为匹配参考行数做额外清理；导出确为110、支持文件13、限定 active surfaces 残留零。未将历史测试的授权退役宣称为简单改名等价。
+
+### WG-39: 整文件绑定的 JSON 支持文件按规范化内容做哈希，重新缩进不再让绑定失效
+
+Status: completed.
+
+整文件 JSON 绑定按规范化内容哈希，非 JSON 仍按字节；保留选中单记录的原有规范化。新增测试先真实失败，修复后 6 项专项、270 项完整测试和 3 模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-39/read.log`) |
+| `formatting-before` | 1 | 1 failed, 5 deselected in 0.56s (`WG-39/formatting-before.log`) |
+| `regenerate` | 0 | regenerated (`WG-39/regenerate.log`) |
+| `idempotence` | 0 | all fixture bytes idempotent (`WG-39/idempotence.log`) |
+| `focused` | 0 | 6 passed in 1.20s (`WG-39/focused.log`) |
+| `confirm` | 0 | confirmed 2 component(s) (`WG-39/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-39/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-39/release.log`) |
+| `pytest` | 0 | 270 passed in 42.77s (`WG-39/pytest.log`) |
+| `hash-boundaries` | 0 | whole JSON formatting invariant; content change rejects; invalid JSON typed reason; selected record unchanged; non-JSON remains byte hash (`WG-39/hash-boundaries.log`) |
+
+Adaptations: 额外有限边界核验覆盖实际内容变更、无效 JSON、缺 selector、非 JSON 字节变更；夹具仅 seven_guard 文件更新且再次生成字节幂等。
