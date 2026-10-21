@@ -22,11 +22,7 @@ class RevisionRequest:
     action: str = "evaluate"
     task_shape_current: bool = True
     coverage_independent: bool = True
-    evidence_content_addressed: bool = True
-    prior_gap_binding_current: bool = True
-    native_depth_current: bool = True
     predictive_licensed: bool = True
-    typed_revalidations_current: bool = True
     holdout_independent: bool = True
     has_native_gap: bool = False
     gap_changed: bool = True
@@ -43,11 +39,7 @@ class RevisionState:
     phase: str = "planned"
     task_shape_current: bool = False
     coverage_independent: bool = False
-    evidence_content_addressed: bool = False
-    prior_gap_binding_current: bool = False
-    native_depth_current: bool = False
     predictive_licensed: bool = False
-    typed_revalidations_current: bool = False
     holdout_independent: bool = False
     open_native_gap: bool = False
     fact_candidate_activated: bool = False
@@ -61,26 +53,18 @@ class ValidateRevisionEvidence:
     reads = (
         "task_shape_current",
         "coverage_independent",
-        "evidence_content_addressed",
-        "prior_gap_binding_current",
-        "native_depth_current",
-        "typed_revalidations_current",
         "holdout_independent",
     )
     writes = (
         "phase",
         "task_shape_current",
         "coverage_independent",
-        "evidence_content_addressed",
-        "prior_gap_binding_current",
-        "native_depth_current",
-        "typed_revalidations_current",
         "holdout_independent",
         "terminal_reason",
     )
-    input_description = "one current task/candidate plus exact native and revalidation receipts"
+    input_description = "one current task/candidate, one fresh candidate mesh run and two revalidations"
     output_description = "validated evidence boundary or one visible block"
-    idempotency = "the same immutable receipts produce the same validation state"
+    idempotency = "the same inputs produce the same validation state"
 
     def apply(self, request: RevisionRequest, state: RevisionState):
         if request.action != "evaluate":
@@ -89,10 +73,6 @@ class ValidateRevisionEvidence:
         checks = (
             (request.task_shape_current, "legacy_or_shallow_task_shape"),
             (request.coverage_independent, "coverage_not_independent"),
-            (request.evidence_content_addressed, "evidence_not_content_addressed"),
-            (request.prior_gap_binding_current, "prior_gap_binding_not_current"),
-            (request.native_depth_current, "native_depth_not_current"),
-            (request.typed_revalidations_current, "revalidation_receipt_not_current"),
             (request.holdout_independent, "holdout_not_independent"),
         )
         for passed, reason in checks:
@@ -110,10 +90,6 @@ class ValidateRevisionEvidence:
                 phase="evidence_current",
                 task_shape_current=True,
                 coverage_independent=True,
-                evidence_content_addressed=True,
-                prior_gap_binding_current=True,
-                native_depth_current=True,
-                typed_revalidations_current=True,
                 holdout_independent=True,
             ),
             label="current_evidence_admitted",
@@ -228,11 +204,7 @@ def revision_invariants() -> tuple[Invariant, ...]:
             (
                 state.task_shape_current,
                 state.coverage_independent,
-                state.evidence_content_addressed,
-                state.prior_gap_binding_current,
-                state.native_depth_current,
                 state.predictive_licensed,
-                state.typed_revalidations_current,
                 state.holdout_independent,
             )
         ):
@@ -391,32 +363,6 @@ def scenarios() -> tuple[Scenario, ...]:
                 expected_status="ok",
                 required_trace_labels=("native_gap_continues",),
                 summary="unlicensed prediction remains open",
-            ),
-            workflow=workflow,
-            invariants=INVARIANTS,
-        ),
-        Scenario(
-            name="WTL12_unbound_native_depth_blocks",
-            description="A task cannot close from an unbound or stale native depth receipt.",
-            initial_state=RevisionState(),
-            external_input_sequence=(RevisionRequest(native_depth_current=False),),
-            expected=ScenarioExpectation(
-                expected_status="ok",
-                required_trace_labels=("native_depth_not_current_blocked",),
-                summary="unbound native depth blocks",
-            ),
-            workflow=workflow,
-            invariants=INVARIANTS,
-        ),
-        Scenario(
-            name="WTL13_unbound_prior_gap_set_blocks",
-            description="A later iteration cannot manufacture progress without exact prior gap ids and their fingerprint.",
-            initial_state=RevisionState(),
-            external_input_sequence=(RevisionRequest(prior_gap_binding_current=False),),
-            expected=ScenarioExpectation(
-                expected_status="ok",
-                required_trace_labels=("prior_gap_binding_not_current_blocked",),
-                summary="unbound prior gaps block caller-authored progress",
             ),
             workflow=workflow,
             invariants=INVARIANTS,

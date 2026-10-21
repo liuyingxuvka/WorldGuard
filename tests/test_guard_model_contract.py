@@ -1,6 +1,4 @@
 from __future__ import annotations
-import importlib.util
-import sys
 from collections import Counter
 from dataclasses import replace
 from pathlib import Path
@@ -14,14 +12,6 @@ from worldguard.semantic import execute_semantic
 from worldguard.status import GuardStatus
 ROOT = Path(__file__).resolve().parents[1]
 
-def _load_contract_exhaustion_module():
-    path = ROOT / '.flowguard' / 'guard_model_contract_exhaustion.py'
-    spec = importlib.util.spec_from_file_location('guard_model_contract_exhaustion_test', path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
     report = run_guard_model_contract()
@@ -56,17 +46,6 @@ def test_causal_guard_rejects_partially_defined_structural_equations():
     assert [item['code'] for item in result.errors] == ['CAUSAL_MISSING_STRUCTURAL_EQUATION']
     assert result.missing_slots == [{'variable': 'y', 'needed': 'structural_equation'}]
 
-def test_guard_model_contract_exhaustion_is_exact_and_oracle_bound():
-    module = _load_contract_exhaustion_module()
-    report = module.review_guard_model_contract_exhaustion()
-    expected_ids = {case.failure_id for case in PROTECTED_FAILURE_CLASSES}
-    generated_ids = {case.case_id for case in report.generated_cases}
-    assert report.ok is True
-    assert report.decision == 'contract_exhaustion_ready'
-    assert report.confidence == 'full'
-    assert len(report.generated_cases) == len(expected_ids)
-    assert generated_ids == expected_ids
-    assert not report.findings
 
 def test_bundled_guard_model_contract_matches_the_canonical_runtime():
     source = ROOT / 'worldguard' / 'guard_model_contract.py'

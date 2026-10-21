@@ -174,9 +174,7 @@
         "tests/test_qualification.py",
         "tests/test_kernel_handoff.py"
       ],
-      "models": [
-        ".flowguard/compositional_verification_kernel/run_checks.py"
-      ],
+      "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:be8e6d8909fb415cd15c5f58d51237d5d832831972f594c73ee1b0f533e5196c"
     },
@@ -210,12 +208,9 @@
       ],
       "tests": [
         "tests/test_model_mesh.py",
-        "tests/test_semantic_rollout.py",
-        "tests/test_semantic_rollout_runner.py"
+        "tests/test_semantic_rollout.py"
       ],
-      "models": [
-        ".flowguard/current_input_authority/run_checks.py"
-      ],
+      "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:aedf3b9d0014e79721f45fb4bab6c302c0fe0663d189059093d20ab17b455112"
     },
@@ -250,7 +245,6 @@
         "worldguard.guards"
       ],
       "tests": [
-        "tests/test_behavior_commitment_ledger.py",
         "tests/test_blueprint_cli.py",
         "tests/test_blueprint_entry_integrity.py",
         "tests/test_blueprint_impact_trace.py",
@@ -260,9 +254,7 @@
         "tests/test_world_blueprint_seven_guard_matrix.py",
         "tests/test_world_blueprint_target_semantic_authority.py"
       ],
-      "models": [
-        ".flowguard/behavior_commitment_ledger/run_checks.py"
-      ],
+      "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:8699b6f9ffab8f1b4c15bc4fb9d9e3036e9d895a10452a4c388f71b9e851b177"
     },

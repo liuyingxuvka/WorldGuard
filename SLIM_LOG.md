@@ -530,3 +530,20 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-27/models.log`) |
 
 Adaptations: 原始未过滤残留 grep 保存在 legacy-grep-unfiltered.log：实际 0 命中（不是把日志命中报成无匹配）；仅采用文档 openspec 例外和统一 root SLIM_LOG 历史日志例外，现行产品零残留。
+
+### WG-28: 自模型只留 3 个真正跑行为的；删除同义反复模型、指路脚本和嵌套运行器
+
+Status: completed.
+
+删除同义反复模型、文本锁和嵌套运行器，仅保留 fact_revision/task_local_revision/template_selection 三个登记模型与模板构造 owner；任务模型移除已退役收据的四个布尔字段及两场景，11 场景通过。308 项完整测试、3 个模型通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `inventory` | 0 | .flowguard/worldguard_template_pack_builder.py (`WG-28/inventory.log`) |
+| `task-model` | 0 | FLOWGUARD_RUNNER_DONE {"exit_code": 0, "checked": 12} (`WG-28/task-model.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.qualification: 2 identical bodies (1107 AST nodes) in ['worldguard.qualification']: skills/worldguard/runtime/worldguard/qualification.py:qualify_guard_contract, worldguard/qualificati (`WG-28/change.log`) |
+| `pytest` | 0 | 308 passed in 33.91s (`WG-28/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-28/map.log`) |
+| `models` | 0 | models: 3 passed, 0 failed (`WG-28/models.log`) |
+
+Adaptations: 地图登记减少 6→3 是本项明确授权退役，未提前取消模型以掩盖失败；三个现存模型的运行边界警告如实保留，后续 WG43/WG55–58 才接入真实代码/合约探索。
