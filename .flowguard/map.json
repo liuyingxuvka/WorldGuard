@@ -2,9 +2,7 @@
   "schema": "flowguard.map.v1",
   "project": "WorldGuard",
   "layers": [],
-  "ignore": [
-    "skills/worldguard/runtime/**"
-  ],
+  "ignore": [],
   "test_command": "",
   "components": [
     {
@@ -324,7 +322,7 @@
       "layer": "",
       "summary": "CI on every push and publication of one CI-checked source",
       "responsibilities": [
-        "Run the test suite, mirror check, FlowGuard release check and skill install check on every push",
+        "Run the test suite, FlowGuard release check and skill install check on every push",
         "Check source/version/changelog identity, wait for CI success on the exact SHA, and create the stable tag and Release at that commit"
       ],
       "files": [
@@ -342,26 +340,25 @@
       "tests": [],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:ac7fbfd170b4c2d4dfec01a1c923405a3801d61c19d4211f8070f1a4df7bc636"
+      "fingerprint": "sha256:1dd7cc4b0c120846f62fc87891685b8e7a97e6c271b5846a698a022c5da3e74e"
     },
     {
       "id": "scripts",
       "layer": "",
-      "summary": "Runtime mirror sync, skill installer and fixture refresh",
+      "summary": "Skill installer and blueprint fixture refresh",
       "responsibilities": [
-        "Copy the canonical worldguard source into the portable runtime and check that the copy is exact",
-        "Install the skill into an agent skills directory and check an installed copy",
+        "Install the skill and copy the worldguard package into its runtime directory; check an installed copy",
         "Regenerate the blueprint test fixtures from their raw inputs"
       ],
       "files": [
         "scripts/*.py"
       ],
       "entrypoints": [
-        "scripts/sync_worldguard_portable_runtime.py:differences"
+        "scripts/install_skill.py:installed_differences"
       ],
       "state": [],
       "side_effects": [
-        "sync replaces the portable runtime copy; install replaces the target skill copy; check modes are read-only"
+        "install replaces the target skill copy; check and dry-run modes are read-only"
       ],
       "depends_on": [
         "worldguard",
@@ -369,18 +366,18 @@
         "worldguard.core"
       ],
       "tests": [
-        "tests/test_worldguard_portable_runtime_projection.py"
+        "tests/test_cli_module.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:2bbcda107a7b5fdc04becd8aadb2ff9887744204a63008d2ab2e670138ca56a8"
+      "fingerprint": "sha256:f396b69e5e52eaa417303d636688cd1b0bbbf72f924746fba49786c931180b59"
     },
     {
       "id": "skills.worldguard.scripts",
       "layer": "",
       "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
-        "Select the bundled runtime without a package fallback and without writing bytecode",
+        "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
         "Keep contract, blueprint and reporting instructions aligned with the CLI"
       ],
       "files": [
@@ -392,7 +389,7 @@
       "entrypoints": [],
       "state": [],
       "side_effects": [
-        "Run only the bundled native CLI"
+        "Run only the native WorldGuard CLI"
       ],
       "depends_on": [
         "worldguard"
@@ -403,7 +400,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:3df66a271788c98aca24e6912ebb3edf0aba44b4c3f5b3ebf9bde6d15448b50e"
+      "fingerprint": "sha256:1af2fc7bda6520ef26dc50830dbd3c3119f2c75e77b4c5ecde01e3b206158013"
     }
   ],
   "flows": [],

@@ -27,7 +27,6 @@ WorldGuard uses ordinary native checks and pytest. No author-supervision tool or
 ```bash
 python -m pytest -q
 python -m worldguard.guard_model_contract
-python scripts/sync_worldguard_portable_runtime.py check
 ```
 
 Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py check --help`; no Python distribution metadata is required.
@@ -140,7 +139,7 @@ mesh_report = run_model_mesh(mesh)
 
 The repository includes the WorldGuard skill under `skills/worldguard/`. It explains how to write a world model and run it with the portable launcher `skills/worldguard/scripts/run_worldguard.py`, and how to report non-pass results without turning them into a weak pass.
 
-Install it into an agent's skills directory (Python 3.11 or newer; YAML world models also need PyYAML, JSON ones do not):
+Install it into an agent's skills directory (Python 3.11 or newer; YAML world models also need PyYAML, JSON ones do not). The installer copies the `worldguard/` package into the installed skill's `runtime/`; inside this repository the launcher imports the repository package directly:
 
 ```bash
 python -m pip install PyYAML

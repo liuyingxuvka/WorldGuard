@@ -4,9 +4,10 @@
     python scripts/install_skill.py --target "$CODEX_HOME/skills" --dry-run
     python scripts/install_skill.py --target "$CODEX_HOME/skills" --check    # exit 1 if the copy differs
 
-Copies skills/worldguard/ (SKILL.md, references, assets, the launcher and the bundled
-runtime) to <target>/worldguard/, replacing an older copy. The launcher needs Python >= 3.11;
-YAML world models also need PyYAML (python -m pip install PyYAML), JSON ones do not.
+Copies skills/worldguard/ (SKILL.md, references, assets, the launcher) to <target>/worldguard/
+and the worldguard/ package to <target>/worldguard/runtime/worldguard/, replacing an older copy.
+The launcher needs Python >= 3.11; YAML world models also need PyYAML
+(python -m pip install PyYAML), JSON ones do not.
 """
 
 from __future__ import annotations
@@ -19,15 +20,17 @@ import shutil
 import sys
 from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parents[1] / "skills" / "worldguard"
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / "skills" / "worldguard"
+PACKAGE = ROOT / "worldguard"
 IGNORED = ("__pycache__", "*.pyc", "*.pyo")
 
 
-def differences(src: Path, dst: Path) -> list[str]:
+def differences(src: Path, dst: Path, ignore: tuple[str, ...] = ()) -> list[str]:
     if not dst.is_dir():
         return [f"missing {dst}"]
     out = []
-    cmp = filecmp.dircmp(src, dst, ignore=["__pycache__"])
+    cmp = filecmp.dircmp(src, dst, ignore=["__pycache__", *ignore])
     stack = [(cmp, Path("."))]
     while stack:
         node, rel = stack.pop()
@@ -42,6 +45,11 @@ def differences(src: Path, dst: Path) -> list[str]:
         out += [f"unreadable: {rel / n}" for n in node.funny_files]
         stack += [(sub, rel / name) for name, sub in node.subdirs.items()]
     return out
+
+
+def installed_differences(dst: Path) -> list[str]:
+    runtime = [f"runtime: {row}" for row in differences(PACKAGE, dst / "runtime" / "worldguard")]
+    return differences(SOURCE, dst, ignore=("runtime",)) + runtime
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -59,10 +67,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("target environment variable is unset: " + ", ".join(missing))
     target = re.sub(r"%([A-Za-z_][A-Za-z0-9_]*)%", lambda m: os.environ[m[1]], args.target)
     dst = Path(os.path.expandvars(target)).expanduser() / "worldguard"
-    if not (SOURCE / "SKILL.md").is_file():
-        print(f"skill source not found: {SOURCE}", file=sys.stderr)
+    if not (SOURCE / "SKILL.md").is_file() or not (PACKAGE / "__init__.py").is_file():
+        print(f"skill source not found: {SOURCE} and {PACKAGE}", file=sys.stderr)
         return 2
-    diff = differences(SOURCE, dst)
+    diff = installed_differences(dst)
     if args.check:
         print("\n".join(diff) or "installed skill is current")
         return 1 if diff else 0
@@ -71,7 +79,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if dst.exists():
         shutil.rmtree(dst)
-    shutil.copytree(SOURCE, dst, ignore=shutil.ignore_patterns(*IGNORED))
+    shutil.copytree(SOURCE, dst, ignore=shutil.ignore_patterns(*IGNORED, "runtime"))
+    shutil.copytree(PACKAGE, dst / "runtime" / "worldguard", ignore=shutil.ignore_patterns(*IGNORED))
     print(f"installed {dst}")
     return 0
 

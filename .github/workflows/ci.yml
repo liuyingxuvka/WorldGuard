@@ -35,9 +35,6 @@ jobs:
       - name: Full test suite
         run: python -m pytest -q
 
-      - name: Portable runtime copy is exact
-        run: python scripts/sync_worldguard_portable_runtime.py check
-
       - name: FlowGuard map, lint and models
         if: matrix.python == '3.11'
         run: python -m flowguard release

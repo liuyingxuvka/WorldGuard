@@ -1,1 +1,0 @@
-"""Packaged WorldGuard examples."""

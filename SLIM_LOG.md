@@ -683,3 +683,28 @@ Status: completed.
 | `map-only` | 0 |  M .flowguard/map.json (`WG-35/map-only.log`) |
 
 Adaptations: 确认前 diff 仅 map 描述与工具生成指纹；提交按总规则另记 SLIM_LOG。模型 abstract boundary 提示仍明确保留为已知范围，并未被 map 的零警告掩盖。未做 GitHub 发布。
+
+### WG-36: 运行时副本改为安装时生成：删除提交的副本和同步脚本，启动器在仓库里直接用仓库包
+
+Status: completed.
+
+安装时从 canonical 源码生成 runtime，移除 tracked 副本与同步工具；292 项完整测试、3 个模型、真实安装及 LogicWriting portable 正例通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `cli` | 0 | 10 passed in 4.22s (`WG-36/cli.log`) |
+| `repository-launcher` | 0 | } (`WG-36/repository-launcher.log`) |
+| `map-initial` | 0 | check: 0 error(s), 3 warning(s), 0 info (`WG-36/map-initial.log`) |
+| `missing-runtime-initial` | 1 | AssertionError: incomplete installed skill must not import an ambient WorldGuard package (`WG-36/missing-runtime-initial.log`) |
+| `missing-runtime-final` | 0 | } (`WG-36/missing-runtime-final.log`) |
+| `cli-final` | 0 | 10 passed in 4.39s (`WG-36/cli-final.log`) |
+| `portable-lw` | 0 | } (`WG-36/portable-lw.log`) |
+| `residue` | 0 | {'unfiltered_hits': 26, 'journal_only': 26, 'active_hits': 0} (`WG-36/residue.log`) |
+| `change` | 1 | ARCH WARN large_file scripts: scripts/refresh_world_blueprint_external_dna_fixtures.py: 1220 LOC (limit 800) (`WG-36/change.log`) |
+| `deleted-path-classification` | 0 | } (`WG-36/deleted-path-classification.log`) |
+| `confirm` | 0 | confirmed 3 component(s) (`WG-36/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-36/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-36/release.log`) |
+| `pytest` | 0 | 292 passed in 34.27s (`WG-36/pytest.log`) |
+
+Adaptations: 参考 fallback 在缺 runtime 时实际误用 ambient editable 包，原失败保留；经 root 授权仅在真实仓库含 worldguard/__init__.py 时允许 repo fallback，缺失安装 runtime 明确拒绝。保留 WG32 相同 size/mtime 的字节漂移负例。 首次 change 的 28 个 UNMAPPED 均是明确退役的 deleted runtime 路径，分类证据外置，不重新登记死路径；随后 map 0 error/0 warning，release PASS。未过滤残留 grep 的 26 个命中全属 SLIM_LOG 历史记录，active surface 为零。 exact baseline LogicWriting 的 repo layout 缺 runtime 属 XR11 前预期 provider_unavailable；临时真实安装 layout 为 current_pass。未修改 LogicWriting 或实际用户技能。
