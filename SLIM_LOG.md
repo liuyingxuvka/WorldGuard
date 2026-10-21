@@ -295,3 +295,18 @@ Status: completed.
 | `map` | 0 | check: 0 error(s), 8 warning(s), 0 info (`WG-15/map.log`) |
 
 Adaptations: predictive-coverage.md 实际 4532 字节（文档约 4533）；逐段语义保持，预测实现和网格交接执行未改。
+
+### WG-16: 任务内参考改用便携命令；事实修订参考写出命令；模板包标成可选；加提示词大小测试
+
+Status: completed.
+
+任务内命令改为跨平台启动器路径，补事实修订命令，模板明确为单 Guard 可选脚手架；新增提示词大小上界测试并绑定原地图 owner，364 项测试通过。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `references` | 0 | (no output) (`WG-16/references.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.revision: 2 identical bodies (1858 AST nodes) in ['worldguard.revision']: skills/worldguard/runtime/worldguard/task_local_revision.py:evaluate_candidate_world_revision, worldguard/task (`WG-16/change.log`) |
+| `pytest` | 0 | 364 passed in 49.76s (`WG-16/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-16/map.log`) |
+
+Adaptations: 实际总数比文档多 3，来自已独立复核的 WG06 输入形状边界补测。

@@ -1,6 +1,6 @@
 # Task-Local Model Deepening
 
-Load this reference for the `task_local_revision` shape or when EventGuard/CausalGuard declares predictive intent, intervention/counterfactual work, or a current predictive gap. This is WorldGuard's existing evidence-derived loop, not an understanding questionnaire or level scale.
+Load this reference for the `task_local_revision` shape or when EventGuard/CausalGuard declares predictive intent, intervention/counterfactual work, or a current predictive gap. WorldGuard does not compute predictions: write the values your model implies in `expected_values`, then compare them with what was observed. Closing a revision currently needs a mesh model (`ModelMeshContract`).
 
 ## Freeze before observing
 
@@ -30,12 +30,12 @@ When fact-level support changes, load `fact-revision.md`. Fact activation ends a
 
 ## Native commands
 
-```powershell
-python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" task-model freeze <prediction.yaml>
-python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" task-model compare <prediction.yaml> <observation.yaml>
-python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" task-model depth-bind <prediction.yaml> <candidate-identity.yaml> <native-depth.json> --binding-id <id>
-python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" task-model revalidation-bind <prediction.yaml> <candidate-identity.yaml> <role> <semantic-result.json> <comparison.json> --check-id <id> --semantic-receipt-id <id> --semantic-status <status> --evidence-ref <ref>
-python "$env:USERPROFILE\.codex\skills\worldguard\scripts\run_worldguard.py" task-model revision <candidate-revision.yaml>
+```bash
+python <skill-root>/scripts/run_worldguard.py task-model freeze <prediction.yaml>
+python <skill-root>/scripts/run_worldguard.py task-model compare <prediction.yaml> <observation.yaml>
+python <skill-root>/scripts/run_worldguard.py task-model depth-bind <prediction.yaml> <candidate-identity.yaml> <native-depth.json> --binding-id <id>
+python <skill-root>/scripts/run_worldguard.py task-model revalidation-bind <prediction.yaml> <candidate-identity.yaml> <role> <semantic-result.json> <comparison.json> --check-id <id> --semantic-receipt-id <id> --semantic-status <status> --evidence-ref <ref>
+python <skill-root>/scripts/run_worldguard.py task-model revision <candidate-revision.yaml>
 ```
 
 This loop proves only bounded task-local model closure under current declared evidence. It does not prove universal factual truth, future accuracy outside the boundary, installation, or release.

@@ -53,6 +53,13 @@ it never mutates WorldGuard code, installed skills, Guard rules, reusable
 defaults, or a global fact store. It never emits `model_closed_for_task`, even
 when its local fact regression and holdout evidence pass.
 
+## Commands
+
+```bash
+python <skill-root>/scripts/run_worldguard.py task-model fact-revision-preview <base.yaml> <transaction.yaml>
+python <skill-root>/scripts/run_worldguard.py task-model fact-revision-activate <base.yaml> <transaction.yaml> <activation.yaml>
+```
+
 ## Canonical contract details
 
 ### Fact-level transaction

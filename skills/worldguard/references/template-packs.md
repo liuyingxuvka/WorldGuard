@@ -1,6 +1,6 @@
 # WorldGuard Validating Template Packs
 
-Use this construction layer before manually assembling a new `GuardContract` or `ModelMeshContract`. It reduces repeated shape errors without becoming a Guard router or semantic executor.
+Optional: scaffold a single-Guard `GuardContract` or a `ModelMeshContract` coverage block. For a contract that needs several Guards, start from `assets/examples/` instead. Templates reduce repeated shape errors without becoming a Guard router or semantic executor.
 
 ## Fixed boundary
 
