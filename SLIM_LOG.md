@@ -1053,3 +1053,21 @@ Skill entry, contract/mesh references, README and two current OpenSpec specs doc
 | `pytest` | 0 | 281 passed in 25.31s (`WG-53/pytest.log`) |
 
 Adaptations: SKILL is 3504 bytes rather than reference3386 because the earlier authorized WG26 metadata-empty-value explanation is retained. Optional OpenSpec CLI unavailable, explicitly skipped; no official validation claim.
+
+### WG-54: 版本 0.7.16，CHANGELOG 写 v0.7.16 一节
+
+Status: completed.
+
+Canonical version fields agree at 0.7.16 and exactly one matching current changelog heading exists; historical entries remain byte-preserved. Version test and 281 full tests passed; FlowGuard0.70.6 and isolated installed0.70.7 both report map0/0 and release3/3.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `focused` | 0 | 1 passed in 0.02s (`WG-54/focused.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-54/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-54/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-54/release.log`) |
+| `changelog` | 0 | 0.7.16 ['v0.7.16 - 2026-10-21 - Claims bound to the world model; slim/2026-10'] (`WG-54/changelog.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-54/new-fg.log`) |
+| `pytest` | 0 | 281 passed in 26.55s (`WG-54/pytest.log`) |
+
+Adaptations: User version override takes precedence over document0.8.0/newFG0.71.0: this release is WorldGuard0.7.16 with FlowGuard0.70.7, dated2026-10-21. No tag, push or publication performed.

@@ -44,7 +44,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:8200e951b883bed5b585f5721c6c2922cd333d55efce9660f8b91d13e8f6caa5"
+      "fingerprint": "sha256:e95d84834ee703769d1ce189acee2fde8c68bf14ce59d3a44a5ab367722775d8"
     },
     {
       "id": "worldguard.core",

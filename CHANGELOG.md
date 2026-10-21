@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.7.16 - 2026-10-21 - Claims bound to the world model; slim/2026-10
+
+- Done: WG-01 to WG-54. Skipped: none.
+- Claims are bound to the world model: each `claim.asserts` row (a fluent at a time, event order, tokens in a
+  place, a variable value, an agent's belief/desire/intention, a spatial relation, an active norm, a payoff) is
+  evaluated on the model. A false row is `FAIL` (`CLAIM_ASSERTION_FALSE`, with the observed value), a row naming
+  something the model does not declare is `GAP` (`CLAIM_ASSERTION_UNRESOLVED`), and a claim without `asserts` is
+  `GAP` (`CLAIM_NOT_BOUND`), in unit checks and in every mesh node. The claim text is never read.
+- Model language: EventGuard checks `events[].requires` (`EVENT_PRECONDITION_UNMET`); CausalGuard checks
+  `causal_model.constraints` (`CAUSAL_CONSTRAINT_VIOLATED`). Template packs have a `claim_asserts` slot.
+- Fixed: verdicts that depended on words in the claim text, fixture strings in Guards, the missing NormGuard
+  conflict rule, the fuel-cell example, crashes on minimal contracts, event time order, exit codes (0 PASS,
+  1 non-pass, 2 input error), the README mesh example, empty `intentions`. Default output is a short JSON
+  summary; `--json` prints the full report.
+- Removed SkillGuard-era proof machinery: self-DNA, the execution-depth bridge, route capsules, provider receipt
+  replay, sealed task-local receipts, mesh depth replay, blueprint request fingerprints, the signed object census,
+  the blueprint completeness and projection layers, template construction fingerprints, retired ledgers and
+  tautology self-models. The portable runtime copy is made by `scripts/install_skill.py` instead of committed.
+- The three self-models replay every terminal on the real code, name `IMPLEMENTED_BY`/`TESTED_BY`, carry
+  known-bad variants, and pass with FlowGuard 0.70.6 and 0.70.7.
+
 ## v0.7.15 - 2026-10-18
 
 - Evaluate pending SCM equations without stale endogenous scenario seeds, preserving identity roots, exogenous inputs and explicit do overrides regardless of variable declaration order.
