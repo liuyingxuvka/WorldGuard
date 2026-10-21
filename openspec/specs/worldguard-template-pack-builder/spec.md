@@ -38,6 +38,10 @@ Every built instance SHALL run its registered WorldGuard-native shape and claim-
 - **WHEN** the built GuardContract lacks a run id
 - **THEN** construction SHALL fail with `TEMPLATE_NATIVE_VALIDATION_FAILED`
 
+#### Scenario: Pack misses a claim-derived Guard route
+- **WHEN** the claim of a built GuardContract derives a Guard that its `target_guards` do not list
+- **THEN** construction SHALL fail with `TEMPLATE_NATIVE_VALIDATION_FAILED` and name the missing Guard ids
+
 ### Requirement: Existing semantic authority
 
 Templates SHALL neither derive an alternative Guard denominator nor choose behavior evidence, factual truth, semantic PASS or predictive license. Guard-specific packs add only their explicit input slots; mesh profiles scaffold bounded/predictive coverage fields. Native world checks retain all domain behavior, evidence boundaries and typed terminal statuses.

@@ -22,6 +22,7 @@ class BuildRequest:
     field_conflict: bool = False
     native_validators_bound: bool = True
     native_validation_passes: bool = True
+    guard_routes_complete: bool = True
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,7 @@ class State:
     composed: bool = False
     native_validated: bool = False
     semantic_authority: str = "worldguard"
+    route_missing: bool = False
 
 
 class SelectTemplatePack:
@@ -77,6 +79,7 @@ class SelectTemplatePack:
             candidate_selected=False,
             composed=False,
             native_validated=False,
+            route_missing=False,
         )
         if request.candidate_count < 0:
             yield FunctionResult(Blocked("candidate_count_invalid"), state, "invalid_candidate_count_blocked")
@@ -163,6 +166,13 @@ class ValidateTemplateInstance:
                 Blocked("template_native_validator_unknown"), state, "native_validator_missing_blocked"
             )
             return
+        if not composed.request.guard_routes_complete:
+            yield FunctionResult(
+                Blocked("template_native_validation_failed:missing_guard_ids"),
+                replace(state, route_missing=True),
+                "guard_route_missing_blocked",
+            )
+            return
         if not composed.request.native_validation_passes:
             yield FunctionResult(
                 Blocked("template_native_validation_failed"), state, "native_validation_failed_blocked"
@@ -207,6 +217,10 @@ def ready_requires_worldguard_native_validation(state: State, trace: object) -> 
     return InvariantResult.pass_()
 
 
+def ready_requires_every_claim_derived_guard_route(state: State, trace: object) -> InvariantResult:
+    if state.native_validated and state.route_missing:
+        return InvariantResult.fail("A Guard contract became ready although it misses a claim-derived Guard route")
+    return InvariantResult.pass_()
 
 
 EXTERNAL_INPUTS = (
@@ -219,6 +233,7 @@ EXTERNAL_INPUTS = (
     BuildRequest(field_conflict=True),
     BuildRequest(native_validators_bound=False),
     BuildRequest(native_validation_passes=False),
+    BuildRequest(guard_routes_complete=False),
 )
 
 INVARIANTS = (
@@ -236,6 +251,11 @@ INVARIANTS = (
         "ready_requires_worldguard_native_validation",
         "A ready instance is selected, composed, and validated by WorldGuard without transferring semantics.",
         ready_requires_worldguard_native_validation,
+    ),
+    Invariant(
+        "ready_requires_every_claim_derived_guard_route",
+        "A ready Guard contract routes every Guard its claim derives; a pack that misses one is rejected.",
+        ready_requires_every_claim_derived_guard_route,
     ),
 )
 
@@ -271,6 +291,15 @@ class _AmbiguousSelectsFirst(SelectTemplatePack):
             yield result
 
 
+class _AcceptsMissingGuardRoute(ValidateTemplateInstance):
+    """Known bad: native validation ignores a claim-derived Guard route the pack does not list."""
+
+    def apply(self, composed: CompositionReady, state: State) -> Iterable[FunctionResult]:
+        routed = replace(composed, request=replace(composed.request, guard_routes_complete=True))
+        for result in super().apply(routed, state):
+            yield replace(result, new_state=replace(result.new_state, route_missing=not composed.request.guard_routes_complete))
+
+
 class _NoMatchActivatesBase(SelectTemplatePack):
     """Known bad: a request with no matching candidate still activates the shared base."""
 
@@ -298,6 +327,7 @@ TESTED_BY = {
     "ambiguity_never_constructs": ["tests/test_template_packs.py:test_many_matching_candidates_are_visible_and_never_ranked"],
     "no_match_never_constructs": ["tests/test_template_packs.py:test_no_candidate_blocks_instead_of_activating_the_shared_scaffold"],
     "ready_requires_worldguard_native_validation": ["tests/test_template_packs.py:test_builtin_guard_pack_selects_and_validates_deterministically"],
+    "ready_requires_every_claim_derived_guard_route": ["tests/test_template_packs.py:test_pack_missing_a_claim_derived_guard_route_is_rejected"],
 }
 REQUIRED_LABELS = (
     "zero_candidates_no_match_blocked",
@@ -310,6 +340,7 @@ REQUIRED_LABELS = (
     "native_validation_failed_blocked",
     "template_composed",
     "template_instance_ready",
+    "guard_route_missing_blocked",
 )
 
 
@@ -340,6 +371,8 @@ def broken_variants() -> dict[str, Explorer]:
             swapped(_AmbiguousSelectsFirst()), invariant_names={"ambiguity_never_constructs"}, labels=()),
         "no_match_activates_base": _explorer(
             swapped(_NoMatchActivatesBase()), invariant_names={"no_match_never_constructs"}, labels=()),
+        "accepts_missing_guard_route": _explorer(
+            swapped(_AcceptsMissingGuardRoute()), invariant_names={"ready_requires_every_claim_derived_guard_route"}, labels=()),
     }
 
 
@@ -429,6 +462,8 @@ def conformance() -> ReplayReport:
             (replace_manifest(builtin_base, native_validator_ids=("worldguard.unknown.v1",)),)
         ),
         BuildRequest(native_validation_passes=False): build(["guard:EventGuard"], {**event, "run_id": ""}),
+        # The event pack routes EventGuard only; a claim that also asks for causal semantics derives CausalGuard.
+        BuildRequest(guard_routes_complete=False): build(["guard:EventGuard"], {**event, "requested_semantics": ["event", "causal"]}),
     }
     mismatches = []
     for request in EXTERNAL_INPUTS:
@@ -440,7 +475,7 @@ def conformance() -> ReplayReport:
             call()
             real = "ready"
         except TemplatePackError as exc:
-            real = exc.code.lower()
+            real = exc.code.lower() + (":missing_guard_ids" if "missing_guard_ids" in exc.details else "")
         expected = _model_outcome(request)
         if real != expected:
             mismatches.append(f"{request!r}: model {expected!r}, real code {real!r}")

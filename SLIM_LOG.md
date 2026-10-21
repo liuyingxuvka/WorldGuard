@@ -1132,3 +1132,24 @@ Template selection now has one canonical contract model; original request/state/
 | `pytest` | 0 | 281 passed in 32.77s (`WG-57/pytest.log`) |
 
 Adaptations: Historical builder path hits in mandatory SLIM_LOG are retained; raw unfiltered grep archived, active hits are exactly the two preserved workflow names. NewFG warning about ready_requires_worldguard_native_validation having no targeted known-bad is recorded, not hidden or treated as comprehensive negative coverage.
+
+### WG-58: template_selection 模型加“模板包漏了主张推导出的 Guard 路由”输入、不变量、已知坏变体和单元测试，_validate_guard_routes 失效时模型和测试都失败
+
+Status: completed.
+
+Template model now explores missing claim-derived Guard routes, reaches the rejection label, binds the native validator and new existing-owner test, and catches its third known-bad variant. Actual validator corruption makes bothFG conformance9/10 fail and the new test genuinely fail; exact source bytes restored, then14 template tests and282 full tests pass. BothFG map0/0/releases3/3, nativeconformance10/10.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `read` | 0 |   uses: worldguard (`WG-58/read.log`) |
+| `change` | 0 | run: python -m flowguard.map models template_selection (`WG-58/change.log`) |
+| `contract-model` | 0 | conformance: 10/10 model inputs match the real code (`WG-58/contract-model.log`) |
+| `focused` | 0 | 14 passed in 0.20s (`WG-58/focused.log`) |
+| `native-corruption` | 0 | native owner restored byte-for-byte (`WG-58/native-corruption.log`) |
+| `openspec` | 0 | SKIPPED: optional openspec CLI unavailable (`WG-58/openspec.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-58/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-58/release.log`) |
+| `new-fg` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-58/new-fg.log`) |
+| `pytest` | 0 | 282 passed in 35.81s (`WG-58/pytest.log`) |
+
+Adaptations: Optional OpenSpec CLI unavailable and explicitly skipped. Corruption verification runs the single new test rather than redundantly rerunning all13 unchanged tests while code is intentionally broken; the normal template14/full282 checks cover their preservation.

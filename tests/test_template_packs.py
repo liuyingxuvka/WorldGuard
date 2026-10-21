@@ -139,3 +139,11 @@ def test_binding_change_changes_the_built_contract() -> None:
     assert first.data['claim']['text'] == 'a declared event initiates readiness'
     assert second.data['claim']['text'] == 'a different task-local event claim'
     assert first.receipt.to_dict() == second.receipt.to_dict()
+
+def test_pack_missing_a_claim_derived_guard_route_is_rejected() -> None:
+    bindings = _event_bindings()
+    bindings['requested_semantics'] = ['event', 'causal']
+    with pytest.raises(TemplatePackError) as caught:
+        build_template_instance(builtin_template_registry(), contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=bindings)
+    assert caught.value.code == 'TEMPLATE_NATIVE_VALIDATION_FAILED'
+    assert caught.value.details['missing_guard_ids'] == ['CausalGuard']
