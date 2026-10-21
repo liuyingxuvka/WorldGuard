@@ -166,6 +166,10 @@ class ModelNode:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "ModelNode":
+        if not isinstance(data, Mapping):
+            raise ValueError("model node must be a mapping")
+        if data.get("contract") is not None and not isinstance(data["contract"], Mapping):
+            raise ValueError("model node contract must be a mapping or null")
         contract_data = data.get("contract")
         freshness_status = str(data.get("freshness_status", "current"))
         if freshness_status not in FRESHNESS_STATUSES:
@@ -627,6 +631,15 @@ class ModelMeshContract:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "ModelMeshContract":
+        if not isinstance(data, Mapping):
+            raise ValueError("model mesh must be a mapping")
+        for name in ("nodes", "edges", "snapshots"):
+            rows = data.get(name, [])
+            if not isinstance(rows, (list, tuple)):
+                raise ValueError(f"{name} must be a list of mappings")
+            for index, row in enumerate(rows):
+                if not isinstance(row, Mapping):
+                    raise ValueError(f"{name}[{index}] must be a mapping")
         if "closure_profile" in data:
             raise ValueError(
                 "closure_profile is retired; current WorldGuard always requires semantic execution"

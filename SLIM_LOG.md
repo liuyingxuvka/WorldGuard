@@ -198,3 +198,19 @@ Deleted unused route-capsule/entry-routing files, two author-only prompt checker
 | `prompt-and-scripts-tracked` | 0 | ['skills/worldguard/scripts/run_worldguard.py', 'skills/worldguard/scripts/run_worldguard_check.py'] (`WG-10/prompt-and-scripts-tracked.log`) |
 
 Adaptations: The literal directory listing also contained an ignored generated __pycache__; the initial strict two-entry probe failed and is preserved. A read-only git-tracked script inventory proves only run_worldguard.py and run_worldguard_check.py remain, without deleting unrelated generated cache artifacts.
+
+### WG-06 supplemental correction: malformed mapping/container inputs
+
+Independent review of exact `2be566d` found a real acceptance gap: `claim: null`, `inputs: null`, `nodes: null` and `nodes: [42]` returned legacy exit 1 / ok:false instead of WORLDGUARD_INPUT_INVALID / exit 2. The original failed observations remain in external CrossReview/WG-malformed-input-probe.json and WG-malformed-mesh-probe.json. Prior passes are the cases actually run, not complete input-shape coverage.
+
+Root authorized this bounded correction after WG-10 and before WG-11, with a separate `fix:` commit and no historical rewrite or duplicate WG action prefix. GuardContract validates its required mapping sections at construction; mesh construction validates its container/row shapes and node contract mapping. A deliberately contractless node remains a native GAP/exit 1. No execution-stage TypeError catch was added; an internal-native TypeError control still propagates past CLI input handling.
+
+| Check | Exit | Result |
+|---|---:|---|
+| Mirror sync/check | 0 | mirror-ok |
+| Existing CLI/mesh/claim-coverage owners | 0 | 69 passed |
+| Full suite | 0 | 359 passed in 41.43 s |
+| Map check | 0 | 0 errors, 8 expected stale warnings (WG-35) |
+| Models | 0 | 6 passed, 0 failed |
+
+Finite controls include null and list values for claim/world_model/inputs; malformed nodes, edges and snapshots; a bad node-contract mapping; preserved explicit contract:null GAP; and a native TypeError that must not become an input error. Detailed logs: WG-06-followup/.

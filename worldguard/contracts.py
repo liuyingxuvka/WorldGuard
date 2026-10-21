@@ -2,6 +2,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
+from collections.abc import Mapping
 from typing import Any
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
@@ -213,6 +214,11 @@ class GuardContract:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'GuardContract':
+        if not isinstance(data, Mapping):
+            raise ValueError('contract must be a mapping')
+        for name in ('claim', 'world_model', 'inputs'):
+            if name in data and not isinstance(data[name], Mapping):
+                raise ValueError(f'{name} must be a mapping')
         world_model = dict(data.get('world_model', {}))
         inputs = dict(data.get('inputs', {}))
         _reject_retired_runtime_input_paths(world_model, inputs)
