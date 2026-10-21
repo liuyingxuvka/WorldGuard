@@ -3,12 +3,106 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 from yaml import YAMLError
 
 from .io import dump_json, load_mapping
 
 
+
+
+FULL_OUTPUT_HINT = "summary only; add --json for the full report"
+
+
+def _non_pass_guards(child_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "guard": row.get("guard", ""),
+            "status": row.get("status", ""),
+            "errors": [
+                {"code": error.get("code", ""), "message": error.get("message", "")}
+                for error in row.get("errors", [])
+            ],
+            "counterexamples": row.get("counterexamples", []),
+            "missing_slots": row.get("missing_slots", []),
+        }
+        for row in child_results
+        if row.get("status") != "PASS"
+    ]
+
+
+def _unit_summary(report: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "contract_id": report.get("contract_id", ""),
+        "status": report["status"],
+        "structural_status": report.get("structural_status", ""),
+        "semantic_status": report.get("semantic_status", ""),
+        "gaps": report.get("gaps", []),
+        "non_pass_guards": _non_pass_guards(report.get("child_results", [])),
+        "scope_limits": report.get("scope_limits", []),
+    }
+
+
+def _mesh_summary(report: dict[str, Any]) -> dict[str, Any]:
+    nodes = report.get("node_reports", {})
+    depth = report.get("depth_receipt") or {}
+    return {
+        "status": report["status"],
+        "structural_status": report.get("structural_status", ""),
+        "semantic_status": report.get("semantic_status", ""),
+        "gaps": [
+            *report.get("findings", []),
+            *(
+                {"node_id": node_id, **gap}
+                for node_id, node in sorted(nodes.items())
+                for gap in node.get("gaps", [])
+            ),
+        ],
+        "predictive_claim_licensed": depth.get("predictive_claim_licensed", False),
+        "predictive_gaps": depth.get("predictive_gaps", []),
+        "non_pass_nodes": {
+            node_id: _unit_summary(node)
+            for node_id, node in sorted(nodes.items())
+            if node.get("status") != "PASS"
+        },
+        "scope_limits": sorted(set(report.get("scope_limits", []))),
+    }
+
+
+def _blueprint_summary(report: dict[str, Any]) -> dict[str, Any]:
+    keys = ("operation", "status", "native_domain_qualified", "deepest_continuously_proven_layer",
+            "first_unresolved_layer", "changed_ids", "materialized_ids", "target_id",
+            "terminal_input_ids", "terminal_binding_ids", "claim_boundary")
+    summary = {key: report[key] for key in keys if key in report}
+    if "qualification_layers" in report:
+        summary["layers"] = {row["layer_id"]: row["status"] for row in report["qualification_layers"]}
+    summary["gaps"] = [
+        {
+            key: gap[key]
+            for key in ("code", "message", "layer_id", "depth", "node_id", "element_id", "binding_id")
+            if key in gap and gap[key] not in ("", None)
+        }
+        for gap in report.get("gaps", [])
+    ]
+    summary["status"] = report.get("status", "")
+    summary["semantic_status"] = report.get("semantic_status", "")
+    summary["scope_limits"] = report.get("scope_limits", [])
+    return summary
+
+
+def _emit(full: dict[str, Any], summarize, as_json: bool) -> None:
+    if as_json:
+        print(dump_json(full))
+    else:
+        print(dump_json({**summarize(full), "output": FULL_OUTPUT_HINT}))
+
+
+def _example_summary(example: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **{key: value for key, value in example.items() if key != "reports"},
+        "reports": [_unit_summary(report) for report in example.get("reports", [])],
+    }
 
 
 def _input_error(operation: str, input_path: str, exc: Exception) -> int:
@@ -34,8 +128,10 @@ def main(argv: list[str] | None = None) -> int:
     check = subparsers.add_parser("check")
     check.add_argument("--contract", default="")
     check.add_argument("--example", choices=["fuel_cell"], default="")
+    check.add_argument("--json", action="store_true", help="print the full report")
     mesh_check = subparsers.add_parser("mesh-check")
     mesh_check.add_argument("--mesh", required=True)
+    mesh_check.add_argument("--json", action="store_true", help="print the full report")
     blueprint = subparsers.add_parser(
         "blueprint",
         help="check or query one current target-neutral WorldBlueprint",
@@ -46,12 +142,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     blueprint_check = blueprint_commands.add_parser("check")
     blueprint_check.add_argument("--blueprint", required=True)
+    blueprint_check.add_argument("--json", action="store_true", help="print the full report")
     blueprint_impact_command = blueprint_commands.add_parser("impact")
     blueprint_impact_command.add_argument("--blueprint", required=True)
     blueprint_impact_command.add_argument("--changed-id", action="append", required=True)
+    blueprint_impact_command.add_argument("--json", action="store_true", help="print the full report")
     blueprint_trace_command = blueprint_commands.add_parser("trace")
     blueprint_trace_command.add_argument("--blueprint", required=True)
     blueprint_trace_command.add_argument("--target-id", required=True)
+    blueprint_trace_command.add_argument("--json", action="store_true", help="print the full report")
     task_model = subparsers.add_parser(
         "task-model",
         help="freeze, compare, and reversibly evaluate one task-local world model",
@@ -98,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.example == "fuel_cell":
             from .examples.fuel_cell import run_check as run_fuel_cell_check
             example = run_fuel_cell_check()
-            print(dump_json(example))
+            _emit(example, _example_summary, args.json)
             return 0 if example["ok"] else 1
         if not args.contract:
             parser.error("check requires --contract or --example fuel_cell")
@@ -112,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
             report = run_worldguard(contract, context=context)
         except (OSError, UnicodeError, ValueError, YAMLError) as exc:
             return _input_error("check", args.contract, exc)
-        print(dump_json(report.to_dict()))
+        _emit(report.to_dict(), _unit_summary, args.json)
         return 0 if report.status.value == "PASS" else 1
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh
@@ -120,7 +219,7 @@ def main(argv: list[str] | None = None) -> int:
             mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh)))
         except (OSError, UnicodeError, ValueError, YAMLError) as exc:
             return _input_error("mesh-check", args.mesh, exc)
-        print(dump_json(mesh_report.to_dict()))
+        _emit(mesh_report.to_dict(), _mesh_summary, args.json)
         return 0 if mesh_report.status.value == "PASS" else 1
     if args.command == "blueprint":
         from .blueprint import (
@@ -135,21 +234,21 @@ def main(argv: list[str] | None = None) -> int:
             current_blueprint = load_world_blueprint(args.blueprint)
             if operation == "check":
                 report = check_world_blueprint(current_blueprint)
-                print(dump_json(report.to_dict()))
+                _emit(report.to_dict(), _blueprint_summary, args.json)
                 return 0 if report.status.value == "PASS" else 1
             if operation == "impact":
                 report = blueprint_impact(
                     current_blueprint,
                     changed_ids=args.changed_id,
                 )
-                print(dump_json(report.to_dict()))
+                _emit(report.to_dict(), _blueprint_summary, args.json)
                 return 0 if not report.gaps else 1
             if operation == "trace":
                 report = blueprint_reverse_trace(
                     current_blueprint,
                     target_id=args.target_id,
                 )
-                print(dump_json(report.to_dict()))
+                _emit(report.to_dict(), _blueprint_summary, args.json)
                 return 0 if report.status.value == "PASS" else 1
             raise BlueprintError(
                 "WORLD_BLUEPRINT_OPERATION_UNKNOWN",

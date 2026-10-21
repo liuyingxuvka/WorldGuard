@@ -320,7 +320,7 @@ def test_cli_mesh_check_outputs_json(tmp_path, capsys):
     path = tmp_path / "mesh.yaml"
     path.write_text(yaml.safe_dump(pass_mesh()), encoding="utf-8")
 
-    assert main(["mesh-check", "--mesh", str(path)]) == 0
+    assert main(["mesh-check", "--mesh", str(path), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
 
     assert data["status"] == "PASS"

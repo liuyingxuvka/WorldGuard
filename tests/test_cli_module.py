@@ -132,3 +132,19 @@ def test_portable_launcher_runs_from_a_copied_skill(tmp_path):
     probe = f"import sys; sys.path.insert(0, {str(skill / 'runtime')!r}); import worldguard.cli as c; print(c.__file__)"
     done = subprocess.run([sys.executable, "-c", probe], cwd=tmp_path, text=True, capture_output=True)
     assert Path(done.stdout.strip()).resolve().is_relative_to(skill / "runtime")
+
+
+
+
+def test_default_output_is_a_summary_and_json_is_full():
+    command = [sys.executable, "-m", "worldguard", "check", "--example", "fuel_cell"]
+    done = subprocess.run(command, text=True, capture_output=True)
+    assert done.returncode == 0, done.stderr
+    assert len(done.stdout) < 10000
+    summary = json.loads(done.stdout)
+    assert summary["claim_statuses"] == ["PASS", "PASS", "FAIL"]
+    failing = summary["reports"][2]
+    assert {"status", "semantic_status", "gaps", "scope_limits"} <= set(failing)
+    assert {row["guard"] for row in failing["non_pass_guards"]} == {"ConflictGuard", "NormGuard"}
+    full = subprocess.run([*command, "--json"], text=True, capture_output=True)
+    assert "child_results" in json.loads(full.stdout)["reports"][0]

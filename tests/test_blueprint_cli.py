@@ -20,7 +20,7 @@ FIXTURE = ROOT / "tests/fixtures/world_blueprint/planning_workflow_three_level.y
 
 
 def test_blueprint_check_cli_emits_canonical_report(capsys) -> None:
-    exit_code = main(["blueprint", "check", "--blueprint", str(FIXTURE)])
+    exit_code = main(["blueprint", "check", "--blueprint", str(FIXTURE), "--json"])
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0

@@ -490,3 +490,26 @@ Status: completed.
 | `models` | 0 | models: 6 passed, 0 failed (`WG-25/models.log`) |
 
 Adaptations: 额外保留修前实际 CLI JSON（pre-fix.log），没有以改松 NormGuard 取得通过。
+
+### WG-26: 默认输出改成简短摘要，完整 JSON 放到 --json 后面
+
+Status: completed.
+
+check/mesh/blueprint 默认摘要，--json 保持原生完整报告，task-model 和错误 JSON/退出码不变。44 项 focused、312 项完整测试和 6 个模型通过；11 组真实 CLI full/summary 正反对照保留 FAIL/GAP、错误、缺口和退出码。
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `mirror` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-26/mirror.log`) |
+| `cli` | 0 | 44 passed in 6.59s (`WG-26/cli.log`) |
+| `full-summary` | 1 | AssertionError: ('blueprint-gap', 'summary', 1, '    "message": "A target-required element lacks its one authority-applicable binding role."\n    }\n  ],\n  "layers": {\n    "bindings": "gap",\n    "domain_semantics": "p (`WG-26/full-summary.log`) |
+| `full-summary-final` | 1 | KeyError: 'status' (`WG-26/full-summary-final.log`) |
+| `mirror-final` | 0 | {"action":"check","authority":{"author_source":"worldguard","derived_projection":"skills/worldguard/runtime/worldguard","direction":"author_source_to_derived_projection_only"},"claim_boundary":"This audit proves raw-byte (`WG-26/mirror-final.log`) |
+| `full-summary-verified` | 0 | } (`WG-26/full-summary-verified.log`) |
+| `help` | 0 |   --json                print the full report (`WG-26/help.log`) |
+| `change` | 0 | ARCH INFO duplicate_code worldguard.templates: 2 identical bodies (513 AST nodes) in ['worldguard.templates']: skills/worldguard/runtime/worldguard/template_packs.py:run_template_pack_contract, worldguard/template_packs. (`WG-26/change.log`) |
+| `pytest` | 0 | 312 passed in 42.70s (`WG-26/pytest.log`) |
+| `map` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-26/map.log`) |
+| `models` | 0 | models: 6 passed, 0 failed (`WG-26/models.log`) |
+| `metadata-prose` | 0 | check: 0 error(s), 9 warning(s), 0 info (`WG-26/metadata-prose.log`) |
+
+Adaptations: 参考片段未给蓝图提供承诺的通用字段；摘要 status/semantic_status/scope_limits 均取原生值，缺省为空字符串/空列表，不制造 PASS 或许可，SKILL 明确空值含义。完整 suite 后仅补空值含义文案，重验提示词大小和 map；未重复无行为变化的全量。外部 probe 首次误估 blueprint GAP 退出码为 0（实际 1），再次假设 impact full 含 status（实际不含）；均属 probe 假设错误，非产品 crash，原日志/输出目录完整保留。LogicWriting 同步由其 owner/XR 负责，本库未改兄弟仓库。
