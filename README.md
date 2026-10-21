@@ -35,14 +35,14 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 WorldGuard provides two core check shapes:
 
-- `GuardContract`: checks one claim against one explicit world model.
+- `GuardContract`: checks one claim against one explicit world model. The claim says what it claims as `claim.asserts` rows, which are evaluated on the model; the claim text is never read.
 - `ModelMeshContract`: checks multiple model nodes, authority boundaries, read-only handoffs, source freshness, dependency cycles, and child ledger preservation.
 
 The runtime returns four statuses without collapsing them:
 
 - `PASS`: the declared model supports the requested claim.
 - `FAIL`: the declared model contradicts the claim.
-- `GAP`: required model inputs are missing.
+- `GAP`: required model inputs are missing, or the claim is not bound to the model (no `claim.asserts`).
 - `BOUNDARY_EXCEEDED`: the claim asks the model to support semantics it does not own.
 
 ## Guard Families

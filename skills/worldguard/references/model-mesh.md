@@ -6,7 +6,7 @@ Use ModelMesh when a question depends on more than one model, model version, or 
 
 `GuardContract` is the unit-level check. `ModelMeshContract` is the topology-level check.
 
-Do not report a mesh as `PASS` merely because a child `GuardContract` passed. Mesh closure must also check authority, handoff, freshness, cycles, and child evidence preservation.
+Do not report a mesh as `PASS` merely because a child `GuardContract` passed. Mesh closure must also check authority, handoff, freshness, cycles, and child evidence preservation. Each node's contract binds its claim with `claim.asserts` like a unit contract: a false node assertion fails the mesh, and a node claim without assertions is a gap.
 
 ## ModelMeshContract Fields
 

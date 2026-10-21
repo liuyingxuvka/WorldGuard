@@ -1035,3 +1035,21 @@ Mesh semantic and final verdict now include every node claim binding: native CLI
 | `pytest` | 0 | 281 passed in 25.73s (`WG-52/pytest.log`) |
 
 Adaptations: The first external CLI probe incorrectly looked for summary gaps in full --json output and raised KeyError; product returned valid full PASS showing the original mesh aggregation bug. Corrected probe uses the documented default summary; initial output and failed-probe log retained. No product exception was involved.
+
+### WG-53: SKILL.md、参考、README 和 OpenSpec 写明主张绑定和新字段；技能描述改成 Use for / Not for 形式
+
+Status: completed.
+
+Skill entry, contract/mesh references, README and two current OpenSpec specs document assertion binding and the three gap codes; Use for/Not for description is exactly 275 characters and name remains worldguard. Five focused and 281 full tests passed, map 0/0 and models 3/3.
+
+| Check | Exit | Actual result / log |
+|---|---:|---|
+| `metadata` | 0 | worldguard 275 3504 (`WG-53/metadata.log`) |
+| `openspec` | 0 | SKIPPED: optional openspec CLI unavailable (`WG-53/openspec.log`) |
+| `focused` | 0 | 5 passed in 0.78s (`WG-53/focused.log`) |
+| `confirm` | 0 | confirmed 1 component(s) (`WG-53/confirm.log`) |
+| `map` | 0 | check: 0 error(s), 0 warning(s), 0 info (`WG-53/map.log`) |
+| `release` | 0 | verify: PASS (map, lint and models only; tests not run; run python -m pytest -q separately) (`WG-53/release.log`) |
+| `pytest` | 0 | 281 passed in 25.31s (`WG-53/pytest.log`) |
+
+Adaptations: SKILL is 3504 bytes rather than reference3386 because the earlier authorized WG26 metadata-empty-value explanation is retained. Optional OpenSpec CLI unavailable, explicitly skipped; no official validation claim.

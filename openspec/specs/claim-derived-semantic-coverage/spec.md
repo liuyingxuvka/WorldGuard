@@ -33,7 +33,7 @@ WorldGuard SHALL have one current target-native closure behavior in which requir
 - **THEN** WorldGuard SHALL still execute all required Guard semantics and SHALL limit only the claim boundary, not the validation depth
 
 ### Requirement: Claim-derived Guard routes
-WorldGuard SHALL derive required Guards and semantic routes from structured claim semantics and SHALL always run the complete derived set. Caller-declared `target_guards` are reported back but SHALL NOT shrink, extend or block the derived set.
+WorldGuard SHALL derive required Guards and semantic routes from structured claim semantics and the kinds of claim assertions, and SHALL always run the complete derived set. Caller-declared `target_guards` are reported back but SHALL NOT shrink, extend or block the derived set.
 
 #### Scenario: Caller omits a required Guard
 - **WHEN** structured claim semantics require a Guard that `target_guards` does not name

@@ -21,6 +21,21 @@ The runtime SHALL expose canonical `GuardContract`, `GuardResult`, `LedgerEntry`
 - **WHEN** a `GuardResult` is created with `GAP`, `FAIL`, or `BOUNDARY_EXCEEDED`
 - **THEN** validation requires missing slots, boundary trace, errors, or counterexamples and rejects unsupported non-pass results.
 
+### Requirement: Claims bound to the world model
+The runtime SHALL evaluate each `claim.asserts` row against the world model and SHALL NOT read the claim text. A claim without assertions SHALL be `GAP` with gap code `CLAIM_NOT_BOUND`; a false assertion SHALL be `FAIL` with gap code `CLAIM_ASSERTION_FALSE` and the observed model value; an assertion that names something the model does not declare SHALL be `GAP` with `CLAIM_ASSERTION_UNRESOLVED`. EventGuard SHALL check `events[].requires` and CausalGuard SHALL check `causal_model.constraints`.
+
+#### Scenario: A consistent world with a contradicted claim fails
+- **WHEN** the locked-door scene is consistent but the claim asserts that Iris entered before Mara unlocked the door
+- **THEN** the check is `FAIL` with `CLAIM_ASSERTION_FALSE`
+
+#### Scenario: A model contradiction is caught
+- **WHEN** the key is handed over after the door is unlocked, or the ferry leaves before the train arrives
+- **THEN** EventGuard reports `EVENT_PRECONDITION_UNMET` or CausalGuard reports `CAUSAL_CONSTRAINT_VIOLATED`
+
+#### Scenario: An unbound claim cannot pass
+- **WHEN** a claim has no `asserts`
+- **THEN** the check is `GAP` with `CLAIM_NOT_BOUND`
+
 ### Requirement: Seven Guard Runners
 The runtime SHALL provide EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard, and NormGuard runners that can each produce `PASS`, `FAIL`, `GAP`, and `BOUNDARY_EXCEEDED` under tests.
 
