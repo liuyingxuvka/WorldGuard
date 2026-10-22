@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -14,7 +14,7 @@ def run(contract: GuardContract):
     payoffs = game_model.get("payoffs", [])
     transitions = game_model.get("transitions", [])
 
-    if requested & {"obligation", "permission", "deontic"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

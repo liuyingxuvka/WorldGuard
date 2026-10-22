@@ -48,7 +48,7 @@
       "layer": "",
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
-        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries",
         "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints; scenario and intervention assignments override equations and share native runs across reports, constraints and claim rows",
         "Keep shared ledgers, reports and status aggregation"
       ],
@@ -80,14 +80,14 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:649e77fee28457848159b6927ffe486e8b0a06bbb8f2b6284472f909176d237b"
+      "fingerprint": "sha256:7a5d898750126dd640762b0b7122eff9c719ed4b9f2b0daefba7fd98d928962c"
     },
     {
       "id": "worldguard.guards",
       "layer": "",
       "summary": "Seven structural Guards and their native family oracle catalog",
       "responsibilities": [
-        "Run the seven named structural Guard checks, including event preconditions and causal constraints, with shared errors and ledgers",
+        "Run the seven named structural Guard checks, including event preconditions and causal constraints, with shared errors and ledgers; read unsupported boundaries from the shared native table",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -122,7 +122,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:347c1bc248384fccb07a376c399df09f339535ccf361e8badc00bb312b38005a"
+      "fingerprint": "sha256:edd8d52263be8d4bd0bf25cd77bdd7717c09a10f266387db0c8f64dcc6297237"
     },
     {
       "id": "worldguard.qualification",
@@ -158,7 +158,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:5a7438ebbaef65bc5810d04fd16d63d10a5a476d608f53aa41278cf82c46f78e"
+      "fingerprint": "sha256:02602c3c7534b814479c0f1d8dbbde5322b808bc75382134a488a6ba281345a0"
     },
     {
       "id": "worldguard.mesh",

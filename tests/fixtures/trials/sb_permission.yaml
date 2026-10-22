@@ -1,0 +1,38 @@
+# Story "The Lighthouse": chapter 1.
+# Ada (keeper) receives lamp oil from Ben (boatman) at t1, lights the lamp at t2.
+# Cora (inspector) arrives at t3 by Ben's boat and finds the logbook in the lamp room at t4.
+contract_id: lighthouse-ch1
+claim:
+  claim_id: c_ch1
+  text: Ben brings oil at t1, Ada lights the lamp at t2, Cora arrives at t3 and reads the logbook in the lamp room at t4.
+  requested_semantics: [event, agent, spatial, resource, permission]
+  asserts:
+    - {event: e_oil_delivered, before: e_lamp_lit}
+    - {holds: lamp_lit, at: t2}
+    - {holds: cora_on_island, at: t3}
+    - {agent: Cora, intends: inspect_logbook}
+    - {relation: NTPP, x: logbook, y: lamp_room, at: t4}
+    - {place: lamp_room, color: cora, qty: 1}
+world_model: {model_id: lighthouse, model_version: ch1, scope_limits: [chapter 1 only]}
+inputs:
+  event_model: {initial_states: [ben_has_oil, ben_at_mainland, ada_on_island, lamp_dark, cora_at_mainland]}
+  events:
+    - {event_id: e_oil_delivered, at: t1, requires: [ben_has_oil], initiates: ada_has_oil, terminates: ben_has_oil}
+    - {event_id: e_lamp_lit, at: t2, requires: [ada_has_oil, lamp_dark], initiates: lamp_lit, terminates: lamp_dark}
+    - {event_id: e_cora_arrives, at: t3, requires: [cora_at_mainland], initiates: cora_on_island, terminates: cora_at_mainland}
+    - {event_id: e_cora_reads, at: t4, requires: [cora_on_island], initiates: logbook_read}
+  beliefs:
+    Ada:  {agent_id: Ada,  beliefs: [ship_due_tonight], desires: [keep_light_burning], intentions: [light_lamp]}
+    Ben:  {agent_id: Ben,  beliefs: [ada_needs_oil], desires: [get_paid], intentions: [deliver_oil]}
+    Cora: {agent_id: Cora, beliefs: [logbook_falsified], desires: [expose_fraud], intentions: [inspect_logbook]}
+  spatial_relations:
+    - {at: t4, x: logbook, y: lamp_room, relation: NTPP}
+    - {at: t4, x: lamp_room, y: lighthouse, relation: NTPP}
+    - {at: t4, x: cora, y: lamp_room, relation: NTPP}
+  resources:
+    places: {mainland: [{color: cora, qty: 1}], boat: [], island_dock: [], lamp_room: []}
+    capacities: {boat: 2}
+    transitions:
+      - {id: cora_boards, consumes: [{place: mainland, color: cora, qty: 1}], produces: [{place: boat, color: cora, qty: 1}]}
+      - {id: cora_lands, consumes: [{place: boat, color: cora, qty: 1}], produces: [{place: island_dock, color: cora, qty: 1}]}
+      - {id: cora_climbs, consumes: [{place: island_dock, color: cora, qty: 1}], produces: [{place: lamp_room, color: cora, qty: 1}]}

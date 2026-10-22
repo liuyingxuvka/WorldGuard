@@ -58,6 +58,10 @@ runs even on an empty scenario; constraints and unscoped variable assertions che
 holdout and intervention. Select a run with `scenario: <id>`. Interventions use a list of mappings with
 unique ids, a declared scenario id and numeric assignments; malformed or colliding run identities are input errors.
 
+A declared boundary of a Guard already derived from the claim yields `BOUNDARY_EXCEEDED`. A boundary
+belonging only to an unselected Guard remains an unmapped `GAP` with a hint naming its normal semantic.
+Real failures and gaps keep their priority: `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+
 ## Guard Families
 
 WorldGuard currently includes these guard families:
@@ -188,6 +192,10 @@ YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事�
 也会执行。约束及未指定 `scenario` 的变量断言检查所有场景、留出和干预；可用
 `scenario: <id>` 选择一次运行。干预必须是包含唯一 ID、已声明场景 ID 和数字赋值的映射列表；
 错误形状和相互冲突的运行 ID 是输入错误。
+
+已由声明派生的 Guard 遇到自己声明的边界时，结果为 `BOUNDARY_EXCEEDED`。只属于未选 Guard
+的边界仍是未映射 `GAP`，并提示对应 Guard 的常规语义。真实失败和缺口的优先级保持为
+`FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`。
 
 ## Guard 类型
 

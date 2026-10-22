@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.semantic import causal_constraint_findings
 from worldguard.status import GuardStatus
 
@@ -41,7 +41,7 @@ def run(contract: GuardContract):
     graph = causal_model.get("graph", [])
     claim_scope = causal_model.get("claim_scope", "equation_model")
 
-    if requested & {"temporal_story"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

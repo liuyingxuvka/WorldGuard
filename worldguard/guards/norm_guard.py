@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts
 from worldguard.status import GuardStatus
 
@@ -27,7 +27,7 @@ def run(contract: GuardContract):
     }
     norms = norm_model.get("norms", [])
 
-    if requested & {"token", "capacity", "physical_enablement"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

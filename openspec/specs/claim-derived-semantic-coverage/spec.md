@@ -41,7 +41,7 @@ WorldGuard SHALL derive required Guards and semantic routes from structured clai
 
 #### Scenario: Claim semantics are unknown
 - **WHEN** a requested semantic maps to no Guard
-- **THEN** WorldGuard SHALL report `QUALIFICATION_SEMANTIC_UNMAPPED` as a gap instead of falling back to the caller's Guard list
+- **THEN** WorldGuard SHALL report `QUALIFICATION_SEMANTIC_UNMAPPED` as a gap instead of falling back to the caller's Guard list. An unsupported boundary belonging to an already-derived Guard SHALL not be unmapped; a boundary belonging only to an unselected Guard SHALL remain a gap with a hint naming its owner and normal semantic
 
 ### Requirement: Every mesh node is checked
 WorldGuard SHALL run each mesh node's contract once. A node without a contract SHALL produce `GAP` with `MESH_EXPECTED_NODE_CONTRACT_MISSING`. Caller expected lists and exclusions SHALL NOT remove nodes from checking.

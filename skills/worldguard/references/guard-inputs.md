@@ -15,6 +15,11 @@ without `asserts` is `GAP` (`CLAIM_NOT_BOUND`: claim not bound to the world mode
 To mark a part of the claim that a Guard does not own, add its id to `requested_semantics`; that Guard then
 reports `BOUNDARY_EXCEEDED`. The ids are listed per Guard.
 
+A boundary id listed below yields `BOUNDARY_EXCEEDED` only alongside a Guard already derived from
+normal semantics or assertions. A boundary of an unselected Guard remains `QUALIFICATION_SEMANTIC_UNMAPPED`
+`GAP`, with a hint naming that Guard and its normal semantic. Real failures and gaps retain priority:
+`FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+
 ## EventGuard
 
 ```yaml

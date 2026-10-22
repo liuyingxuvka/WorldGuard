@@ -163,3 +163,68 @@ def test_exact_input_repetition_has_stable_qualification_identity() -> None:
 def test_unknown_report_field_fails_closed() -> None:
     with pytest.raises(ValueError, match="unknown fields"):
         GuardedReport.validate_payload_fields({"status": "PASS", "legacy": {}})
+
+
+@pytest.mark.parametrize("file,expected", [
+    ("sb_metric_distance.yaml", "BOUNDARY_EXCEEDED"),
+    ("sb_numeric_dynamics.yaml", "BOUNDARY_EXCEEDED"),
+    ("sb_payoff.yaml", "BOUNDARY_EXCEEDED"),
+    ("sb_permission.yaml", "BOUNDARY_EXCEEDED"),
+    ("trip_boundary.yaml", "BOUNDARY_EXCEEDED"),
+    ("trip_boundary_neg.yaml", "FAIL"),
+])
+def test_declared_boundary_trials_keep_their_native_status(file, expected, capsys):
+    import json
+    from pathlib import Path
+    from worldguard.cli import main
+    path = Path(__file__).parent / "fixtures/trials" / file
+    assert main(["check", "--contract", str(path), "--json"]) == 1
+    result = json.loads(capsys.readouterr().out)
+    assert result["status"] == expected
+    assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in result["gaps"])
+
+
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS
+
+
+@pytest.mark.parametrize("guard", list(GUARD_BOUNDARY_SEMANTICS))
+def test_each_derived_guard_boundary_is_a_final_boundary(guard):
+    import re
+    from pathlib import Path
+    import yaml
+    from tests.helpers import GUARD_SEMANTICS, make_contract
+    text = (Path(__file__).parents[1] / "skills/worldguard/references/guard-inputs.md").read_text()
+    block, assertion = re.search(rf"^## {guard}\n\n```yaml\n(.*?)```\n\nClaim assertion: `(\{{.*?\}})`", text, re.S | re.M).groups()
+    contract = make_contract(guard, inputs=yaml.safe_load(block), asserts=[yaml.safe_load(assertion)],
+                            requested_semantics=[GUARD_SEMANTICS[guard], sorted(GUARD_BOUNDARY_SEMANTICS[guard])[0]])
+    report = run_worldguard(contract)
+    assert report.status == GuardStatus.BOUNDARY_EXCEEDED
+    assert report.structural_status == GuardStatus.BOUNDARY_EXCEEDED
+    assert report.semantic_status == SemanticStatus.PASS
+    assert report.claim_binding["status"] == "PASS"
+    assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in report.gaps)
+
+
+def test_boundary_of_an_unselected_guard_remains_unmapped_with_a_hint():
+    contract = _event_contract()
+    contract["claim"]["requested_semantics"].append("geometry")
+    report = run_worldguard(contract)
+    assert report.status == GuardStatus.GAP
+    assert report.effective_guards == ["EventGuard"]
+    gap = next(gap for gap in report.gaps if gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED")
+    assert gap["semantic"] == "geometry"
+    assert "SpaceGuard" in gap["message"] and "request space" in gap["message"]
+
+
+@pytest.mark.parametrize("broken,expected", [("missing", GuardStatus.GAP), ("contradiction", GuardStatus.FAIL)])
+def test_real_native_non_pass_outranks_a_declared_boundary(broken, expected):
+    contract = _event_contract()
+    contract["claim"]["requested_semantics"].append("numeric_dynamics")
+    if broken == "missing":
+        contract["inputs"] = {}
+    else:
+        contract["inputs"]["events"][0]["requires"] = ["not_given"]
+    report = run_worldguard(contract)
+    assert report.status == expected
+    assert report.structural_status == GuardStatus.BOUNDARY_EXCEEDED
+    assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in report.gaps)

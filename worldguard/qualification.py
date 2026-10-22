@@ -7,6 +7,8 @@ from typing import Any
 from .claim_binding import evaluate_claim_binding
 from .contracts import (
     GuardContract,
+    GUARD_BOUNDARY_SEMANTICS,
+    SEMANTIC_GUARD_ROUTES,
     derive_guard_requirements,
 )
 from .guards import GUARD_RUNNERS
@@ -112,6 +114,11 @@ def _semantic_gap_rows(
                 "affected_atom_ids": affected_atoms,
             }
         )
+    for row in rows:
+        owners = [guard for guard, boundaries in GUARD_BOUNDARY_SEMANTICS.items() if row["semantic"] in boundaries]
+        if owners:
+            hints = [f"{guard} (also request {next(key for key, routes in SEMANTIC_GUARD_ROUTES.items() if routes == (guard,))})" for guard in owners]
+            row["message"] = f"{row['semantic']} is a boundary id of " + ", ".join(hints)
     return rows
 
 

@@ -30,6 +30,9 @@ Scenario values replace equations for those variables. Constraints and unscoped 
 check every scenario, holdout and declared intervention; `scenario` can select an intervention id.
 Write interventions as a list; see the CausalGuard example in the input reference.
 
+A derived Guard's declared unsupported boundary yields `BOUNDARY_EXCEEDED`; a boundary belonging only
+to an unselected Guard is a gap with a routing hint. Real `FAIL` and missing-input `GAP` take priority.
+
 ## Results
 
 Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.

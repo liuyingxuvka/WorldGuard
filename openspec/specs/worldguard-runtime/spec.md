@@ -105,3 +105,18 @@ query the declared intervention result.
 - **WHEN** interventions are not a list of mappings with unique nonempty ids, declared scenario ids and
   finite numeric assignments to known variables or exogenous inputs, or run ids collide
 - **THEN** the CLI SHALL return input error 2 rather than skipping or overwriting a run
+
+### Requirement: Declared Guard boundaries preserve the four statuses
+One shared per-Guard boundary-semantics table SHALL own the existing unsupported semantic ids.
+Required Guards SHALL be derived before boundary ids are removed from unmapped semantics. Only the
+boundary of at least one already-derived Guard SHALL be treated as a boundary; an unselected Guard's
+boundary SHALL remain an unmapped gap with an owner/semantic hint. All seven Guard runners SHALL read
+the shared table. The status priority SHALL remain `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+
+#### Scenario: Only a selected Guard boundary is exceeded
+- **WHEN** a well-formed supported model has true assertions and requests a derived Guard's unsupported boundary
+- **THEN** final status SHALL be `BOUNDARY_EXCEEDED`, exit 1, without an unmapped-semantic gap
+
+#### Scenario: A real failure or missing input accompanies a boundary
+- **WHEN** the model also has a real failed native check or unresolved required input
+- **THEN** the final result SHALL retain `FAIL` or `GAP` respectively

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -26,7 +26,7 @@ def run(contract: GuardContract):
     requested = requested_semantic_ids(contract)
     relations = contract.inputs.get("spatial_relations", [])
 
-    if requested & {"metric_distance", "geometry"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

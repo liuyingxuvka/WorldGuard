@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.semantic import missing_bdi_fields
 from worldguard.status import GuardStatus
 
@@ -13,7 +13,7 @@ def run(contract: GuardContract):
     agents = contract.inputs.get("beliefs", {})
     agent_model = contract.inputs.get("agent_model", {})
 
-    if requested & {"payoff", "equilibrium", "causal_effect", "permission"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

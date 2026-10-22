@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.semantic import event_precondition_failures
 from worldguard.status import GuardStatus
 
@@ -33,7 +33,7 @@ def run(contract: GuardContract):
         event_model.get("transitions", []) if isinstance(event_model, dict) else []
     )
 
-    if requested & {"numeric_dynamics", "thermodynamics", "continuous_dynamics"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

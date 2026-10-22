@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -18,7 +18,7 @@ def run(contract: GuardContract):
     capacities = resources.get("capacities", {}) if isinstance(resources, dict) else {}
     inventory = resources.get("inventory", []) if isinstance(resources, dict) else []
 
-    if requested & {"permission", "authorization", "obligation"}:
+    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
         return result(
             contract,
             guard,

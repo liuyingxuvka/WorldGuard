@@ -7,6 +7,15 @@ from collections.abc import Mapping
 from typing import Any
 from .clock import validate_times
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
+GUARD_BOUNDARY_SEMANTICS: dict[str, frozenset[str]] = {
+    'EventGuard': frozenset({'numeric_dynamics', 'thermodynamics', 'continuous_dynamics'}),
+    'AgentGuard': frozenset({'payoff', 'equilibrium', 'causal_effect', 'permission'}),
+    'SpaceGuard': frozenset({'metric_distance', 'geometry'}),
+    'ResourceGuard': frozenset({'permission', 'authorization', 'obligation'}),
+    'CausalGuard': frozenset({'temporal_story'}),
+    'ConflictGuard': frozenset({'obligation', 'permission', 'deontic'}),
+    'NormGuard': frozenset({'token', 'capacity', 'physical_enablement'}),
+}
 CLAIM_ASSERTION_KINDS: dict[str, str] = {'holds': 'event', 'before': 'event', 'place': 'resource', 'variable': 'causal', 'agent': 'agent', 'relation': 'spatial', 'modality': 'norm', 'player': 'conflict'}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
 RETIRED_WORLD_MODEL_INPUT_FIELDS = {'event_line', 'agents', 'rcc8_relations', 'resources', 'causal_variables', 'causal_equations', 'causal_graph', 'conflict_players', 'conflict_actions', 'conflict_states', 'conflict_payoffs', 'conflict_transitions', 'norms', 'facts', 'variable_observations', 'signal_observations'}
@@ -193,7 +202,8 @@ def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     for semantic in semantics:
         guards.extend(SEMANTIC_GUARD_ROUTES.get(semantic, ()))
     guard_ids = tuple(dict.fromkeys(guards))
-    unmapped = tuple((semantic for semantic in semantics if semantic not in SEMANTIC_GUARD_ROUTES))
+    boundaries = {semantic for guard in guard_ids for semantic in GUARD_BOUNDARY_SEMANTICS.get(guard, ())}
+    unmapped = tuple(semantic for semantic in semantics if semantic not in SEMANTIC_GUARD_ROUTES and semantic not in boundaries)
     identity = {'schema_version': 'worldguard.guard_requirement_derivation.v1', 'claim_id': claim.claim_id, 'requested_semantics': list(semantics), 'guard_ids': list(guard_ids), 'unmapped_semantics': list(unmapped)}
     canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
     return GuardRequirementDerivation(claim_id=claim.claim_id, requested_semantics=semantics, guard_ids=guard_ids, unmapped_semantics=unmapped, fingerprint='sha256:' + hashlib.sha256(canonical).hexdigest())
