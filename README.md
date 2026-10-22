@@ -47,6 +47,12 @@ The runtime returns four statuses without collapsing them:
 - `GAP`: required model inputs are missing, or the claim is not bound to the model (no `claim.asserts`).
 - `BOUNDARY_EXCEEDED`: the claim asks the model to support semantics it does not own.
 
+Event times use one format per contract: YAML numbers, labels with a shared prefix (`t1`, `t2`),
+ISO dates/times with a consistent timezone convention, or quoted same-day clocks (`"9:40"`, `"17:12:30"`).
+Unknown or mixed times and duplicate event ids within one scenario are input errors (exit 2).
+Use ISO dates across midnight. YAML's unquoted `9:40` is a number, so quote clock values.
+Event assertions can select `scenario`; reused ids without a scenario and unknown scenarios are gaps.
+
 ## Guard Families
 
 WorldGuard currently includes these guard families:
@@ -166,6 +172,12 @@ WorldGuard 有两种核心检查形态：
 - `FAIL`：模型反驳这个声明。
 - `GAP`：缺少必要输入。
 - `BOUNDARY_EXCEEDED`：声明要求模型支持它没有权限支持的语义。
+
+每份合约的事件和 `holds.at` 只用一种时间写法：YAML 数字、同前缀标签（`t1`、`t2`）、
+时区约定一致的 ISO 日期时间，或带引号的同日钟点（`"9:40"`、`"17:12:30"`）。
+未知或混写时间、同场景重复事件 ID 是输入错误（退出 2）。跨午夜请用 ISO 日期。
+YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事件断言可用 `scenario`
+指定场景；复用 ID 未指定场景而有歧义或指定未知场景时返回缺口。
 
 ## Guard 类型
 

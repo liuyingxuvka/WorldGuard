@@ -211,3 +211,62 @@ def test_launcher_reads_json_without_pyyaml(tmp_path):
     done = run_without_yaml(example)
     assert done.returncode == 2
     assert "PyYAML" in json.loads(done.stdout)["error"]["message"]
+
+
+@pytest.mark.parametrize("times", [
+    ("0", "2.5"), ("1", "2.5"), ("t1", "t2"), ('"9:40"', '"10:20"'),
+    ("2026-11-02", "2026-11-03"),
+    ("2026-11-02T09:40:00", "2026-11-02T10:20:00"),
+    ("2026-11-02T09:40:00+01:00", "2026-11-02T10:20:00+01:00"),
+])
+@pytest.mark.parametrize("full", [False, True])
+def test_actual_cli_preserves_native_yaml_time_values(tmp_path, times, full):
+    path = tmp_path / "native-times.yaml"
+    path.write_text('claim: {claim_id: time, asserts: [{event: first, before: second}]}\ninputs:\n  events:\n'
+                    f'    - {{event_id: first, at: {times[0]}, initiates: ready}}\n'
+                    f'    - {{event_id: second, at: {times[1]}, requires: ready, initiates: done}}\n')
+    completed = subprocess.run([sys.executable, "-m", "worldguard", "check", "--contract", str(path),
+                                *(["--json"] if full else [])], capture_output=True, text=True)
+    assert completed.returncode == 0, (completed.stdout, completed.stderr)
+    report = json.loads(completed.stdout)
+    assert report["status"] == "PASS"
+    if full:
+        assert len(report["semantic_receipts"][0]["outputs"]["observed_timepoints"]) == 2
+
+
+def test_cli_reports_unquoted_yaml_clock_mix_with_quote_hint(tmp_path):
+    path = tmp_path / "mixed-clock.yaml"
+    path.write_text('claim: {requested_semantics: [event]}\ninputs:\n  events:\n'
+                    '    - {event_id: raw_clock, at: 9:40, initiates: ready}\n'
+                    '    - {event_id: quoted_clock, at: "10:20", initiates: done}\n')
+    completed = subprocess.run([sys.executable, "-m", "worldguard", "check", "--contract", str(path)],
+                               capture_output=True, text=True)
+    assert completed.returncode == 2
+    result = json.loads(completed.stdout)
+    assert result["error"]["code"] == "WORLDGUARD_INPUT_INVALID"
+    assert 'quote clock times' in result["error"]["message"]
+    assert 'raw_clock' in result["error"]["message"]
+
+
+def test_cli_rejects_label_suffix_instead_of_sorting_it_last(tmp_path):
+    path = tmp_path / "bad-label.json"
+    path.write_text(json.dumps({"claim": {"requested_semantics": ["event"]},
+                               "inputs": {"events": [{"event_id": "bad-label", "at": "t4b", "initiates": "ready"}]}}))
+    completed = subprocess.run([sys.executable, "-m", "worldguard", "check", "--contract", str(path)],
+                               capture_output=True, text=True)
+    assert completed.returncode == 2
+    result = json.loads(completed.stdout)
+    assert result["error"]["code"] == "WORLDGUARD_INPUT_INVALID"
+    assert "bad-label" in result["error"]["message"]
+
+
+def test_cli_missing_event_time_keeps_native_gap(tmp_path):
+    path = tmp_path / "missing-time.json"
+    path.write_text(json.dumps({"claim": {"claim_id": "missing-time", "requested_semantics": ["event"]},
+                               "inputs": {"events": [{"event_id": "e1", "initiates": "ready"}]}}))
+    completed = subprocess.run([sys.executable, "-m", "worldguard", "check", "--contract", str(path), "--json"],
+                               capture_output=True, text=True)
+    assert completed.returncode == 1
+    result = json.loads(completed.stdout)
+    assert result["status"] == "GAP"
+    assert result["semantic_receipts"][0]["findings"][0]["code"] == "SEM_EVENT_MISSING_AXIOM"

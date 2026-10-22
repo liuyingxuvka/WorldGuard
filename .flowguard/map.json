@@ -48,7 +48,7 @@
       "layer": "",
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
-        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities",
         "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints",
         "Keep shared ledgers, reports and status aggregation"
       ],
@@ -58,7 +58,8 @@
         "worldguard/status.py",
         "worldguard/ledgers.py",
         "worldguard/reports.py",
-        "worldguard/semantic.py"
+        "worldguard/semantic.py",
+        "worldguard/clock.py"
       ],
       "entrypoints": [
         "worldguard/contracts.py:derive_guard_requirements",
@@ -79,7 +80,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:7c5c688cba3f233bee9777a098f05ad8a7ec5007720cd026f1c943511ac15c67"
+      "fingerprint": "sha256:9302b036ce3288a5e1ff65b44b5be2be5a0eb516f3029b73cc2ed0649dc4530b"
     },
     {
       "id": "worldguard.guards",
@@ -121,7 +122,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:449c477ebd1b40c766aed1aed34f157a2cce5bbd2684e919e84c2be940c0d50e"
+      "fingerprint": "sha256:5f9e22e6e68f54d5624d984cf01360b4dd7362980a6a733a831ebebebcfaa4eb"
     },
     {
       "id": "worldguard.qualification",
@@ -157,7 +158,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:22c7352306de44e3795f42895c0649592b2837f9c52659576f09df3165ff1dbf"
+      "fingerprint": "sha256:5a7438ebbaef65bc5810d04fd16d63d10a5a476d608f53aa41278cf82c46f78e"
     },
     {
       "id": "worldguard.mesh",

@@ -7,11 +7,12 @@ import math
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import StrEnum
 from typing import Any, Callable, Mapping
 
 from .contracts import GuardContract
+from .clock import time_key
+from .io import json_default
 
 
 class SemanticStatus(StrEnum):
@@ -33,18 +34,9 @@ class ProviderStatus(StrEnum):
 NORM_MODALITIES = frozenset({"permitted", "obligatory", "forbidden", "prohibited"})
 
 
-def _event_time_key(value: Any) -> tuple[int, Any]:
-    """Order event times numerically (t9 before t10) and ISO date-times chronologically."""
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return (0, float(value))
-    text = str(value if value is not None else "").strip()
-    match = re.fullmatch(r"[A-Za-z_]*(-?\d+(?:\.\d+)?)", text)
-    if match:
-        return (0, float(match.group(1)))
-    try:
-        return (1, datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp())
-    except ValueError:
-        return (2, text)
+def _event_time_key(value: Any) -> float:
+    """Delegate all event time ordering to the canonical clock owner."""
+    return time_key(value)
 
 
 def missing_bdi_fields(record: Mapping[str, Any]) -> list[str]:
@@ -71,6 +63,9 @@ def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str 
 
 def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) -> list[dict[str, Any]]:
     """Return every event whose `requires` fluents do not hold when it happens."""
+    if any(isinstance(event, dict) and "at" not in event for event in events):
+        # Missing axioms are reported by the native semantic executor; no order can be inferred.
+        return []
     scenario_ids = sorted({str(event["scenario_id"]) for event in events if isinstance(event, dict) and event.get("scenario_id")})
     failures: list[dict[str, Any]] = []
     for scenario_id in scenario_ids or [""]:
@@ -296,7 +291,7 @@ def _event(contract: GuardContract):
             missing.append({"index": index, "field": "event mapping"})
             continue
         for name in ("event_id", "at"):
-            if not event.get(name):
+            if name not in event or event[name] is None or event[name] == "":
                 missing.append({"index": index, "field": name})
         if not any(event.get(name) for name in ("initiates", "terminates", "releases")):
             missing.append({"index": index, "field": "initiation/termination/release axiom"})
@@ -430,7 +425,7 @@ def _event(contract: GuardContract):
     initial_fluents = set(_fluent_values(event_model.get("initial_states", [])))
     executed_scenarios: list[str] = []
     executed_holdouts: list[str] = []
-    observed_timepoints: set[str] = set()
+    observed_timepoints: dict[str, float] = {}
     declared_state_ids = set(state_id_list)
     declared_terminal_state_ids = {
         str(state.get("state_id"))
@@ -470,7 +465,7 @@ def _event(contract: GuardContract):
             continue
         for event in sorted(applicable, key=lambda item: _event_time_key(item.get("at", ""))):
             rollout_steps += 1
-            observed_timepoints.add(str(event.get("at")))
+            observed_timepoints[str(event["at"])] = time_key(event["at"])
             event_id = str(event.get("event_id"))
             executed_event_ids.add(event_id)
             executed_branch_ids.update(_string_values(event.get("branch_id")))
@@ -522,7 +517,7 @@ def _event(contract: GuardContract):
         "evaluated_states": len(states),
         "evaluated_transition_specs": len(transitions),
         "rollout_steps": rollout_steps,
-        "observed_timepoints": sorted(observed_timepoints, key=_event_time_key),
+        "observed_timepoints": sorted(observed_timepoints, key=observed_timepoints.__getitem__),
         "observed_variable_timepoints": variable_timepoints,
         "executed_scenario_ids": executed_scenarios,
         "executed_holdout_scenario_ids": executed_holdouts,
@@ -1356,5 +1351,5 @@ def aggregate_provider_status(receipts: list[SemanticExecutionReceipt], *, requi
 
 
 def fingerprint_mesh(data: dict[str, Any]) -> str:
-    payload = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    payload = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=json_default).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()

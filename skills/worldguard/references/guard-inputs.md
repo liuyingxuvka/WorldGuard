@@ -27,7 +27,17 @@ events:
 Claim assertion: `{holds: iris_inside, at: t2}` (after every event at or before `at`; add `value: false` for
 "does not hold") or `{event: e_unlock, before: e_enter}`.
 
-`event_id` is unique; `at` is a number, `t<number>` or an ISO date-time, and events run in that order;
+`event_id` is unique within one `scenario_id` (or the default scenario); different scenarios may reuse ids.
+Use one time kind throughout all events and `holds.at` assertions in a contract: a YAML number,
+a label such as `t1`/`day2` with one shared prefix, an ISO date/date-time, or a quoted same-day
+clock such as `"9:40"` or `"17:12:30"`. ISO times must consistently include or omit timezones.
+For trips crossing midnight, use ISO dates. Quote clock times: YAML reads unquoted `9:40` as the
+number 580, so mixing it with `"10:20"` is an input error. Unknown times such as `evening` or
+`t4b`, mixed kinds/prefixes, and duplicate event ids within one scenario are input errors.
+For `before`/`holds`, add `scenario: <id>` to select a declared scenario; ambiguous reused event ids
+without it and unknown scenarios are gaps. Spatial relation `at` values remain uninterpreted labels.
+A missing event time remains a native missing-axiom `GAP`; an explicitly supplied invalid time is an input error.
+Events run in parsed time order;
 `initiates`, `terminates`, `releases` name fluents (one id or a list). Optional: `requires` (fluents that must
 hold when the event happens), `event_model.initial_states` (fluents that hold before the first event),
 `event_model.contradictory_fluents`. Catches: an event whose required fluent does not hold at its time

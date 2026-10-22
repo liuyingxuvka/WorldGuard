@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from datetime import date, datetime
 from typing import Any
 
 
@@ -24,5 +25,12 @@ def load_mapping(path: str | Path) -> dict[str, Any]:
     return data
 
 
+def json_default(value: Any) -> str:
+    """Preserve YAML's native ISO date values in JSON reports and input identities."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def dump_json(data: Any) -> str:
-    return json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True)
+    return json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, default=json_default)

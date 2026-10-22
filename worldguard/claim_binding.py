@@ -39,9 +39,19 @@ def _verdict(holds: bool, observed: Any) -> tuple[str, Any]:
     return ("PASS" if holds else "FAIL"), observed
 
 
+def _scoped_events(inputs: dict[str, Any], row: dict[str, Any]) -> list[dict[str, Any]] | None:
+    events = [event for event in inputs.get("events", []) if isinstance(event, dict)]
+    scenario = str(row.get("scenario") or "")
+    if scenario and scenario not in {str(event.get("scenario_id") or "") for event in events}:
+        return None
+    return [event for event in events if not event.get("scenario_id") or str(event["scenario_id"]) == scenario]
+
+
 def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     """{holds: fluent, at: time, value: false}: the fluent after every event at or before `at`."""
-    events = [event for event in inputs.get("events", []) if isinstance(event, dict)]
+    events = _scoped_events(inputs, row)
+    if events is None:
+        return _gap("scenario is not declared by the event model")
     initial = _mapping(inputs.get("event_model")).get("initial_states", [])
     fluent = str(row["holds"])
     known = set(_fluent_values(initial)) | {
@@ -52,6 +62,8 @@ def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap(f"fluent {fluent!r} is not in the world model")
     if "at" not in row:
         return _gap("a holds assertion needs at")
+    if any("at" not in event for event in events):
+        return _gap("event times are missing; fluent state cannot be ordered")
     holding = frozenset(_fluent_values(initial))
     for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
         if _event_time_key(event.get("at", "")) > _event_time_key(row["at"]):
@@ -63,8 +75,21 @@ def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
 
 def _before(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     """{event: event_id, before: event_id}: the first event happens strictly earlier."""
-    times = {str(event.get("event_id")): event.get("at") for event in inputs.get("events", []) if isinstance(event, dict)}
     first, second = str(row.get("event", "")), str(row["before"])
+    events = _scoped_events(inputs, row)
+    if events is None:
+        return _gap("scenario is not declared by the event model")
+    if not row.get("scenario"):
+        all_events = [event for event in inputs.get("events", []) if isinstance(event, dict)]
+        if any(sum(str(event.get("event_id")) == target for event in all_events) > 1 for target in (first, second)):
+            return _gap("event ids are ambiguous across scenarios; specify scenario")
+        events = all_events
+    matches = {target: [event for event in events if str(event.get("event_id")) == target] for target in (first, second)}
+    if any(len(rows) > 1 for rows in matches.values()):
+        return _gap("event ids are ambiguous in this scenario")
+    if any(rows and "at" not in rows[0] for rows in matches.values()):
+        return _gap("event times are missing; before cannot be evaluated")
+    times = {target: rows[0]["at"] for target, rows in matches.items() if rows}
     unknown = [event_id for event_id in (first, second) if event_id not in times]
     if unknown:
         return _gap("events not in the world model: " + ", ".join(unknown))

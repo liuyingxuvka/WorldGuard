@@ -71,3 +71,20 @@ The runtime SHALL provide only `check` and `mesh-check` as native CLI commands. 
 #### Scenario: Mesh CLI runs
 - **WHEN** `worldguard mesh-check --mesh <path>` runs
 - **THEN** it emits a short JSON summary, and the full JSON `MeshReport` when `--json` is added.
+
+### Requirement: Canonical event clocks and scenario-local identities
+Event times and `holds.at` assertions in one contract SHALL use one kind: numeric YAML values,
+labels sharing one prefix, ISO dates/date-times with consistent timezone awareness, or quoted same-day
+HH:MM[:SS] clocks. Native YAML date/datetime objects SHALL behave as ISO values and serialize in JSON reports.
+Unknown times, mixed kinds/prefixes/timezone conventions and duplicate event ids within one scenario
+SHALL be input errors. An absent event time SHALL retain the native missing-axiom `GAP`; no clock default or order is inferred. Reusing ids across different scenarios SHALL remain valid. A number is never
+guessed to be a YAML sexagesimal clock; mixed numeric/clock inputs SHALL explain how to quote clocks.
+
+#### Scenario: A clock-order contradiction fails
+- **WHEN** a train arrives at `"10:20"` but a bus requiring its arrival leaves at `"9:40"`
+- **THEN** native checking SHALL fail the precondition and the false event-order assertion
+
+#### Scenario: Scoped event assertions remain local
+- **WHEN** two scenarios reuse event ids with opposite order
+- **THEN** a `scenario` assertion SHALL evaluate that scenario, an ambiguous unscoped order SHALL be a gap,
+  and an unknown scenario SHALL not pass using shared or other-scenario events

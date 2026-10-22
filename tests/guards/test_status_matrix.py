@@ -9,7 +9,7 @@ CASES = [
     (
         "EventGuard",
         {
-            GuardStatus.PASS: {"inputs": {"events": [{"event_id": "e1", "initiates": "ready"}]}},
+            GuardStatus.PASS: {"inputs": {"events": [{"event_id": "e1", "at": "t0", "initiates": "ready"}]}},
             GuardStatus.FAIL: {"inputs": {"event_model": {"contradictory_fluents": ["hot", "cold"]}}},
             GuardStatus.GAP: {"inputs": {}},
             GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["event", "numeric_dynamics"]},

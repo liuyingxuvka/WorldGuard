@@ -1,0 +1,238 @@
+contract_id: trip-hallstatt-001
+claim:
+  claim_id: c_trip
+  text: Take the 07:55 train to Salzburg, the 10:30 bus to Hallstatt, sleep at the
+    lake hotel, and return on the 14:10 boat and 15:00 bus to catch the 17:12 train.
+  requested_semantics:
+  - event
+  - resource
+  - causal
+  - norm
+  asserts:
+  - holds: at_hotel
+    at: 2026-11-02T22:00
+  - event: d2_bus_back
+    before: d2_train_home
+  - variable: transfer_out_h
+    op: '>='
+    value: 0.25
+  - variable: transfer_back_h
+    op: '>='
+    value: 0.25
+  - place: munich
+    color: traveler
+    qty: 1
+  - actor: traveler
+    action: take_boat
+    modality: permitted
+world_model:
+  model_id: hallstatt-trip
+  model_version: v1
+  scope_limits:
+  - published timetables
+  - no delays
+inputs:
+  event_model:
+    initial_states:
+    - in_munich
+    - room_booked
+  events:
+  - event_id: d1_train_out
+    at: 07:55
+    requires:
+    - in_munich
+    initiates: on_train
+    terminates: in_munich
+  - event_id: d1_train_arr
+    at: 09:25
+    requires:
+    - on_train
+    initiates: in_salzburg
+    terminates: on_train
+  - event_id: d1_bus_out
+    at: '10:30'
+    requires:
+    - in_salzburg
+    initiates: on_bus
+    terminates: in_salzburg
+  - event_id: d1_bus_arr
+    at: '12:30'
+    requires:
+    - on_bus
+    initiates: in_hallstatt
+    terminates: on_bus
+  - event_id: d1_check_in
+    at: '15:00'
+    requires:
+    - in_hallstatt
+    - room_booked
+    initiates: at_hotel
+  - event_id: d2_check_out
+    at: '10:00'
+    requires:
+    - at_hotel
+    terminates: at_hotel
+    initiates: checked_out
+  - event_id: d2_boat
+    at: '14:10'
+    requires:
+    - in_hallstatt
+    initiates: on_boat
+    terminates: in_hallstatt
+  - event_id: d2_boat_arr
+    at: '14:40'
+    requires:
+    - on_boat
+    initiates: at_station
+    terminates: on_boat
+  - event_id: d2_bus_back
+    at: '15:00'
+    requires:
+    - at_station
+    initiates: on_bus
+    terminates: at_station
+  - event_id: d2_bus_back_arr
+    at: '16:45'
+    requires:
+    - on_bus
+    initiates: in_salzburg
+    terminates: on_bus
+  - event_id: d2_train_home
+    at: '17:12'
+    requires:
+    - in_salzburg
+    initiates: in_munich
+    terminates: in_salzburg
+  resources:
+    places:
+      munich:
+      - color: traveler
+        qty: 1
+      train: []
+      salzburg: []
+      bus: []
+      hallstatt: []
+      boat: []
+      station: []
+    capacities:
+      boat: 1
+    transitions:
+    - id: d1_train_out
+      consumes:
+      - place: munich
+        color: traveler
+        qty: 1
+      produces:
+      - place: train
+        color: traveler
+        qty: 1
+    - id: d1_train_arr
+      consumes:
+      - place: train
+        color: traveler
+        qty: 1
+      produces:
+      - place: salzburg
+        color: traveler
+        qty: 1
+    - id: d1_bus_out
+      consumes:
+      - place: salzburg
+        color: traveler
+        qty: 1
+      produces:
+      - place: bus
+        color: traveler
+        qty: 1
+    - id: d1_bus_arr
+      consumes:
+      - place: bus
+        color: traveler
+        qty: 1
+      produces:
+      - place: hallstatt
+        color: traveler
+        qty: 1
+    - id: d2_boat
+      consumes:
+      - place: hallstatt
+        color: traveler
+        qty: 1
+      produces:
+      - place: boat
+        color: traveler
+        qty: 1
+    - id: d2_boat_arr
+      consumes:
+      - place: boat
+        color: traveler
+        qty: 1
+      produces:
+      - place: station
+        color: traveler
+        qty: 1
+    - id: d2_bus_back
+      consumes:
+      - place: station
+        color: traveler
+        qty: 1
+      produces:
+      - place: bus
+        color: traveler
+        qty: 1
+    - id: d2_bus_back_arr
+      consumes:
+      - place: bus
+        color: traveler
+        qty: 1
+      produces:
+      - place: salzburg
+        color: traveler
+        qty: 1
+    - id: d2_train_home
+      consumes:
+      - place: salzburg
+        color: traveler
+        qty: 1
+      produces:
+      - place: munich
+        color: traveler
+        qty: 1
+  causal_model:
+    variables:
+    - train_arr_h
+    - bus_out_h
+    - transfer_out_h
+    - bus_back_arr_h
+    - train_home_h
+    - transfer_back_h
+    equations:
+      train_arr_h: '9.4167'
+      bus_out_h: '10.5'
+      transfer_out_h: bus_out_h - train_arr_h
+      bus_back_arr_h: '16.75'
+      train_home_h: '17.2'
+      transfer_back_h: train_home_h - bus_back_arr_h
+    scenarios:
+      timetable: {}
+    constraints:
+    - transfer_out_h >= 0.25
+    - transfer_back_h >= 0.25
+  norms:
+  - modality: permitted
+    actor: traveler
+    action: take_boat
+    condition:
+      fact_id: lake_calm
+      value: true
+  - modality: forbidden
+    actor: traveler
+    action: take_boat
+    condition:
+      fact_id: storm_warning
+      value: true
+  facts:
+  - fact_id: lake_calm
+    value: true
+  - fact_id: storm_warning
+    value: false

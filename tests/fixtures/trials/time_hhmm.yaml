@@ -1,0 +1,11 @@
+contract_id: hhmm
+claim:
+  claim_id: c_hhmm
+  text: Train arrives 10:20; the bus leaves at 9:40.
+  requested_semantics: [event]
+  asserts: [{event: train_arr, before: bus_out}]
+inputs:
+  event_model: {initial_states: [on_train]}
+  events:
+    - {event_id: train_arr, at: "10:20", requires: [on_train], initiates: in_salzburg, terminates: on_train}
+    - {event_id: bus_out, at: "9:40", requires: [in_salzburg], initiates: on_bus, terminates: in_salzburg}

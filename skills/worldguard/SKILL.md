@@ -22,6 +22,10 @@ Pick the shape that fits the request and read its reference. Field formats for e
 
 Load [model-authority.md](references/model-authority.md) only for questions about which model owns a fact, and [closure-report.md](references/closure-report.md) only as an optional checklist when reporting a mesh.
 
+Use one time kind per world contract: numbers, one label prefix (`t1`, `t2`), ISO dates/times, or
+quoted same-day clocks (`"9:40"`). Use ISO dates across days; `t4b` and mixed kinds are input errors.
+When event ids repeat across scenarios, qualify event assertions with `scenario`.
+
 ## Results
 
 Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.

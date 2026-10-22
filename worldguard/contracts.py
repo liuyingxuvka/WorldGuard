@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
+from .clock import validate_times
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
 CLAIM_ASSERTION_KINDS: dict[str, str] = {'holds': 'event', 'before': 'event', 'place': 'resource', 'variable': 'causal', 'agent': 'agent', 'relation': 'spatial', 'modality': 'norm', 'player': 'conflict'}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
@@ -239,6 +240,21 @@ class GuardContract:
         if not str(world_model.get('model_version', '')).strip():
             world_model['model_version'] = 'unversioned'
         claim = Claim.from_dict(data.get('claim', {}))
+        named_times = []
+        event_ids = set()
+        for index, event in enumerate(inputs.get('events', [])):
+            if not isinstance(event, Mapping):
+                continue
+            event_id = str(event.get('event_id', ''))
+            identity = (str(event.get('scenario_id') or ''), event_id)
+            if event_id and identity in event_ids:
+                raise ValueError(f"duplicate event_id {event_id!r} in scenario {identity[0]!r}")
+            event_ids.add(identity)
+            if 'at' in event:
+                named_times.append((f"inputs.events[{index}] ({event_id})", event['at']))
+        named_times.extend((f"claim.asserts[{index}] (holds {row['holds']})", row['at'])
+                           for index, row in enumerate(claim.asserts) if 'holds' in row and 'at' in row)
+        validate_times(named_times)
         return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')))
 
     def for_guard(self, guard: str, upstream_results: list[Any] | None=None) -> 'GuardContract':

@@ -180,3 +180,26 @@ def test_contract_serializes_canonical_fields():
     assert data["claim"]["target_guards"] == ["NormGuard"]
     assert data["dependencies"]["read_only"] is True
     assert data["output_requirements"]["require_ledgers"] is True
+
+
+@pytest.mark.parametrize("times", [
+    ["t4b"], ["evening"], [True], [float("nan")], ["24:00"],
+    ["t1", "day2"], ["t1", "2026-01-01"],
+    ["2026-01-01T09:00", "2026-01-01T10:00Z"], [580, "9:40"],
+])
+def test_contract_rejects_unknown_or_mixed_event_time_kinds(times):
+    with pytest.raises(ValueError, match="time|prefix|timezone"):
+        GuardContract.from_dict({"claim": {"requested_semantics": ["event"]}, "inputs": {
+            "events": [{"event_id": f"named-{i}", "at": at, "initiates": "ready"} for i, at in enumerate(times)]
+        }})
+
+
+@pytest.mark.parametrize("scenario", [None, "same"])
+def test_contract_rejects_duplicate_event_ids_in_one_scenario(scenario):
+    events = [{"event_id": "duplicate", "at": "t1", "initiates": "ready"},
+              {"event_id": "duplicate", "at": "t2", "initiates": "done"}]
+    if scenario:
+        for event in events:
+            event["scenario_id"] = scenario
+    with pytest.raises(ValueError, match="duplicate event_id 'duplicate'"):
+        GuardContract.from_dict({"claim": {"requested_semantics": ["event"]}, "inputs": {"events": events}})
