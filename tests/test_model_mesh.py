@@ -3,7 +3,7 @@ import json
 import pytest
 import yaml
 
-from worldguard import ModelMeshContract, MeshReport, run_model_mesh
+from worldguard import GuardContract, ModelMeshContract, MeshReport, SemanticStatus, derive_required_guards, run_model_mesh
 from worldguard.cli import main
 from worldguard.status import GuardStatus
 
@@ -339,3 +339,85 @@ def test_mesh_node_claims_must_be_bound_to_their_models():
     contradicted["nodes"][1]["contract"]["claim"]["asserts"] = [{"action": "start", "modality": "forbidden"}]
     report = run_model_mesh(contradicted)
     assert report.status == GuardStatus.FAIL
+
+
+def _claim_atoms_mesh():
+    return {'mesh_id': 'predictive-mesh',
+     'run_id': 'predictive-test',
+     'nodes': [{'model_id': 'world',
+                'authority': {'owns': ['event', 'causal']},
+                'contract': {'contract_id': 'predictive-contract',
+                             'run_id': 'predictive-test',
+                             'claim': {'claim_id': 'forecast-claim',
+                                       'text': 'forecast state under declared scenarios',
+                                       'target_guards': ['EventGuard', 'CausalGuard'],
+                                       'atoms': [{'atom_id': 'forecast-atom',
+                                                  'text': 'state changes under intervention',
+                                                  'requested_semantics': ['event', 'causal'],
+                                                  'predictive_intent': True}],
+                                       'asserts': [{'holds': 'ready', 'at': 't0'}]},
+                             'world_model': {'model_id': 'world-model', 'model_version': 'v1'},
+                             'inputs': {'variable_observations': {'y': ['t0', 't1', 't2']},
+                                        'events': [{'event_id': 'e0',
+                                                    'at': 't0',
+                                                    'initiates': 'ready',
+                                                    'branch_id': 'b0',
+                                                    'perturbation_id': 'p0'},
+                                                   {'event_id': 'e1',
+                                                    'at': 't1',
+                                                    'terminates': 'ready',
+                                                    'initiates': 'running'},
+                                                   {'event_id': 'e2',
+                                                    'at': 't2',
+                                                    'initiates': 'running'}],
+                                        'causal_model': {'variables': ['y'],
+                                                         'equations': {'y': 'x * 2'},
+                                                         'exogenous': ['x'],
+                                                         'graph': [],
+                                                         'scenarios': {'s-base': {'x': 1}},
+                                                         'holdout_scenarios': {'s-hold': {'x': 3}},
+                                                         'interventions': [{'intervention_id': 'do-y',
+                                                                            'scenario_id': 's-base',
+                                                                            'set': {'y': 10}}],
+                                                         'counterfactuals': [{'counterfactual_id': 'cf-y',
+                                                                              'intervention_id': 'do-y',
+                                                                              'query': 'y'}]}}}}]}
+
+
+def test_structured_claim_atoms_derive_required_guards() -> None:
+    contract = GuardContract.from_dict(_claim_atoms_mesh()["nodes"][0]["contract"])
+
+    assert derive_required_guards(contract.claim) == ("EventGuard", "CausalGuard")
+    assert contract.claim.atoms[0].atom_id == "forecast-atom"
+    assert contract.to_dict()["claim"]["atoms"][0]["predictive_intent"] is True
+
+
+def test_omitted_target_guard_does_not_skip_the_derived_guard_in_a_mesh() -> None:
+    mesh = _claim_atoms_mesh()
+    mesh["nodes"][0]["contract"]["claim"]["target_guards"] = ["EventGuard"]
+
+    report = run_model_mesh(mesh)
+
+    assert report.status == run_model_mesh(_claim_atoms_mesh()).status
+    assert not any(
+        finding.code == "MESH_CLAIM_DERIVED_GUARD_MISSING"
+        for finding in report.findings
+    )
+    assert "CausalGuard" in report.node_reports["world"].effective_guards
+
+
+def test_expected_contractless_node_is_counted_and_blocks_aggregate_pass():
+    report = run_model_mesh({"mesh_id": "contractless", "nodes": [{"model_id": "missing-contract"}]})
+    assert report.status == GuardStatus.GAP
+    assert report.rollout_status == SemanticStatus.GAP
+    assert "missing-contract" not in report.node_reports
+    assert any(finding.code == "MESH_EXPECTED_NODE_CONTRACT_MISSING" for finding in report.findings)
+
+
+def test_retired_semantic_coverage_cli_is_a_typed_input_error(tmp_path, capsys):
+    path = tmp_path / "retired.json"
+    path.write_text(json.dumps({"mesh_id": "old", "semantic_coverage": {"profile": "bounded"}}))
+    assert main(["mesh-check", "--mesh", str(path)]) == 2
+    error = json.loads(capsys.readouterr().out)["error"]
+    assert error["code"] == "WORLDGUARD_INPUT_INVALID"
+    assert error["message"] == "semantic_coverage is retired; every node in the mesh is checked"

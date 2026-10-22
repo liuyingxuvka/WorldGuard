@@ -11,15 +11,11 @@ WorldGuard SHALL report structural contract status separately from semantic exec
 - **THEN** structural status MAY pass while semantic and rollout status SHALL be `NOT_RUN` or `BOUNDARY_ONLY`
 
 ### Requirement: Fail-closed aggregate projection
-WorldGuard MUST NOT project semantic or predictive pass from structural pass, provider availability, child-local pass, caller-selected Guard subsets, or an incomplete expected coverage universe.
+WorldGuard MUST NOT project semantic pass from structural pass, provider availability, child-local pass, caller-selected Guard subsets.
 
 #### Scenario: Provider unavailable
 - **WHEN** a required semantic provider is unavailable
 - **THEN** aggregate semantic closure SHALL remain unavailable and the provider status SHALL be visible
-
-#### Scenario: Predictive coverage is incomplete
-- **WHEN** local semantic checks pass but required nodes, Guards, scenarios, horizon, branches, perturbations, interventions, counterfactuals, or holdout evidence are missing
-- **THEN** bounded local findings MAY remain visible but aggregate predictive closure SHALL remain `GAP` or `BOUNDARY_EXCEEDED`
 
 ### Requirement: Typed semantic input/output binding
 Every semantic executor MUST declare the input fields it reads, output fields it writes, supported semantics, and unsupported boundary.
@@ -35,13 +31,13 @@ WorldGuard SHALL reject missing event axioms, incomplete BDI, RCC8 conflict, res
 - **WHEN** two transitions consume the same finite resource beyond the available quantity
 - **THEN** resource semantic status SHALL fail with a conservation finding
 
-### Requirement: Native WorldGuard depth report
-WorldGuard SHALL emit a depth report containing structural checks, claim atoms, required and executed semantic children, provider states, findings, discovered/declared/excluded model-node reconciliation, expected/skipped nodes, scenario/horizon/branch/perturbation coverage, per-variable/signal temporal child coverage, native dynamic-floor receipts, predictive gaps, a predictive-license decision, and aggregate claim boundary bound to the current mesh fingerprint.
+### Requirement: Native mesh execution report
+WorldGuard SHALL preserve node reports, native semantic receipts, provider states, findings and scope limits for every mesh run. Mesh rollout status SHALL equal its native semantic status; no prediction license or coverage receipt is emitted.
 
-#### Scenario: Semantic child is skipped
-- **WHEN** an expected semantic child cannot run because its provider is unavailable
-- **THEN** the report SHALL identify that skipped child and SHALL NOT claim semantic rollout or prediction
+#### Scenario: Semantic child cannot execute
+- **WHEN** a required provider is unavailable
+- **THEN** the report SHALL identify its skipped reason and SHALL remain non-pass
 
-#### Scenario: Bounded semantic pass
-- **WHEN** a narrow supported executor checks only its declared local subset
-- **THEN** the report SHALL preserve semantic `PASS` if appropriate but SHALL distinguish it from predictive readiness
+#### Scenario: Supported bounded semantics pass
+- **WHEN** all current node checks and mesh findings pass
+- **THEN** the mesh MAY report `PASS` only within the model's declared scope

@@ -41,7 +41,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:2d5d439eeace67e69f93823c6a2c537812665a32e916b4d7a6f4c4e1cebe3957"
+      "fingerprint": "sha256:5b864311b288053cf945cc86a37e6ee0343bce9233eff61c71b1bfb0df8bf006"
     },
     {
       "id": "worldguard.core",
@@ -73,14 +73,13 @@
       ],
       "depends_on": [],
       "tests": [
-        "tests/test_claim_derived_coverage.py",
         "tests/test_contracts.py",
         "tests/test_event_time_order.py",
         "tests/test_ledgers.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:6cc43481e2ccb3d00d584292c0cc6a20b1382df1abf830bd6a323a97351116b0"
+      "fingerprint": "sha256:7c5c688cba3f233bee9777a098f05ad8a7ec5007720cd026f1c943511ac15c67"
     },
     {
       "id": "worldguard.guards",
@@ -122,7 +121,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:04632fd44196e4b18c986ef4d0e8e2c6491c14c0e25c5523c95dfa71ba425b3a"
+      "fingerprint": "sha256:449c477ebd1b40c766aed1aed34f157a2cce5bbd2684e919e84c2be940c0d50e"
     },
     {
       "id": "worldguard.qualification",
@@ -158,16 +157,16 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:0ad6f18d3606086611eb70da2c1dd7c4ea5c2802916dd543599799bc5cfcce94"
+      "fingerprint": "sha256:22c7352306de44e3795f42895c0649592b2837f9c52659576f09df3165ff1dbf"
     },
     {
       "id": "worldguard.mesh",
       "layer": "",
-      "summary": "Model mesh ownership, handoffs and predictive depth",
+      "summary": "Native per-node checks with mesh topology, authority and handoffs",
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
-        "Run per-node native qualification with complete per-variable/timepoint predictive coverage; a node claim that is false or not bound to its model fails or gaps the mesh",
-        "Report predictive gaps and the predictive license from one fresh run"
+        "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
+        "Preserve child reports and native semantic and provider statuses"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -176,7 +175,7 @@
         "worldguard/mesh.py:run_model_mesh"
       ],
       "state": [
-        "Mesh and coverage fingerprints carried in immutable mesh reports"
+        "Immutable node reports and mesh findings"
       ],
       "side_effects": [
         "Execute declared native mesh nodes and emit in-memory evidence"
@@ -191,7 +190,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:237e28ce09f9505b3d6970ea432623fbac5e4e8022b0b7d28ef34d48a9dcbeb4"
+      "fingerprint": "sha256:dc88702cfa7b4700328871fb1bd01fbd5311a7006be97d3f691e7ebeea9210f6"
     },
     {
       "id": "release",
@@ -274,7 +273,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:818b792819d309757577a17320c7f728d47ed5332fddbd47a9d16ad7d68789a1"
+      "fingerprint": "sha256:df0f2c10d8a8c254df12f64cecfabcc69e95de7c235c72bd228da462686ecd45"
     }
   ],
   "flows": [],

@@ -12,10 +12,7 @@ Optional checklist when reporting a multi-model (mesh) WorldGuard check.
 - Did the mesh avoid dependency cycles?
 - Were child `FAIL`, `GAP`, and `BOUNDARY_EXCEEDED` statuses preserved?
 - Did structural, semantic, provider, and rollout status remain distinct?
-- Did every expected semantic-rollout node supply a contract, and does every skipped node/child have a typed reason and coverage impact?
-- Were all current mesh nodes discovered before applying the caller expected list, and do discovered = declared + closed exclusions with exclusions contributing to neither execution nor claim scope?
-- For predictive work, did both normal and holdout scenarios execute across a non-degenerate horizon with the effective square-root representative timepoint floor, required coverage ratio, native early/middle/late coverage, acceptable maximum normalized time gap, states, transitions, branches, perturbations, interventions, and counterfactuals for every expected model node rather than only in aggregate?
-- For every exposed variable or signal, did its own temporal child universe independently meet the native dynamic count and early/middle/late floors, and is that per-object floor present in the WorldGuard report without a conflicting fixed ratio?
+- Did every node supply a contract and run its derived Guards, with missing contracts and unavailable providers reported as gaps?
 - Are any old, stale, replaced, or superseded models still being used without disposition?
 
 ## Status Rules
@@ -31,9 +28,6 @@ Optional checklist when reporting a multi-model (mesh) WorldGuard check.
 - Ordinary unit/mesh closure requires the complete derived Guard set and
   current native results within the stated scope; missing task evidence
   remains a gap. A partially defined SCM is `GAP`, not `PASS`.
-- One event, one or two convenient timepoints, enough points concentrated in only one phase, a rich aggregate with one shallow child, one equation, or one convenient scenario may pass a
-  local bounded check, but cannot license prediction. Predictive closure needs
-  `predictive_claim_licensed: true` in the current mesh report.
 
 ## Report Shape
 
@@ -46,7 +40,7 @@ Return:
 - authority findings;
 - freshness findings;
 - cycle findings;
-- component statuses and, for predictive work, the predictive license and gaps;
+- component statuses and native gaps;
 - missing fields and stale evidence, if any.
 
 Do not copy adapter-specific terms into the core closure report unless they appear only as opaque labels supplied by an upstream adapter.

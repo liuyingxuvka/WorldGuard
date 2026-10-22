@@ -63,6 +63,8 @@ WorldGuard currently includes these guard families:
 
 `ModelMeshContract` is the generic connection layer above unit guard checks. It is designed to prevent a locally valid model from being used as proof for a larger system when the connection is not justified.
 
+Every node runs its native contract once. Missing contracts are gaps. Prediction semantics select EventGuard and CausalGuard, with no separate prediction-license or timepoint-coverage gate.
+
 It checks:
 
 - model authority: each node can only support the semantics it owns;
@@ -178,6 +180,8 @@ WorldGuard 有两种核心检查形态：
 - `NormGuard`：许可、义务和禁止。
 
 ## ModelMesh
+
+每个节点的原生合约都会运行一次；缺少合约是缺口。预测语义选择 EventGuard 和 CausalGuard，不另设预测许可或时间点覆盖门槛。
 
 `ModelMeshContract` 是单个 Guard 检查之上的通用连接层。它解决的问题是：一个局部模型通过了，不等于整个模型网格可以通过。
 

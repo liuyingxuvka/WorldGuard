@@ -11,7 +11,7 @@ EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard an
 
 ## Start
 
-The native CLI commands are `check` and `mesh-check`.
+The native CLI commands are `check` and `mesh-check`. Every mesh node is checked once; missing node contracts are gaps. A `predictive` request adds event and causal checks without a separate depth or prediction license.
 
 Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`. Copy one of these worlds and edit its model and assertions to start a check.
 

@@ -1,6 +1,6 @@
 # WorldGuard Contracts
 
-`GuardContract` checks one claim against one current explicit world model. `ModelMeshContract` adds multi-node topology, authority, freshness, handoffs, and coverage; read `model-mesh.md` only for that shape.
+`GuardContract` checks one claim against one current explicit world model. `ModelMeshContract` adds multi-node topology, authority, freshness, handoffs, and per-node checks; read `model-mesh.md` only for that shape.
 
 ## Unit input
 
@@ -8,7 +8,7 @@ A contract needs `claim` and `inputs`; add `world_model` (`model_id`, `model_ver
 
 | Guard | Current model/input family |
 |---|---|
-| EventGuard | Events, time/order, fluent changes; observations when predictive |
+| EventGuard | Events, time/order, fluent changes and declared scenarios |
 | AgentGuard | Agents, beliefs, intentions, knowledge |
 | SpaceGuard | Spatial objects/relations |
 | ResourceGuard | Resources, quantities, units and constraints |

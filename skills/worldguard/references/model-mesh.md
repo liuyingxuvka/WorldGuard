@@ -19,7 +19,6 @@ Required canonical fields:
 - `edges`
 - `snapshots`
 - `provider_availability`: optional per-Guard availability override
-- `semantic_coverage`: a `SemanticCoverageContract`; by default `profile: bounded` and every current mesh node is expected. For a predictive claim read [predictive-coverage.md](predictive-coverage.md).
 
 ## ModelNode Fields
 
@@ -84,9 +83,8 @@ Snapshots are optional metadata for version/state context. They do not replace n
 - `node_reports`: one unit report per node with an embedded contract
 - `findings`: topology, authority, handoff, freshness and cycle findings
 - `scope_limits`
-- `depth_receipt.predictive_claim_licensed` and `depth_receipt.predictive_gaps` for predictive meshes
 
-The aggregate `status` is conservative: structural `PASS` cannot become aggregate `PASS` when semantic execution did not run, a required provider was unavailable, or an executor reported a gap or boundary. A missing contract on any expected node is a `GAP`.
+The aggregate `status` is conservative: structural `PASS` cannot become aggregate `PASS` when semantic execution did not run, a required provider was unavailable, or an executor reported a gap or boundary. Every node is checked once; a missing contract on any node is a `GAP` with `MESH_EXPECTED_NODE_CONTRACT_MISSING`. No expected-node list or node exclusions can skip a node.
 
 ## Forbidden shortcuts
 

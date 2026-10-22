@@ -42,7 +42,6 @@ def _unit_summary(report: dict[str, Any]) -> dict[str, Any]:
 
 def _mesh_summary(report: dict[str, Any]) -> dict[str, Any]:
     nodes = report.get("node_reports", {})
-    depth = report.get("depth_receipt") or {}
     return {
         "status": report["status"],
         "structural_status": report.get("structural_status", ""),
@@ -55,8 +54,6 @@ def _mesh_summary(report: dict[str, Any]) -> dict[str, Any]:
                 for gap in node.get("gaps", [])
             ),
         ],
-        "predictive_claim_licensed": depth.get("predictive_claim_licensed", False),
-        "predictive_gaps": depth.get("predictive_gaps", []),
         "non_pass_nodes": {
             node_id: _unit_summary(node)
             for node_id, node in sorted(nodes.items())

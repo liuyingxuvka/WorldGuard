@@ -140,8 +140,6 @@ def test_valid_bounded_semantic_rollout_reports_distinct_green_components():
     assert report.provider_status == ProviderStatus.AVAILABLE
     assert report.rollout_status == SemanticStatus.PASS
     assert report.status == GuardStatus.PASS
-    assert report.depth_receipt is not None
-    assert report.depth_receipt.predictive_claim_licensed is False
 
 
 def test_retired_closure_profile_is_rejected_instead_of_skipping_semantics():
@@ -181,12 +179,18 @@ def test_provider_unavailable_is_visible_and_fail_closed():
     assert report.semantic_receipts[0].skipped_reason == "provider_unavailable"
 
 
-def test_native_depth_receipt_binds_model_checks_executors_and_claim_boundary():
-    report = run_model_mesh(_valid_event_mesh())
-
-    receipt = report.depth_receipt
-    assert receipt is not None
-    assert len(receipt.mesh_fingerprint) == 64
-    assert receipt.executed_semantic_children == ["event-node:EventGuard"]
-    assert receipt.structural_checks == [{"node_id": "event-node", "status": "PASS"}]
-    assert "Bounded semantic rollout" in receipt.claim_boundary
+def test_scoped_events_execute_from_their_native_scenario_ids():
+    mesh = _mesh("EventGuard", {"events": [
+        {"event_id": "shared", "at": "t0", "initiates": "ready"},
+        {"event_id": "left", "at": "t1", "scenario_id": "left-scenario", "initiates": "left-done"},
+        {"event_id": "right", "at": "t1", "scenario_id": "right-scenario", "initiates": "right-done"},
+    ]}, asserts=[{"holds": "ready", "at": "t0"}])
+    report = run_model_mesh(mesh)
+    assert report.status == GuardStatus.PASS
+    outputs = report.semantic_receipts[0].outputs
+    assert outputs["executed_event_ids"] == ["left", "right", "shared"]
+    assert outputs["executed_scenario_ids"] == ["left-scenario", "right-scenario"]
+    assert outputs["final_fluent_ids_by_scenario"] == {
+        "left-scenario": ["left-done", "ready"],
+        "right-scenario": ["ready", "right-done"],
+    }

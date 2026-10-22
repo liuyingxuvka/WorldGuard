@@ -386,8 +386,6 @@ def run_guard_model_contract() -> dict[str, Any]:
         failures.append({"code": "PROTECTED_FAILURE_UNIVERSE_MISMATCH"})
     for case in NATIVE_GOOD_CASES:
         contract = _contract(case.case_id, case.guard, case.text, case.inputs)
-        if case.coverage_context:
-            contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
         structural = GUARD_RUNNERS[case.guard](contract)
         semantic_status, _, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
         observed = {"case_id": case.case_id, "guard": case.guard,
@@ -397,8 +395,6 @@ def run_guard_model_contract() -> dict[str, Any]:
             failures.append({"code": "NATIVE_GOOD_REJECTED", **observed})
     for case in PROTECTED_FAILURE_CLASSES:
         contract = _contract(case.failure_id, case.guard, case.text, case.inputs, case.semantics)
-        if case.coverage_context:
-            contract.inputs["_semantic_coverage"] = dict(case.coverage_context)
         if case.layer == "guard":
             result = GUARD_RUNNERS[case.guard](contract)
             status, codes = result.status.value, [str(row.get("code", "")) for row in result.errors]

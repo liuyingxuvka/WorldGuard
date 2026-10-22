@@ -6,7 +6,7 @@ import json
 import math
 import re
 from collections import defaultdict
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 from typing import Any, Callable, Mapping
@@ -170,73 +170,6 @@ class SemanticExecutionReceipt:
         }
 
 
-@dataclass(frozen=True)
-class NativeDepthReceipt:
-    receipt_id: str
-    mesh_id: str
-    run_id: str
-    mesh_fingerprint: str
-    structural_checks: list[dict[str, Any]]
-    executed_semantic_children: list[str]
-    provider_states: dict[str, str]
-    findings: list[dict[str, Any]]
-    skipped_children: list[dict[str, Any]]
-    claim_boundary: str
-    receipt_version: str = "worldguard.native_depth.v2"
-    generated_at: str = ""
-    coverage_fingerprint: str = ""
-    predictive_profile: str = "bounded"
-    claim_atoms: list[dict[str, Any]] = field(default_factory=list)
-    required_guards: dict[str, list[str]] = field(default_factory=dict)
-    declared_guards: dict[str, list[str]] = field(default_factory=dict)
-    missing_guards: dict[str, list[str]] = field(default_factory=dict)
-    expected_model_nodes: list[str] = field(default_factory=list)
-    discovered_model_nodes: list[str] = field(default_factory=list)
-    declared_model_nodes: list[str] = field(default_factory=list)
-    excluded_model_nodes: list[dict[str, Any]] = field(default_factory=list)
-    model_node_reconciliation_gaps: list[str] = field(default_factory=list)
-    executed_model_nodes: list[str] = field(default_factory=list)
-    skipped_model_nodes: list[dict[str, Any]] = field(default_factory=list)
-    expected_semantic_children: list[str] = field(default_factory=list)
-    quantitative_coverage: dict[str, Any] = field(default_factory=dict)
-    predictive_gaps: list[str] = field(default_factory=list)
-    predictive_claim_licensed: bool = False
-
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "receipt_id": self.receipt_id,
-            "mesh_id": self.mesh_id,
-            "run_id": self.run_id,
-            "mesh_fingerprint": self.mesh_fingerprint,
-            "structural_checks": self.structural_checks,
-            "executed_semantic_children": self.executed_semantic_children,
-            "provider_states": self.provider_states,
-            "findings": self.findings,
-            "skipped_children": self.skipped_children,
-            "claim_boundary": self.claim_boundary,
-            "receipt_version": self.receipt_version,
-            "generated_at": self.generated_at,
-            "coverage_fingerprint": self.coverage_fingerprint,
-            "predictive_profile": self.predictive_profile,
-            "claim_atoms": self.claim_atoms,
-            "required_guards": self.required_guards,
-            "declared_guards": self.declared_guards,
-            "missing_guards": self.missing_guards,
-            "expected_model_nodes": self.expected_model_nodes,
-            "discovered_model_nodes": self.discovered_model_nodes,
-            "declared_model_nodes": self.declared_model_nodes,
-            "excluded_model_nodes": self.excluded_model_nodes,
-            "model_node_reconciliation_gaps": self.model_node_reconciliation_gaps,
-            "executed_model_nodes": self.executed_model_nodes,
-            "skipped_model_nodes": self.skipped_model_nodes,
-            "expected_semantic_children": self.expected_semantic_children,
-            "quantitative_coverage": self.quantitative_coverage,
-            "predictive_gaps": self.predictive_gaps,
-            "predictive_claim_licensed": self.predictive_claim_licensed,
-        }
-
-
 Executor = Callable[[GuardContract], tuple[SemanticStatus, list[dict[str, Any]], dict[str, Any], dict[str, Any]]]
 
 
@@ -266,11 +199,6 @@ def _fluent_values(value: Any) -> list[str]:
     if isinstance(value, dict):
         return [str(key) for key, active in value.items() if active]
     return _string_values(value)
-
-
-def _coverage_context(contract: GuardContract) -> dict[str, Any]:
-    value = contract.inputs.get("_semantic_coverage") or {}
-    return dict(value) if isinstance(value, dict) else {}
 
 
 def _resolve_event_guard(value: Any, declared_values: Mapping[str, Any]) -> bool | None:
@@ -496,9 +424,8 @@ def _event(contract: GuardContract):
             )
         ], consumed, {}
 
-    coverage = _coverage_context(contract)
-    scenario_ids = _string_values(coverage.get("scenario_ids"))
-    holdout_ids = _string_values(coverage.get("holdout_scenario_ids"))
+    scenario_ids = sorted({str(event["scenario_id"]) for event in events if isinstance(event, dict) and event.get("scenario_id")})
+    holdout_ids: list[str] = []
     rollout_scenarios = [*scenario_ids, *holdout_ids] or ["default"]
     initial_fluents = set(_fluent_values(event_model.get("initial_states", [])))
     executed_scenarios: list[str] = []
@@ -1011,7 +938,6 @@ def _causal(contract: GuardContract):
     if missing or errors:
         return SemanticStatus.GAP, [_finding("SEM_CAUSAL_UNEVALUABLE_EQUATION", "At least one structural equation is missing or outside the supported scalar subset.", evidence={"missing": missing, "errors": errors})], consumed, {}
 
-    coverage = _coverage_context(contract)
     scenarios = _scenario_records(causal.get("scenarios", {}))
     holdouts = _scenario_records(causal.get("holdout_scenarios", {}))
     interventions = causal.get("interventions", [])
@@ -1023,8 +949,8 @@ def _causal(contract: GuardContract):
                 "An equation-model claim needs at least one declared scenario, holdout, intervention, or counterfactual to execute.",
             )
         ], consumed, {}
-    scenario_ids = _string_values(coverage.get("scenario_ids")) or sorted(scenarios)
-    holdout_ids = _string_values(coverage.get("holdout_scenario_ids")) or sorted(holdouts)
+    scenario_ids = sorted(scenarios)
+    holdout_ids = sorted(holdouts)
     scenario_results: dict[str, dict[str, float]] = {}
     execution_errors: list[dict[str, Any]] = []
     executed_scenarios: list[str] = []
@@ -1348,11 +1274,11 @@ def _binding(
 
 
 EXECUTOR_REGISTRY: dict[str, SemanticExecutor] = {
-    "EventGuard": SemanticExecutor(_binding("EventGuard", ("inputs.events", "inputs.event_model.contradictory_fluents", "inputs.event_model.initial_states", "inputs.event_model.missing_axioms", "inputs.event_model.states", "inputs.event_model.transitions", "inputs.event_model.guard_values", "inputs.variable_observations", "mesh.semantic_coverage"), ("event_axiom_completeness", "state_transition_identity_closure", "boolean_guard_evaluation", "fluent_consistency", "bounded_state_and_event_rollout", "scenario_and_holdout_execution", "declared_variable_timepoint_observation"), "arbitrary predicate languages, unbounded temporal theorem proving, and continuous dynamics"), _event),
+    "EventGuard": SemanticExecutor(_binding("EventGuard", ("inputs.events", "inputs.event_model.contradictory_fluents", "inputs.event_model.initial_states", "inputs.event_model.missing_axioms", "inputs.event_model.states", "inputs.event_model.transitions", "inputs.event_model.guard_values", "inputs.variable_observations"), ("event_axiom_completeness", "state_transition_identity_closure", "boolean_guard_evaluation", "fluent_consistency", "bounded_state_and_event_rollout", "scenario_and_holdout_execution", "declared_variable_timepoint_observation"), "arbitrary predicate languages, unbounded temporal theorem proving, and continuous dynamics"), _event),
     "AgentGuard": SemanticExecutor(_binding("AgentGuard", ("inputs.beliefs", "inputs.agent_model"), ("agent_identity_closure", "bdi_completeness", "declared_intention_conflict"), "open-ended planning and belief revision"), _agent),
     "SpaceGuard": SemanticExecutor(_binding("SpaceGuard", ("inputs.spatial_relations",), ("rcc8_base_and_converse_consistency", "ntpp_transitivity"), "metric geometry and full RCC8 closure"), _space),
     "ResourceGuard": SemanticExecutor(_binding("ResourceGuard", ("inputs.resources.inventory", "inputs.resources.places", "inputs.resources.transitions"), ("declared_inventory_validity", "inventory_and_transition_coevaluation", "finite_resource_conservation"), "unbounded colored Petri-net reachability"), _resource),
-    "CausalGuard": SemanticExecutor(_binding("CausalGuard", ("inputs.causal_model.variables", "inputs.causal_model.graph", "inputs.causal_model.claim_scope", "inputs.causal_model.equations", "inputs.causal_model.exogenous", "inputs.causal_model.scenarios", "inputs.causal_model.holdout_scenarios", "inputs.causal_model.interventions", "inputs.causal_model.counterfactuals", "inputs.variable_observations", "mesh.semantic_coverage"), ("declared_graph_consistency", "safe_scalar_equation_evaluability", "required_behavior_obligation", "bounded_scenario_rollout", "declared_intervention_execution", "declared_counterfactual_query", "declared_variable_timepoint_observation"), "arbitrary code, external solvers, and causal identification"), _causal),
+    "CausalGuard": SemanticExecutor(_binding("CausalGuard", ("inputs.causal_model.variables", "inputs.causal_model.graph", "inputs.causal_model.claim_scope", "inputs.causal_model.equations", "inputs.causal_model.exogenous", "inputs.causal_model.scenarios", "inputs.causal_model.holdout_scenarios", "inputs.causal_model.interventions", "inputs.causal_model.counterfactuals", "inputs.variable_observations"), ("declared_graph_consistency", "safe_scalar_equation_evaluability", "required_behavior_obligation", "bounded_scenario_rollout", "declared_intervention_execution", "declared_counterfactual_query", "declared_variable_timepoint_observation"), "arbitrary code, external solvers, and causal identification"), _causal),
     "ConflictGuard": SemanticExecutor(_binding("ConflictGuard", ("inputs.game_model.players", "inputs.game_model.actions", "inputs.game_model.states", "inputs.game_model.transitions", "inputs.game_model.payoffs", "inputs.game_model.issue"), ("finite_game_completeness", "player_state_action_reference_closure", "transition_probability"), "equilibrium solving and open-ended strategy search"), _conflict),
     "NormGuard": SemanticExecutor(_binding("NormGuard", ("inputs.norms", "inputs.facts"), ("condition_fact_binding", "boolean_fact_truth_evaluation"), "general deontic theorem proving and legal interpretation"), _norm),
 }
@@ -1364,7 +1290,6 @@ def execute_semantic(
     guard: str,
     contract: GuardContract,
     provider_available: bool,
-    coverage_context: dict[str, Any] | None = None,
 ) -> SemanticExecutionReceipt:
 
     executor = EXECUTOR_REGISTRY.get(guard)
@@ -1388,11 +1313,6 @@ def execute_semantic(
             binding=executor.binding,
             findings=[_finding("SEM_PROVIDER_UNAVAILABLE", "The required semantic provider was explicitly marked unavailable.")],
             skipped_reason="provider_unavailable",
-        )
-    if coverage_context:
-        contract = replace(
-            contract,
-            inputs={**contract.inputs, "_semantic_coverage": dict(coverage_context)},
         )
     status, findings, consumed_inputs, outputs = executor.execute(contract)
     return SemanticExecutionReceipt(

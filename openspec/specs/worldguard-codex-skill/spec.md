@@ -37,8 +37,8 @@ The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher 
 
 #### Scenario: Ordinary bounded check enters WorldGuard
 - **WHEN** an agent needs one claim checked against one world model
-- **THEN** it can write the contract from the Guard input reference and run `check --contract` without loading mesh or predictive references
+- **THEN** it can write the contract from the Guard input reference and run `check --contract` without loading mesh references
 
-#### Scenario: Predictive claim needs coverage rules
-- **WHEN** a mesh claim is predictive
-- **THEN** the agent loads the predictive coverage reference before reporting a predictive license
+#### Scenario: Every mesh node is checked
+- **WHEN** the agent runs a mesh
+- **THEN** it reports missing node contracts and native non-pass results without claiming a separate prediction license

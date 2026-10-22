@@ -237,7 +237,6 @@ def qualify_guard_contract(
             guard=guard,
             contract=guard_contract,
             provider_available=context.provider_availability.get(guard, True),
-            coverage_context=context.rollout_inputs,
         )
         semantic_receipts.append(receipt)
 
