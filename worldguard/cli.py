@@ -107,44 +107,6 @@ def main(argv: list[str] | None = None) -> int:
     mesh_check = subparsers.add_parser("mesh-check")
     mesh_check.add_argument("--mesh", required=True)
     mesh_check.add_argument("--json", action="store_true", help="print the full report")
-    task_model = subparsers.add_parser(
-        "task-model",
-        help="freeze, compare, and reversibly evaluate one task-local world model",
-    )
-    task_model_commands = task_model.add_subparsers(
-        dest="task_model_command",
-        required=True,
-    )
-    task_model_freeze = task_model_commands.add_parser(
-        "freeze",
-        help="freeze a prediction against the exact current task model",
-    )
-    task_model_freeze.add_argument("prediction")
-    task_model_compare = task_model_commands.add_parser(
-        "compare",
-        help="compare one later real observation with a frozen prediction",
-    )
-    task_model_compare.add_argument("prediction")
-    task_model_compare.add_argument("observation")
-    task_model_revision = task_model_commands.add_parser(
-        "revision",
-        help="accept, reject, or roll back a separate candidate task model",
-    )
-    task_model_revision.add_argument("revision")
-    fact_revision_preview = task_model_commands.add_parser(
-        "fact-revision-preview",
-        help="preview a four-valued fact revision without mutating its base",
-    )
-    fact_revision_preview.add_argument("base")
-    fact_revision_preview.add_argument("transaction")
-    fact_revision_activate = task_model_commands.add_parser(
-        "fact-revision-activate",
-        help="activate one current preview with regression and holdout evidence",
-    )
-    fact_revision_activate.add_argument("base")
-    fact_revision_activate.add_argument("transaction")
-    fact_revision_activate.add_argument("activation")
-
     args = parser.parse_args(argv)
     if args.command == "check":
         from .contracts import GuardContract
@@ -177,72 +139,6 @@ def main(argv: list[str] | None = None) -> int:
             return _input_error("mesh-check", args.mesh, exc)
         _emit(mesh_report.to_dict(), _mesh_summary, args.json)
         return 0 if mesh_report.status.value == "PASS" else 1
-    if args.command == "task-model":
-        from .task_local_revision import (
-            CandidateWorldModelRevision,
-            ObservedWorldSnapshot,
-            PredictionSnapshot,
-            compare_observed_world,
-            evaluate_candidate_world_revision,
-            freeze_prediction_snapshot,
-        )
-        if args.task_model_command == "fact-revision-preview":
-            from .fact_revision import (
-                FactRevisionTransaction,
-                FactWorldSnapshot,
-                preview_fact_revision,
-            )
-            base = FactWorldSnapshot.from_dict(load_mapping(args.base))
-            transaction = FactRevisionTransaction.from_dict(
-                load_mapping(args.transaction)
-            )
-            preview = preview_fact_revision(base, transaction)
-            print(dump_json(preview.to_dict()))
-            return 0 if preview.status == "ready" else 1
-        if args.task_model_command == "fact-revision-activate":
-            from .fact_revision import (
-                FactRevisionActivationRequest,
-                FactRevisionTransaction,
-                FactWorldSnapshot,
-                activate_fact_revision,
-            )
-            base = FactWorldSnapshot.from_dict(load_mapping(args.base))
-            transaction = FactRevisionTransaction.from_dict(
-                load_mapping(args.transaction)
-            )
-            activation = FactRevisionActivationRequest.from_dict(
-                load_mapping(args.activation)
-            )
-            result = activate_fact_revision(base, transaction, activation)
-            print(dump_json(result.to_dict()))
-            return 0 if result.receipt.activated else 1
-        if args.task_model_command == "freeze":
-            path = Path(args.prediction)
-            prediction = PredictionSnapshot.from_dict(load_mapping(path))
-            receipt = freeze_prediction_snapshot(prediction, base_dir=path.parent)
-        elif args.task_model_command == "compare":
-            prediction_path = Path(args.prediction)
-            frozen = load_mapping(prediction_path)
-            if frozen.get("artifact_kind") == "worldguard_prediction_snapshot_receipt":
-                frozen = frozen.get("prediction", {})
-            prediction = PredictionSnapshot.from_dict(frozen)
-            observation = ObservedWorldSnapshot.from_dict(
-                load_mapping(args.observation)
-            )
-            receipt = compare_observed_world(
-                prediction,
-                observation,
-                base_dir=prediction_path.parent,
-            )
-        else:
-            path = Path(args.revision)
-            revision = CandidateWorldModelRevision.from_dict(load_mapping(path))
-            receipt = evaluate_candidate_world_revision(
-                revision,
-                base_dir=path.parent,
-            )
-        print(dump_json(receipt))
-        return 0 if receipt["status"] == "pass" else 1
     return 2
 
 

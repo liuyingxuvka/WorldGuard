@@ -33,7 +33,7 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 ## What It Does
 
-The native CLI commands are `check`, `mesh-check`, and `task-model`.
+The native CLI commands are `check` and `mesh-check`.
 
 WorldGuard provides two core check shapes:
 
@@ -72,41 +72,6 @@ It checks:
 - cycles: dependency loops are reported as mesh failures;
 - evidence preservation: child reports, ledgers, gaps, and counterexamples survive aggregation.
 
-## Task-local fact revision
-
-WorldGuard can now preview and activate an explicit fact-support revision without
-turning the result into a new global database or a new Guard. Positive and
-negative support remain independent, so one fact can be `true`, `false`, `both`,
-or `neither`. A contradiction stays visible and does not make unrelated facts
-true.
-
-The preview is immutable and recalculates strict-rule closure after additions or
-retractions. Activation then requires the exact preview fingerprint, preserved
-facts, explicit contradiction acknowledgement, and current regression plus
-holdout evidence. A stale base, missing evidence, or repeated transaction id
-blocks visibly.
-
-Fact activation is deliberately not task closure. A successful activation
-returns `task_local_revalidation_required` and hands the exact candidate back
-to the same task-local prediction owner for current native depth, original
-scenario, and independent real-holdout checks.
-
-## Task-local predictive revision
-
-Every prediction names one task and purpose, a coverage universe, explicit
-assumptions and unknowns, and its predecessor; later iterations name the exact
-prior gap ids. WorldGuard computes the coverage and gap fingerprints itself.
-`task-model revision` runs the candidate mesh once and takes the state,
-transition, branch, perturbation, intervention, counterfactual, and holdout gaps
-from that run rather than from a caller-authored gap list.
-
-Closing a candidate needs one original scenario and one genuinely independent
-holdout observation; a renamed copy of the same observation is caught by its
-content. WorldGuard
-computes resolved, persisted, and introduced gaps itself; unchanged evidence
-stalls, a finite iteration limit blocks, and missing external evidence must name
-the exact gaps, owner, reason, and affected claims.
-
 ## Quick Start
 
 ```powershell
@@ -115,8 +80,6 @@ python -m pytest
 python -m worldguard.examples.fuel_cell --check
 python -m worldguard.cli check --example fuel_cell
 python -m worldguard.cli mesh-check --mesh examples/model_mesh/basic_mesh.yaml
-python -m worldguard.cli task-model fact-revision-preview base.json transaction.json
-python -m worldguard.cli task-model fact-revision-activate base.json transaction.json activation.json
 ```
 
 If your Python scripts directory is on `PATH`, the console entry point is also available:
@@ -188,7 +151,7 @@ WorldGuard 用来检查一个“世界声明”是否被显式模型支持、是
 
 ## 它能做什么
 
-原生 CLI 命令为 `check`、`mesh-check` 和 `task-model`。
+原生 CLI 命令为 `check` 和 `mesh-check`。
 
 WorldGuard 有两种核心检查形态：
 
@@ -227,36 +190,6 @@ WorldGuard 有两种核心检查形态：
 - 循环依赖：依赖环会导致 mesh 失败；
 - 证据保留：子报告、ledger、gap 和反例不能在聚合时丢失。
 
-## 任务内事实修订
-
-WorldGuard 现在可以预览并激活一次显式的事实支持修订，但这不会创建新的
-全局数据库，也不会增加一个新的 Guard。正向支持和反向支持彼此独立，所以
-同一个事实可以是“真”“假”“同时真且假”或“尚无支持”。矛盾会被明确展示，
-但不会把无关事实也推成真。
-
-预览不会修改原始快照；增加或撤回支持后，严格规则的推导闭包会重新计算。
-真正激活时，还必须绑定同一个预览指纹、保护声明为不可变的事实、明确确认
-矛盾，并提供当前的回归与留出验证证据。基础快照过期、证据不完整或重复使用
-事务编号时都会明确阻断。
-
-事实激活不是任务关闭。成功激活只会返回
-`task_local_revalidation_required`，把这个精确候选重新交回同一个任务本地
-预测 owner，重新运行当前原生深度、原场景和独立真实留出验证。
-
-## 任务本地预测修订
-
-每个预测都要写明一个任务和目的、覆盖全集、显式假设和未知边界，以及前序
-迭代；后续迭代还要写明上一轮精确的 gap 编号。覆盖全集和 gap 集合的指纹由
-WorldGuard 自己计算。`task-model revision` 会把候选网格实际运行一次，状态、
-转移、分支、扰动、干预、反事实和留出 gap 都取自这次运行，调用方不能自己
-填写“没有 gap”。
-
-候选关闭需要一份原场景和一份真正独立的留出观测；改名后重复使用的同一份
-观测会按内容被识别出来。
-WorldGuard 自己计算已解决、仍存在和新引入的 gap；证据没有变化就停在
-`progress_stalled`，迭代上限会阻断，外部缺失输入必须精确说明 gap、owner、
-原因和受影响声明。
-
 ## 快速开始
 
 ```powershell
@@ -265,8 +198,6 @@ python -m pytest
 python -m worldguard.examples.fuel_cell --check
 python -m worldguard.cli check --example fuel_cell
 python -m worldguard.cli mesh-check --mesh examples/model_mesh/basic_mesh.yaml
-python -m worldguard.cli task-model fact-revision-preview base.json transaction.json
-python -m worldguard.cli task-model fact-revision-activate base.json transaction.json activation.json
 ```
 
 ## 这个项目不是什么

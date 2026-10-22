@@ -33,7 +33,7 @@ The WorldGuard skill SHALL provide guidance for calling the installed runtime fo
 - **THEN** it includes a `mesh-check` command example and references for ModelMesh, authority, handoff, and closure concepts.
 
 ### Requirement: Codex entry is a short shape table
-The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh, template, task-local revision and fact revision rules SHALL stay in their references and SHALL be loaded only for that shape.
+The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh and template rules SHALL stay in their references and SHALL be loaded only for that shape.
 
 #### Scenario: Ordinary bounded check enters WorldGuard
 - **WHEN** an agent needs one claim checked against one world model

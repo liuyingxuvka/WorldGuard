@@ -11,7 +11,7 @@ EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard an
 
 ## Start
 
-The native CLI commands are `check`, `mesh-check`, and `task-model`.
+The native CLI commands are `check` and `mesh-check`.
 
 Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`.
 
@@ -19,10 +19,9 @@ Pick the shape that fits the request and read its reference. Field formats for e
 |---|---|---|---|
 | `unit_contract` | One claim against one world model | `check --contract <file.yaml>` | [worldguard-contracts.md](references/worldguard-contracts.md) |
 | `model_mesh` | Several linked models (scenes, trip legs, handoffs) | `mesh-check --mesh <file.yaml>` | [model-mesh.md](references/model-mesh.md) |
-| `task_local_revision` | Compare a frozen prediction with a later observation | `task-model freeze`, `task-model compare`, `task-model revision` | [task-local-model-deepening.md](references/task-local-model-deepening.md) |
 | `template_pack` | Optional: scaffold a single-Guard contract | Python API | [template-packs.md](references/template-packs.md) |
 
-Load [fact-revision.md](references/fact-revision.md) only when the support of a fact changes, [model-authority.md](references/model-authority.md) only for questions about which model owns a fact, and [closure-report.md](references/closure-report.md) only as an optional checklist when reporting a mesh.
+Load [model-authority.md](references/model-authority.md) only for questions about which model owns a fact, and [closure-report.md](references/closure-report.md) only as an optional checklist when reporting a mesh.
 
 ## Results
 

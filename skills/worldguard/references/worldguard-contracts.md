@@ -25,7 +25,3 @@ Run a contract with `python <skill-root>/scripts/run_worldguard.py check --contr
 ## Results
 
 Each Guard result keeps its exact `status`, missing slots, boundary findings, errors and counterexamples. Non-pass needs concrete evidence rather than narrative assertion. The report keeps `structural_status`, `semantic_status` and the final `status` separate; a final `PASS` requires every applicable axis to pass with zero gaps, including every claim assertion. A claim without `asserts` is `GAP` `CLAIM_NOT_BOUND` (claim not bound to the world model); a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an assertion naming something the model does not declare is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Structural pass alone is insufficient.
-
-## Conditional work
-
-Prediction/task revision fields, original and independent holdout observations, gap progression and finite stopping rules are in `task-local-model-deepening.md`. Fact-support transactions, four-valued states, previews and activation gates are in `fact-revision.md`. Load these only on their declared triggers. Reusable construction is in `template-packs.md`.

@@ -133,11 +133,11 @@ def test_binding_change_changes_the_built_contract() -> None:
     registry = builtin_template_registry()
     first_bindings = _event_bindings()
     second_bindings = _event_bindings()
-    second_bindings['claim_text'] = 'a different task-local event claim'
+    second_bindings['claim_text'] = 'a different event claim'
     first = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=first_bindings)
     second = build_template_instance(registry, contract_kind=GUARD_CONTRACT_KIND, fact_ids=['guard:EventGuard'], slot_bindings=second_bindings)
     assert first.data['claim']['text'] == 'a declared event initiates readiness'
-    assert second.data['claim']['text'] == 'a different task-local event claim'
+    assert second.data['claim']['text'] == 'a different event claim'
     assert first.receipt.to_dict() == second.receipt.to_dict()
 
 def test_pack_missing_a_claim_derived_guard_route_is_rejected() -> None:

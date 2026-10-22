@@ -3,8 +3,7 @@
 An author-side maintenance tool may supervise this module as one declared
 native check, but WorldGuard alone owns the purposes, failure classes, fixtures,
 and oracle semantics. The
-family inventory is baseline regression authority; every real model child still
-requires its own explicit task-model-instance declaration and native proof.
+family inventory is baseline regression authority for declared native checks.
 """
 
 from __future__ import annotations
