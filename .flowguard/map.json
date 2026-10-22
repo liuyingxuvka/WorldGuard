@@ -39,7 +39,9 @@
         "tests/test_fuel_cell_demo.py",
         "tests/test_version.py"
       ],
-      "models": [],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py"
+      ],
       "status": "confirmed",
       "fingerprint": "sha256:5b864311b288053cf945cc86a37e6ee0343bce9233eff61c71b1bfb0df8bf006"
     },
@@ -78,7 +80,9 @@
         "tests/test_event_time_order.py",
         "tests/test_ledgers.py"
       ],
-      "models": [],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py"
+      ],
       "status": "confirmed",
       "fingerprint": "sha256:c7fdeefa8a4f1943f16a2050289062e6ef8fab198e565ba1c78ab185be10a9a2"
     },
@@ -156,7 +160,9 @@
         "tests/test_qualification.py",
         "tests/test_world_model_language.py"
       ],
-      "models": [],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py"
+      ],
       "status": "confirmed",
       "fingerprint": "sha256:02602c3c7534b814479c0f1d8dbbde5322b808bc75382134a488a6ba281345a0"
     },
