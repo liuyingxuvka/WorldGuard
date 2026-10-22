@@ -30,20 +30,6 @@ __all__ = [
     "claim_predictive_intent",
     "derive_guard_requirements",
     "derive_required_guards",
-    "GUARD_CONTRACT_KIND",
-    "MODEL_MESH_CONTRACT_KIND",
-    "TemplateFragment",
-    "TemplateInstance",
-    "TemplateInstanceReceipt",
-    "TemplatePackError",
-    "TemplatePackManifest",
-    "TemplatePackRegistry",
-    "TemplateSelection",
-    "build_template_instance",
-    "builtin_template_registry",
-    "compose_template_packs",
-    "resolve_template_slots",
-    "template_slot",
 ]
 
 _EXPORTS = {
@@ -71,20 +57,6 @@ _EXPORTS = {
     'SemanticExecutionReceipt': 'worldguard.semantic',
     'SemanticStatus': 'worldguard.semantic',
     'GuardStatus': 'worldguard.status',
-    'GUARD_CONTRACT_KIND': 'worldguard.template_packs',
-    'MODEL_MESH_CONTRACT_KIND': 'worldguard.template_packs',
-    'TemplateFragment': 'worldguard.template_packs',
-    'TemplateInstance': 'worldguard.template_packs',
-    'TemplateInstanceReceipt': 'worldguard.template_packs',
-    'TemplatePackError': 'worldguard.template_packs',
-    'TemplatePackManifest': 'worldguard.template_packs',
-    'TemplatePackRegistry': 'worldguard.template_packs',
-    'TemplateSelection': 'worldguard.template_packs',
-    'build_template_instance': 'worldguard.template_packs',
-    'builtin_template_registry': 'worldguard.template_packs',
-    'compose_template_packs': 'worldguard.template_packs',
-    'resolve_template_slots': 'worldguard.template_packs',
-    'template_slot': 'worldguard.template_packs',
 }
 
 _EXPORT_ALIASES = ()

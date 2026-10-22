@@ -32,8 +32,7 @@
       "depends_on": [
         "worldguard.core",
         "worldguard.mesh",
-        "worldguard.qualification",
-        "worldguard.templates"
+        "worldguard.qualification"
       ],
       "tests": [
         "tests/test_cli_module.py",
@@ -42,7 +41,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:f29b6a436e5e33707258d8825a47a0d1a7c630f208a7329dcf5593c449b41384"
+      "fingerprint": "sha256:2d5d439eeace67e69f93823c6a2c537812665a32e916b4d7a6f4c4e1cebe3957"
     },
     {
       "id": "worldguard.core",
@@ -193,42 +192,6 @@
       "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:237e28ce09f9505b3d6970ea432623fbac5e4e8022b0b7d28ef34d48a9dcbeb4"
-    },
-    {
-      "id": "worldguard.templates",
-      "layer": "",
-      "summary": "Native template registry, exact selection and instance construction",
-      "responsibilities": [
-        "Select zero, one or many native template fragments with explicit ownership",
-        "Compose fragments, resolve typed slots (including the claim assertions) and validate native Guard/mesh routes",
-        "Report construction only; a built contract still runs through run_worldguard or run_model_mesh"
-      ],
-      "files": [
-        "worldguard/template_packs.py"
-      ],
-      "entrypoints": [
-        "worldguard/template_packs.py:builtin_template_registry",
-        "worldguard/template_packs.py:compose_template_packs",
-        "worldguard/template_packs.py:build_template_instance"
-      ],
-      "state": [
-        "Built-in template registry and immutable manifests"
-      ],
-      "side_effects": [
-        "Construct deterministic in-memory native contract scaffolding"
-      ],
-      "depends_on": [
-        "worldguard.core",
-        "worldguard.mesh"
-      ],
-      "tests": [
-        "tests/test_template_packs.py"
-      ],
-      "models": [
-        ".flowguard/models/worldguard_template_selection_model.py"
-      ],
-      "status": "confirmed",
-      "fingerprint": "sha256:1082e6d7168aa246031939b79cbbb4bd72cdfdfa4ec8c880b6d0842a8398e33e"
     },
     {
       "id": "release",

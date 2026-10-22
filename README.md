@@ -33,7 +33,7 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 ## What It Does
 
-The native CLI commands are `check` and `mesh-check`.
+The native CLI commands are `check` and `mesh-check`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
 
 WorldGuard provides two core check shapes:
 
@@ -151,7 +151,7 @@ WorldGuard 用来检查一个“世界声明”是否被显式模型支持、是
 
 ## 它能做什么
 
-原生 CLI 命令为 `check` 和 `mesh-check`。
+原生 CLI 命令为 `check` 和 `mesh-check`。从 `skills/worldguard/assets/examples/` 复制一个世界，再修改模型和断言即可开始新合约。
 
 WorldGuard 有两种核心检查形态：
 
