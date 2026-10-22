@@ -11,7 +11,7 @@
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
         "Expose the native API through literal lazy owner exports",
-        "Dispatch CLI leaves to qualification, mesh, blueprint and revision owners; print a short summary by default and the full report with --json",
+        "Dispatch CLI leaves to qualification, mesh and revision owners; print a short summary by default and the full report with --json",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
       "files": [
@@ -30,7 +30,6 @@
         "Read declared CLI inputs; print a summary or the full JSON report"
       ],
       "depends_on": [
-        "worldguard.blueprint",
         "worldguard.core",
         "worldguard.mesh",
         "worldguard.qualification",
@@ -44,7 +43,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:be3f41c54dc7fdb6c4f52b7268b6d55a4a61a764a18782b6228722f2b4f406b8"
+      "fingerprint": "sha256:d2794dc557f6c5c3f91c3d5880c34b38421a69ef58c653a2f5c491839331fb72"
     },
     {
       "id": "worldguard.core",
@@ -197,49 +196,6 @@
       "fingerprint": "sha256:237e28ce09f9505b3d6970ea432623fbac5e4e8022b0b7d28ef34d48a9dcbeb4"
     },
     {
-      "id": "worldguard.blueprint",
-      "layer": "",
-      "summary": "WorldBlueprint hierarchy, behavior cases, impact and trace (repository author tool, not in the skill)",
-      "responsibilities": [
-        "Validate hierarchical world elements and typed input/output/dependency bindings",
-        "Require one current binding for every role an element declares and derive claim contributors from the declared output lineage",
-        "Execute actual behavior cases and the selected external test and evidence records",
-        "Answer affected impact and reverse trace from one current qualified blueprint"
-      ],
-      "files": [
-        "worldguard/blueprint.py",
-        "docs/world-blueprint.md"
-      ],
-      "entrypoints": [
-        "worldguard/blueprint.py:check_world_blueprint",
-        "worldguard/blueprint.py:blueprint_impact",
-        "worldguard/blueprint.py:blueprint_reverse_trace"
-      ],
-      "state": [
-        "Blueprint identities and binding content hashes"
-      ],
-      "side_effects": [
-        "Read declared evidence files; execute explicit behavior/test bindings; return reports"
-      ],
-      "depends_on": [
-        "worldguard",
-        "worldguard.core",
-        "worldguard.guards"
-      ],
-      "tests": [
-        "tests/test_blueprint_cli.py",
-        "tests/test_blueprint_entry_integrity.py",
-        "tests/test_blueprint_impact_trace.py",
-        "tests/test_world_blueprint.py",
-        "tests/test_world_blueprint_freeze_blockers.py",
-        "tests/test_world_blueprint_policy_target.py",
-        "tests/test_world_blueprint_seven_guard_matrix.py"
-      ],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:c0a40b14bec5833c6339e3d923b98bb710ed02aeca6627f2d19a2281eb42b88e"
-    },
-    {
       "id": "worldguard.revision",
       "layer": "",
       "summary": "Task-local prediction, reversible revision and fact transactions",
@@ -346,10 +302,9 @@
     {
       "id": "scripts",
       "layer": "",
-      "summary": "Skill installer and blueprint fixture refresh",
+      "summary": "Portable skill installer and installed-copy check",
       "responsibilities": [
-        "Install the skill and copy the worldguard package into its runtime directory; check an installed copy",
-        "Regenerate the blueprint test fixtures from their raw inputs"
+        "Install the skill and copy the worldguard package into its runtime directory; check an installed copy"
       ],
       "files": [
         "scripts/*.py"
@@ -362,16 +317,14 @@
         "install replaces the target skill copy; check and dry-run modes are read-only"
       ],
       "depends_on": [
-        "worldguard",
-        "worldguard.blueprint",
-        "worldguard.core"
+        "worldguard"
       ],
       "tests": [
         "tests/test_cli_module.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:12474e558be914820257e8eb5602eea1f4ebf11fdd8881548708d6968896d452"
+      "fingerprint": "sha256:3df667359e2dd52853d73c8053fdd215863d004ee09066a761f8b14185669bca"
     },
     {
       "id": "skills.worldguard.scripts",

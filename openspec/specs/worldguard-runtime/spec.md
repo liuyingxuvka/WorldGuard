@@ -62,7 +62,7 @@ The runtime SHALL provide a fuel-cell toy example replay that verifies schema, h
 - **THEN** the command succeeds, reports all seven Guards, and includes explicit toy-scope limits.
 
 ### Requirement: Runtime CLI Checks
-The runtime SHALL provide CLI entrypoints for both single-contract checks and mesh checks.
+The runtime SHALL provide `check` and `mesh-check` for native checks, and `task-model` for the current task-local revision interface. No additional hierarchical-world CLI or public API is exposed.
 
 #### Scenario: Single contract CLI remains compatible
 - **WHEN** `worldguard check --example fuel_cell` runs

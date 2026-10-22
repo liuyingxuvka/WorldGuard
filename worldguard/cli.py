@@ -66,27 +66,6 @@ def _mesh_summary(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _blueprint_summary(report: dict[str, Any]) -> dict[str, Any]:
-    keys = ("operation", "status", "native_domain_qualified", "deepest_continuously_proven_layer",
-            "first_unresolved_layer", "changed_ids", "materialized_ids", "target_id",
-            "terminal_input_ids", "terminal_binding_ids", "claim_boundary")
-    summary = {key: report[key] for key in keys if key in report}
-    if "qualification_layers" in report:
-        summary["layers"] = {row["layer_id"]: row["status"] for row in report["qualification_layers"]}
-    summary["gaps"] = [
-        {
-            key: gap[key]
-            for key in ("code", "message", "layer_id", "depth", "node_id", "element_id", "binding_id")
-            if key in gap and gap[key] not in ("", None)
-        }
-        for gap in report.get("gaps", [])
-    ]
-    summary["status"] = report.get("status", "")
-    summary["semantic_status"] = report.get("semantic_status", "")
-    summary["scope_limits"] = report.get("scope_limits", [])
-    return summary
-
-
 def _emit(full: dict[str, Any], summarize, as_json: bool) -> None:
     if as_json:
         print(dump_json(full))
@@ -128,25 +107,6 @@ def main(argv: list[str] | None = None) -> int:
     mesh_check = subparsers.add_parser("mesh-check")
     mesh_check.add_argument("--mesh", required=True)
     mesh_check.add_argument("--json", action="store_true", help="print the full report")
-    blueprint = subparsers.add_parser(
-        "blueprint",
-        help="check or query one current target-neutral WorldBlueprint",
-    )
-    blueprint_commands = blueprint.add_subparsers(
-        dest="blueprint_command",
-        required=True,
-    )
-    blueprint_check = blueprint_commands.add_parser("check")
-    blueprint_check.add_argument("--blueprint", required=True)
-    blueprint_check.add_argument("--json", action="store_true", help="print the full report")
-    blueprint_impact_command = blueprint_commands.add_parser("impact")
-    blueprint_impact_command.add_argument("--blueprint", required=True)
-    blueprint_impact_command.add_argument("--changed-id", action="append", required=True)
-    blueprint_impact_command.add_argument("--json", action="store_true", help="print the full report")
-    blueprint_trace_command = blueprint_commands.add_parser("trace")
-    blueprint_trace_command.add_argument("--blueprint", required=True)
-    blueprint_trace_command.add_argument("--target-id", required=True)
-    blueprint_trace_command.add_argument("--json", action="store_true", help="print the full report")
     task_model = subparsers.add_parser(
         "task-model",
         help="freeze, compare, and reversibly evaluate one task-local world model",
@@ -217,73 +177,6 @@ def main(argv: list[str] | None = None) -> int:
             return _input_error("mesh-check", args.mesh, exc)
         _emit(mesh_report.to_dict(), _mesh_summary, args.json)
         return 0 if mesh_report.status.value == "PASS" else 1
-    if args.command == "blueprint":
-        from .blueprint import (
-            BlueprintError,
-            blueprint_impact,
-            blueprint_reverse_trace,
-            check_world_blueprint,
-            load_world_blueprint,
-        )
-        operation = args.blueprint_command
-        try:
-            current_blueprint = load_world_blueprint(args.blueprint)
-            if operation == "check":
-                report = check_world_blueprint(current_blueprint)
-                _emit(report.to_dict(), _blueprint_summary, args.json)
-                return 0 if report.status.value == "PASS" else 1
-            if operation == "impact":
-                report = blueprint_impact(
-                    current_blueprint,
-                    changed_ids=args.changed_id,
-                )
-                _emit(report.to_dict(), _blueprint_summary, args.json)
-                return 0 if not report.gaps else 1
-            if operation == "trace":
-                report = blueprint_reverse_trace(
-                    current_blueprint,
-                    target_id=args.target_id,
-                )
-                _emit(report.to_dict(), _blueprint_summary, args.json)
-                return 0 if report.status.value == "PASS" else 1
-            raise BlueprintError(
-                "WORLD_BLUEPRINT_OPERATION_UNKNOWN",
-                f"Unknown blueprint operation: {operation}.",
-                details={"operation": operation},
-            )
-        except BlueprintError as exc:
-            print(
-                dump_json(
-                    {
-                        "operation": operation,
-                        "status": "error",
-                        "error": {
-                            "code": exc.code,
-                            "message": str(exc),
-                            "details": exc.details,
-                        },
-                    }
-                )
-            )
-            return 2
-        except (OSError, UnicodeError, ValueError) as exc:
-            print(
-                dump_json(
-                    {
-                        "operation": operation,
-                        "status": "error",
-                        "error": {
-                            "code": "WORLD_BLUEPRINT_INPUT_INVALID",
-                            "message": "Blueprint input could not be loaded or parsed.",
-                            "details": {
-                                "input_path": str(getattr(args, "blueprint", "")),
-                                "error_type": type(exc).__name__,
-                            },
-                        },
-                    }
-                )
-            )
-            return 2
     if args.command == "task-model":
         from .task_local_revision import (
             CandidateWorldModelRevision,

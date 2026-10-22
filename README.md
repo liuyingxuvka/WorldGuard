@@ -33,6 +33,8 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 ## What It Does
 
+The native CLI commands are `check`, `mesh-check`, and `task-model`.
+
 WorldGuard provides two core check shapes:
 
 - `GuardContract`: checks one claim against one explicit world model. The claim says what it claims as `claim.asserts` rows, which are evaluated on the model; the claim text is never read.
@@ -185,6 +187,8 @@ No license file is included yet. Treat this repository as source-visible but not
 WorldGuard 用来检查一个“世界声明”是否被显式模型支持、是否被模型反驳、是否缺少必要输入，或者是否超出了模型边界。它的目标不是给一个凭感觉的自然语言结论，而是保留结构化证据、缺口、反例和边界。
 
 ## 它能做什么
+
+原生 CLI 命令为 `check`、`mesh-check` 和 `task-model`。
 
 WorldGuard 有两种核心检查形态：
 

@@ -11,6 +11,8 @@ EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard an
 
 ## Start
 
+The native CLI commands are `check`, `mesh-check`, and `task-model`.
+
 Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`.
 
 | Shape | Use for | Command: `python <skill-root>/scripts/run_worldguard.py ...` | Reference |
