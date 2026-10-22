@@ -17,3 +17,5 @@ openspec/**/provenance/
 docs/flowguard_adoption_log.md
 .flowguard/adoption_log.jsonl
 .flowguard/cache/
+
+SLIM_LOG.md
