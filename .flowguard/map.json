@@ -1,13 +1,19 @@
 {
   "schema": "flowguard.map.v1",
   "project": "WorldGuard",
-  "layers": [],
+  "layers": [
+    "interface",
+    "mesh",
+    "unit",
+    "guards",
+    "core"
+  ],
   "ignore": [],
   "test_command": "",
   "components": [
     {
       "id": "worldguard",
-      "layer": "",
+      "layer": "interface",
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
         "Expose the native API through literal lazy owner exports",
@@ -47,7 +53,7 @@
     },
     {
       "id": "worldguard.core",
-      "layer": "",
+      "layer": "core",
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries",
@@ -88,7 +94,7 @@
     },
     {
       "id": "worldguard.guards",
-      "layer": "",
+      "layer": "guards",
       "summary": "Seven structural Guards and their native family oracle catalog",
       "responsibilities": [
         "Run the seven named structural Guard checks, including event preconditions and causal constraints, with shared errors and ledgers; read unsupported boundaries from the shared native table",
@@ -130,7 +136,7 @@
     },
     {
       "id": "worldguard.qualification",
-      "layer": "",
+      "layer": "unit",
       "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
         "Qualify a unit by executing its derived Guard obligations structurally and semantically",
@@ -168,7 +174,7 @@
     },
     {
       "id": "worldguard.mesh",
-      "layer": "",
+      "layer": "mesh",
       "summary": "Native per-node checks with mesh topology, authority and handoffs",
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
@@ -201,10 +207,10 @@
     },
     {
       "id": "release",
-      "layer": "",
+      "layer": "interface",
       "summary": "CI on every push and publication of one CI-checked source",
       "responsibilities": [
-        "Run the test suite, FlowGuard release check and skill install check on every push",
+        "Run the test suite, strict FlowGuard map check, release check and skill install check on every push",
         "Check source/version/changelog identity, wait for CI success on the exact SHA, and create the stable tag and Release at that commit"
       ],
       "files": [
@@ -224,11 +230,11 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:1dd7cc4b0c120846f62fc87891685b8e7a97e6c271b5846a698a022c5da3e74e"
+      "fingerprint": "sha256:b5d822ba182c022144c3b978f40dfc4bbf35cfcd8492bee0148ec73ba5cd5e74"
     },
     {
       "id": "scripts",
-      "layer": "",
+      "layer": "interface",
       "summary": "Portable skill installer and installed-copy check",
       "responsibilities": [
         "Install the skill and copy the worldguard package into its runtime directory; check an installed copy"
@@ -243,9 +249,7 @@
       "side_effects": [
         "install replaces the target skill copy; check and dry-run modes are read-only"
       ],
-      "depends_on": [
-        "worldguard"
-      ],
+      "depends_on": [],
       "tests": [
         "tests/test_cli_module.py"
       ],
@@ -255,7 +259,7 @@
     },
     {
       "id": "skills.worldguard.scripts",
-      "layer": "",
+      "layer": "interface",
       "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
         "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
@@ -283,6 +287,28 @@
       "fingerprint": "sha256:df0f2c10d8a8c254df12f64cecfabcc69e95de7c235c72bd228da462686ecd45"
     }
   ],
-  "flows": [],
+  "flows": [
+    {
+      "id": "check",
+      "summary": "check one world contract",
+      "steps": [
+        "worldguard:main",
+        "worldguard.core:GuardContract",
+        "worldguard.qualification:qualify_guard_contract",
+        "worldguard.qualification:evaluate_claim_binding",
+        "worldguard.core:aggregate_statuses"
+      ],
+      "model": ".flowguard/models/worldguard_world_check_model.py"
+    },
+    {
+      "id": "mesh-check",
+      "summary": "check a tree of world contracts",
+      "steps": [
+        "worldguard:main",
+        "worldguard.mesh:run_model_mesh",
+        "worldguard.qualification:qualify_guard_contract"
+      ]
+    }
+  ],
   "accepted_debts": []
 }

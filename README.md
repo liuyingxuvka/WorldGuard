@@ -23,6 +23,7 @@ English comes first; a Chinese mirror follows below.
 ## Development and installation checks
 
 WorldGuard uses ordinary native checks and pytest. No author-supervision tool or compiled author contract is needed. The living `.flowguard/map.json` binds source, tests, and the executable models; `python -m flowguard map models` runs them.
+Install FlowGuard only from the owner's GitHub (`git+https://github.com/liuyingxuvka/FlowGuard.git@<tag>`); the PyPI package named `flowguard` is a different project.
 
 ```bash
 python -m pytest -q
@@ -166,6 +167,8 @@ No license file is included yet. Treat this repository as source-visible but not
 **发布类型：** 源码版 Python 包 + Codex 技能工作流
 
 WorldGuard 用来检查一个“世界声明”是否被显式模型支持、是否被模型反驳、是否缺少必要输入，或者是否超出了模型边界。它的目标不是给一个凭感觉的自然语言结论，而是保留结构化证据、缺口、反例和边界。
+
+FlowGuard 只从主人的 GitHub 安装（`git+https://github.com/liuyingxuvka/FlowGuard.git@<tag>`）；PyPI 上叫 `flowguard` 的是另一个项目。
 
 ## 它能做什么
 
