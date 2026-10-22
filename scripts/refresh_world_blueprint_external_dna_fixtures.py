@@ -228,8 +228,6 @@ def _matrix_binding(
     return binding
 
 
-
-
 def _native_payload(semantic: dict[str, Any]) -> dict[str, Any]:
     return {
         key: deepcopy(semantic[key])
@@ -253,12 +251,6 @@ def _refresh_native_semantic_fingerprints(blueprint: dict[str, Any]) -> None:
         semantic["content_fingerprint"] = (
             "sha256:" + fingerprint_mesh(_native_payload(semantic))
         )
-
-
-
-
-
-
 
 
 def _refresh_binding_content_and_receipts(blueprint: dict[str, Any]) -> None:
@@ -356,8 +348,6 @@ def _refresh_integrated_external_support_records(
         }
     for path, container in sorted(containers.items(), key=lambda row: str(row[0])):
         _write_json(path, container)
-
-
 
 
 def _refresh_one(

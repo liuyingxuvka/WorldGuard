@@ -44,7 +44,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:e95d84834ee703769d1ce189acee2fde8c68bf14ce59d3a44a5ab367722775d8"
+      "fingerprint": "sha256:be3f41c54dc7fdb6c4f52b7268b6d55a4a61a764a18782b6228722f2b4f406b8"
     },
     {
       "id": "worldguard.core",
@@ -83,7 +83,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:2b46d9812a1c9c272614d53b403d48599142cf2a8e7899270963c78841cac747"
+      "fingerprint": "sha256:6cc43481e2ccb3d00d584292c0cc6a20b1382df1abf830bd6a323a97351116b0"
     },
     {
       "id": "worldguard.guards",
@@ -125,7 +125,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:3b8529a0302243bbba1cd93ab089ce05292df3297ce965e8b576b5594252228a"
+      "fingerprint": "sha256:04fce297199584078e5defa0e08da0fd34699ef89e323ecc19d4ae391ccc3204"
     },
     {
       "id": "worldguard.qualification",
@@ -194,7 +194,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:246c0ed57739fa63842a2d707e0ba9d372f25d5f929ba2e71908ff1eb80783dd"
+      "fingerprint": "sha256:237e28ce09f9505b3d6970ea432623fbac5e4e8022b0b7d28ef34d48a9dcbeb4"
     },
     {
       "id": "worldguard.blueprint",
@@ -237,7 +237,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:42828d8e1593e6d113daba298e0f753f7e2f9b747ca4fac7e01105867c698c94"
+      "fingerprint": "sha256:c0a40b14bec5833c6339e3d923b98bb710ed02aeca6627f2d19a2281eb42b88e"
     },
     {
       "id": "worldguard.revision",
@@ -314,7 +314,7 @@
         ".flowguard/models/worldguard_template_selection_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:2fec888d5bbded92868e569ab0bfb8214fbca1dc6741fca801b193f67e744ac5"
+      "fingerprint": "sha256:1082e6d7168aa246031939b79cbbb4bd72cdfdfa4ec8c880b6d0842a8398e33e"
     },
     {
       "id": "release",
@@ -336,7 +336,9 @@
         "CI is read-only; an explicit release commit or manual workflow publishes with GitHub token"
       ],
       "depends_on": [],
-      "tests": [],
+      "tests": [
+        "tests/test_source_style.py"
+      ],
       "models": [],
       "status": "confirmed",
       "fingerprint": "sha256:1dd7cc4b0c120846f62fc87891685b8e7a97e6c271b5846a698a022c5da3e74e"
@@ -369,7 +371,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:ab7d54e58d55c44ff6df005831aad4a19c20649eb4f326a56df320093e86fabd"
+      "fingerprint": "sha256:12474e558be914820257e8eb5602eea1f4ebf11fdd8881548708d6968896d452"
     },
     {
       "id": "skills.worldguard.scripts",

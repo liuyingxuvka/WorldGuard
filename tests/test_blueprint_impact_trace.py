@@ -129,7 +129,6 @@ def test_impact_rejects_unknown_id_without_widening() -> None:
     assert caught.value.details == {"unknown_ids": ["not-in-blueprint"]}
 
 
-
 def test_each_query_runs_exactly_one_current_source_preflight(monkeypatch) -> None:
     blueprint = load_world_blueprint(FIXTURE)
     real_check = blueprint_module.check_world_blueprint
@@ -310,7 +309,6 @@ def test_dependency_and_declared_output_seed_affect_both_relation_endpoints() ->
     )
 
 
-
 def test_broken_parent_child_hop_rejects_the_query_source_before_trace() -> None:
     payload = _payload()
     allocation = next(
@@ -423,7 +421,6 @@ def test_reverse_trace_rejects_unknown_target() -> None:
             target_id="unknown-output",
         )
     assert caught.value.code == "WORLD_BLUEPRINT_QUERY_ID_UNKNOWN"
-
 
 
 def test_reverse_trace_rejects_non_traceable_blueprint_container() -> None:

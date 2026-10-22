@@ -121,7 +121,6 @@ def active_norm_conflicts(norms: list[Any]) -> list[dict[str, Any]]:
     return conflicts
 
 
-
 @dataclass(frozen=True)
 class SemanticBinding:
     executor_id: str

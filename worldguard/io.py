@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 
-
 def load_mapping(path: str | Path) -> dict[str, Any]:
     path = Path(path)
     text = path.read_text(encoding="utf-8")

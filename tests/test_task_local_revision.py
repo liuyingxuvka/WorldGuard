@@ -583,15 +583,6 @@ def test_task_model_cli_freezes_and_compares(tmp_path: Path, capsys) -> None:
     assert json.loads(capsys.readouterr().out)["status"] == "pass"
 
 
-
-
-
-
-
-
-
-
-
 def test_non_mesh_candidate_cannot_close_a_revision(tmp_path):
     base = _model(tmp_path, "base.json", "base")
     candidate = _model(tmp_path, "candidate.json", "native")
@@ -618,8 +609,6 @@ def test_shallow_candidate_keeps_predictive_gaps_open(tmp_path):
     assert result["terminal_reason"] != "model_closed_for_task"
 
 
-
-
 def test_candidate_without_holdout_scope_is_rejected(tmp_path):
     base = _model(tmp_path, "base.json", "base")
     candidate = _model(tmp_path, "candidate.json", "candidate")
@@ -632,8 +621,6 @@ def test_candidate_without_holdout_scope_is_rejected(tmp_path):
     holdout = next(item for item in result["revalidation_results"] if item["role"] == "real_holdout_observation")
     assert "semantic_role_scope_not_executed" in holdout["issues"]
     assert result["terminal_reason"] != "model_closed_for_task"
-
-
 
 
 def test_fingerprints_are_computed_when_absent(tmp_path: Path) -> None:
@@ -697,7 +684,6 @@ def test_revision_keeps_node_local_scopes_from_one_fresh_mesh(tmp_path, monkeypa
     assert "receipt_fingerprint" not in row["prediction_receipt"]
     assert "receipt_fingerprint" not in row["comparison_receipt"]
     assert "receipt_fingerprint" not in result
-
 
 
 def test_freeze_records_the_model_sha256_and_compare_uses_the_frozen_record(tmp_path: Path) -> None:

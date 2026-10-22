@@ -112,8 +112,6 @@ class SelectTemplatePack:
         )
 
 
-
-
 class ComposeTemplatePack:
     name = "ComposeTemplatePack"
     reads = ("selection_outcome", "base_selected", "candidate_selected")

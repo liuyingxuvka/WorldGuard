@@ -8,7 +8,6 @@ from worldguard.cli import main
 from worldguard.status import GuardStatus
 
 
-
 @pytest.mark.parametrize(
     "payload",
     [

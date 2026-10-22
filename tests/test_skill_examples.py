@@ -60,7 +60,6 @@ def test_every_guard_input_block_in_the_reference_passes() -> None:
             assert [gap["code"] for gap in report.gaps] == ["CLAIM_ASSERTION_UNRESOLVED"], guard
 
 
-
 def test_repository_mesh_example_passes() -> None:
     mesh = SKILL.parents[1] / "examples" / "model_mesh" / "basic_mesh.yaml"
     done = subprocess.run(

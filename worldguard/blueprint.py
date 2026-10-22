@@ -811,7 +811,6 @@ class BlueprintTaskPurpose:
         return self.fingerprint_payload()
 
 
-
 def _unknown_fields(data: Mapping[str, Any], allowed: set[str], owner: str) -> None:
     unknown = sorted(set(data).difference(allowed))
     if unknown:
@@ -842,8 +841,6 @@ def _required_sha256(value: Any, field_id: str) -> str:
             details={"field_id": field_id, "observed": result},
         )
     return result
-
-
 
 
 @dataclass(frozen=True)
@@ -6263,8 +6260,6 @@ def _build_blueprint_indexes(blueprint: WorldBlueprintContract) -> _BlueprintInd
     )
 
 
-
-
 def _require_qualified_query_source(
     blueprint: WorldBlueprintContract,
 ) -> WorldBlueprintReport:
@@ -6285,8 +6280,6 @@ def _require_qualified_query_source(
             },
         )
     return report
-
-
 
 
 def blueprint_impact(

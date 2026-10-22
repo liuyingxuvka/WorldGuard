@@ -126,8 +126,6 @@ def test_repository_launcher_uses_the_repository_package(tmp_path):
     assert Path(done.stdout.strip()).resolve().is_relative_to(root / "worldguard"), done.stderr
 
 
-
-
 def test_default_output_is_a_summary_and_json_is_full():
     command = [sys.executable, "-m", "worldguard", "check", "--example", "fuel_cell"]
     done = subprocess.run(command, text=True, capture_output=True)
@@ -140,8 +138,6 @@ def test_default_output_is_a_summary_and_json_is_full():
     assert {row["guard"] for row in failing["non_pass_guards"]} == {"ConflictGuard", "NormGuard"}
     full = subprocess.run([*command, "--json"], text=True, capture_output=True)
     assert "child_results" in json.loads(full.stdout)["reports"][0]
-
-
 
 
 def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_path):

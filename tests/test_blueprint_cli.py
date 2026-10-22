@@ -30,10 +30,6 @@ def test_blueprint_check_cli_emits_canonical_report(capsys) -> None:
     assert len(payload["report_fingerprint"]) == 64
 
 
-
-
-
-
 def test_blueprint_impact_cli_is_repeatable(capsys) -> None:
     argv = [
         "blueprint",
@@ -54,9 +50,6 @@ def test_blueprint_impact_cli_is_repeatable(capsys) -> None:
     payload = json.loads(first_output)
     assert payload["operation"] == "impact"
     assert payload["changed_ids"] == ["schedule_transition"]
-
-
-
 
 
 def test_blueprint_impact_cli_rejects_mixed_known_unknown_ids_atomically(

@@ -7,7 +7,6 @@ from worldguard.cli import main as worldguard_main
 from worldguard.status import GuardStatus
 
 
-
 def _mesh(guard: str, inputs: dict, *, text: str = "bounded semantic claim", asserts: list | None = None) -> dict:
     semantic = {
         "EventGuard": "event",

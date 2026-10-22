@@ -86,8 +86,6 @@ class ProtectedFailureClass:
         }
 
 
-
-
 GUARD_MODEL_PURPOSES = (
     GuardModelPurpose(
         "EventGuard",

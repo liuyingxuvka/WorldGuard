@@ -679,7 +679,6 @@ def test_causal_claim_scopes_are_requested_evaluated_and_licensed_honestly() -> 
     assert "licensed_claim_scope" not in mechanism_truth
 
 
-
 def test_whole_json_binding_hashes_content_not_formatting(tmp_path: Path) -> None:
     import shutil
 

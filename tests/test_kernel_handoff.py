@@ -3,7 +3,6 @@ from worldguard.kernel import run_worldguard
 from worldguard.status import GuardStatus
 
 
-
 def test_kernel_preserves_upstream_gap_in_aggregate_ledger():
     data = {
             "contract_id": "kernel-gap",

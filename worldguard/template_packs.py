@@ -30,11 +30,6 @@ VALIDATOR_MESH_SHAPE = "worldguard.model_mesh_contract.shape.v1"
 VALIDATOR_MESH_ROUTES = "worldguard.model_mesh_contract.routes.v1"
 
 
-
-
-
-
-
 class TemplatePackError(ValueError):
     """Stable fail-closed error for template selection and construction."""
 
@@ -307,7 +302,6 @@ class TemplatePackManifest:
         ).intersection(fact_ids)
 
 
-
 @dataclass(frozen=True)
 class TemplateSelection:
     contract_kind: str
@@ -338,7 +332,6 @@ class TemplatePackRegistry:
         registry = cls(tuple(manifests))
         registry.validate()
         return registry
-
 
 
     def validate(self) -> None:

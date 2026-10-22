@@ -524,7 +524,6 @@ def test_resource_ordered_production_enables_later_consumption() -> None:
     assert reversed_report.semantic_status == SemanticStatus.GAP
 
 
-
 def test_empty_intentions_are_valid_and_a_missing_intentions_key_is_a_gap() -> None:
     bystander = {"agent_id": "porter", "beliefs": ["ship_docked"], "desires": ["rest"], "intentions": []}
     inputs = {"beliefs": {"porter": bystander}}

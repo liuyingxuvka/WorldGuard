@@ -16,7 +16,6 @@ from worldguard import (
 from worldguard.status import GuardStatus
 
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -71,8 +70,6 @@ def _event_axis_dispositions() -> list[dict[str, str]]:
             "claim_boundary": "exact counterfactual identities evaluated",
         },
     ]
-
-
 
 
 def _predictive_mesh() -> dict:
@@ -536,8 +533,6 @@ def test_not_applicable_axis_blocks_when_runtime_still_observes_that_domain() ->
     } <= set(report.depth_receipt.predictive_gaps)
 
 
-
-
 def test_long_horizon_representative_timepoints_cover_floor_ratio_and_phases() -> None:
     timepoints = _distributed_timepoints(1000)
     report = run_model_mesh(_long_horizon_mesh(timepoints))
@@ -695,8 +690,6 @@ def test_coverage_fingerprint_changes_when_expected_universe_changes() -> None:
     assert first is not None and second is not None
     assert first.coverage_fingerprint != second.coverage_fingerprint
     assert second.predictive_claim_licensed is False
-
-
 
 
 def test_expected_node_list_cannot_hide_a_discovered_predictive_node() -> None:

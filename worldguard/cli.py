@@ -8,8 +8,6 @@ from typing import Any
 from .io import dump_json, load_mapping
 
 
-
-
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
 
 

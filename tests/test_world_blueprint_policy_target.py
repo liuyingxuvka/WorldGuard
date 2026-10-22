@@ -18,8 +18,6 @@ FIXTURE = FIXTURE_ROOT / "policy_access_execution.yaml"
 MATERIAL = FIXTURE_ROOT / "support/policy-access-target-material.json"
 
 
-
-
 def test_policy_target_is_independent_and_every_declared_role_is_bound() -> None:
     blueprint = load_world_blueprint(FIXTURE)
     material = json.loads(MATERIAL.read_text(encoding="utf-8"))

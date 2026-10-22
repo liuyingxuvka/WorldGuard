@@ -42,8 +42,6 @@ def _event_contract() -> dict:
     return contract
 
 
-
-
 def test_unit_and_one_node_mesh_share_one_qualification_shape() -> None:
     contract = _event_contract()
     mesh_contract = ModelMeshContract.from_dict(

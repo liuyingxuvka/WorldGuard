@@ -24,7 +24,6 @@ from worldguard.semantic import fingerprint_mesh
 from worldguard.status import GuardStatus
 
 
-
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/world_blueprint/planning_workflow_three_level.yaml"
 
@@ -62,12 +61,6 @@ def _renew_native_semantic_fingerprint(semantic: dict) -> None:
     semantic["content_fingerprint"] = "sha256:" + fingerprint_mesh(identity)
 
 
-
-
-
-
-
-
 def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> None:
     blueprint = load_world_blueprint(FIXTURE)
     report = check_world_blueprint(blueprint)
@@ -95,16 +88,6 @@ def test_three_level_non_code_blueprint_closes_to_declared_native_depth() -> Non
     serialized = json.dumps(blueprint.to_dict(), sort_keys=True).lower()
     assert all(kind in WORLD_ELEMENT_KINDS for kind in {item.kind for item in blueprint.elements})
     assert not any(term in serialized for term in ('"module"', '"function"', '"class"', '"python"'))
-
-
-
-
-
-
-
-
-
-
 
 
 def test_round_trip_and_report_identity_are_stable(tmp_path: Path) -> None:

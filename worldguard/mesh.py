@@ -1880,8 +1880,6 @@ def _semantic_guard_status(status: SemanticStatus) -> GuardStatus:
     return GuardStatus.GAP
 
 
-
-
 def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, Any]) -> dict[str, Any]:
     """The producer's current input identity; no native execution occurs here."""
     fingerprint = fingerprint_mesh(mesh.to_dict())
@@ -1908,10 +1906,6 @@ def _native_depth_identity(mesh: ModelMeshContract, coverage_state: dict[str, An
         }
     )
     return {"mesh_fingerprint": fingerprint, "coverage_fingerprint": coverage_fingerprint, "claim_atoms": claim_atoms}
-
-
-
-
 
 
 def _depth_receipt(
