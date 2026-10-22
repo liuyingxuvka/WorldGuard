@@ -796,20 +796,9 @@ def _evaluate_equations(
     seed: dict[str, float],
     overrides: dict[str, float] | None = None,
 ) -> tuple[dict[str, float], list[str]]:
-    # A scenario may seed identity roots (x = x), but a pending endogenous
-    # value is not an input to another equation until recomputed. Otherwise
-    # declaration order can leak a stale seed into the final SCM result.
-    identity_roots = {
-        variable for variable in variables
-        if isinstance(equations.get(variable), str)
-        and isinstance((tree := ast.parse(equations[variable], mode="eval")).body, ast.Name)
-        and tree.body.id == variable
-    }
-    environment = {
-        key: value for key, value in seed.items()
-        if key not in variables or key in identity_roots
-    }
-    overrides = dict(overrides or {})
+    # Scenario assignments replace endogenous equations, and explicit do assignments take precedence.
+    environment = dict(seed)
+    overrides = {**{key: value for key, value in seed.items() if key in variables}, **dict(overrides or {})}
     environment.update(overrides)
     remaining = [variable for variable in variables if variable not in overrides]
     errors: list[str] = []
@@ -835,20 +824,43 @@ def _evaluate_equations(
 _CONSTRAINT_AST = (*_ALLOWED_AST, ast.Compare, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq)
 
 
+def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dict[str, Any]):
+    """One finite execution owner shared by receipts, constraints and claim rows."""
+    seeds = {name: _scenario_records(causal.get(name, {})) for name in ("scenarios", "holdout_scenarios")}
+    results: dict[str, dict[str, dict[str, float]]] = {"scenarios": {}, "holdout_scenarios": {}, "interventions": {}}
+    errors: list[dict[str, Any]] = []
+    for family in ("scenarios", "holdout_scenarios"):
+        for scenario_id, seed in sorted(seeds[family].items()):
+            values, row_errors = _evaluate_equations(variables, equations, seed)
+            if row_errors:
+                errors.append({"scenario_id": scenario_id, "errors": row_errors})
+            else:
+                results[family][scenario_id] = values
+    all_seeds = {**seeds["scenarios"], **seeds["holdout_scenarios"]}
+    for intervention in causal.get("interventions", []):
+        intervention_id = str(intervention["intervention_id"])
+        scenario_id = str(intervention["scenario_id"])
+        if scenario_id not in all_seeds:
+            errors.append({"intervention_id": intervention_id, "errors": ["scenario is unavailable"]})
+            continue
+        values, row_errors = _evaluate_equations(variables, equations, all_seeds[scenario_id],
+            {str(key): float(value) for key, value in intervention["set"].items()})
+        if row_errors:
+            errors.append({"intervention_id": intervention_id, "errors": row_errors})
+        else:
+            results["interventions"][intervention_id] = values
+    return results, errors
+
+
 def causal_scenario_values(causal: Mapping[str, Any]) -> dict[str, dict[str, float]]:
-    """Evaluate every scenario and holdout scenario of a complete scalar equation model; {} when it is incomplete."""
+    """Evaluate all scenario, holdout and intervention runs; return {} for incomplete execution."""
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {}) if isinstance(causal.get("equations"), dict) else {}
     known = set(variables) | {str(item) for item in causal.get("exogenous", [])}
     if not variables or any(variable not in equations or _equation_error(equations[variable], known) for variable in variables):
         return {}
-    seeds = {**_scenario_records(causal.get("scenarios", {})), **_scenario_records(causal.get("holdout_scenarios", {}))}
-    runs: dict[str, dict[str, float]] = {}
-    for scenario_id, seed in seeds.items():
-        values, errors = _evaluate_equations(variables, equations, seed)
-        if not errors:
-            runs[scenario_id] = values
-    return runs
+    results, errors = _causal_runs(causal, variables, equations)
+    return {} if errors else {**results["scenarios"], **results["holdout_scenarios"], **results["interventions"]}
 
 
 def causal_constraint_findings(causal: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -946,56 +958,12 @@ def _causal(contract: GuardContract):
         ], consumed, {}
     scenario_ids = sorted(scenarios)
     holdout_ids = sorted(holdouts)
-    scenario_results: dict[str, dict[str, float]] = {}
-    execution_errors: list[dict[str, Any]] = []
-    executed_scenarios: list[str] = []
-    executed_holdouts: list[str] = []
-    for scenario_id in scenario_ids:
-        if scenario_id not in scenarios:
-            continue
-        values, row_errors = _evaluate_equations(variables, equations, scenarios[scenario_id])
-        if row_errors:
-            execution_errors.append({"scenario_id": scenario_id, "errors": row_errors})
-            continue
-        scenario_results[scenario_id] = values
-        executed_scenarios.append(scenario_id)
-    for scenario_id in holdout_ids:
-        if scenario_id not in holdouts:
-            continue
-        values, row_errors = _evaluate_equations(variables, equations, holdouts[scenario_id])
-        if row_errors:
-            execution_errors.append({"scenario_id": scenario_id, "errors": row_errors})
-            continue
-        scenario_results[scenario_id] = values
-        executed_holdouts.append(scenario_id)
-
-    intervention_results: dict[str, dict[str, float]] = {}
-    executed_interventions: list[str] = []
-    for index, intervention in enumerate(interventions or []):
-        if not isinstance(intervention, dict):
-            continue
-        intervention_id = str(intervention.get("intervention_id", ""))
-        scenario_id = str(intervention.get("scenario_id", ""))
-        if scenario_id in scenarios:
-            seed = scenarios[scenario_id]
-        elif scenario_id in holdouts:
-            seed = holdouts[scenario_id]
-        else:
-            seed = {}
-        assignments = intervention.get("set", {})
-        if not isinstance(assignments, dict) or not seed:
-            continue
-        values, row_errors = _evaluate_equations(
-            variables,
-            equations,
-            seed,
-            {str(key): float(value) for key, value in assignments.items()},
-        )
-        if row_errors:
-            execution_errors.append({"intervention_id": intervention_id, "errors": row_errors})
-            continue
-        intervention_results[intervention_id] = values
-        executed_interventions.append(intervention_id)
+    runs, execution_errors = _causal_runs(causal, variables, equations)
+    scenario_results = {**runs["scenarios"], **runs["holdout_scenarios"]}
+    intervention_results = runs["interventions"]
+    executed_scenarios = list(runs["scenarios"])
+    executed_holdouts = list(runs["holdout_scenarios"])
+    executed_interventions = list(intervention_results)
 
     counterfactual_results: dict[str, Any] = {}
     executed_counterfactuals: list[str] = []

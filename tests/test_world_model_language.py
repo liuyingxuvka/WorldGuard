@@ -118,3 +118,47 @@ def test_a_claim_without_assertions_is_not_bound_to_the_world_model() -> None:
     assert report.status.value == "GAP"
     assert _gap_codes(report) == ["CLAIM_NOT_BOUND"]
     assert report.gaps[0]["message"] == "claim not bound to the world model: add claim.asserts"
+
+
+def test_scenario_overrides_reach_constraints_and_claim_rows():
+    path = Path(__file__).parent / "fixtures/trials/trip_scen.yaml"
+    report = run_worldguard(yaml.safe_load(path.read_text()))
+    assert report.status.value == "FAIL"
+    assert "CAUSAL_CONSTRAINT_VIOLATED" in _codes(report)
+    row = next(gap for gap in report.gaps if gap["code"] == "CLAIM_ASSERTION_FALSE")
+    assert row["observed"]["bus_back_30min_late"] == pytest.approx(-0.05)
+    result = next(child for child in report.child_results if child.guard == "CausalGuard")
+    assert any(step["scenario_id"] == "bus_back_30min_late" for item in result.counterexamples for step in item["steps"])
+
+
+def test_interventions_on_empty_scenarios_reach_constraints_and_claim_rows():
+    path = Path(__file__).parent / "fixtures/trials/new/trip_interv_list.yaml"
+    report = run_worldguard(yaml.safe_load(path.read_text()))
+    assert report.status.value == "FAIL"
+    assert "CAUSAL_CONSTRAINT_VIOLATED" in _codes(report)
+    row = next(gap for gap in report.gaps if gap["code"] == "CLAIM_ASSERTION_FALSE")
+    assert row["observed"]["bus_30min_late"] == pytest.approx(-0.05)
+    result = next(child for child in report.child_results if child.guard == "CausalGuard")
+    assert any(step["scenario_id"] == "bus_30min_late" for item in result.counterexamples for step in item["steps"])
+
+
+def test_intervention_can_override_exogenous_input_on_a_holdout():
+    report = run_worldguard({"claim": {"claim_id": "holdout-do", "asserts": [
+        {"variable": "x", "scenario": "holdout-do", "op": "==", "value": 5}]}, "inputs": {"causal_model": {
+            "variables": ["x"], "exogenous": ["z"], "equations": {"x": "z + 1"},
+            "scenarios": {"plan": {"z": 1}}, "holdout_scenarios": {"holdout": {"z": 2}},
+            "interventions": [{"intervention_id": "holdout-do", "scenario_id": "holdout", "set": {"z": 4}}],
+            "counterfactuals": [{"counterfactual_id": "cf-x", "intervention_id": "holdout-do", "query": "x"}]}}})
+    assert report.status.value == "PASS"
+    assert report.semantic_receipts[0].outputs["intervention_results"]["holdout-do"] == {"z": 4, "x": 5}
+    assert report.semantic_receipts[0].outputs["counterfactual_results"]["cf-x"] == 5
+
+
+def test_mapping_intervention_is_a_typed_cli_input_error(capsys):
+    import json
+    from worldguard.cli import main
+    path = Path(__file__).parent / "fixtures/trials/trip_interv.yaml"
+    assert main(["check", "--contract", str(path)]) == 2
+    result = json.loads(capsys.readouterr().out)
+    assert result["error"]["code"] == "WORLDGUARD_INPUT_INVALID"
+    assert "interventions must be a list" in result["error"]["message"]

@@ -464,7 +464,7 @@ def test_parent_qualification_cannot_hide_a_guard_semantic_known_bad(
 
 
 @pytest.mark.parametrize("variables", [["y", "x"], ["x", "y"]])
-def test_causal_pending_endogenous_seed_never_changes_final_equations(variables) -> None:
+def test_scenario_value_overrides_the_equation_in_any_declaration_order(variables) -> None:
     inputs = {"causal_model": {
         "variables": variables, "equations": {"x": "2", "y": "x + 1"},
         "graph": [["x", "y"]], "scenarios": {"s": {"x": 100}},
@@ -472,11 +472,11 @@ def test_causal_pending_endogenous_seed_never_changes_final_equations(variables)
         "interventions": [{"intervention_id": "do-x", "scenario_id": "s", "set": {"x": 7}}],
         "counterfactuals": [{"counterfactual_id": "cf-y", "intervention_id": "do-x", "query": "y"}],
     }}
-    report = run_worldguard(make_contract("CausalGuard", inputs=inputs, asserts=[{"variable": "y", "op": "==", "value": 3}]))
+    report = run_worldguard(make_contract("CausalGuard", inputs=inputs, asserts=[{"variable": "y", "op": "==", "value": 101, "scenario": "s"}, {"variable": "y", "op": "==", "value": 201, "scenario": "h"}, {"variable": "y", "op": "==", "value": 8, "scenario": "do-x"}]))
     assert report.status == GuardStatus.PASS
     output = report.semantic_receipts[0].outputs
-    assert output["scenario_results"]["s"] == {"x": 2, "y": 3}
-    assert output["scenario_results"]["h"] == {"x": 2, "y": 3}
+    assert output["scenario_results"]["s"] == {"x": 100, "y": 101}
+    assert output["scenario_results"]["h"] == {"x": 200, "y": 201}
     assert output["intervention_results"]["do-x"] == {"x": 7, "y": 8}
     assert output["counterfactual_results"]["cf-y"] == 8
 
@@ -500,7 +500,7 @@ def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
 def test_causal_seed_cannot_resolve_cycles_or_unsafe_equations(equations) -> None:
     receipt = _semantic("CausalGuard", {"causal_model": {
         "variables": ["x", "y"], "equations": equations, "graph": [],
-        "scenarios": {"s": {"x": 1, "y": 2}},
+        "scenarios": {"s": {}},
     }})
     assert receipt.status == SemanticStatus.GAP
     assert receipt.findings

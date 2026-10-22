@@ -53,6 +53,11 @@ Unknown or mixed times and duplicate event ids within one scenario are input err
 Use ISO dates across midnight. YAML's unquoted `9:40` is a number, so quote clock values.
 Event assertions can select `scenario`; reused ids without a scenario and unknown scenarios are gaps.
 
+Causal scenario and holdout assignments replace the named variables' equations. A declared intervention
+runs even on an empty scenario; constraints and unscoped variable assertions check every scenario,
+holdout and intervention. Select a run with `scenario: <id>`. Interventions use a list of mappings with
+unique ids, a declared scenario id and numeric assignments; malformed or colliding run identities are input errors.
+
 ## Guard Families
 
 WorldGuard currently includes these guard families:
@@ -178,6 +183,11 @@ WorldGuard 有两种核心检查形态：
 未知或混写时间、同场景重复事件 ID 是输入错误（退出 2）。跨午夜请用 ISO 日期。
 YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事件断言可用 `scenario`
 指定场景；复用 ID 未指定场景而有歧义或指定未知场景时返回缺口。
+
+因果场景和留出场景的赋值会替换对应变量的方程；其余变量重新计算。干预即使基于空场景
+也会执行。约束及未指定 `scenario` 的变量断言检查所有场景、留出和干预；可用
+`scenario: <id>` 选择一次运行。干预必须是包含唯一 ID、已声明场景 ID 和数字赋值的映射列表；
+错误形状和相互冲突的运行 ID 是输入错误。
 
 ## Guard 类型
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import math
 from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
@@ -48,7 +49,7 @@ def _reject_retired_runtime_input_paths(world_model: dict[str, Any], inputs: dic
                 raise ValueError(f'inputs.causal_model.{field_name} must be a mapping')
             if any((isinstance(record, dict) and 'values' in record for record in records.values())):
                 raise ValueError(f'inputs.causal_model.{field_name} records use retired nested values')
-        for index, intervention in enumerate(causal.get('interventions', [])):
+        for index, intervention in enumerate(causal.get('interventions', []) if isinstance(causal.get('interventions', []), list) else []):
             if isinstance(intervention, dict):
                 retired = sorted({'id', 'values'}.intersection(intervention))
                 if retired:
@@ -65,6 +66,42 @@ def _reject_retired_runtime_input_paths(world_model: dict[str, Any], inputs: dic
         condition = norm.get('condition') if isinstance(norm, dict) else None
         if isinstance(condition, dict) and 'fact' in condition:
             raise ValueError(f'inputs.norms[{index}].condition.fact is retired; use fact_id')
+
+def _validate_causal_interventions(inputs: Mapping[str, Any]) -> None:
+    causal = inputs.get('causal_model')
+    if not isinstance(causal, Mapping):
+        return
+    scenarios = {str(key) for key in causal.get('scenarios', {}) or {}}
+    holdouts = {str(key) for key in causal.get('holdout_scenarios', {}) or {}}
+    if scenarios & holdouts:
+        raise ValueError('causal scenarios and holdout_scenarios must use distinct ids: ' + ', '.join(sorted(scenarios & holdouts)))
+    if 'interventions' not in causal:
+        return
+    interventions = causal['interventions']
+    if not isinstance(interventions, list):
+        raise ValueError('inputs.causal_model.interventions must be a list of mappings')
+    known = {str(name) for name in causal.get('variables', [])} | {str(name) for name in causal.get('exogenous', [])}
+    seen = set()
+    for index, row in enumerate(interventions):
+        location = f'inputs.causal_model.interventions[{index}]'
+        if not isinstance(row, Mapping):
+            raise ValueError(f'{location} must be a mapping')
+        intervention_id = row.get('intervention_id')
+        if not isinstance(intervention_id, str) or not intervention_id.strip() or intervention_id in seen:
+            raise ValueError(f'{location}.intervention_id must be nonempty and unique')
+        if intervention_id in scenarios | holdouts:
+            raise ValueError(f'{location}.intervention_id collides with a scenario id: {intervention_id}')
+        seen.add(intervention_id)
+        scenario_id = row.get('scenario_id')
+        if not isinstance(scenario_id, str) or scenario_id not in scenarios | holdouts:
+            raise ValueError(f'{location}.scenario_id must name a declared scenario or holdout')
+        assignments = row.get('set')
+        if not isinstance(assignments, Mapping):
+            raise ValueError(f'{location}.set must map declared variables or exogenous names to numbers')
+        for key, value in assignments.items():
+            if key not in known or isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError(f'{location}.set[{key!r}] must assign a finite number to a declared variable or exogenous input')
+
 
 def claim_assertion_kind(assertion: Any) -> str:
     """The one key that says what a claim assertion is about, or '' when it has none or several."""
@@ -237,6 +274,7 @@ class GuardContract:
         world_model = dict(data.get('world_model', {}))
         inputs = dict(data.get('inputs', {}))
         _reject_retired_runtime_input_paths(world_model, inputs)
+        _validate_causal_interventions(inputs)
         if not str(world_model.get('model_version', '')).strip():
             world_model['model_version'] = 'unversioned'
         claim = Claim.from_dict(data.get('claim', {}))

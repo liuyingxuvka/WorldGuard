@@ -97,15 +97,24 @@ places), capacity overflow. Boundary ids: `permission`, `authorization`, `obliga
 causal_model:
   variables: [train_arrival_h, ferry_out_h, slack_h]
   equations: {train_arrival_h: "10.08", ferry_out_h: "11.0", slack_h: "ferry_out_h - train_arrival_h"}
-  scenarios: {timetable: {}}
+  scenarios: {timetable: {}, train_10min_late: {train_arrival_h: 10.25}}
+  interventions:
+    - {intervention_id: train_20min_late, scenario_id: timetable, set: {train_arrival_h: 10.4}}
   constraints: ["slack_h >= 0"]
 ```
 
-Claim assertion: `{variable: slack_h, op: ">=", value: 0.5}` (in every scenario, or add `scenario: <id>`).
+Claim assertion: `{variable: slack_h, op: ">=", value: 0.5}` (in every scenario, holdout and intervention, or add `scenario: <scenario or intervention id>`).
 
 Every variable needs a scalar equation over numbers and other variables; at least one of `scenarios`,
 `holdout_scenarios`, `interventions` or `counterfactuals` is required. Optional `constraints`: comparisons of
-variables and numbers that must hold in every scenario and holdout scenario. Catches: a constraint that fails
+variables and numbers that must hold in every scenario, holdout and intervention. Scenario and holdout
+assignments replace the named variable's equation, independent of declaration order; other equations
+recompute from those values. `exogenous` names inputs supplied only by scenarios (no equation).
+`interventions` is a list of mappings: unique nonempty `intervention_id`, an existing `scenario_id`
+(including an empty `{}` scenario or a holdout), and `set` mapping declared variables/exogenous inputs to
+finite numbers. A do assignment takes precedence over the scenario; counterfactuals still query its result.
+Run ids must be distinct across scenarios, holdouts and interventions. Malformed interventions are input
+errors. Catches: a constraint that fails
 (`CAUSAL_CONSTRAINT_VIOLATED`, for example a negative transfer time), missing or unsafe equations, cycles,
 scenarios that fail to evaluate.
 Boundary ids: `temporal_story`.

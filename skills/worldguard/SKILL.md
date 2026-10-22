@@ -26,6 +26,10 @@ Use one time kind per world contract: numbers, one label prefix (`t1`, `t2`), IS
 quoted same-day clocks (`"9:40"`). Use ISO dates across days; `t4b` and mixed kinds are input errors.
 When event ids repeat across scenarios, qualify event assertions with `scenario`.
 
+Scenario values replace equations for those variables. Constraints and unscoped variable assertions
+check every scenario, holdout and declared intervention; `scenario` can select an intervention id.
+Write interventions as a list; see the CausalGuard example in the input reference.
+
 ## Results
 
 Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.

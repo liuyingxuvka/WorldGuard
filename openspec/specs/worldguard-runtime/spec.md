@@ -88,3 +88,20 @@ guessed to be a YAML sexagesimal clock; mixed numeric/clock inputs SHALL explain
 - **WHEN** two scenarios reuse event ids with opposite order
 - **THEN** a `scenario` assertion SHALL evaluate that scenario, an ambiguous unscoped order SHALL be a gap,
   and an unknown scenario SHALL not pass using shared or other-scenario events
+
+### Requirement: Scenario and intervention values reach every native check
+Scenario and holdout values SHALL replace equations for those variables independent of declaration order.
+Other variables SHALL recompute from the assignments. Explicit intervention assignments SHALL take precedence.
+One native run owner SHALL execute scenarios, holdouts and interventions for semantic reports, constraints
+and variable assertions. Unscoped constraints and variable assertions SHALL check every run; a variable
+assertion's `scenario` MAY select a scenario, holdout or intervention id. Counterfactuals SHALL continue to
+query the declared intervention result.
+
+#### Scenario: A delayed return invalidates the trip
+- **WHEN** a scenario or intervention overrides the bus arrival to leave negative transfer time
+- **THEN** the native constraint and claim row SHALL fail, naming the run and observed value
+
+#### Scenario: Malformed interventions are input errors
+- **WHEN** interventions are not a list of mappings with unique nonempty ids, declared scenario ids and
+  finite numeric assignments to known variables or exogenous inputs, or run ids collide
+- **THEN** the CLI SHALL return input error 2 rather than skipping or overwriting a run

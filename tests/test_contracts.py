@@ -203,3 +203,31 @@ def test_contract_rejects_duplicate_event_ids_in_one_scenario(scenario):
             event["scenario_id"] = scenario
     with pytest.raises(ValueError, match="duplicate event_id 'duplicate'"):
         GuardContract.from_dict({"claim": {"requested_semantics": ["event"]}, "inputs": {"events": events}})
+
+
+@pytest.mark.parametrize("interventions", [
+    {}, None, [42], [{}],
+    [{"intervention_id": "", "scenario_id": "s", "set": {"x": 2}}],
+    [{"intervention_id": "do", "scenario_id": "unknown", "set": {"x": 2}}],
+    [{"intervention_id": "s", "scenario_id": "s", "set": {"x": 2}}],
+    [{"intervention_id": "do", "scenario_id": "s"}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": []}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": {"unknown": 2}}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": {"x": True}}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": {"x": "2"}}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": {"x": float("inf")}}],
+    [{"intervention_id": "do", "scenario_id": "s", "set": {"x": 2}},
+     {"intervention_id": "do", "scenario_id": "h", "set": {"x": 3}}],
+])
+def test_intervention_input_shapes_and_identities_are_rejected(interventions):
+    with pytest.raises(ValueError, match="interventions"):
+        GuardContract.from_dict({"claim": {"claim_id": "shape", "requested_semantics": ["causal"]}, "inputs": {
+            "causal_model": {"variables": ["x"], "equations": {"x": "1"}, "scenarios": {"s": {}},
+                             "holdout_scenarios": {"h": {}}, "interventions": interventions}}})
+
+
+def test_scenario_and_holdout_run_ids_cannot_overwrite_each_other():
+    with pytest.raises(ValueError, match="distinct ids"):
+        GuardContract.from_dict({"claim": {"claim_id": "collision", "requested_semantics": ["causal"]}, "inputs": {
+            "causal_model": {"variables": ["x"], "equations": {"x": "1"},
+                             "scenarios": {"same": {"x": 1}}, "holdout_scenarios": {"same": {"x": -1}}}}})

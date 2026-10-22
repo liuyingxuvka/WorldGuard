@@ -49,7 +49,7 @@
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities",
-        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints",
+        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints; scenario and intervention assignments override equations and share native runs across reports, constraints and claim rows",
         "Keep shared ledgers, reports and status aggregation"
       ],
       "files": [
@@ -80,7 +80,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:9302b036ce3288a5e1ff65b44b5be2be5a0eb516f3029b73cc2ed0649dc4530b"
+      "fingerprint": "sha256:4ea07b5b47a48fc72d7525b059dea5c8149fa958464e52d75481c8063c6ec955"
     },
     {
       "id": "worldguard.guards",
@@ -122,7 +122,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:5f9e22e6e68f54d5624d984cf01360b4dd7362980a6a733a831ebebebcfaa4eb"
+      "fingerprint": "sha256:347c1bc248384fccb07a376c399df09f339535ccf361e8badc00bb312b38005a"
     },
     {
       "id": "worldguard.qualification",
