@@ -63,13 +63,17 @@ def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str 
 
 def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) -> list[dict[str, Any]]:
     """Return every event whose `requires` fluents do not hold when it happens."""
-    if any(isinstance(event, dict) and "at" not in event for event in events):
-        # Missing axioms are reported by the native semantic executor; no order can be inferred.
-        return []
     scenario_ids = sorted({str(event["scenario_id"]) for event in events if isinstance(event, dict) and event.get("scenario_id")})
     failures: list[dict[str, Any]] = []
     for scenario_id in scenario_ids or [""]:
-        for event, before, _ in event_replay(events, initial_fluents, scenario_id):
+        applicable = [
+            event for event in events
+            if isinstance(event, dict) and (not event.get("scenario_id") or str(event["scenario_id"]) == scenario_id)
+        ]
+        if any("at" not in event for event in applicable):
+            # Missing axioms prevent ordering only this scenario, including its shared events.
+            continue
+        for event, before, _ in event_replay(applicable, initial_fluents, scenario_id):
             missing = sorted(set(_fluent_values(event.get("requires"))) - before)
             if missing:
                 row = {"event_id": event.get("event_id"), "at": event.get("at"), "missing_fluents": missing, "holding_fluents": sorted(before)}

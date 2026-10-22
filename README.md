@@ -52,6 +52,7 @@ ISO dates/times with a consistent timezone convention, or quoted same-day clocks
 Unknown or mixed times and duplicate event ids within one scenario are input errors (exit 2).
 Use ISO dates across midnight. YAML's unquoted `9:40` is a number, so quote clock values.
 Event assertions can select `scenario`; reused ids without a scenario and unknown scenarios are gaps.
+A missing event time prevents ordering its applicable scenarios; independent scenarios still report known failures.
 
 Causal scenario and holdout assignments replace the named variables' equations. A declared intervention
 runs even on an empty scenario; constraints and unscoped variable assertions check every scenario,
@@ -187,6 +188,7 @@ WorldGuard 有两种核心检查形态：
 未知或混写时间、同场景重复事件 ID 是输入错误（退出 2）。跨午夜请用 ISO 日期。
 YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事件断言可用 `scenario`
 指定场景；复用 ID 未指定场景而有歧义或指定未知场景时返回缺口。
+事件缺少时间只阻止其适用场景的排序；独立场景中已经确定的失败仍会报告。
 
 因果场景和留出场景的赋值会替换对应变量的方程；其余变量重新计算。干预即使基于空场景
 也会执行。约束及未指定 `scenario` 的变量断言检查所有场景、留出和干预；可用

@@ -77,7 +77,7 @@ Event times and `holds.at` assertions in one contract SHALL use one kind: numeri
 labels sharing one prefix, ISO dates/date-times with consistent timezone awareness, or quoted same-day
 HH:MM[:SS] clocks. Native YAML date/datetime objects SHALL behave as ISO values and serialize in JSON reports.
 Unknown times, mixed kinds/prefixes/timezone conventions and duplicate event ids within one scenario
-SHALL be input errors. An absent event time SHALL retain the native missing-axiom `GAP`; no clock default or order is inferred. Reusing ids across different scenarios SHALL remain valid. A number is never
+SHALL be input errors. An absent event time SHALL retain the native missing-axiom `GAP`; no clock default or order is inferred. Missing times SHALL prevent ordering only applicable scenarios, including shared events; known failures in independent scenarios SHALL remain failures. Reusing ids across different scenarios SHALL remain valid. A number is never
 guessed to be a YAML sexagesimal clock; mixed numeric/clock inputs SHALL explain how to quote clocks.
 
 #### Scenario: A clock-order contradiction fails

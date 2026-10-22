@@ -25,6 +25,7 @@ Load [model-authority.md](references/model-authority.md) only for questions abou
 Use one time kind per world contract: numbers, one label prefix (`t1`, `t2`), ISO dates/times, or
 quoted same-day clocks (`"9:40"`). Use ISO dates across days; `t4b` and mixed kinds are input errors.
 When event ids repeat across scenarios, qualify event assertions with `scenario`.
+A missing event time prevents ordering only its applicable scenarios; independent known failures remain failures.
 
 Scenario values replace equations for those variables. Constraints and unscoped variable assertions
 check every scenario, holdout and declared intervention; `scenario` can select an intervention id.

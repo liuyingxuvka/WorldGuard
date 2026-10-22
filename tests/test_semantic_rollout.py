@@ -194,3 +194,24 @@ def test_scoped_events_execute_from_their_native_scenario_ids():
         "left-scenario": ["left-done", "ready"],
         "right-scenario": ["ready", "right-done"],
     }
+
+
+@pytest.mark.parametrize("missing_scope,expected", [("s_missing", GuardStatus.FAIL), (None, GuardStatus.GAP)])
+def test_missing_event_time_does_not_hide_independent_scenario_failures(missing_scope, expected):
+    from worldguard import run_worldguard
+
+    missing = {"event_id": "missing", "initiates": "irrelevant"}
+    if missing_scope:
+        missing["scenario_id"] = missing_scope
+    report = run_worldguard({
+        "claim": {"claim_id": "partial-event-times", "requested_semantics": ["event"],
+                  "asserts": [{"holds": "done", "at": "t1", "scenario": "s_bad"}]},
+        "inputs": {"events": [missing, {"event_id": "broken", "scenario_id": "s_bad", "at": "t1",
+                                      "initiates": "done", "requires": "never"}]},
+    })
+    assert report.status == expected
+    assert report.semantic_status == SemanticStatus.GAP
+    errors = [error["code"] for result in report.child_results for error in result.errors]
+    assert ("EVENT_PRECONDITION_UNMET" in errors) is (missing_scope is not None)
+    if missing_scope:
+        assert report.claim_binding["status"] == "PASS"

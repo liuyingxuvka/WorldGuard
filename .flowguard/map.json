@@ -49,7 +49,7 @@
       "summary": "Shared contracts, reports, status and semantic execution",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries",
-        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints; scenario and intervention assignments override equations and share native runs across reports, constraints and claim rows",
+        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints; scenario and intervention assignments override equations and share native runs across reports, constraints and claim rows; missing event times suspend ordering only applicable scenarios, preserving independent known failures",
         "Keep shared ledgers, reports and status aggregation"
       ],
       "files": [
@@ -80,7 +80,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:7a5d898750126dd640762b0b7122eff9c719ed4b9f2b0daefba7fd98d928962c"
+      "fingerprint": "sha256:c7fdeefa8a4f1943f16a2050289062e6ef8fab198e565ba1c78ab185be10a9a2"
     },
     {
       "id": "worldguard.guards",
