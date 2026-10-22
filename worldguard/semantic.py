@@ -853,14 +853,14 @@ def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dic
 
 
 def causal_scenario_values(causal: Mapping[str, Any]) -> dict[str, dict[str, float]]:
-    """Evaluate all scenario, holdout and intervention runs; return {} for incomplete execution."""
+    """Return completed scenario, holdout and intervention runs; semantic execution retains errors."""
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {}) if isinstance(causal.get("equations"), dict) else {}
     known = set(variables) | {str(item) for item in causal.get("exogenous", [])}
     if not variables or any(variable not in equations or _equation_error(equations[variable], known) for variable in variables):
         return {}
-    results, errors = _causal_runs(causal, variables, equations)
-    return {} if errors else {**results["scenarios"], **results["holdout_scenarios"], **results["interventions"]}
+    results, _errors = _causal_runs(causal, variables, equations)
+    return {**results["scenarios"], **results["holdout_scenarios"], **results["interventions"]}
 
 
 def causal_constraint_findings(causal: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:

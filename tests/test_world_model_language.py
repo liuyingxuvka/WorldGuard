@@ -162,3 +162,20 @@ def test_mapping_intervention_is_a_typed_cli_input_error(capsys):
     result = json.loads(capsys.readouterr().out)
     assert result["error"]["code"] == "WORLDGUARD_INPUT_INVALID"
     assert "interventions must be a list" in result["error"]["message"]
+
+
+@pytest.mark.parametrize("actual,expected", [(-2, "FAIL"), (2, "GAP")])
+def test_completed_causal_runs_survive_another_incomplete_run(actual, expected):
+    report = run_worldguard({"claim": {"claim_id": "partial-runs", "asserts": [
+        {"variable": "x", "op": ">=", "value": 0, "scenario": "actual_bad"}]}, "inputs": {"causal_model": {
+            "variables": ["x", "y"], "exogenous": ["u"], "equations": {"x": "u", "y": "x + 1"},
+            "scenarios": {"bad_missing": {}, "actual_bad": {"u": actual}}, "constraints": ["x >= 0"]}}})
+    assert report.status.value == expected
+    causal = next(child for child in report.child_results if child.guard == "CausalGuard")
+    assert causal.status.value == ("FAIL" if actual < 0 else "PASS")
+    assert report.claim_binding["status"] == ("FAIL" if actual < 0 else "PASS")
+    assert report.claim_binding["assertions"][0]["observed"]["actual_bad"] == actual
+    semantic = next(receipt for receipt in report.semantic_receipts if receipt.guard == "CausalGuard")
+    assert semantic.status.value == "GAP"
+    assert semantic.findings[0]["code"] == "SEM_CAUSAL_ROLLOUT_ERROR"
+    assert semantic.findings[0]["evidence"]["errors"][0]["scenario_id"] == "bad_missing"
