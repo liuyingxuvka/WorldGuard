@@ -16,6 +16,6 @@ Raise that tag only when this repository starts using a newer FlowGuard feature;
 
 <!-- END FLOWGUARD PROJECT RULES -->
 
-In this repository the full suite takes about 30 seconds on this shared host (a load-dependent estimate, not a controlled benchmark): run `python -m pytest -q` instead of a selected subset. The skill has no committed runtime copy: `scripts/install_skill.py` copies `worldguard/` into the installed skill.
+In this repository the full suite takes well under a minute on this shared host (a load-dependent estimate, not a controlled benchmark): run `python -m pytest -q` instead of a selected subset. The skill has no committed runtime copy: `scripts/install_skill.py` copies `worldguard/` into the installed skill.
 
 Domain operations use the portable WorldGuard skill and its native runtime directly. No author-supervision framework or receipt is required.

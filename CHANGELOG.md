@@ -24,6 +24,8 @@
   FlowGuard 0.70.6 and 0.70.7. The template model and a unit test cover a pack that misses a claim-derived
   Guard route.
 - Cross-repo pass: XR-04; skipped none. Details in the cross-repo action list.
+- Malformed contract or mesh shapes (for example `claim: null` or a node that is not a mapping) exit with code 2 and `WORLDGUARD_INPUT_INVALID` instead of a Python error.
+- A causal constraint that divides by zero or compares a non-number is reported as `CAUSAL_CONSTRAINT_UNEVALUABLE` instead of crashing.
 
 ## v0.7.15 - 2026-10-18
 
