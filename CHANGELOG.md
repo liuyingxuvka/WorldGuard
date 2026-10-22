@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.17 - 2026-10-22 - Simpler world checks with strict clocks and honest outcomes
+
+- Event times are now strict: use numbers, one label prefix such as `t1`, ISO dates/times with one timezone convention, or quoted `HH:MM[:SS]` clocks. Unknown or mixed formats and duplicate `event_id` values within one scenario exit 2. Replace informal times with one supported format, quote YAML clocks, and select `scenario` when event ids repeat across scenarios. Missing times remain gaps without hiding known failures in independent scenarios.
+- Scenario and holdout assignments replace equations for those variables. Write interventions as a list with unique ids, a declared scenario and numeric assignments; interventions also run on empty scenarios and participate in constraints and claim assertions. Completed runs keep their real outcomes when another run is incomplete.
+- A declared unsupported boundary of a derived Guard returns `BOUNDARY_EXCEEDED`; a boundary owned only by an unselected Guard remains a gap. Real failures and missing inputs keep priority.
+- Removed the `blueprint` and `task-model` commands, fact and task-local revision, template packs, mesh `semantic_coverage` and the separate prediction license. Edit the explicit contract and run `check` or `mesh-check` again; copy a shipped example to start a model. A `compare` command is planned for a later version.
+- Maintenance: stop tracking the work log, check excess blank lines, model the core check path with known-bad variants and real CLI replay, layer the self-map, and run a strict map check in CI.
+
 ## v0.7.16 - 2026-10-21 - Claims bound to the world model; slim/2026-10
 
 - Done: WG-01 to WG-60. Skipped: none.
