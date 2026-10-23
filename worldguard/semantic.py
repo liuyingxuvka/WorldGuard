@@ -58,8 +58,8 @@ def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) ->
     return failures
 
 
-def norm_activity(norms: list[Any], facts: list[Any]) -> tuple[list[Any], list[dict[str, Any]]]:
-    """Return (active norms, norms whose condition fact is not declared) for boolean condition facts."""
+def norm_activity(norms: list[Any], facts: list[Any], fluents=None, known_fluents=None) -> tuple[list[Any], list[dict[str, Any]]]:
+    """Activate norms from declared boolean facts or the fluents at one instant."""
     fact_values = {str(item["fact_id"]): item["value"] for item in facts if isinstance(item, dict) and item.get("fact_id")}
     missing = []
     active = []
@@ -71,6 +71,14 @@ def norm_activity(norms: list[Any], facts: list[Any]) -> tuple[list[Any], list[d
             needed = condition
             expected = True
         elif isinstance(condition, dict):
+            if "fluent" in condition:
+                needed = str(condition["fluent"])
+                expected = condition.get("value", True)
+                if not needed or not isinstance(expected, bool) or fluents is None or (known_fluents is not None and needed not in known_fluents):
+                    missing.append({"norm": index, "condition": condition, "needed_fluent": needed})
+                elif (needed in fluents) == expected:
+                    active.append(norm)
+                continue
             needed = str(condition.get("fact_id", ""))
             expected_value = condition.get("equals", condition.get("value", True))
             if isinstance(expected_value, bool):

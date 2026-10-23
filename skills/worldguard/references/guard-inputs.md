@@ -168,3 +168,9 @@ Catches: the same actor and action both forbidden and permitted/required by acti
 - An event can name `actor: traveler` and `with: [friend]`; every unique color moved by a linked transition must be among its participants.
 - Optional `world_model.entities: {traveler: {kind: person}, port: {kind: place}}` registers ids used by beliefs, spatial pairs, event participants and unique colors. Missing ids produce `ENTITY_UNDECLARED`.
 - Related events at one time produce `EVENT_SAME_TIME_ORDER_UNKNOWN`; give them distinct times.
+
+## Actions and norms
+
+An event with `actor: traveler, action: take_boat` is checked against active prohibitions. A norm can use `condition: {fluent: storm_warning, value: true}`; its fluent is read immediately before that event. A `modality` claim row for such a norm needs `at: <time>`. Static `fact_id` conditions keep their existing meaning. Only prohibitions are checked against actions; this does not establish fulfilment of obligations.
+
+Once any event declares an actor, every BDI intention needs an event with that actor and matching action. To model knowledge over time, use an event such as `{event_id: read_log, at: t3, initiates: cora_knows_fraud}` and require `cora_knows_fraud` on later events. AgentGuard does not infer belief changes from prose.

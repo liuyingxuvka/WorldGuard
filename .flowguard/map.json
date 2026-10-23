@@ -57,7 +57,7 @@
       "summary": "Shared contracts, compact reports, clock and finite replay helpers",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names",
-        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order",
+        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
         "Keep compact native reports and the conservative four-status aggregation"
       ],
       "files": [
@@ -88,14 +88,14 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:7debc299f69ea70a5cbc061c763794d6c8f59ea96374b5c2cdbfb481c884d048"
+      "fingerprint": "sha256:348957d7a1d3ddc75edc307e0856596917363062d79bc67910af3cb4cb0fe7b9"
     },
     {
       "id": "worldguard.guards",
       "layer": "guards",
       "summary": "Seven sole native Guard checkers and their finite failure catalog",
       "responsibilities": [
-        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants",
+        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants; apply active prohibitions to actor/action events and require matching intention events when actors are supplied",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -130,7 +130,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:f0db51f3574fe8322d93ca1bf174fa790c562a918a5f2ca614198ec659c0b632"
+      "fingerprint": "sha256:1a3bf4579b376a553e1ea59f4f873af2557a96ebac4e7a2b713cf71ecff74511"
     },
     {
       "id": "worldguard.qualification",
@@ -168,7 +168,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:89bd0961808eb6347d6c5107e075ea8829bbee98936d12facd1ee1d2102a9b7f"
+      "fingerprint": "sha256:5ffa0abd73189e8bf6a1a4784dafb4e92ac66fbcff01b4c48238f78a1b0621da"
     },
     {
       "id": "worldguard.mesh",

@@ -76,8 +76,9 @@ world_model:
         action: block_recipe_release
         condition: nda_active
   events:
-    - {event_id: e_c_precheck, at: t0, actor: CompanyC.safety_auditor, initiates: c_precheck_complete}
-    - {event_id: e_a_install_stack, at: t1, actor: CompanyA.lead_engineer, initiates: stack_installed_on_bench}
-    - {event_id: e_a_start_demo, at: t2, actor: CompanyA.lead_engineer, initiates: cell_running}
+    - {event_id: e_c_precheck, action: i_approve_precheck, at: t0, actor: CompanyC.safety_auditor, initiates: c_precheck_complete}
+    - {event_id: e_a_install_stack, action: i_install_stack, at: t1, actor: CompanyA.lead_engineer, initiates: stack_installed_on_bench}
+    - {event_id: e_b_operate_bench, at: t1.5, actor: CompanyB.test_operator, action: i_operate_bench, initiates: bench_operating}
+    - {event_id: e_a_start_demo, action: i_start_demo, at: t2, actor: CompanyA.lead_engineer, initiates: cell_running}
     - {event_id: e_voltage_trace, at: t3, actor: bench_sensor, initiates: voltage_output_available}
-    - {event_id: e_a_share_full_log, at: t4, actor: CompanyA.lead_engineer, initiates: membrane_recipe_disclosed_to_B}
+    - {event_id: e_a_share_full_log, action: i_share_full_log, at: t4, actor: CompanyA.lead_engineer, initiates: membrane_recipe_disclosed_to_B}

@@ -84,6 +84,16 @@ def _check(contract: GuardContract):
             ],
         )
 
+    events = contract.inputs.get("events", [])
+    if any(event.get("actor") for event in events):
+        realised = {(event.get("actor"), event.get("action")) for event in events}
+        missing_intentions = [{"agent_id": agent_id, "intention": intention}
+            for agent_id, record in agents.items() for intention in record["intentions"]
+            if (agent_id, intention) not in realised]
+        if missing_intentions:
+            return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+                errors=[error("AGENT_INTENTION_UNREALISED", "Each declared intention needs an event with that actor and action.")],
+                missing_slots=missing_intentions)
     return result(
         contract,
         guard,

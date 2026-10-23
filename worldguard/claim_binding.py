@@ -169,7 +169,24 @@ def _norm(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     pair = (str(row.get("actor", "")), str(row.get("action", "")))
     if not any((str(item.get("actor", "")), str(item.get("action", ""))) == pair for item in norms):
         return _gap(f"no norm for actor {pair[0]!r} and action {pair[1]!r} in the world model")
-    active, missing = norm_activity(norms, inputs.get("facts", []))
+    relevant = [norm for norm in norms if (str(norm.get("actor", "")), str(norm.get("action", ""))) == pair]
+    fluent_norms = any(isinstance(norm.get("condition"), dict) and "fluent" in norm["condition"] for norm in relevant)
+    fluents = None
+    known = None
+    if fluent_norms:
+        if "at" not in row:
+            return _gap("a norm assertion with a fluent condition needs at")
+        events = _scoped_events(inputs, row)
+        if events is None or any("at" not in event for event in events):
+            return _gap("norm applicability needs a declared scenario and event times")
+        initial = _fluent_values(_mapping(inputs.get("event_model")).get("initial_states", []))
+        known = set(initial) | {fluent for event in events for key in ("initiates", "terminates", "releases", "requires") for fluent in _fluent_values(event.get(key))}
+        fluents = frozenset(initial)
+        for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
+            if _event_time_key(event["at"]) >= _event_time_key(row["at"]):
+                break
+            fluents = after
+    active, missing = norm_activity(relevant, inputs.get("facts", []), fluents, known)
     if missing:
         return _gap("a norm condition names an undeclared fact")
     modalities = sorted({

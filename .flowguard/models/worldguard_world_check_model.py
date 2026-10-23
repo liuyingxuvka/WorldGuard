@@ -30,6 +30,7 @@ IMPLEMENTED_BY = {
     "ReportExit": "worldguard/cli.py:main",
 }
 TESTED_BY = {
+    "forbidden_event_fails": ["tests/test_world_model_language.py:test_storm_prohibition_applies_to_the_actual_boat_event"],
     "event_times_reach_constraints": ["tests/test_world_model_language.py:test_event_times_drive_causal_constraints_without_another_timetable"],
     "unique_tokens_stay_unique": ["tests/test_world_model_language.py:test_unique_traveler_duplication_fails_and_a_foreign_actor_is_a_gap"],
     "one_row_per_problem": ["tests/test_qualification.py:test_one_row_per_problem_in_short_and_full_reports"],
@@ -60,6 +61,7 @@ class CheckRequest:
     boundary: str = "none"
     rows: str = "order"
     tokens_cloned: bool = False
+    forbidden_event: bool = False
 
 
 @dataclass(frozen=True)
@@ -169,8 +171,11 @@ class RunGuards:
     def tokens_cloned(self, request):
         return request.tokens_cloned
 
+    def forbidden_event(self, request):
+        return request.forbidden_event
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
-        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request):
+        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request):
             status = "FAIL"
         elif state.inputs_missing or evaluated.request.boundary == "unselected":
             status = "GAP"
@@ -266,6 +271,10 @@ def unique_tokens_stay_unique(state, trace):
     return _terminal_check(state, lambda request: request.tokens_cloned, (1, "FAIL"), "A duplicated unique token passed")
 
 
+def forbidden_event_fails(state, trace):
+    return _terminal_check(state, lambda request: request.forbidden_event, (1, "FAIL"), "An active prohibition ignored its event")
+
+
 def clock_times_order_events(state, trace):
     return _terminal_check(state, lambda request: request.time_form == "clock" and not request.event_order_correct, (1, "FAIL"), "A reversed clock-order precondition/claim did not fail")
 
@@ -290,6 +299,7 @@ def pass_needs_bound_true_rows(state, trace):
 
 
 EXTERNAL_INPUTS = (
+    CheckRequest("forbidden_event", forbidden_event=True, rows="norm"),
     CheckRequest("event_clock", scm_mode="event_clock", rows="variable"),
     CheckRequest("tokens_cloned", tokens_cloned=True, rows="tokens"),
     CheckRequest("number", time_form="number"),
@@ -314,6 +324,7 @@ EXTERNAL_INPUTS = (
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
+    ("forbidden_event_fails", "A forbidden actual action fails", forbidden_event_fails),
     ("event_times_reach_constraints", "One event clock reaches causal constraints", event_times_reach_constraints),
     ("unique_tokens_stay_unique", "A unique color never duplicates", unique_tokens_stay_unique),
     ("one_row_per_problem", "Each native problem has one report row", one_row_per_problem),
@@ -397,11 +408,17 @@ class _TokensCloned(RunGuards):
         return False
 
 
+class _NormsIgnoreEvents(RunGuards):
+    def forbidden_event(self, request):
+        return False
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
         return _explorer(blocks, invariant_names={invariant}, labels=())
     return {
+        "norms_ignore_events": variant(_NormsIgnoreEvents(), "forbidden_event_fails"),
         "causal_copy_drifts": variant(_CausalCopyDrifts(), "event_times_reach_constraints"),
         "tokens_cloned": variant(_TokensCloned(), "unique_tokens_stay_unique"),
         "layered_duplicates": variant(_LayeredDuplicates(), "one_row_per_problem"),
@@ -438,6 +455,11 @@ def _model_outcome(request):
 
 
 def _real_contract(request):
+    if request.forbidden_event:
+        return {"claim": {"asserts": [{"actor": "traveler", "action": "take_boat", "modality": "forbidden"}]},
+            "inputs": {"events": [{"event_id": "board", "at": 2, "actor": "traveler", "action": "take_boat", "initiates": "aboard"}],
+                "norms": [{"actor": "traveler", "action": "take_boat", "modality": "forbidden", "condition": "storm"}],
+                "facts": [{"fact_id": "storm", "value": True}]}}
     if request.tokens_cloned:
         return {"claim": {"asserts": [{"place": "out", "color": "traveler", "qty": 2}]},
             "inputs": {"resources": {"unique": ["traveler"], "places": {"start": [{"color": "traveler", "qty": 1}]},

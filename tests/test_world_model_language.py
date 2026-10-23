@@ -258,3 +258,47 @@ def test_trial_token_clone_fails_when_the_traveler_is_declared_unique():
     report = run_worldguard(trial)
     assert report.status.value == "FAIL"
     assert "RESOURCE_UNIQUE_TOKEN_DUPLICATED" in _codes(report)
+
+
+def test_storm_prohibition_applies_to_the_actual_boat_event():
+    world = yaml.safe_load((Path(__file__).parent / "fixtures/trials/trip_mut2_out/storm_consistent.yaml").read_text())
+    event = next(row for row in world["inputs"]["events"] if row["event_id"] == "d2_boat")
+    event.update(actor="traveler", action="take_boat")
+    report = run_worldguard(world)
+    assert report.status.value == "FAIL"
+    assert "NORM_VIOLATED_BY_EVENT" in _codes(report)
+    for fact in world["inputs"]["facts"]:
+        if fact["fact_id"] in {"storm_warning", "lake_calm"}:
+            fact["value"] = fact["fact_id"] == "lake_calm"
+    assert run_worldguard(world).status.value == "PASS"
+
+
+@pytest.mark.parametrize("storm_time,expected", [("t1", "FAIL"), ("t3", "PASS")])
+def test_fluent_norm_conditions_use_the_state_before_the_event(storm_time, expected):
+    world = {"claim": {"requested_semantics": ["event", "norm"], "asserts": [{"holds": "aboard", "at": "t4"}]},
+        "inputs": {"events": [{"event_id": "storm", "at": storm_time, "initiates": "storm_warning"},
+            {"event_id": "boat", "at": "t2", "actor": "traveler", "action": "take_boat", "initiates": "aboard"}],
+            "norms": [{"actor": "traveler", "action": "take_boat", "modality": "forbidden", "condition": {"fluent": "storm_warning", "value": True}}]}}
+    report = run_worldguard(world)
+    assert report.status.value == expected
+    if expected == "FAIL":
+        assert "NORM_VIOLATED_BY_EVENT" in _codes(report)
+        norm = next(result for result in report.guard_results if result.guard == "NormGuard")
+        assert norm.counterexamples[0]["steps"][0]["event_id"] == "boat"
+    world["claim"]["asserts"] = [{"actor": "traveler", "action": "take_boat", "modality": "forbidden"}]
+    report = run_worldguard(world)
+    assert report.claim_binding["status"] == "GAP"
+    assert "needs at" in report.claim_binding["assertions"][0]["reason"]
+    world["claim"]["asserts"][0]["at"] = "t2"
+    assert run_worldguard(world).claim_binding["status"] == ("PASS" if storm_time == "t1" else "FAIL")
+
+
+def test_agent_intentions_require_matching_events_when_actors_are_declared():
+    world = yaml.safe_load((Path(__file__).parent / "fixtures/trials/story_mut_out/agent_contradicts.yaml").read_text())
+    event = next(row for row in world["inputs"]["events"] if row["event_id"] == "e_lamp_lit")
+    event.update(actor="Ada", action="light_lamp")
+    report = run_worldguard(world)
+    assert report.status.value == "GAP"
+    assert "AGENT_INTENTION_UNREALISED" in _codes(report)
+    missing = next(result for result in report.guard_results if result.guard == "AgentGuard").missing_slots
+    assert {"agent_id": "Ada", "intention": "keep_lamp_dark"} in missing

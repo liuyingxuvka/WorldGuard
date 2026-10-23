@@ -1,21 +1,10 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
-from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts
+from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts, norm_activity, event_replay, _fluent_values
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
-
-
-def _condition_expectation(condition):
-    if isinstance(condition, str) and condition:
-        return condition, True
-    if isinstance(condition, dict):
-        fact_id = str(condition.get("fact_id", ""))
-        expected = condition.get("equals", condition.get("value", True))
-        if fact_id and isinstance(expected, bool):
-            return fact_id, expected
-    return "", None
 
 
 def _check(contract: GuardContract):
@@ -111,19 +100,10 @@ def _check(contract: GuardContract):
             ],
         )
 
-    fact_values = {str(fact["fact_id"]): fact["value"] for fact in facts}
-    unevaluable_conditions = []
-    active_norms = []
-    for index, norm in enumerate(norms):
-        condition = norm.get("condition") if isinstance(norm, dict) else None
-        fact_id, expected = _condition_expectation(condition)
-        if not fact_id or expected is None or fact_id not in fact_values:
-            unevaluable_conditions.append(
-                {"norm": index, "condition": condition, "needed_fact": fact_id}
-            )
-            continue
-        if fact_values[fact_id] is expected:
-            active_norms.append(norm)
+    events = contract.inputs.get("events", [])
+    initial = _fluent_values(contract.inputs.get("event_model", {}).get("initial_states", []))
+    known_fluents = set(initial) | {fluent for event in events for key in ("initiates", "terminates", "requires", "releases") for fluent in _fluent_values(event.get(key))}
+    active_norms, unevaluable_conditions = norm_activity(norms, facts, initial, known_fluents)
     if unevaluable_conditions:
         return result(
             contract,
@@ -140,6 +120,25 @@ def _check(contract: GuardContract):
             ],
         )
     conflicts = active_norm_conflicts(active_norms)
+    violations = []
+    scenario_ids = sorted({str(event["scenario_id"]) for event in events if event.get("scenario_id")}) or [""]
+    for scenario_id in scenario_ids:
+        scoped = [event for event in events if not event.get("scenario_id") or event["scenario_id"] == scenario_id]
+        if any("at" not in event for event in scoped):
+            continue
+        for event, before, _ in event_replay(scoped, initial, scenario_id):
+            active, _ = norm_activity(norms, facts, before, known_fluents)
+            for conflict in active_norm_conflicts(active):
+                if conflict not in conflicts:
+                    conflicts.append(conflict)
+            if event.get("actor") and event.get("action"):
+                for norm in active:
+                    if norm.get("modality") in {"forbidden", "prohibited"} and (norm.get("actor"), norm.get("action")) == (event["actor"], event["action"]):
+                        violations.append({"event_id": event["event_id"], "at": event["at"], "norm": norm, "condition": norm["condition"]})
+    if violations:
+        return result(contract, guard, GuardStatus.FAIL, channel="norm", impact="supports_fail",
+            errors=[error("NORM_VIOLATED_BY_EVENT", "A forbidden action occurs while its norm is active.")],
+            counterexamples=[{"kind": "trace", "steps": violations}])
     if conflicts:
         return result(
             contract,

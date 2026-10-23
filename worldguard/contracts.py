@@ -119,6 +119,8 @@ def _validate_event_links(inputs: Mapping[str, Any]) -> None:
             continue
         if 'actor' in event and (not isinstance(event['actor'], str) or not event['actor']):
             raise ValueError(f'inputs.events[{index}].actor must be a nonempty id')
+        if 'action' in event and (not isinstance(event['action'], str) or not event['action']):
+            raise ValueError(f'inputs.events[{index}].action must be a nonempty id')
         if 'with' in event and (not isinstance(event['with'], list) or any(not isinstance(item, str) or not item for item in event['with'])):
             raise ValueError(f'inputs.events[{index}].with must be a list of ids')
     event_ids = {str(event['event_id']) for event in events if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id')}
@@ -323,8 +325,8 @@ class GuardContract:
             event_ids.add(identity)
             if 'at' in event:
                 named_times.append((f"inputs.events[{index}] ({event_id})", event['at']))
-        named_times.extend((f"claim.asserts[{index}] (holds {row['holds']})", row['at'])
-                           for index, row in enumerate(claim.asserts) if 'holds' in row and 'at' in row)
+        named_times.extend((f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
+                           for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row)
         validate_times(named_times)
         return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')))
 
