@@ -1,147 +1,32 @@
-mesh_id: basic-model-mesh
-schema_version: worldguard.model_mesh.v1
-run_id: basic-mesh-run
+mesh_id: two_chapters
 nodes:
-  - model_id: event-source
-    model_version: v1
-    model_kind: event_model
-    freshness_status: current
-    output_ports:
-      - {port_id: precheck_complete, value_type: fact, cardinality: one}
-    authority:
-      owns: [event]
-      excludes: [norm, resource, causal]
-      scope_limits: [toy mesh fixture only]
+  - model_id: story
     contract:
-      contract_id: mesh:event-source
-      schema_version: worldguard.contract.v1
-      run_id: basic-mesh-run
       claim:
-        claim_id: c_event_ready
-        text: operator starts the process after precheck
-        target_guards: [EventGuard]
-        requested_semantics: [event]
-        asserts:
-          - {holds: precheck_complete, at: t0}
-      world_model:
-        model_id: event-source
-        model_version: v1
-        scope_limits: [toy mesh fixture only]
+        claim_id: the_door_opens
+        text: The key reaches Mara before she unlocks the door.
+        asserts: [{node: chapter2, holds: door_open, at: t2}]
+  - model_id: chapter1
+    contract:
+      contract_id: key_handoff
+      claim:
+        claim_id: mara_has_key
+        asserts: [{holds: key_with_mara, at: t1}]
       inputs:
+        event_model: {initial_states: [key_with_iris, door_locked]}
         events:
-          - event_id: e_precheck
-            at: t0
-            initiates: precheck_complete
-      guard_purpose_declarations:
-        - schema_version: worldguard.task_guard_purpose.v1
-          declaration_id: declaration:mesh:event-source:EventGuard
-          task_contract_id: mesh:event-source
-          run_id: basic-mesh-run
-          model_instance_id: event-source
-          guard: EventGuard
-          purpose: Prevent this explicit toy EventGuard model from accepting its declared invalid case.
-          boundary: This declaration licenses only the packaged toy mesh reaction.
-          selected_failure_ids: [failure:event:guard:event-boundary-numeric-dynamics]
-          known_good:
-            case_id: mesh:event-source:good:event
-            text: a declared event initiates readiness
-            inputs:
-              events:
-                - {event_id: e1, at: t0, initiates: ready}
-            coverage_context: {}
-            expected_guard_status: PASS
-            expected_semantic_status: PASS
-            native_oracle_id: oracle:worldguard:EventGuard:known-good
-          known_bad_cases:
-            - case_id: mesh:event-source:bad:failure:event:guard:event-boundary-numeric-dynamics
-              failure_id: failure:event:guard:event-boundary-numeric-dynamics
-              blocked_claim: EventGuard cannot support a numeric-dynamics claim.
-              text: continuous numeric dynamics
-              inputs: {}
-              coverage_context: {}
-              expected_status: BOUNDARY_EXCEEDED
-              expected_code: EVENT_BOUNDARY_NUMERIC_DYNAMICS
-              native_oracle_id: oracle:worldguard:EventGuard:guard:EVENT_BOUNDARY_NUMERIC_DYNAMICS
-          declaration_sequence: 1
-  - model_id: norm-target
-    model_version: v1
-    model_kind: norm_model
-    freshness_status: current
-    input_ports:
-      - {port_id: precheck_fact, value_type: fact, cardinality: one}
-    authority:
-      owns: [norm]
-      excludes: [resource, causal]
-      scope_limits: [toy mesh fixture only]
+          - {event_id: hand_over_key, at: t1, requires: [key_with_iris], initiates: [key_with_mara], terminates: [key_with_iris]}
+  - model_id: chapter2
     contract:
-      contract_id: mesh:norm-target
-      schema_version: worldguard.contract.v1
-      run_id: basic-mesh-run
+      contract_id: unlock_door
       claim:
-        claim_id: c_norm_start
-        text: operator may start
-        target_guards: [NormGuard]
-        requested_semantics: [norm]
-        asserts:
-          - {action: start, modality: permitted}
-      world_model:
-        model_id: norm-target
-        model_version: v1
-        scope_limits: [toy mesh fixture only]
+        claim_id: door_is_open
+        asserts: [{holds: door_open, at: t2}]
       inputs:
-        norms:
-          - modality: permitted
-            action: start
-            condition: {fact_id: precheck_complete, value: true}
-        facts:
-          - {fact_id: precheck_complete, value: true}
-      guard_purpose_declarations:
-        - schema_version: worldguard.task_guard_purpose.v1
-          declaration_id: declaration:mesh:norm-target:NormGuard
-          task_contract_id: mesh:norm-target
-          run_id: basic-mesh-run
-          model_instance_id: norm-target
-          guard: NormGuard
-          purpose: Prevent this explicit toy NormGuard model from accepting its declared invalid case.
-          boundary: This declaration licenses only the packaged toy mesh reaction.
-          selected_failure_ids: [failure:norm:guard:norm-boundary-physical-enablement]
-          known_good:
-            case_id: mesh:norm-target:good:norm
-            text: the operator may start when the declared condition fact holds
-            inputs:
-              norms:
-                - {modality: permitted, action: start, condition: authorized}
-              facts: [authorized]
-            coverage_context: {}
-            expected_guard_status: PASS
-            expected_semantic_status: PASS
-            native_oracle_id: oracle:worldguard:NormGuard:known-good
-          known_bad_cases:
-            - case_id: mesh:norm-target:bad:failure:norm:guard:norm-boundary-physical-enablement
-              failure_id: failure:norm:guard:norm-boundary-physical-enablement
-              blocked_claim: NormGuard cannot support physical enablement.
-              text: physical enablement token
-              inputs: {}
-              coverage_context: {}
-              expected_status: BOUNDARY_EXCEEDED
-              expected_code: NORM_BOUNDARY_PHYSICAL_ENABLEMENT
-              native_oracle_id: oracle:worldguard:NormGuard:guard:NORM_BOUNDARY_PHYSICAL_ENABLEMENT
-          declaration_sequence: 1
+        event_model: {initial_states: [key_with_mara, door_locked]}
+        events:
+          - {event_id: unlock, at: t2, requires: [key_with_mara, door_locked], initiates: [door_open], terminates: [door_locked]}
 edges:
-  - edge_id: e_event_to_norm
-    source_model_id: event-source
-    target_model_id: norm-target
-    relation: consumes_output_of
-    port_mappings:
-      - mapping_id: precheck-to-norm
-        source_port_id: precheck_complete
-        target_port_id: precheck_fact
-    allowed_use: [precheck_complete]
-    forbidden_use: []
-    read_only: true
-    requires_current_source: true
-snapshots:
-  - snapshot_id: s_current
-    model_ids: [event-source, norm-target]
-    status: current
-    notes: [basic pass mesh fixture]
+  - {edge_id: story_chapter1, source_model_id: story, target_model_id: chapter1, relation: parent_child}
+  - {edge_id: story_chapter2, source_model_id: story, target_model_id: chapter2, relation: parent_child}
+  - {edge_id: next_chapter, source_model_id: chapter1, target_model_id: chapter2, relation: continues}

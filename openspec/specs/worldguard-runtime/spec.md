@@ -136,3 +136,12 @@ Unknown ids/scenarios, ambiguous scenarios for variables, mixed time kinds and
 invalid tolerances SHALL be input errors (exit 2). All matches SHALL exit 0 and any
 mismatch SHALL exit 1 with value_outside_tolerance. Optional source SHALL be copied.
 The comparison SHALL be pure, without freezing, hashing or revision artifacts.
+
+### Requirement: Single-copy story and trip examples
+
+`check --example` SHALL accept scene, trip and fuel_cell. Scene/trip SHALL resolve
+only the skill's bundled world files, first beside the repository package and then
+beside the installed runtime. Missing files SHALL return an input error explaining
+that examples ship with the skill. Fuel-cell behavior SHALL remain unchanged.
+The repository mesh example SHALL contain a summary root, two parts and continues
+state handoff without ignored declaration metadata.

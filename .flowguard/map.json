@@ -16,7 +16,7 @@
       "layer": "interface",
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
-        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries. Expose compare --contract --observed with native JSON results and 0/1/2 status exits.",
+        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries. Expose compare --contract --observed with native JSON results and 0/1/2 status exits. Resolve scene/trip examples from their single skill asset copy in repository or installed layouts, retaining fuel_cell behavior.",
         "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json; expose the native timeline view",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
@@ -49,7 +49,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:d749fba4be2ecf05af3aa156b1d4530772916be143581ff7b1281a9290568798"
+      "fingerprint": "sha256:37246465278cb6be8a829cf5085fc24cedd50a073244d4350c907e2373496352"
     },
     {
       "id": "worldguard.core",

@@ -34,7 +34,7 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 ## What It Does
 
-The native CLI commands are `check`, `mesh-check` and `timeline`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
+The native CLI commands are `check`, `mesh-check`, `timeline` and `compare`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
 
 WorldGuard provides two core check shapes:
 
@@ -98,17 +98,14 @@ It checks:
 ## Quick Start
 
 ```powershell
-python -m pip install -e .
-python -m pytest
-python -m worldguard.examples.fuel_cell --check
-python -m worldguard.cli check --example fuel_cell
-python -m worldguard.cli mesh-check --mesh examples/model_mesh/basic_mesh.yaml
+python skills/worldguard/scripts/run_worldguard.py check --example trip
+python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh examples/model_mesh/basic_mesh.yaml
 ```
 
 If your Python scripts directory is on `PATH`, the console entry point is also available:
 
 ```powershell
-worldguard check --example fuel_cell
+worldguard check --example trip
 ```
 
 ## Python API
@@ -176,7 +173,7 @@ FlowGuard 只从主人的 GitHub 安装（`git+https://github.com/liuyingxuvka/F
 
 ## 它能做什么
 
-原生 CLI 命令为 `check` 和 `mesh-check`。从 `skills/worldguard/assets/examples/` 复制一个世界，再修改模型和断言即可开始新合约。
+原生 CLI 命令为 `check`、`mesh-check`、`timeline` 和 `compare`。从 `skills/worldguard/assets/examples/` 复制一个世界，再修改模型和断言即可开始新合约。
 
 WorldGuard 有两种核心检查形态：
 
@@ -236,11 +233,8 @@ YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事�
 ## 快速开始
 
 ```powershell
-python -m pip install -e .
-python -m pytest
-python -m worldguard.examples.fuel_cell --check
-python -m worldguard.cli check --example fuel_cell
-python -m worldguard.cli mesh-check --mesh examples/model_mesh/basic_mesh.yaml
+python skills/worldguard/scripts/run_worldguard.py check --example trip
+python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh examples/model_mesh/basic_mesh.yaml
 ```
 
 ## 这个项目不是什么

@@ -271,3 +271,20 @@ def test_cli_missing_event_time_keeps_native_gap(tmp_path):
     result = json.loads(completed.stdout)
     assert result["status"] == "GAP"
     assert result["guard_results"][0]["errors"][0]["code"] == "EVENT_MISSING_INITIATION_AXIOM"
+
+
+@pytest.mark.parametrize('name', ['scene', 'trip'])
+def test_cli_runs_the_single_bundled_world_example(name, capsys):
+    from worldguard.cli import main, _example_path
+    expected = Path(__file__).resolve().parents[1] / 'skills/worldguard/assets/examples'
+    assert _example_path(name).parent == expected
+    assert main(['check', '--example', name]) == 0
+    assert json.loads(capsys.readouterr().out)['status'] == 'PASS'
+
+
+def test_missing_bundled_example_explains_skill_distribution(tmp_path, monkeypatch, capsys):
+    import worldguard.cli as cli
+    monkeypatch.setattr(cli, '__file__', str(tmp_path / 'runtime/worldguard/cli.py'))
+    assert cli.main(['check', '--example', 'trip']) == 2
+    error = json.loads(capsys.readouterr().out)['error']
+    assert 'distributed with' in error['message'] and 'skill' in error['message']

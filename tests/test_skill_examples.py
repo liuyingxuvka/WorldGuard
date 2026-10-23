@@ -69,3 +69,14 @@ def test_repository_mesh_example_passes() -> None:
     )
     assert done.returncode == 0, done.stdout[-500:]
     assert json.loads(done.stdout)["status"] == "PASS"
+
+
+def test_installed_skill_runs_trip_example_without_repository_layout(tmp_path):
+    target = tmp_path / 'skills'
+    install = subprocess.run([sys.executable, str(SKILL.parents[1] / 'scripts/install_skill.py'), '--target', str(target)],
+                             text=True, capture_output=True)
+    assert install.returncode == 0, install.stdout + install.stderr
+    done = subprocess.run([sys.executable, str(target / 'worldguard/scripts/run_worldguard.py'), 'check', '--example', 'trip'],
+                          cwd=tmp_path, text=True, capture_output=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert json.loads(done.stdout)['status'] == 'PASS'

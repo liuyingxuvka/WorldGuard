@@ -58,12 +58,22 @@ def _input_error(operation: str, input_path: str, exc: Exception) -> int:
     return 2
 
 
+def _example_path(name: str) -> Path:
+    filename = {"scene": "scene_locked_door.yaml", "trip": "trip_ferry.yaml"}[name]
+    package = Path(__file__).resolve().parent
+    for directory in (package.parent / "skills/worldguard/assets/examples", package.parent.parent / "assets/examples"):
+        candidate = directory / filename
+        if candidate.is_file():
+            return candidate
+    raise ValueError(f"The {name} example is distributed with the WorldGuard portable skill; use its launcher or provide --contract.")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="worldguard")
     subparsers = parser.add_subparsers(dest="command", required=True)
     check = subparsers.add_parser("check")
     check.add_argument("--contract", default="")
-    check.add_argument("--example", choices=["fuel_cell"], default="")
+    check.add_argument("--example", choices=["scene", "trip", "fuel_cell"], default="")
     check.add_argument("--json", action="store_true", help="print the full report")
     mesh_check = subparsers.add_parser("mesh-check")
     mesh_check.add_argument("--mesh", required=True)
@@ -104,8 +114,13 @@ def main(argv: list[str] | None = None) -> int:
             example = run_fuel_cell_check()
             _emit(example, _example_summary, args.json)
             return 0 if example["ok"] else 1
+        if args.example in {"scene", "trip"}:
+            try:
+                args.contract = str(_example_path(args.example))
+            except ValueError as exc:
+                return _input_error("check", args.example, exc)
         if not args.contract:
-            parser.error("check requires --contract or --example fuel_cell")
+            parser.error("check requires --contract or --example scene|trip|fuel_cell")
         try:
             contract = GuardContract.from_dict(load_mapping(args.contract))
             context = QualificationContext(
