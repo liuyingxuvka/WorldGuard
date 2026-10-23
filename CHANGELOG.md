@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.20 - 2026-10-23 - Preserve failures when other evidence is incomplete
+
+- Keep independently known event precondition failures when other event metadata is missing or simultaneous events have no declared order. Conflicting simultaneous fluent writes remain uncertain until a later definite write.
+- Keep missing event times in a continued world tree as gaps with the native node reports. Preserve independently decidable handoff failures and reject `port_mappings` whenever it is supplied on a `continues` edge.
+- Preserve typed native Guard gaps for malformed event or transition records when adding source references and trace context.
+
 ## v0.7.19 - 2026-10-23 - Stateful world trees and observation comparison
 
 - Connect successive models with `continues`. Check final-to-initial fluents, forward event time, shared unique token locations and optional causal scenario variables. Missing variable values remain gaps; conflicting values fail.
