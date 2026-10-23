@@ -88,6 +88,8 @@ def _validate_causal_interventions(inputs: Mapping[str, Any]) -> None:
     if not isinstance(interventions, list):
         raise ValueError('inputs.causal_model.interventions must be a list of mappings')
     known = {str(name) for name in causal.get('variables', [])} | {str(name) for name in causal.get('exogenous', [])}
+    known.update('t_' + str(event['event_id']) for event in inputs.get('events', [])
+                 if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id'))
     seen = set()
     for index, row in enumerate(interventions):
         location = f'inputs.causal_model.interventions[{index}]'
@@ -108,6 +110,32 @@ def _validate_causal_interventions(inputs: Mapping[str, Any]) -> None:
         for key, value in assignments.items():
             if key not in known or isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
                 raise ValueError(f'{location}.set[{key!r}] must assign a finite number to a declared variable or exogenous input')
+
+
+def _validate_event_links(inputs: Mapping[str, Any]) -> None:
+    events = inputs.get('events', [])
+    for index, event in enumerate(events):
+        if not isinstance(event, Mapping):
+            continue
+        if 'actor' in event and (not isinstance(event['actor'], str) or not event['actor']):
+            raise ValueError(f'inputs.events[{index}].actor must be a nonempty id')
+        if 'with' in event and (not isinstance(event['with'], list) or any(not isinstance(item, str) or not item for item in event['with'])):
+            raise ValueError(f'inputs.events[{index}].with must be a list of ids')
+    event_ids = {str(event['event_id']) for event in events if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id')}
+    implicit = {'t_' + event_id for event_id in event_ids}
+    causal = inputs.get('causal_model', {})
+    collision = implicit & (set(causal.get('variables', [])) | set(causal.get('exogenous', [])))
+    if collision:
+        raise ValueError('causal variable collides with an event time: ' + ', '.join(sorted(collision)))
+    resources = inputs.get('resources', {})
+    unique = resources.get('unique', [])
+    if not isinstance(unique, list) or any(not isinstance(item, str) or not item for item in unique):
+        raise ValueError('resources.unique must be a list of color ids')
+    transitions = resources.get('transitions', [])
+    if any(isinstance(row, Mapping) and 'event' in row for row in transitions):
+        for index, row in enumerate(transitions):
+            if not isinstance(row, Mapping) or row.get('event') not in event_ids:
+                raise ValueError(f'resources.transitions[{index}].event must name an unscoped event; all transitions must use event links')
 
 
 def claim_assertion_kind(assertion: Any) -> str:
@@ -279,6 +307,7 @@ class GuardContract:
         inputs = dict(data.get('inputs', {}))
         _reject_retired_runtime_input_paths(world_model, inputs)
         _validate_causal_interventions(inputs)
+        _validate_event_links(inputs)
         if not str(world_model.get('model_version', '')).strip():
             world_model['model_version'] = 'unversioned'
         claim = Claim.from_dict(data.get('claim', {}))

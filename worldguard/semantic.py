@@ -236,9 +236,10 @@ def _evaluate_equations(
 _CONSTRAINT_AST = (*_ALLOWED_AST, ast.Compare, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq)
 
 
-def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dict[str, Any]):
+def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dict[str, Any], event_times=None):
     """One finite execution owner shared by checks, constraints and claim rows."""
-    seeds = {name: _scenario_records(causal.get(name, {})) for name in ("scenarios", "holdout_scenarios")}
+    seeds = {name: {key: {**(event_times or {}), **values} for key, values in _scenario_records(causal.get(name, {})).items()}
+             for name in ("scenarios", "holdout_scenarios")}
     results: dict[str, dict[str, dict[str, float]]] = {"scenarios": {}, "holdout_scenarios": {}, "interventions": {}}
     errors: list[dict[str, Any]] = []
     for family in ("scenarios", "holdout_scenarios"):
@@ -264,26 +265,26 @@ def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dic
     return results, errors
 
 
-def causal_scenario_values(causal: Mapping[str, Any]) -> dict[str, dict[str, float]]:
+def causal_scenario_values(causal: Mapping[str, Any], event_times=None) -> dict[str, dict[str, float]]:
     """Return completed scenario, holdout and intervention runs; native checks retain errors."""
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {}) if isinstance(causal.get("equations"), dict) else {}
-    known = set(variables) | {str(item) for item in causal.get("exogenous", [])}
+    known = set(variables) | {str(item) for item in causal.get("exogenous", [])} | set(event_times or {})
     if not variables or any(variable not in equations or _equation_error(equations[variable], known) for variable in variables):
         return {}
-    results, _errors = _causal_runs(causal, variables, equations)
+    results, _errors = _causal_runs(causal, variables, equations, event_times)
     return {**results["scenarios"], **results["holdout_scenarios"], **results["interventions"]}
 
 
-def causal_constraint_findings(causal: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def causal_constraint_findings(causal: Mapping[str, Any], event_times=None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Check each `constraints` comparison in every evaluated scenario; return (violations, unevaluable)."""
     constraints = [str(item) for item in causal.get("constraints", []) or []]
     if not constraints:
         return [], []
-    runs = causal_scenario_values(causal)
+    runs = causal_scenario_values(causal, event_times)
     if not runs:
         return [], [{"constraint": text, "error": "constraints need scalar equations and at least one scenario"} for text in constraints]
-    known = {str(item) for item in causal.get("variables", [])} | {str(item) for item in causal.get("exogenous", [])}
+    known = {str(item) for item in causal.get("variables", [])} | {str(item) for item in causal.get("exogenous", [])} | set(event_times or {})
     violations: list[dict[str, Any]] = []
     unevaluable: list[dict[str, Any]] = []
     for text in constraints:
@@ -316,7 +317,7 @@ def causal_constraint_findings(causal: Mapping[str, Any]) -> tuple[list[dict[str
     return violations, unevaluable
 
 
-def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *, validate: bool = True):
+def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *, validate: bool = True, events=()):
     """Replay one trace; Guards check enablement, assertions read its declared marking."""
     places = resources.get("places", {})
     marking: dict[tuple[str, str], float] = {}
@@ -328,7 +329,13 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
                 return marking, {"kind": "bad_token", "place": place, "token": token}
             key = str(place), str(token["color"])
             marking[key] = marking.get(key, 0.0) + float(token["qty"])
-    for index, transition in enumerate(resources.get("transitions", [])):
+    transitions = list(resources.get("transitions", []))
+    event_map = {str(event.get("event_id")): event for event in events if not event.get("scenario_id")}
+    if transitions and any("event" in transition for transition in transitions):
+        if any("at" not in event_map[str(transition["event"])] for transition in transitions):
+            return marking, {"kind": "bad_transition", "needed": "time for each linked event"}
+        transitions.sort(key=lambda transition: time_key(event_map[str(transition["event"])]["at"]))
+    for index, transition in enumerate(transitions):
         if not isinstance(transition, dict) or not transition.get("id"):
             return marking, {"kind": "bad_transition", "transition": transition}
         for arc in transition.get("consumes", []):
@@ -347,10 +354,26 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
                 return marking, {"kind": "bad_transition", "transition": transition["id"], "arc": arc}
             key = str(arc["place"]), str(arc["color"])
             marking[key] = marking.get(key, 0.0) + float(arc["qty"])
+            if validate and key[1] in resources.get("unique", []) and sum(qty for (_, color), qty in marking.items() if color == key[1]) > 1:
+                return marking, {"kind": "duplicated", "transition": transition["id"],
+                    "tokens": {key[1]: {place: qty for (place, color), qty in marking.items() if color == key[1]}}}
             capacity = resources.get("capacities", {}).get(arc["place"])
             total = sum(value for (place, _), value in marking.items() if place == str(arc["place"]))
             if validate and capacity is not None and total > float(capacity):
                 return marking, {"kind": "capacity", "transition": transition["id"], "place_total": total, "capacity": capacity}
+        if validate:
+            duplicated = {color: {place: qty for (place, token), qty in marking.items() if token == color}
+                          for color in resources.get("unique", [])
+                          if sum(qty for (_, token), qty in marking.items() if token == color) > 1}
+            if duplicated:
+                return marking, {"kind": "duplicated", "transition": transition["id"], "tokens": duplicated}
+            if "event" in transition:
+                event = event_map[str(transition["event"])]
+                participants = {event.get("actor"), *event.get("with", [])}
+                moved = {arc.get("color") for key in ("consumes", "produces") for arc in transition.get(key, [])}
+                unnamed = sorted((moved & set(resources.get("unique", []))) - participants)
+                if unnamed:
+                    return marking, {"kind": "participant", "transition": transition["id"], "event_id": event["event_id"], "colors": unnamed}
         if stop_after is not None and str(transition["id"]) == str(stop_after):
             break
     return marking, None

@@ -12,13 +12,13 @@ claim:
     - {holds: iris_in_archive, at: t3}
     - {place: iris_inside, color: iris, qty: 1}
     - {agent: Iris, intends: enter_archive}
-world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only]}
+world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only], entities: {Mara: {kind: person}, Jonas: {kind: person}, Iris: {kind: person}}}
 inputs:
   event_model: {initial_states: [jonas_has_key, door_locked]}
   events:
-    - {event_id: e_give_key, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
-    - {event_id: e_mara_unlock, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
-    - {event_id: e_iris_enter, at: t3, requires: [door_unlocked], initiates: iris_in_archive}
+    - {event_id: e_give_key, actor: Jonas, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
+    - {event_id: e_mara_unlock, actor: Mara, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
+    - {event_id: e_iris_enter, actor: Iris, at: t3, requires: [door_unlocked], initiates: iris_in_archive}
   beliefs:
     Mara:  {agent_id: Mara,  beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
     Jonas: {agent_id: Jonas, beliefs: [mara_trustworthy], desires: [protect_archive], intentions: [give_key]}

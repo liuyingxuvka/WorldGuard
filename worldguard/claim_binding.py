@@ -13,6 +13,7 @@ from collections import defaultdict
 from typing import Any, Callable
 
 from .contracts import CLAIM_ASSERTION_KINDS, SEMANTIC_GUARD_ROUTES, GuardContract, claim_assertion_kind
+from .clock import event_time_values
 from .semantic import _RCC8_CONVERSE, _event_time_key, _fluent_values, causal_scenario_values, event_replay, norm_activity, token_replay
 from .status import GuardStatus, aggregate_statuses
 
@@ -111,7 +112,7 @@ def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap(f"transition {after!r} is not in the world model")
     if "qty" not in row:
         return _gap("a place assertion needs qty")
-    marking, problem = token_replay(resources, str(after) if after is not None else None, validate=False)
+    marking, problem = token_replay(resources, str(after) if after is not None else None, validate=False, events=inputs.get("events", []))
     if problem:
         return _gap("token replay cannot reach the requested marking: " + str(problem))
     count = sum(value for (name, token), value in marking.items() if name == place and (color is None or token == str(color)))
@@ -126,7 +127,7 @@ def _value(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap(f"variable {name!r} is not in the world model")
     if op not in _COMPARE or isinstance(target, bool) or not isinstance(target, (int, float)):
         return _gap("a variable assertion needs op (==, !=, <, <=, >, >=) and a numeric value")
-    runs = causal_scenario_values(causal)
+    runs = causal_scenario_values(causal, event_time_values(inputs.get("events", [])))
     if row.get("scenario") is not None:
         runs = {key: values for key, values in runs.items() if key == str(row["scenario"])}
     if not runs:

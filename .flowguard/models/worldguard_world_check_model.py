@@ -30,6 +30,8 @@ IMPLEMENTED_BY = {
     "ReportExit": "worldguard/cli.py:main",
 }
 TESTED_BY = {
+    "event_times_reach_constraints": ["tests/test_world_model_language.py:test_event_times_drive_causal_constraints_without_another_timetable"],
+    "unique_tokens_stay_unique": ["tests/test_world_model_language.py:test_unique_traveler_duplication_fails_and_a_foreign_actor_is_a_gap"],
     "one_row_per_problem": ["tests/test_qualification.py:test_one_row_per_problem_in_short_and_full_reports"],
     "bad_time_is_input_error": ["tests/test_event_time_order.py:test_trial_time_contracts_are_checked_natively"],
     "clock_times_order_events": ["tests/test_event_time_order.py:test_trial_time_contracts_are_checked_natively"],
@@ -57,6 +59,7 @@ class CheckRequest:
     scm_mode: str = "none"
     boundary: str = "none"
     rows: str = "order"
+    tokens_cloned: bool = False
 
 
 @dataclass(frozen=True)
@@ -142,7 +145,7 @@ class EvaluateScenarios:
     idempotency = "Identical declared run features have identical finite outcomes."
 
     def scenario_fails(self, request):
-        return request.scm_mode in {"scenario", "partial_fail"}
+        return request.scm_mode in {"scenario", "partial_fail", "event_clock"}
 
     def intervention_fails(self, request):
         return request.scm_mode == "intervention"
@@ -163,8 +166,11 @@ class RunGuards:
     output_description = "World-check status before the claim rows"
     idempotency = "A check preserves its real contradictions and missing inputs."
 
+    def tokens_cloned(self, request):
+        return request.tokens_cloned
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
-        if not state.event_order_correct or state.scenario_failed or state.intervention_failed:
+        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request):
             status = "FAIL"
         elif state.inputs_missing or evaluated.request.boundary == "unselected":
             status = "GAP"
@@ -252,6 +258,14 @@ def one_row_per_problem(state, trace):
     return InvariantResult.pass_()
 
 
+def event_times_reach_constraints(state, trace):
+    return _terminal_check(state, lambda request: request.scm_mode == "event_clock", (1, "FAIL"), "A timetable edit did not reach its causal constraint")
+
+
+def unique_tokens_stay_unique(state, trace):
+    return _terminal_check(state, lambda request: request.tokens_cloned, (1, "FAIL"), "A duplicated unique token passed")
+
+
 def clock_times_order_events(state, trace):
     return _terminal_check(state, lambda request: request.time_form == "clock" and not request.event_order_correct, (1, "FAIL"), "A reversed clock-order precondition/claim did not fail")
 
@@ -276,6 +290,8 @@ def pass_needs_bound_true_rows(state, trace):
 
 
 EXTERNAL_INPUTS = (
+    CheckRequest("event_clock", scm_mode="event_clock", rows="variable"),
+    CheckRequest("tokens_cloned", tokens_cloned=True, rows="tokens"),
     CheckRequest("number", time_form="number"),
     CheckRequest("label"),
     CheckRequest("iso", time_form="iso"),
@@ -298,6 +314,8 @@ EXTERNAL_INPUTS = (
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
+    ("event_times_reach_constraints", "One event clock reaches causal constraints", event_times_reach_constraints),
+    ("unique_tokens_stay_unique", "A unique color never duplicates", unique_tokens_stay_unique),
     ("one_row_per_problem", "Each native problem has one report row", one_row_per_problem),
     ("bad_time_is_input_error", "Unknown/mixed time exits 2", bad_time_is_input_error),
     ("clock_times_order_events", "A reversed clock order fails", clock_times_order_events),
@@ -369,11 +387,23 @@ class _LayeredDuplicates(ReportExit):
         return state.guard_status != "PASS"
 
 
+class _CausalCopyDrifts(EvaluateScenarios):
+    def scenario_fails(self, request):
+        return False if request.scm_mode == "event_clock" else super().scenario_fails(request)
+
+
+class _TokensCloned(RunGuards):
+    def tokens_cloned(self, request):
+        return False
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
         return _explorer(blocks, invariant_names={invariant}, labels=())
     return {
+        "causal_copy_drifts": variant(_CausalCopyDrifts(), "event_times_reach_constraints"),
+        "tokens_cloned": variant(_TokensCloned(), "unique_tokens_stay_unique"),
         "layered_duplicates": variant(_LayeredDuplicates(), "one_row_per_problem"),
         "string_sorted_times": variant(_StringSortedTimes(), "clock_times_order_events"),
         "word_times_accepted": variant(_WordTimesAccepted(), "bad_time_is_input_error"),
@@ -408,6 +438,17 @@ def _model_outcome(request):
 
 
 def _real_contract(request):
+    if request.tokens_cloned:
+        return {"claim": {"asserts": [{"place": "out", "color": "traveler", "qty": 2}]},
+            "inputs": {"resources": {"unique": ["traveler"], "places": {"start": [{"color": "traveler", "qty": 1}]},
+                "transitions": [{"id": "clone", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],
+                    "produces": [{"place": "out", "color": "traveler", "qty": 2}]}]}}}
+    if request.scm_mode == "event_clock":
+        return {"claim": {"asserts": [{"variable": "slack", "op": ">=", "value": 0}]},
+            "inputs": {"events": [{"event_id": "train", "at": "10:05", "initiates": "at_port"},
+                {"event_id": "ferry", "at": "10:00", "initiates": "aboard"}],
+                "causal_model": {"variables": ["slack"], "equations": {"slack": "t_ferry - t_train"},
+                    "scenarios": {"plan": {}}, "constraints": ["slack >= 0"]}}}
     if request.scm_mode != "none":
         if request.scm_mode.startswith("partial_"):
             value = -2 if request.scm_mode == "partial_fail" else 2

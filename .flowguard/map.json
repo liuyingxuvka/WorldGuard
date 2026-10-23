@@ -56,8 +56,8 @@
       "layer": "core",
       "summary": "Shared contracts, compact reports, clock and finite replay helpers",
       "responsibilities": [
-        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries",
-        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names",
+        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order",
         "Keep compact native reports and the conservative four-status aggregation"
       ],
       "files": [
@@ -88,14 +88,14 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:49bfde83c109f8edf306d671910de7f3dd9cdfd0474109e7dfa630e9077e4f91"
+      "fingerprint": "sha256:7debc299f69ea70a5cbc061c763794d6c8f59ea96374b5c2cdbfb481c884d048"
     },
     {
       "id": "worldguard.guards",
       "layer": "guards",
       "summary": "Seven sole native Guard checkers and their finite failure catalog",
       "responsibilities": [
-        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem",
+        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -130,7 +130,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:36e97dc21781011b5d31f7a7b507894f8637c2efaa7096efe3ee1516a87ba67f"
+      "fingerprint": "sha256:f0db51f3574fe8322d93ca1bf174fa790c562a918a5f2ca614198ec659c0b632"
     },
     {
       "id": "worldguard.qualification",
@@ -139,7 +139,7 @@
       "responsibilities": [
         "Run each derived native Guard exactly once",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
-        "Expose one row per problem and checked Guard/claim counts with a single final status",
+        "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
         "Expose the run_worldguard kernel through one qualification owner"
       ],
       "files": [
@@ -168,7 +168,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:ca602bddfc9028d75857553ed3de5bc6e8c7f36d120baf1525c7146ea3d83813"
+      "fingerprint": "sha256:89bd0961808eb6347d6c5107e075ea8829bbee98936d12facd1ee1d2102a9b7f"
     },
     {
       "id": "worldguard.mesh",

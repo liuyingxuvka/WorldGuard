@@ -89,6 +89,19 @@ def qualify_guard_contract(contract, *, context=None):
     results = [GUARD_RUNNERS[guard](contract.for_guard(guard)) for guard in derived]
     binding = evaluate_claim_binding(contract)
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
+    if contract.world_model.entities:
+        inputs = contract.inputs
+        used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))
+        for event in inputs.get("events", []):
+            if event.get("actor"):
+                used.add(event["actor"])
+            used.update(event.get("with", []))
+        for relation in inputs.get("spatial_relations", []):
+            used.update([relation.get("x"), relation.get("y")])
+        missing_entities = sorted(used - contract.world_model.entities.keys() - {None, ""})
+        if missing_entities:
+            gaps.append({"code": "ENTITY_UNDECLARED", "status": "GAP", "missing_slots": missing_entities,
+                         "message": "Used entity ids must be declared in world_model.entities"})
     for result in results:
         for problem in result.errors:
             row = {"code": problem["code"], "guard": result.guard, "status": result.status.value,
@@ -107,7 +120,7 @@ def qualify_guard_contract(contract, *, context=None):
         if row["status"] != "PASS":
             gaps.append({"code": "CLAIM_ASSERTION_FALSE" if row["status"] == "FAIL" else "CLAIM_ASSERTION_UNRESOLVED",
                          "claim_row": row["index"], **{k: v for k, v in row.items() if k != "index"}})
-    status = aggregate_statuses([*[r.status for r in results], binding["status"], *(["GAP"] if unmapped else [])])
+    status = aggregate_statuses([*[r.status for r in results], binding["status"], *[row.get("status", "GAP") for row in gaps]])
     return GuardedReport(contract_id=contract.contract_id, status=status,
         checked={"guards": derived, "claim_rows": len(binding["assertions"])}, gaps=gaps,
         guard_results=results, claim_binding=binding, derived_guards=derived,

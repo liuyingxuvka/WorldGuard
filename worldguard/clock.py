@@ -46,6 +46,25 @@ def time_kind(value: Any) -> str:
     return _parts(value)[0]
 
 
+def event_time_values(events: Iterable[dict[str, Any]]) -> dict[str, float]:
+    """Unscoped event times in hours, with ISO times relative to their first day."""
+    events = [event for event in events if not event.get("scenario_id") and "at" in event]
+    if not events:
+        return {}
+    first = min(events, key=lambda event: time_key(event["at"]))["at"]
+    kind = time_kind(first)
+    origin = 0.0
+    if kind == "ISO date-time":
+        if isinstance(first, str):
+            stamp = datetime.fromisoformat(first.replace("Z", "+00:00"))
+        else:
+            stamp = first if isinstance(first, datetime) else datetime.combine(first, time())
+        midnight = stamp.replace(hour=0, minute=0, second=0, microsecond=0)
+        origin = time_key(midnight)
+    divisor = 3600 if kind in {"clock", "ISO date-time"} else 1
+    return {"t_" + str(event["event_id"]): (time_key(event["at"]) - origin) / divisor for event in events}
+
+
 def validate_times(values: Iterable[tuple[str, Any]]) -> None:
     """Require one format, label prefix, and ISO timezone convention per contract."""
     first = None

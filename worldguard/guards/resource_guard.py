@@ -80,7 +80,7 @@ def _check(contract: GuardContract):
             errors=[error("RESOURCE_MISSING_RESOURCE_MODEL", "The transition model is incomplete.")],
         )
 
-    marking, problem = token_replay(resources)
+    marking, problem = token_replay(resources, events=contract.inputs.get("events", []))
     if problem:
         kind = problem["kind"]
         errors = {
@@ -89,8 +89,10 @@ def _check(contract: GuardContract):
             "missing_initial": error("RESOURCE_MISSING_TOKEN", "The transition requires an unavailable token."),
             "overspend": error("RESOURCE_CUMULATIVE_OVERCONSUMPTION", "The ordered transitions consume more than remains."),
             "capacity": error("RESOURCE_CAPACITY_OVERFLOW", "Produced tokens exceed place capacity."),
+            "duplicated": error("RESOURCE_UNIQUE_TOKEN_DUPLICATED", "A unique color exists more than once across places."),
+            "participant": error("RESOURCE_EVENT_PARTICIPANT_UNNAMED", "A linked event does not name the unique participant moved by its transition."),
         }
-        status = GuardStatus.GAP if kind in {"bad_token", "bad_transition"} else GuardStatus.FAIL
+        status = GuardStatus.GAP if kind in {"bad_token", "bad_transition", "participant"} else GuardStatus.FAIL
         return result(contract, guard, status, channel="resource", impact="supports_fail",
             errors=[errors[kind]], missing_slots=[problem] if status == GuardStatus.GAP else [],
             counterexamples=[{"kind": "trace", "steps": [problem]}] if status == GuardStatus.FAIL else [])

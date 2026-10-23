@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
+from worldguard.clock import time_key
 from worldguard.semantic import event_precondition_failures, _resolve_event_guard
 from worldguard.status import GuardStatus
 
@@ -213,6 +214,22 @@ def _check(contract: GuardContract):
             ],
         )
 
+    simultaneous = []
+    for index, first in enumerate(events):
+        for second in events[index + 1:]:
+            if "at" not in first or "at" not in second or time_key(first["at"]) != time_key(second["at"]):
+                continue
+            if first.get("scenario_id") and second.get("scenario_id") and first["scenario_id"] != second["scenario_id"]:
+                continue
+            first_writes = _fluent_ids(first.get("initiates")) | _fluent_ids(first.get("terminates"))
+            second_writes = _fluent_ids(second.get("initiates")) | _fluent_ids(second.get("terminates"))
+            shared = (first_writes & (second_writes | _fluent_ids(second.get("requires")))) | (second_writes & _fluent_ids(first.get("requires")))
+            if shared:
+                simultaneous.append({"event_ids": [first.get("event_id"), second.get("event_id")], "at": first["at"], "fluents": sorted(shared)})
+    if simultaneous:
+        return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+            errors=[error("EVENT_SAME_TIME_ORDER_UNKNOWN", "Related events share a time; give them different times.")],
+            missing_slots=simultaneous)
     unmet = event_precondition_failures(events, event_model.get("initial_states", []))
     if unmet:
         return result(

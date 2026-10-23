@@ -1,6 +1,3 @@
-# 2-day island trip. Timetable: train 08:00 -> port 10:05; ferries out 09:30 / 11:00; back 15:00 (arr 15:45) / 16:00 (arr 16:45); last train 16:30.
-# One traveler token moves through the places in clock order; moving d1_ferry_out before d1_train_arr makes the check FAIL.
-# Taking the 09:30 ferry (event at 09:30, ferry_out_h "9.5") fails twice: not yet at the port, and slack_out_h < 0.
 contract_id: trip-island-001
 claim:
   claim_id: c_trip_plan
@@ -15,24 +12,25 @@ world_model: {model_id: island-trip, model_version: draft-2, scope_limits: [publ
 inputs:
   event_model: {initial_states: [at_city]}
   events:
-    - {event_id: d1_train_dep, at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
-    - {event_id: d1_train_arr, at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
-    - {event_id: d1_ferry_out, at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
-    - {event_id: d2_ferry_back, at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
-    - {event_id: d2_ferry_arr, at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
-    - {event_id: d2_last_train, at: "2026-11-03T16:30", requires: [at_port], initiates: home, terminates: at_port}
+    - {actor: traveler, event_id: d1_train_dep, at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
+    - {actor: traveler, event_id: d1_train_arr, at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
+    - {actor: traveler, event_id: d1_ferry_out, at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
+    - {actor: traveler, event_id: d2_ferry_back, at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
+    - {actor: traveler, event_id: d2_ferry_arr, at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
+    - {actor: traveler, event_id: d2_last_train, at: "2026-11-03T16:30", requires: [at_port], initiates: home, terminates: at_port}
   resources:
+    unique: [traveler]
     places: {at_city: [{color: traveler, qty: 1}], on_train: [], at_port: [], on_island: [], on_ferry: [], home: []}
     capacities: {on_ferry: 1}
     transitions:
-      - {id: d1_train_dep, consumes: [{place: at_city, color: traveler, qty: 1}], produces: [{place: on_train, color: traveler, qty: 1}]}
-      - {id: d1_train_arr, consumes: [{place: on_train, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
-      - {id: d1_ferry_out, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: on_island, color: traveler, qty: 1}]}
-      - {id: d2_ferry_back, consumes: [{place: on_island, color: traveler, qty: 1}], produces: [{place: on_ferry, color: traveler, qty: 1}]}
-      - {id: d2_ferry_arr, consumes: [{place: on_ferry, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
-      - {id: d2_last_train, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: home, color: traveler, qty: 1}]}
+      - {id: d1_train_dep, event: d1_train_dep, consumes: [{place: at_city, color: traveler, qty: 1}], produces: [{place: on_train, color: traveler, qty: 1}]}
+      - {id: d1_train_arr, event: d1_train_arr, consumes: [{place: on_train, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
+      - {id: d1_ferry_out, event: d1_ferry_out, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: on_island, color: traveler, qty: 1}]}
+      - {id: d2_ferry_back, event: d2_ferry_back, consumes: [{place: on_island, color: traveler, qty: 1}], produces: [{place: on_ferry, color: traveler, qty: 1}]}
+      - {id: d2_ferry_arr, event: d2_ferry_arr, consumes: [{place: on_ferry, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
+      - {id: d2_last_train, event: d2_last_train, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: home, color: traveler, qty: 1}]}
   causal_model:
-    variables: [train_arrival_h, ferry_out_h, slack_out_h, ferry_back_arrival_h, last_train_h, slack_back_h]
-    equations: {train_arrival_h: "10.0833", ferry_out_h: "11.0", slack_out_h: "ferry_out_h - train_arrival_h", ferry_back_arrival_h: "15.75", last_train_h: "16.5", slack_back_h: "last_train_h - ferry_back_arrival_h"}
+    variables: [slack_out_h, slack_back_h]
+    equations: {slack_out_h: "t_d1_ferry_out - t_d1_train_arr", slack_back_h: "t_d2_last_train - t_d2_ferry_arr"}
     scenarios: {published_timetable: {}}
     constraints: ["slack_out_h >= 0", "slack_back_h >= 0"]

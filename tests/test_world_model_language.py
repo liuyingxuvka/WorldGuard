@@ -41,7 +41,6 @@ def test_ferry_trip_passes_and_the_0930_ferry_fails_on_time_and_on_slack() -> No
 
     early_ferry = copy.deepcopy(trip)
     early_ferry["inputs"]["events"][2]["at"] = "2026-11-02T09:30"  # the 09:30 ferry leaves before the train arrives at 10:05
-    early_ferry["inputs"]["causal_model"]["equations"]["ferry_out_h"] = "9.5"
     report = run_worldguard(early_ferry)
     assert report.status.value == "FAIL"
     assert {"EVENT_PRECONDITION_UNMET", "CAUSAL_CONSTRAINT_VIOLATED"} <= _codes(report)
@@ -49,10 +48,10 @@ def test_ferry_trip_passes_and_the_0930_ferry_fails_on_time_and_on_slack() -> No
     assert causal.counterexamples[0]["steps"][0]["constraint"] == "slack_out_h >= 0"
 
     late_return = copy.deepcopy(trip)
-    late_return["inputs"]["causal_model"]["equations"]["ferry_back_arrival_h"] = "16.75"  # 16:00 ferry lands after the 16:30 train
+    late_return["inputs"]["events"][4]["at"] = "2026-11-03T16:45"  # 16:00 ferry lands after the 16:30 train
     report = run_worldguard(late_return)
     assert report.status.value == "FAIL"
-    assert _codes(report) == {"CAUSAL_CONSTRAINT_VIOLATED"}
+    assert _codes(report) == {"CAUSAL_CONSTRAINT_VIOLATED", "EVENT_PRECONDITION_UNMET", "RESOURCE_CUMULATIVE_OVERCONSUMPTION"}
 
 
 @pytest.mark.parametrize("constraint,exogenous", [
@@ -176,3 +175,86 @@ def test_completed_causal_runs_survive_another_incomplete_run(actual, expected):
     if actual >= 0:
         assert causal.errors[0]["code"] == "CAUSAL_SCENARIO_UNEVALUABLE"
         assert causal.missing_slots[0]["scenario_id"] == "bad_missing"
+
+
+def test_event_times_drive_causal_constraints_without_another_timetable():
+    trip = _world("trip_ferry.yaml")
+    trip["inputs"]["events"][2]["at"] = "2026-11-02T10:00"
+    report = run_worldguard(trip)
+    assert report.status.value == "FAIL"
+    assert "CAUSAL_CONSTRAINT_VIOLATED" in _codes(report)
+
+
+@pytest.mark.parametrize("first,second,expected", [("t1", "t2", 2), ("9:40", "10:20", 10 + 20/60),
+    ("2026-11-02T09:00", "2026-11-03T10:05", 34 + 5/60)])
+def test_event_clock_hours_and_scenario_overrides(first, second, expected):
+    from worldguard.clock import event_time_values
+    from worldguard.semantic import causal_scenario_values
+    events = [{"event_id": "arrive", "at": first}, {"event_id": "leave", "at": second}]
+    times = event_time_values(events)
+    assert times["t_leave"] == pytest.approx(expected)
+    causal = {"variables": ["slack"], "equations": {"slack": "t_leave - t_arrive"},
+        "scenarios": {"plan": {}, "late": {"t_arrive": expected + 1}},
+        "interventions": [{"intervention_id": "later", "scenario_id": "plan", "set": {"t_leave": expected + 2}}]}
+    runs = causal_scenario_values(causal, times)
+    assert runs["late"]["slack"] == -1
+    assert runs["later"]["slack"] == pytest.approx(expected + 2 - times["t_arrive"])
+
+
+@pytest.mark.parametrize("step", [0, 3])
+def test_unique_traveler_duplication_fails_and_a_foreign_actor_is_a_gap(step):
+    trip = _world("trip_ferry.yaml")
+    trip["inputs"]["resources"]["transitions"][step]["produces"][0]["qty"] = 2
+    report = run_worldguard(trip)
+    assert report.status.value == "FAIL"
+    assert "RESOURCE_UNIQUE_TOKEN_DUPLICATED" in _codes(report)
+    trip = _world("trip_ferry.yaml")
+    trip["inputs"]["events"][0]["actor"] = "ben"
+    report = run_worldguard(trip)
+    assert report.status.value == "GAP"
+    assert "RESOURCE_EVENT_PARTICIPANT_UNNAMED" in _codes(report)
+    trip["inputs"]["events"][0]["with"] = ["traveler"]
+    assert run_worldguard(trip).status.value == "PASS"
+
+
+@pytest.mark.parametrize("broken", ["unknown", "mixed", "collision"])
+def test_event_link_input_errors_are_rejected_before_execution(broken):
+    trip = _world("trip_ferry.yaml")
+    if broken == "unknown":
+        trip["inputs"]["resources"]["transitions"][0]["event"] = "absent"
+    elif broken == "mixed":
+        del trip["inputs"]["resources"]["transitions"][0]["event"]
+    else:
+        trip["inputs"]["causal_model"]["variables"].append("t_d1_train_arr")
+    with pytest.raises(ValueError, match="event"):
+        run_worldguard(trip)
+
+
+def test_entity_registry_and_simultaneous_related_events_are_explicit_gaps():
+    scene = _world("scene_locked_door.yaml")
+    del scene["world_model"]["entities"]["Iris"]
+    report = run_worldguard(scene)
+    assert report.status.value == "GAP"
+    assert next(row for row in report.gaps if row["code"] == "ENTITY_UNDECLARED")["missing_slots"] == ["Iris"]
+    world = {"claim": {"requested_semantics": ["event"], "asserts": [{"holds": "done", "at": "t1"}]},
+        "inputs": {"events": [{"event_id": "ready", "at": "t1", "initiates": "ready"},
+            {"event_id": "use", "at": "t1", "requires": "ready", "initiates": "done"}]}}
+    report = run_worldguard(world)
+    assert report.status.value == "GAP"
+    assert "EVENT_SAME_TIME_ORDER_UNKNOWN" in _codes(report)
+
+
+def test_event_linked_token_transfers_follow_event_order_and_claims_share_it():
+    trip = _world("trip_ferry.yaml")
+    trip["inputs"]["resources"]["transitions"].reverse()
+    report = run_worldguard(trip)
+    assert report.status.value == "PASS"
+    assert report.claim_binding["status"] == "PASS"
+
+
+def test_trial_token_clone_fails_when_the_traveler_is_declared_unique():
+    trial = yaml.safe_load((Path(__file__).parent / "fixtures/trials/trip_mut_out/token_clone.yaml").read_text())
+    trial["inputs"]["resources"]["unique"] = ["traveler"]
+    report = run_worldguard(trial)
+    assert report.status.value == "FAIL"
+    assert "RESOURCE_UNIQUE_TOKEN_DUPLICATED" in _codes(report)

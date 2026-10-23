@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
+from worldguard.clock import event_time_values
 from worldguard.semantic import causal_constraint_findings, _equation_error, _causal_runs
 from worldguard.status import GuardStatus
 
@@ -36,6 +37,7 @@ def _check(contract: GuardContract):
     guard = "CausalGuard"
     requested = requested_semantic_ids(contract)
     causal_model = contract.inputs.get("causal_model", {})
+    event_times = event_time_values(contract.inputs.get("events", []))
     variables = causal_model.get("variables", [])
     equations = causal_model.get("equations", {})
     graph = causal_model.get("graph", [])
@@ -109,7 +111,7 @@ def _check(contract: GuardContract):
             errors=[error("CAUSAL_MISSING_STRUCTURAL_EQUATION", "Required SCM equation is missing.")],
         )
 
-    equation_errors = {name: _equation_error(equations[name], set(variables) | set(causal_model.get("exogenous", []))) for name in variables}
+    equation_errors = {name: _equation_error(equations[name], set(variables) | set(causal_model.get("exogenous", [])) | set(event_times)) for name in variables}
     equation_errors = {key: value for key, value in equation_errors.items() if value}
     if equation_errors:
         return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
@@ -145,7 +147,7 @@ def _check(contract: GuardContract):
             ],
         )
 
-    violations, unevaluable = causal_constraint_findings(causal_model)
+    violations, unevaluable = causal_constraint_findings(causal_model, event_times)
     if unevaluable and not violations:
         return result(
             contract,
@@ -167,7 +169,7 @@ def _check(contract: GuardContract):
             counterexamples=[{"kind": "model_conflict", "steps": violations}],
         )
 
-    runs, execution_errors = _causal_runs(causal_model, variables, equations)
+    runs, execution_errors = _causal_runs(causal_model, variables, equations, event_times)
     intervention_values = runs["interventions"]
     for row in causal_model.get("counterfactuals", []):
         if row.get("query") not in intervention_values.get(str(row.get("intervention_id")), {}):

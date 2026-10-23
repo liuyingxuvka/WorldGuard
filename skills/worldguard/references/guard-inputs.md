@@ -159,3 +159,12 @@ boolean `value`. A norm whose condition is false is inactive. Write a claimed pe
 Catches: the same actor and action both forbidden and permitted/required by active norms
 (`NORM_ACTIVE_CONFLICT`), unknown modalities, missing or duplicate facts. Boundary ids: `token`, `capacity`,
 `physical_enablement`.
+
+## Shared event clock and entities
+
+- In equations/constraints, `t_<event_id>` is the unscoped event time in hours; ISO times start at midnight on the first event day. Example: `equations: {slack: "t_ferry - t_train"}`. Scenario/intervention assignments can override these names. Do not declare a variable with the same name.
+- Link every resource transition to an event, or leave all unlinked: `{id: board, event: e_board, consumes: [...], produces: [...]}`. Linked transitions run by event time; ties keep list order.
+- `resources.unique: [traveler]` rejects a color whose total across places exceeds one after a step.
+- An event can name `actor: traveler` and `with: [friend]`; every unique color moved by a linked transition must be among its participants.
+- Optional `world_model.entities: {traveler: {kind: person}, port: {kind: place}}` registers ids used by beliefs, spatial pairs, event participants and unique colors. Missing ids produce `ENTITY_UNDECLARED`.
+- Related events at one time produce `EVENT_SAME_TIME_ORDER_UNKNOWN`; give them distinct times.
