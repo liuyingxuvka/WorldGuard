@@ -8,17 +8,9 @@ from .contracts import (
     GuardContract,
     claim_semantics,
 )
-from .ledgers import LedgerEntry, ledger_entry
 from .kernel import run_worldguard
 from .qualification import QualificationContext
 from .reports import GuardedReport
-from .semantic import (
-    ProviderStatus,
-    SemanticExecutionReceipt,
-    SemanticStatus,
-    aggregate_provider_status,
-    aggregate_semantic_status,
-)
 from .status import GuardStatus, aggregate_statuses, coerce_status
 
 
@@ -291,7 +283,6 @@ class ModelMeshContract:
     nodes: list[ModelNode] = field(default_factory=list)
     edges: list[ModelEdge] = field(default_factory=list)
     snapshots: list[WorldStateSnapshot] = field(default_factory=list)
-    provider_availability: dict[str, bool] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "ModelMeshContract":
@@ -304,6 +295,8 @@ class ModelMeshContract:
             for index, row in enumerate(rows):
                 if not isinstance(row, Mapping):
                     raise ValueError(f"{name}[{index}] must be a mapping")
+        if "provider_availability" in data:
+            raise ValueError("provider_availability is retired")
         if "closure_profile" in data:
             raise ValueError(
                 "closure_profile is retired; current WorldGuard always requires semantic execution"
@@ -327,10 +320,6 @@ class ModelMeshContract:
             snapshots=[
                 WorldStateSnapshot.from_dict(item) for item in data.get("snapshots", [])
             ],
-            provider_availability={
-                str(key): bool(value)
-                for key, value in dict(data.get("provider_availability", {})).items()
-            },
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -341,7 +330,6 @@ class ModelMeshContract:
             "nodes": [node.to_dict() for node in self.nodes],
             "edges": [edge.to_dict() for edge in self.edges],
             "snapshots": [snapshot.to_dict() for snapshot in self.snapshots],
-            "provider_availability": self.provider_availability,
         }
 
 
@@ -375,33 +363,15 @@ class MeshReport:
     status: GuardStatus
     node_reports: dict[str, GuardedReport] = field(default_factory=dict)
     findings: list[MeshFinding] = field(default_factory=list)
-    aggregate_ledger: list[LedgerEntry] = field(default_factory=list)
+    checked: dict[str, int] = field(default_factory=dict)
     scope_limits: list[str] = field(default_factory=list)
-    structural_status: GuardStatus = GuardStatus.GAP
-    semantic_status: SemanticStatus = SemanticStatus.NOT_RUN
-    provider_status: ProviderStatus = ProviderStatus.NOT_REQUIRED
-    rollout_status: SemanticStatus = SemanticStatus.NOT_RUN
-    semantic_receipts: list[SemanticExecutionReceipt] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "status", coerce_status(self.status))
-        object.__setattr__(self, "structural_status", coerce_status(self.structural_status))
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "status": self.status.value,
-            "structural_status": self.structural_status.value,
-            "semantic_status": self.semantic_status.value,
-            "provider_status": self.provider_status.value,
-            "rollout_status": self.rollout_status.value,
-            "node_reports": {
-                model_id: report.to_dict() for model_id, report in self.node_reports.items()
-            },
-            "semantic_receipts": [receipt.to_dict() for receipt in self.semantic_receipts],
-            "findings": [finding.to_dict() for finding in self.findings],
-            "aggregate_ledger": [entry.to_dict() for entry in self.aggregate_ledger],
-            "scope_limits": self.scope_limits,
-        }
+    def to_dict(self):
+        return {"status": self.status.value, "checked": self.checked,
+                "gaps": [*[finding.to_dict() for finding in self.findings],
+                         *[{"node_id": node_id, **gap} for node_id, report in sorted(self.node_reports.items()) for gap in report.gaps]],
+                "nodes": {node_id: report.to_dict() for node_id, report in sorted(self.node_reports.items())},
+                "scope_limits": self.scope_limits}
 
 
 def qualification_context_for_node(
@@ -414,7 +384,6 @@ def qualification_context_for_node(
         node_id=node.model_id,
         target_id=node.contract.world_model.model_id or node.model_id,
         target_revision=node.contract.world_model.model_version or node.model_version,
-        provider_availability=mesh.provider_availability,
     )
 
 
@@ -424,7 +393,6 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
 
     node_reports: dict[str, GuardedReport] = {}
     findings: list[MeshFinding] = []
-    aggregate_ledger: list[LedgerEntry] = []
     node_ids: set[str] = set()
     duplicate_ids: set[str] = set()
 
@@ -439,7 +407,6 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
                 context=qualification_context_for_node(mesh, node),
             )
             node_reports[node.model_id] = report
-            aggregate_ledger.extend(report.aggregate_ledger)
         else:
             findings.append(_finding(
                 mesh, GuardStatus.GAP, "MESH_EXPECTED_NODE_CONTRACT_MISSING",
@@ -473,58 +440,10 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
             )
         )
 
-    aggregate_ledger.extend(_finding_ledgers(mesh, findings))
-    statuses = [report.structural_status for report in node_reports.values()]
-    statuses.extend(finding.status for finding in findings)
-    structural_status = aggregate_statuses(statuses) if statuses else GuardStatus.GAP
-
-    semantic_receipts = [
-        receipt
-        for node_id in sorted(node_reports)
-        for receipt in node_reports[node_id].semantic_receipts
-    ]
-    semantic_required = True
-    semantic_status = aggregate_semantic_status(semantic_receipts)
-    claim_bindings = {report.claim_binding.get("status") for report in node_reports.values()}
-    if GuardStatus.FAIL.value in claim_bindings:
-        semantic_status = SemanticStatus.FAIL
-    elif claim_bindings - {GuardStatus.PASS.value} and semantic_status != SemanticStatus.FAIL:
-        semantic_status = SemanticStatus.GAP
-    if any(node.contract is None for node in mesh.nodes) and semantic_status != SemanticStatus.FAIL:
-        semantic_status = SemanticStatus.GAP
-    rollout_status = semantic_status
-    provider_status = aggregate_provider_status(
-        semantic_receipts,
-        required=semantic_required,
-    )
-    status = aggregate_statuses(
-        [structural_status, _semantic_guard_status(rollout_status)]
-    )
-    scope_limits = []
-    for node in mesh.nodes:
-        scope_limits.extend(node.authority.scope_limits)
-    return MeshReport(
-        status=status,
-        structural_status=structural_status,
-        semantic_status=semantic_status,
-        provider_status=provider_status,
-        rollout_status=rollout_status,
-        node_reports=node_reports,
-        semantic_receipts=semantic_receipts,
-        findings=findings,
-        aggregate_ledger=aggregate_ledger,
-        scope_limits=scope_limits,
-    )
-
-
-def _semantic_guard_status(status: SemanticStatus) -> GuardStatus:
-    if status == SemanticStatus.PASS:
-        return GuardStatus.PASS
-    if status == SemanticStatus.FAIL:
-        return GuardStatus.FAIL
-    if status == SemanticStatus.BOUNDARY_ONLY:
-        return GuardStatus.BOUNDARY_EXCEEDED
-    return GuardStatus.GAP
+    status = aggregate_statuses([*[r.status for r in node_reports.values()], *[f.status for f in findings]])
+    return MeshReport(status=status, node_reports=node_reports, findings=findings,
+        checked={"nodes": len(mesh.nodes), "edges": len(mesh.edges)},
+        scope_limits=sorted({limit for node in mesh.nodes for limit in node.authority.scope_limits}))
 
 
 def _authority_findings(mesh: ModelMeshContract, node: ModelNode) -> list[MeshFinding]:
@@ -748,32 +667,3 @@ def _finding(
         edge_id=edge_id,
         evidence=evidence or {},
     )
-
-
-def _finding_ledgers(mesh: ModelMeshContract, findings: list[MeshFinding]) -> list[LedgerEntry]:
-    entries = []
-    for finding in findings:
-        if finding.status == GuardStatus.FAIL:
-            impact = "supports_fail"
-            channel = "aggregate"
-        elif finding.status == GuardStatus.GAP:
-            impact = "creates_gap"
-            channel = "gap"
-        elif finding.status == GuardStatus.BOUNDARY_EXCEEDED:
-            impact = "marks_boundary"
-            channel = "boundary"
-        else:
-            impact = "informational"
-            channel = "aggregate"
-        entries.append(
-            ledger_entry(
-                run_id=mesh.run_id,
-                claim_id=mesh.mesh_id,
-                guard="ModelMesh",
-                channel=channel,
-                status_impact=impact,
-                payload=finding.to_dict(),
-                step=finding.code,
-            )
-        )
-    return entries

@@ -13,10 +13,13 @@ def test_events_roll_out_in_numeric_time_order() -> None:
         },
     )
 
-    outputs = run_worldguard(contract).semantic_receipts[0].outputs
-
-    assert outputs["final_fluent_ids_by_scenario"]["default"] == []
-    assert outputs["observed_timepoints"] == ["t9", "t10"]
+    from worldguard.semantic import event_replay
+    contract.claim.asserts.append({"holds": "door_locked", "at": "t10", "value": False})
+    report = run_worldguard(contract)
+    assert report.status.value == "PASS"
+    replay = list(event_replay(contract.inputs["events"]))
+    assert replay[-1][2] == frozenset()
+    assert [row[0]["at"] for row in replay] == ["t9", "t10"]
 
 
 import json
@@ -117,6 +120,6 @@ def test_absent_event_time_remains_a_native_gap(assertions):
         ]}})
     report = run_worldguard(contract)
     assert report.status.value == "GAP"
-    assert report.semantic_receipts[0].status.value == "GAP"
-    assert [row["code"] for row in report.semantic_receipts[0].findings] == ["SEM_EVENT_MISSING_AXIOM"]
+    assert report.guard_results[0].status.value == "GAP"
+    assert [row["code"] for row in report.guard_results[0].errors] == ["EVENT_MISSING_INITIATION_AXIOM"]
     assert report.claim_binding["status"] == "GAP"

@@ -30,6 +30,7 @@ IMPLEMENTED_BY = {
     "ReportExit": "worldguard/cli.py:main",
 }
 TESTED_BY = {
+    "one_row_per_problem": ["tests/test_qualification.py:test_one_row_per_problem_in_short_and_full_reports"],
     "bad_time_is_input_error": ["tests/test_event_time_order.py:test_trial_time_contracts_are_checked_natively"],
     "clock_times_order_events": ["tests/test_event_time_order.py:test_trial_time_contracts_are_checked_natively"],
     "duplicate_event_id_is_input_error": ["tests/test_event_time_order.py:test_trial_time_contracts_are_checked_natively"],
@@ -102,6 +103,7 @@ class State:
     exit_code: int | None = None
     status: str = ""
     terminal: bool = False
+    duplicated_problems: bool = False
 
 
 class ParseContract:
@@ -217,17 +219,21 @@ class Aggregate:
 class ReportExit:
     name = "ReportExit"
     reads = ("aggregate_status",)
-    writes = ("exit_code", "status", "terminal")
+    writes = ("exit_code", "status", "terminal", "duplicated_problems")
     accepted_input_type = Aggregated
     input_description = "Final native status"
     output_description = "Actual exit/status terminal, not a reachability-only label"
     idempotency = "PASS exits 0; a completed non-pass exits 1."
 
+    def duplicated_problems(self, state):
+        return False
+
     def apply(self, aggregate: Aggregated, state: State) -> Iterable[FunctionResult]:
         status = state.aggregate_status
         exit_code = 0 if status == "PASS" else 1
         label = {"FAIL": "failed", "GAP": "gap", "BOUNDARY_EXCEEDED": "boundary_exceeded", "PASS": "passed"}[status]
-        yield FunctionResult(Terminal(exit_code, status), replace(state, exit_code=exit_code, status=status, terminal=True), label)
+        yield FunctionResult(Terminal(exit_code, status), replace(state, exit_code=exit_code, status=status, terminal=True,
+            duplicated_problems=self.duplicated_problems(state)), label)
 
 
 def _terminal_check(state, applies, expected, message):
@@ -238,6 +244,12 @@ def _terminal_check(state, applies, expected, message):
 
 def bad_time_is_input_error(state, trace):
     return _terminal_check(state, lambda request: request.time_form in {"word", "mixed"}, (2, "error"), "Unknown or mixed time escaped the input-error boundary")
+
+
+def one_row_per_problem(state, trace):
+    if state.terminal and state.duplicated_problems:
+        return InvariantResult.fail("A native problem was repeated as layered or pointer rows")
+    return InvariantResult.pass_()
 
 
 def clock_times_order_events(state, trace):
@@ -286,6 +298,7 @@ EXTERNAL_INPUTS = (
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
+    ("one_row_per_problem", "Each native problem has one report row", one_row_per_problem),
     ("bad_time_is_input_error", "Unknown/mixed time exits 2", bad_time_is_input_error),
     ("clock_times_order_events", "A reversed clock order fails", clock_times_order_events),
     ("duplicate_event_id_is_input_error", "Duplicate scenario-local ids exit 2", duplicate_event_id_is_input_error),
@@ -351,11 +364,17 @@ class _UnboundClaimPasses(EvaluateClaimRows):
         return "PASS" if request.rows == "none" else super().row_status(request, state)
 
 
+class _LayeredDuplicates(ReportExit):
+    def duplicated_problems(self, state):
+        return state.guard_status != "PASS"
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
         return _explorer(blocks, invariant_names={invariant}, labels=())
     return {
+        "layered_duplicates": variant(_LayeredDuplicates(), "one_row_per_problem"),
         "string_sorted_times": variant(_StringSortedTimes(), "clock_times_order_events"),
         "word_times_accepted": variant(_WordTimesAccepted(), "bad_time_is_input_error"),
         "duplicate_ids_accepted": variant(_DuplicateIdsAccepted(), "duplicate_event_id_is_input_error"),
@@ -439,7 +458,12 @@ def conformance():
             try:
                 with redirect_stdout(output):
                     code = main(["check", "--contract", str(path)])
-                actual = (code, json.loads(output.getvalue())["status"])
+                report = json.loads(output.getvalue())
+                actual = (code, report["status"])
+                gaps = report.get("gaps", [])
+                identities = [(row["code"], row.get("guard"), row.get("claim_row")) for row in gaps]
+                if len(identities) != len(set(identities)):
+                    mismatches.append(f"{request.case_id}: one_row_per_problem failed")
             except Exception as exc:
                 mismatches.append(f"{request.case_id}: native replay raised {type(exc).__name__}: {exc}")
                 continue

@@ -13,7 +13,7 @@ from collections import defaultdict
 from typing import Any, Callable
 
 from .contracts import CLAIM_ASSERTION_KINDS, SEMANTIC_GUARD_ROUTES, GuardContract, claim_assertion_kind
-from .semantic import _RCC8_CONVERSE, _event_time_key, _fluent_values, causal_scenario_values, event_replay, norm_activity
+from .semantic import _RCC8_CONVERSE, _event_time_key, _fluent_values, causal_scenario_values, event_replay, norm_activity, token_replay
 from .status import GuardStatus, aggregate_statuses
 
 _COMPARE: dict[str, Callable[[float, float], bool]] = {
@@ -111,17 +111,9 @@ def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap(f"transition {after!r} is not in the world model")
     if "qty" not in row:
         return _gap("a place assertion needs qty")
-    marking: dict[tuple[str, str], float] = defaultdict(float)
-    for name, tokens in places.items():
-        for token in tokens:
-            marking[(str(name), str(token.get("color", "")))] += float(token.get("qty", 0))
-    for item in transitions:
-        for arc in item.get("consumes", []):
-            marking[(str(arc.get("place")), str(arc.get("color", "")))] -= float(arc.get("qty", 0))
-        for arc in item.get("produces", []):
-            marking[(str(arc.get("place")), str(arc.get("color", "")))] += float(arc.get("qty", 0))
-        if after is not None and str(item.get("id")) == str(after):
-            break
+    marking, problem = token_replay(resources, str(after) if after is not None else None, validate=False)
+    if problem:
+        return _gap("token replay cannot reach the requested marking: " + str(problem))
     count = sum(value for (name, token), value in marking.items() if name == place and (color is None or token == str(color)))
     return _verdict(math.isclose(count, float(row["qty"])), {"qty": count})
 

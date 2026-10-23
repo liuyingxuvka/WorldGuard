@@ -39,7 +39,7 @@ The native CLI commands are `check` and `mesh-check`. Start a new contract by co
 WorldGuard provides two core check shapes:
 
 - `GuardContract`: checks one claim against one explicit world model. The claim says what it claims as `claim.asserts` rows, which are evaluated on the model; the claim text is never read.
-- `ModelMeshContract`: checks multiple model nodes, authority boundaries, read-only handoffs, source freshness, dependency cycles, and child ledger preservation.
+- `ModelMeshContract`: checks multiple model nodes, authority boundaries, read-only handoffs, source freshness, dependency cycles, and child report preservation.
 
 The runtime returns four statuses without collapsing them:
 
@@ -89,7 +89,7 @@ It checks:
 - `allowed_use` and `forbidden_use`: outputs must stay inside declared use boundaries;
 - freshness: stale or unknown sources cannot support current downstream claims when current evidence is required;
 - cycles: dependency loops are reported as mesh failures;
-- evidence preservation: child reports, ledgers, gaps, and counterexamples survive aggregation.
+- evidence preservation: child reports, problems, and counterexamples survive aggregation.
 
 ## Quick Start
 
@@ -227,7 +227,7 @@ YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事�
 - `allowed_use` 和 `forbidden_use`：输出用途必须留在声明边界内；
 - freshness：需要当前证据时，陈旧或未知来源不能支撑下游当前声明；
 - 循环依赖：依赖环会导致 mesh 失败；
-- 证据保留：子报告、ledger、gap 和反例不能在聚合时丢失。
+- 证据保留：子报告、问题和反例不能在聚合时丢失。
 
 ## 快速开始
 

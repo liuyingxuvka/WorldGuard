@@ -49,30 +49,29 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:17ef4a92c95a510c105fd45ff4af447f0147d8c99bb1d66639a8d7a70ecff8e3"
+      "fingerprint": "sha256:1bd8dcfa4f964d05febcdb61ec46aef5eea656ac77edf15899893f7d78c4e80b"
     },
     {
       "id": "worldguard.core",
       "layer": "core",
-      "summary": "Shared contracts, reports, status and semantic execution",
+      "summary": "Shared contracts, compact reports, clock and finite replay helpers",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries",
-        "Execute native Event, Agent, Space, Resource, Causal, Conflict and Norm semantics, including event preconditions and causal constraints; scenario and intervention assignments override equations and share native runs across reports, constraints and claim rows; missing event times suspend ordering only applicable scenarios, preserving independent known failures",
-        "Keep shared ledgers, reports and status aggregation"
+        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions",
+        "Keep compact native reports and the conservative four-status aggregation"
       ],
       "files": [
         "worldguard/contracts.py",
         "worldguard/io.py",
         "worldguard/status.py",
-        "worldguard/ledgers.py",
         "worldguard/reports.py",
         "worldguard/semantic.py",
         "worldguard/clock.py"
       ],
       "entrypoints": [
         "worldguard/contracts.py:derive_guard_requirements",
-        "worldguard/semantic.py:execute_semantic",
-        "worldguard/status.py:aggregate_statuses"
+        "worldguard/status.py:aggregate_statuses",
+        "worldguard/semantic.py:token_replay"
       ],
       "state": [
         "Immutable contract and report values"
@@ -83,21 +82,20 @@
       "depends_on": [],
       "tests": [
         "tests/test_contracts.py",
-        "tests/test_event_time_order.py",
-        "tests/test_ledgers.py"
+        "tests/test_event_time_order.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:c7fdeefa8a4f1943f16a2050289062e6ef8fab198e565ba1c78ab185be10a9a2"
+      "fingerprint": "sha256:49bfde83c109f8edf306d671910de7f3dd9cdfd0474109e7dfa630e9077e4f91"
     },
     {
       "id": "worldguard.guards",
       "layer": "guards",
-      "summary": "Seven structural Guards and their native family oracle catalog",
+      "summary": "Seven sole native Guard checkers and their finite failure catalog",
       "responsibilities": [
-        "Run the seven named structural Guard checks, including event preconditions and causal constraints, with shared errors and ledgers; read unsupported boundaries from the shared native table",
+        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -117,7 +115,7 @@
       ],
       "state": [],
       "side_effects": [
-        "Return structural results; explicit family check executes its finite native cases"
+        "Return native Guard results; family checks execute finite good and known-bad cases"
       ],
       "depends_on": [
         "worldguard.core"
@@ -132,16 +130,16 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:edd8d52263be8d4bd0bf25cd77bdd7717c09a10f266387db0c8f64dcc6297237"
+      "fingerprint": "sha256:36e97dc21781011b5d31f7a7b507894f8637c2efaa7096efe3ee1516a87ba67f"
     },
     {
       "id": "worldguard.qualification",
       "layer": "unit",
       "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
-        "Qualify a unit by executing its derived Guard obligations structurally and semantically",
+        "Run each derived native Guard exactly once",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
-        "Keep structural status, semantic status and provider availability separate",
+        "Expose one row per problem and checked Guard/claim counts with a single final status",
         "Expose the run_worldguard kernel through one qualification owner"
       ],
       "files": [
@@ -170,7 +168,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:02602c3c7534b814479c0f1d8dbbde5322b808bc75382134a488a6ba281345a0"
+      "fingerprint": "sha256:ca602bddfc9028d75857553ed3de5bc6e8c7f36d120baf1525c7146ea3d83813"
     },
     {
       "id": "worldguard.mesh",
@@ -179,7 +177,7 @@
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
-        "Preserve child reports and native semantic and provider statuses"
+        "Preserve every node report and problem under one final status, with checked node and edge counts"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -203,7 +201,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:dc88702cfa7b4700328871fb1bd01fbd5311a7006be97d3f691e7ebeea9210f6"
+      "fingerprint": "sha256:1fa5c28140d55f0f77d82308c3d2d35ea2a6bfae5812aa31b9da14d189af0874"
     },
     {
       "id": "release",
@@ -284,7 +282,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:df0f2c10d8a8c254df12f64cecfabcc69e95de7c235c72bd228da462686ecd45"
+      "fingerprint": "sha256:d4c112c6147e9a427571d3123925c9e27567900eb6bd0580dd9fcf6e92cb669e"
     }
   ],
   "flows": [

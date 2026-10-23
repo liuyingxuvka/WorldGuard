@@ -6,7 +6,7 @@ from worldguard.status import GuardStatus
 from ._helpers import error, requested_semantic_ids, result
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "ConflictGuard"
     requested = requested_semantic_ids(contract)
     game_model = contract.inputs.get("game_model", {})
@@ -14,16 +14,6 @@ def run(contract: GuardContract):
     payoffs = game_model.get("payoffs", [])
     transitions = game_model.get("transitions", [])
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["deontic_obligation"]},
-            errors=[error("CONFLICT_BOUNDARY_DEONTIC_OBLIGATION", "ConflictGuard does not own norms.")],
-        )
 
     duplicate_participants = sorted(
         {participant for participant in players if players.count(participant) > 1}
@@ -185,3 +175,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"game_model": game_model},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native ConflictGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["ConflictGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('CONFLICT_BOUNDARY_DEONTIC_OBLIGATION', 'ConflictGuard does not own norms.')])
+    return checked

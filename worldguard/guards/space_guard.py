@@ -21,21 +21,11 @@ _RCC8_CONVERSE = {
 }
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "SpaceGuard"
     requested = requested_semantic_ids(contract)
     relations = contract.inputs.get("spatial_relations", [])
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["metric_geometry"]},
-            errors=[error("SPACE_BOUNDARY_METRIC_GEOMETRY", "RCC8 does not own metric distance.")],
-        )
 
     if not relations:
         return result(
@@ -147,6 +137,19 @@ def run(contract: GuardContract):
             ],
         )
 
+    composition_conflicts = []
+    for (at, a, b), observed in seen.items():
+        if observed != {"NTPP"}:
+            continue
+        for (other_at, b2, c), right in seen.items():
+            if at == other_at and b == b2 and right == {"NTPP"}:
+                end = seen.get((at, a, c))
+                if end and end != {"NTPP"}:
+                    composition_conflicts.append({"at": at, "chain": [a, b, c], "observed": sorted(end), "expected": "NTPP"})
+    if composition_conflicts:
+        return result(contract, guard, GuardStatus.FAIL, channel="space", impact="supports_fail",
+            errors=[error("SPACE_RCC8_CONTRADICTION", "Declared RCC8 composition is inconsistent.")],
+            counterexamples=[{"kind": "model_conflict", "steps": composition_conflicts}])
     return result(
         contract,
         guard,
@@ -157,3 +160,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"spatial_relations": relations},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native SpaceGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["SpaceGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('SPACE_BOUNDARY_METRIC_GEOMETRY', 'RCC8 does not own metric distance.')])
+    return checked

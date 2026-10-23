@@ -3,7 +3,7 @@ import json
 import pytest
 import yaml
 
-from worldguard import GuardContract, ModelMeshContract, MeshReport, SemanticStatus, derive_required_guards, run_model_mesh
+from worldguard import GuardContract, ModelMeshContract, MeshReport, derive_required_guards, run_model_mesh
 from worldguard.cli import main
 from worldguard.status import GuardStatus
 
@@ -125,8 +125,8 @@ def test_model_mesh_pass_preserves_child_ledgers():
 
     assert report.status == GuardStatus.PASS
     assert set(report.node_reports) == {"event-source", "norm-target"}
-    assert any(entry.channel == "event" for entry in report.aggregate_ledger)
-    assert any(entry.channel == "norm" for entry in report.aggregate_ledger)
+    assert report.node_reports["event-source"].guard_results[0].guard == "EventGuard"
+    assert report.node_reports["norm-target"].guard_results[0].guard == "NormGuard"
 
 
 def test_child_gap_prevents_mesh_pass_and_preserves_gap_ledger():
@@ -136,7 +136,7 @@ def test_child_gap_prevents_mesh_pass_and_preserves_gap_ledger():
     report = run_model_mesh(mesh)
 
     assert report.status == GuardStatus.GAP
-    assert any(entry.channel == "gap" for entry in report.aggregate_ledger)
+    assert any(row["status"] == "GAP" for row in report.to_dict()["gaps"])
 
 
 def test_authority_excluded_semantic_marks_boundary():
@@ -325,7 +325,7 @@ def test_cli_mesh_check_outputs_json(tmp_path, capsys):
     data = json.loads(capsys.readouterr().out)
 
     assert data["status"] == "PASS"
-    assert set(data["node_reports"]) == {"event-source", "norm-target"}
+    assert set(data["nodes"]) == {"event-source", "norm-target"}
 
 
 def test_mesh_node_claims_must_be_bound_to_their_models():
@@ -403,13 +403,13 @@ def test_omitted_target_guard_does_not_skip_the_derived_guard_in_a_mesh() -> Non
         finding.code == "MESH_CLAIM_DERIVED_GUARD_MISSING"
         for finding in report.findings
     )
-    assert "CausalGuard" in report.node_reports["world"].effective_guards
+    assert "CausalGuard" in report.node_reports["world"].derived_guards
 
 
 def test_expected_contractless_node_is_counted_and_blocks_aggregate_pass():
     report = run_model_mesh({"mesh_id": "contractless", "nodes": [{"model_id": "missing-contract"}]})
     assert report.status == GuardStatus.GAP
-    assert report.rollout_status == SemanticStatus.GAP
+    assert report.to_dict()["checked"] == {"nodes": 1, "edges": 0}
     assert "missing-contract" not in report.node_reports
     assert any(finding.code == "MESH_EXPECTED_NODE_CONTRACT_MISSING" for finding in report.findings)
 

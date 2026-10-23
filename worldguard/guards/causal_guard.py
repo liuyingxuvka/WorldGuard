@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
-from worldguard.semantic import causal_constraint_findings
+from worldguard.semantic import causal_constraint_findings, _equation_error, _causal_runs
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -32,7 +32,7 @@ def _has_cycle(edges: list[list[str] | tuple[str, str]]) -> bool:
     return any(visit(node) for node in graph)
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "CausalGuard"
     requested = requested_semantic_ids(contract)
     causal_model = contract.inputs.get("causal_model", {})
@@ -41,16 +41,6 @@ def run(contract: GuardContract):
     graph = causal_model.get("graph", [])
     claim_scope = causal_model.get("claim_scope", "equation_model")
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["temporal_story_without_scm"]},
-            errors=[error("CAUSAL_BOUNDARY_TEMPORAL_STORY", "Temporal order alone is not SCM evidence.")],
-        )
 
     if graph and _has_cycle(graph):
         return result(
@@ -92,6 +82,10 @@ def run(contract: GuardContract):
                     )
                 ],
             )
+        if causal_model.get("constraints"):
+            return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+                errors=[error("CAUSAL_CONSTRAINT_UNEVALUABLE", "Graph-only claims cannot evaluate numeric constraints.")],
+                missing_slots=[{"needed": "scalar equations"}])
         return result(
             contract,
             guard,
@@ -115,6 +109,12 @@ def run(contract: GuardContract):
             errors=[error("CAUSAL_MISSING_STRUCTURAL_EQUATION", "Required SCM equation is missing.")],
         )
 
+    equation_errors = {name: _equation_error(equations[name], set(variables) | set(causal_model.get("exogenous", []))) for name in variables}
+    equation_errors = {key: value for key, value in equation_errors.items() if value}
+    if equation_errors:
+        return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+            errors=[error("CAUSAL_UNEVALUABLE_EQUATION", "A structural equation is outside the supported scalar subset.")],
+            missing_slots=[equation_errors])
     declared_behavior = {
         name: causal_model.get(name)
         for name in (
@@ -146,7 +146,7 @@ def run(contract: GuardContract):
         )
 
     violations, unevaluable = causal_constraint_findings(causal_model)
-    if unevaluable:
+    if unevaluable and not violations:
         return result(
             contract,
             guard,
@@ -167,6 +167,15 @@ def run(contract: GuardContract):
             counterexamples=[{"kind": "model_conflict", "steps": violations}],
         )
 
+    runs, execution_errors = _causal_runs(causal_model, variables, equations)
+    intervention_values = runs["interventions"]
+    for row in causal_model.get("counterfactuals", []):
+        if row.get("query") not in intervention_values.get(str(row.get("intervention_id")), {}):
+            execution_errors.append({"counterfactual": row, "error": "query or intervention is unavailable"})
+    if execution_errors:
+        return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+            errors=[error("CAUSAL_SCENARIO_UNEVALUABLE", "A declared causal run cannot be evaluated safely.")],
+            missing_slots=execution_errors)
     return result(
         contract,
         guard,
@@ -177,3 +186,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"causal_model": causal_model},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native CausalGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["CausalGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('CAUSAL_BOUNDARY_TEMPORAL_STORY', 'Temporal order alone is not SCM evidence.')])
+    return checked

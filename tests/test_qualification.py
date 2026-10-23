@@ -8,9 +8,7 @@ import pytest
 from worldguard import (
     GuardedReport,
     ModelMeshContract,
-    ProviderStatus,
     QualificationContext,
-    SemanticStatus,
     qualification_context_for_node,
     run_model_mesh,
     run_worldguard,
@@ -59,24 +57,10 @@ def test_unit_and_one_node_mesh_share_one_qualification_shape() -> None:
     mesh = run_model_mesh(mesh_contract)
     node = mesh.node_reports["event-world"]
 
-    assert node.declared_guards == unit.declared_guards == ["EventGuard"]
-    assert node.derived_guards == unit.derived_guards == ["EventGuard"]
-    assert (
-        node.guard_derivation_fingerprint
-        == unit.guard_derivation_fingerprint
-    )
-    assert [result.to_dict() for result in node.child_results] == [
-        result.to_dict() for result in unit.child_results
-    ]
-    assert [receipt.to_dict() for receipt in node.semantic_receipts] == [
-        receipt.to_dict() for receipt in unit.semantic_receipts
-    ]
-    assert node.provider_states == unit.provider_states
-    assert node.rollout_status == unit.rollout_status == SemanticStatus.PASS
-    assert node.depth_state == unit.depth_state
-    assert node.gaps == unit.gaps == []
-    assert node.status == unit.status == GuardStatus.PASS
-    assert node.qualification_fingerprint == unit.qualification_fingerprint
+    assert node.to_dict() == unit.to_dict()
+    assert node.derived_guards == ["EventGuard"]
+    assert node.gaps == []
+    assert node.status == GuardStatus.PASS
 
 
 def test_derived_guard_omission_is_visible_even_when_owner_can_execute() -> None:
@@ -86,11 +70,8 @@ def test_derived_guard_omission_is_visible_even_when_owner_can_execute() -> None
     report = run_worldguard(contract)
 
     assert report.derived_guards == ["EventGuard"]
-    assert report.omitted_guards == ["EventGuard"]
-    assert len(report.child_results) == 1
-    assert len(report.semantic_receipts) == 1
-    assert report.structural_status == GuardStatus.PASS
-    assert report.semantic_status == SemanticStatus.PASS
+    assert [result.guard for result in report.guard_results] == ["EventGuard"]
+    assert report.checked == {"guards": ["EventGuard"], "claim_rows": 1}
     assert report.status == GuardStatus.PASS
 
 
@@ -123,17 +104,9 @@ def test_unmapped_atom_preserves_claim_and_atom_identity() -> None:
 
 
 def test_unavailable_provider_is_a_typed_non_pass() -> None:
-    unavailable = run_worldguard(
-        _event_contract(),
-        context=QualificationContext(
-            node_id="event-world",
-            provider_availability={"EventGuard": False},
-        ),
-    )
-    assert unavailable.structural_status == GuardStatus.PASS
-    assert unavailable.semantic_status == SemanticStatus.NOT_RUN
-    assert unavailable.provider_status == ProviderStatus.UNAVAILABLE
-    assert unavailable.status == GuardStatus.GAP
+    with pytest.raises(ValueError, match="unknown fields"):
+        run_worldguard(_event_contract(), context={"provider_availability": {"EventGuard": False}})
+
 
 def test_extra_declared_guard_is_reported_and_the_derived_set_runs() -> None:
     contract = _event_contract()
@@ -142,9 +115,8 @@ def test_extra_declared_guard_is_reported_and_the_derived_set_runs() -> None:
     report = run_worldguard(contract)
 
     assert report.derived_guards == ["EventGuard"]
-    assert report.unexpected_guards == ["AgentGuard"]
-    assert report.effective_guards == ["EventGuard"]
-    assert [result.guard for result in report.child_results] == ["EventGuard"]
+    assert report.derived_guards == ["EventGuard"]
+    assert [result.guard for result in report.guard_results] == ["EventGuard"]
     assert report.status == GuardStatus.PASS
 
 
@@ -152,17 +124,44 @@ def test_exact_input_repetition_has_stable_qualification_identity() -> None:
     first = run_worldguard(_event_contract())
     second = run_worldguard(deepcopy(_event_contract()))
 
-    assert first.contract_fingerprint == second.contract_fingerprint
-    assert (
-        first.guard_derivation_fingerprint
-        == second.guard_derivation_fingerprint
-    )
-    assert first.qualification_fingerprint == second.qualification_fingerprint
+    assert first.to_dict() == second.to_dict()
+    assert set(first.to_dict()) == GuardedReport.REPORT_FIELDS
 
 
 def test_unknown_report_field_fails_closed() -> None:
     with pytest.raises(ValueError, match="unknown fields"):
         GuardedReport.validate_payload_fields({"status": "PASS", "legacy": {}})
+
+
+def test_one_row_per_problem_in_short_and_full_reports():
+    from worldguard.cli import _unit_summary
+    contract = _event_contract()
+    contract["inputs"]["events"][0]["requires"] = ["never"]
+    report = run_worldguard(contract)
+    full = report.to_dict()
+    short = _unit_summary(full)
+    for payload in (full, short):
+        rows = [row for row in payload["gaps"] if row["code"] == "EVENT_PRECONDITION_UNMET"]
+        assert len(rows) == 1
+        assert rows[0]["counterexample"]["event_id"] == "event-ready"
+        assert rows[0]["counterexample"]["missing_fluents"] == ["never"]
+        assert all(not row["code"].startswith(("SEM_", "QUALIFICATION_STRUCTURAL_NON_PASS", "QUALIFICATION_SEMANTIC_NON_PASS")) for row in payload["gaps"])
+    assert set(short) == {"contract_id", "status", "checked", "gaps", "scope_limits"}
+    assert set(full) == GuardedReport.REPORT_FIELDS
+
+
+@pytest.mark.parametrize("name,expected,status", [
+    ("resource_skip.yaml", "RESOURCE_CUMULATIVE_OVERCONSUMPTION", "FAIL"),
+    ("resource_first.yaml", "RESOURCE_MISSING_TOKEN", "FAIL"),
+    ("two_places.yaml", "SPACE_RCC8_CONTRADICTION", "FAIL"),
+])
+def test_trial_native_problems_are_reported_once(name, expected, status):
+    from pathlib import Path
+    import yaml
+    contract = yaml.safe_load((Path(__file__).parent / "fixtures/trials/story_mut_out" / name).read_text())
+    report = run_worldguard(contract)
+    assert report.status.value == status
+    assert [row["code"] for row in report.gaps] == [expected]
 
 
 @pytest.mark.parametrize("file,expected", [
@@ -199,8 +198,7 @@ def test_each_derived_guard_boundary_is_a_final_boundary(guard):
                             requested_semantics=[GUARD_SEMANTICS[guard], sorted(GUARD_BOUNDARY_SEMANTICS[guard])[0]])
     report = run_worldguard(contract)
     assert report.status == GuardStatus.BOUNDARY_EXCEEDED
-    assert report.structural_status == GuardStatus.BOUNDARY_EXCEEDED
-    assert report.semantic_status == SemanticStatus.PASS
+    assert report.guard_results[0].status == GuardStatus.BOUNDARY_EXCEEDED
     assert report.claim_binding["status"] == "PASS"
     assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in report.gaps)
 
@@ -210,7 +208,7 @@ def test_boundary_of_an_unselected_guard_remains_unmapped_with_a_hint():
     contract["claim"]["requested_semantics"].append("geometry")
     report = run_worldguard(contract)
     assert report.status == GuardStatus.GAP
-    assert report.effective_guards == ["EventGuard"]
+    assert report.derived_guards == ["EventGuard"]
     gap = next(gap for gap in report.gaps if gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED")
     assert gap["semantic"] == "geometry"
     assert "SpaceGuard" in gap["message"] and "request space" in gap["message"]
@@ -226,5 +224,5 @@ def test_real_native_non_pass_outranks_a_declared_boundary(broken, expected):
         contract["inputs"]["events"][0]["requires"] = ["not_given"]
     report = run_worldguard(contract)
     assert report.status == expected
-    assert report.structural_status == GuardStatus.BOUNDARY_EXCEEDED
+    assert report.guard_results[0].status == expected
     assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in report.gaps)

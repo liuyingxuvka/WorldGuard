@@ -4,11 +4,12 @@ import math
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.status import GuardStatus
+from worldguard.semantic import token_replay
 
 from ._helpers import error, requested_semantic_ids, result
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     """Check the declared finite ordered CPN firing trace; no scheduler is inferred."""
     guard = "ResourceGuard"
     requested = requested_semantic_ids(contract)
@@ -18,16 +19,6 @@ def run(contract: GuardContract):
     capacities = resources.get("capacities", {}) if isinstance(resources, dict) else {}
     inventory = resources.get("inventory", []) if isinstance(resources, dict) else []
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["norm_authorization"]},
-            errors=[error("RESOURCE_BOUNDARY_NORM_AUTHORIZATION", "ResourceGuard does not own permission.")],
-        )
 
     malformed_inventory = [
         row
@@ -44,12 +35,12 @@ def run(contract: GuardContract):
         return result(
             contract,
             guard,
-            GuardStatus.FAIL,
+            GuardStatus.GAP,
             channel="resource",
-            impact="supports_fail",
+            impact="creates_gap",
             errors=[
                 error(
-                    "RESOURCE_CAPACITY_OVERFLOW",
+                    "RESOURCE_UNEVALUABLE_INVENTORY",
                     "Declared inventory quantities must be finite and non-negative.",
                 )
             ],
@@ -89,126 +80,20 @@ def run(contract: GuardContract):
             errors=[error("RESOURCE_MISSING_RESOURCE_MODEL", "The transition model is incomplete.")],
         )
 
-    marking: dict[tuple[str, str], float] = {}
-    malformed_tokens = []
-    for place, tokens in places.items():
-        if not isinstance(tokens, list):
-            malformed_tokens.append({"place": place, "tokens": tokens})
-            continue
-        for token in tokens:
-            if (
-                not isinstance(token, dict)
-                or not token.get("color")
-                or isinstance(token.get("qty"), bool)
-                or not isinstance(token.get("qty"), (int, float))
-                or not math.isfinite(float(token.get("qty", 0)))
-                or float(token.get("qty", 0)) < 0
-            ):
-                malformed_tokens.append({"place": place, "token": token})
-                continue
-            key = (str(place), str(token["color"]))
-            marking[key] = marking.get(key, 0.0) + float(token["qty"])
-    if malformed_tokens:
-        return result(
-            contract,
-            guard,
-            GuardStatus.GAP,
-            channel="gap",
-            impact="creates_gap",
-            missing_slots=malformed_tokens,
-            errors=[error("RESOURCE_UNEVALUABLE_TOKEN", "Resource tokens need color and finite non-negative quantity.")],
-        )
-
-    for transition_index, transition in enumerate(transitions):
-        if not isinstance(transition, dict) or not transition.get("id"):
-            return result(
-                contract,
-                guard,
-                GuardStatus.GAP,
-                channel="gap",
-                impact="creates_gap",
-                missing_slots=[{"needed": "stable transition id"}],
-                errors=[error("RESOURCE_UNEVALUABLE_TRANSITION", "Every resource transition needs a stable id.")],
-            )
-        for need in transition.get("consumes", []):
-            place = str(need.get("place", "")) if isinstance(need, dict) else ""
-            color = str(need.get("color", "")) if isinstance(need, dict) else ""
-            qty = need.get("qty") if isinstance(need, dict) else None
-            if (
-                place not in places
-                or not color
-                or isinstance(qty, bool)
-                or not isinstance(qty, (int, float))
-                or not math.isfinite(float(qty))
-                or float(qty) < 0
-            ):
-                return result(
-                    contract,
-                    guard,
-                    GuardStatus.GAP,
-                    channel="gap",
-                    impact="creates_gap",
-                    missing_slots=[{"transition": transition["id"], "need": need}],
-                    errors=[error("RESOURCE_UNEVALUABLE_TRANSITION", "A consumption arc is malformed or references an unknown place.")],
-                )
-            key = (place, color)
-            available = marking.get(key, 0.0)
-            if available < float(qty):
-                if transition_index == 0:
-                    return result(
-                        contract,
-                        guard,
-                        GuardStatus.GAP,
-                        channel="gap",
-                        impact="creates_gap",
-                        missing_slots=[{"transition": transition["id"], "place": place, "color": color, "required_qty": qty, "available_qty": available}],
-                        errors=[error("RESOURCE_MISSING_TOKEN", "Required colored token is missing.")],
-                    )
-                return result(
-                    contract,
-                    guard,
-                    GuardStatus.FAIL,
-                    channel="resource",
-                    impact="supports_fail",
-                    errors=[error("RESOURCE_CUMULATIVE_OVERCONSUMPTION", "The ordered transition set consumes more resource than remains available.")],
-                    counterexamples=[{"kind": "trace", "steps": [{"transition": transition["id"], "place": place, "color": color, "required_qty": qty, "available_qty": available}]}],
-                )
-            marking[key] = available - float(qty)
-        for produced in transition.get("produces", []):
-            place = str(produced.get("place", "")) if isinstance(produced, dict) else ""
-            color = str(produced.get("color", "")) if isinstance(produced, dict) else ""
-            qty = produced.get("qty") if isinstance(produced, dict) else None
-            if (
-                not place
-                or not color
-                or isinstance(qty, bool)
-                or not isinstance(qty, (int, float))
-                or not math.isfinite(float(qty))
-                or float(qty) < 0
-            ):
-                return result(
-                    contract,
-                    guard,
-                    GuardStatus.GAP,
-                    channel="gap",
-                    impact="creates_gap",
-                    missing_slots=[{"transition": transition["id"], "produces": produced}],
-                    errors=[error("RESOURCE_UNEVALUABLE_TRANSITION", "A production arc is malformed.")],
-                )
-            key = (place, color)
-            marking[key] = marking.get(key, 0.0) + float(qty)
-            capacity = capacities.get(place)
-            place_total = sum(value for (marked_place, _), value in marking.items() if marked_place == place)
-            if capacity is not None and place_total > float(capacity):
-                return result(
-                    contract,
-                    guard,
-                    GuardStatus.FAIL,
-                    channel="resource",
-                    impact="supports_fail",
-                    errors=[error("RESOURCE_CAPACITY_OVERFLOW", "Produced tokens exceed place capacity.")],
-                    counterexamples=[{"kind": "trace", "steps": [{"transition": transition["id"], "produced": produced, "place_total": place_total, "capacity": capacity}]}],
-                )
+    marking, problem = token_replay(resources)
+    if problem:
+        kind = problem["kind"]
+        errors = {
+            "bad_token": error("RESOURCE_UNEVALUABLE_TOKEN", "Tokens need color and finite non-negative quantity."),
+            "bad_transition": error("RESOURCE_UNEVALUABLE_TRANSITION", "A transition or arc is incomplete."),
+            "missing_initial": error("RESOURCE_MISSING_TOKEN", "The transition requires an unavailable token."),
+            "overspend": error("RESOURCE_CUMULATIVE_OVERCONSUMPTION", "The ordered transitions consume more than remains."),
+            "capacity": error("RESOURCE_CAPACITY_OVERFLOW", "Produced tokens exceed place capacity."),
+        }
+        status = GuardStatus.GAP if kind in {"bad_token", "bad_transition"} else GuardStatus.FAIL
+        return result(contract, guard, status, channel="resource", impact="supports_fail",
+            errors=[errors[kind]], missing_slots=[problem] if status == GuardStatus.GAP else [],
+            counterexamples=[{"kind": "trace", "steps": [problem]}] if status == GuardStatus.FAIL else [])
 
     return result(
         contract,
@@ -220,3 +105,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"resources": resources},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native ResourceGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["ResourceGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('RESOURCE_BOUNDARY_NORM_AUTHORIZATION', 'ResourceGuard does not own permission.')])
+    return checked

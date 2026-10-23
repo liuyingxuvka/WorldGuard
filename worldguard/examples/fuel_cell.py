@@ -25,17 +25,16 @@ def build_contracts() -> list[GuardContract]:
     for claim in story['claims']:
         task_contract_id = f"fuel-cell:{claim['claim_id']}"
         claim_inputs = {**inputs, 'norms': [*inputs['norms'], *claim.get('claimed_norms', [])]}
-        contracts.append(GuardContract.from_dict({'contract_id': task_contract_id, 'schema_version': 'worldguard.contract.v1', 'run_id': 'fuel-cell-toy', 'claim': {'claim_id': claim['claim_id'], 'text': claim['text'], 'target_guards': claim['target_guards'], 'requested_semantics': claim['requested_semantics'], 'asserts': claim.get('asserts', [])}, 'world_model': model, 'inputs': claim_inputs, 'dependencies': {'upstream_results': [], 'read_only': True}, 'output_requirements': {'require_ledgers': True, 'require_counterexample_for_non_pass': True, 'allowed_status': ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED']}}))
+        contracts.append(GuardContract.from_dict({'contract_id': task_contract_id, 'schema_version': 'worldguard.contract.v1', 'run_id': 'fuel-cell-toy', 'claim': {'claim_id': claim['claim_id'], 'text': claim['text'], 'target_guards': claim['target_guards'], 'requested_semantics': claim['requested_semantics'], 'asserts': claim.get('asserts', [])}, 'world_model': model, 'inputs': claim_inputs, 'dependencies': {'upstream_results': [], 'read_only': True}, 'output_requirements': {'require_counterexample_for_non_pass': True, 'allowed_status': ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED']}}))
     return contracts
 
 def run_check() -> dict[str, Any]:
     story = _load_yaml('input_story_fragment.yaml')['input_story_fragment']
     expected = _load_yaml('expected_guard_report.yaml')['expected_guard_report']
-    ledger_outputs = _load_yaml('ledger_outputs.yaml')['ledger_outputs']
     reports = [run_worldguard(contract) for contract in build_contracts()]
-    guards_seen = sorted({result.guard for report in reports for result in report.child_results})
+    guards_seen = sorted({result.guard for report in reports for result in report.guard_results})
     statuses = [report.status.value for report in reports]
-    scope_notes = [*story['scope_limits'], *ledger_outputs['artifact_scope_note']['no_real_world_claims']]
+    scope_notes = story['scope_limits']
     toy_boundaries_ok = all((any((boundary in item for item in scope_notes)) or boundary in str(scope_notes) for boundary in BOUNDARY_STRINGS))
     mismatches = [{'claim_id': claim['claim_id'], 'expected': claim.get('expected_status'), 'actual': status} for claim, status in zip(story['claims'], statuses) if claim.get('expected_status') != status]
     ok = set(guards_seen) == set(REQUIRED_GUARDS) and expected.get('aggregate_status') == 'FAIL' and ('FAIL' in statuses) and toy_boundaries_ok and not mismatches

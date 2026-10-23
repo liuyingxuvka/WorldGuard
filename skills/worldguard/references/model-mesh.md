@@ -18,7 +18,6 @@ Required canonical fields:
 - `nodes`
 - `edges`
 - `snapshots`
-- `provider_availability`: optional per-Guard availability override
 
 ## ModelNode Fields
 
@@ -79,12 +78,9 @@ Snapshots are optional metadata for version/state context. They do not replace n
 
 ## MeshReport Fields
 
-- `status`, `structural_status`, `semantic_status`, `rollout_status`
-- `node_reports`: one unit report per node with an embedded contract
-- `findings`: topology, authority, handoff, freshness and cycle findings
-- `scope_limits`
+The summary contains `status`, `checked` (`nodes` and `edges` counts), `gaps` and `scope_limits`. Each problem carries its `node_id` or `edge_id` when applicable. Add `--json` for `nodes`, mapping node ids to complete unit reports.
 
-The aggregate `status` is conservative: structural `PASS` cannot become aggregate `PASS` when semantic execution did not run, a required provider was unavailable, or an executor reported a gap or boundary. Every node is checked once; a missing contract on any node is a `GAP` with `MESH_EXPECTED_NODE_CONTRACT_MISSING`. No expected-node list or node exclusions can skip a node.
+Every node is checked once; a missing contract produces `GAP` `MESH_EXPECTED_NODE_CONTRACT_MISSING`. Every native Guard problem and claim assertion contributes to the aggregate status. No expected-node list or exclusion skips a node. `provider_availability` is retired and rejected on input.
 
 ## Forbidden shortcuts
 

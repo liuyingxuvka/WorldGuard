@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from worldguard.contracts import GuardContract
-from worldguard.ledgers import ledger_entry
 from worldguard.reports import GuardResult
 from worldguard.status import GuardStatus
 
@@ -29,30 +28,8 @@ def result(
     counterexamples: list[dict[str, Any]] | None = None,
     consumed_inputs: dict[str, Any] | None = None,
 ) -> GuardResult:
-    claim_id = contract.claim.claim_id
-    entry = ledger_entry(
-        run_id=contract.run_id,
-        claim_id=claim_id,
-        guard=guard,
-        channel=channel,
-        status_impact=impact,
-        payload=payload or {},
-    )
-    return GuardResult(
-        result_id=f"{contract.run_id}:{claim_id}:{guard}",
-        contract_id=contract.contract_id,
-        guard=guard,
-        status=status,
-        supported_claims=[claim_id] if supported and status == GuardStatus.PASS else [],
-        rejected_claims=[claim_id] if status == GuardStatus.FAIL else [],
-        missing_slots=missing_slots or [],
-        boundary_exceeded=boundary or {},
-        errors=errors or [],
-        counterexamples=counterexamples or [],
-        ledgers={channel: [entry]},
-        scope_limits=contract.world_model.scope_limits,
-        consumed_inputs=consumed_inputs or {},
-    )
+    return GuardResult(guard=guard, status=status, errors=errors or [],
+                       counterexamples=counterexamples or [], missing_slots=missing_slots or [])
 
 
 def error(code: str, message: str, severity: str = "blocking") -> dict[str, str]:

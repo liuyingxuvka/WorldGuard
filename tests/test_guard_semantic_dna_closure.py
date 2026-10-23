@@ -5,18 +5,12 @@ import pytest
 from tests.helpers import make_contract
 from worldguard.guards import GUARD_RUNNERS
 from worldguard.kernel import run_worldguard
-from worldguard.semantic import SemanticStatus, execute_semantic
+from worldguard.semantic import causal_scenario_values, _resolve_event_guard
 from worldguard.status import GuardStatus
 
 
 def _semantic(guard: str, inputs: dict):
-    contract = make_contract(guard, inputs=inputs)
-    return execute_semantic(
-        node_id=f"node:{guard}",
-        guard=guard,
-        contract=contract.for_guard(guard),
-        provider_available=True,
-    )
+    return GUARD_RUNNERS[guard](make_contract(guard, inputs=inputs))
 
 
 def test_event_dangling_transition_state_is_not_structural_or_semantic_green() -> None:
@@ -45,9 +39,9 @@ def test_event_dangling_transition_state_is_not_structural_or_semantic_green() -
     assert [row["code"] for row in structural.errors] == [
         "EVENT_DANGLING_TRANSITION_STATE"
     ]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_EVENT_DANGLING_TRANSITION_STATE"
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == [
+        "EVENT_DANGLING_TRANSITION_STATE"
     ]
 
 
@@ -76,9 +70,12 @@ def test_event_closed_transition_executes_from_initial_to_target_state() -> None
     semantic = _semantic("EventGuard", inputs)
 
     assert structural.status == GuardStatus.PASS
-    assert semantic.status == SemanticStatus.PASS
-    assert semantic.outputs["executed_transition_ids"] == ["go"]
-    assert semantic.outputs["reached_state_ids"] == ["done", "waiting"]
+    assert semantic.status == GuardStatus.PASS
+    assert _resolve_event_guard("ready", inputs["event_model"]["guard_values"]) is True
+    inputs["event_model"]["guard_values"] = {}
+    unresolved = _semantic("EventGuard", inputs)
+    assert unresolved.status == GuardStatus.GAP
+    assert [row["code"] for row in unresolved.errors] == ["EVENT_UNEVALUABLE_TRANSITION_GUARD"]
 
 
 def test_norm_false_condition_fact_makes_the_norm_inactive() -> None:
@@ -100,7 +97,7 @@ def test_norm_false_condition_fact_makes_the_norm_inactive() -> None:
     semantic = _semantic("NormGuard", inputs)
 
     assert structural.status == GuardStatus.PASS
-    assert semantic.status == SemanticStatus.PASS
+    assert semantic.status == GuardStatus.PASS
 
 
 def test_active_norm_conflict_fails_and_inactive_prohibition_does_not() -> None:
@@ -109,11 +106,11 @@ def test_active_norm_conflict_fails_and_inactive_prohibition_does_not() -> None:
     semantic = _semantic("NormGuard", inputs)
     assert structural.status == GuardStatus.FAIL
     assert [row["code"] for row in structural.errors] == ["NORM_ACTIVE_CONFLICT"]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == ["SEM_NORM_ACTIVE_CONFLICT"]
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == ["NORM_ACTIVE_CONFLICT"]
     inactive = {'norms': [{'modality': 'forbidden', 'actor': 'pilot', 'action': 'leave_harbor', 'condition': {'fact_id': 'storm_uncleared', 'value': True}}, {'modality': 'permitted', 'actor': 'pilot', 'action': 'leave_harbor', 'condition': {'fact_id': 'storm_cleared', 'value': True}}], 'facts': [{'fact_id': 'storm_uncleared', 'value': False}, {'fact_id': 'storm_cleared', 'value': True}]}
     assert GUARD_RUNNERS["NormGuard"](make_contract("NormGuard", inputs=inactive)).status == GuardStatus.PASS
-    assert _semantic("NormGuard", inactive).status == SemanticStatus.PASS
+    assert _semantic("NormGuard", inactive).status == GuardStatus.PASS
 
 
 def test_norm_true_condition_fact_qualifies_the_declared_norm() -> None:
@@ -135,8 +132,8 @@ def test_norm_true_condition_fact_qualifies_the_declared_norm() -> None:
     semantic = _semantic("NormGuard", inputs)
 
     assert structural.status == GuardStatus.PASS
-    assert semantic.status == SemanticStatus.PASS
-    assert semantic.outputs == {"evaluated_norms": 1, "condition_facts": 1}
+    assert semantic.status == GuardStatus.PASS
+    assert semantic.errors == []
 
 
 def test_agent_map_key_must_equal_agent_id() -> None:
@@ -156,9 +153,9 @@ def test_agent_map_key_must_equal_agent_id() -> None:
     semantic = _semantic("AgentGuard", bad_inputs)
     assert structural.status == GuardStatus.FAIL
     assert [row["code"] for row in structural.errors] == ["AGENT_IDENTITY_MISMATCH"]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_AGENT_IDENTITY_MISMATCH"
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == [
+        "AGENT_IDENTITY_MISMATCH"
     ]
 
     good_inputs = {
@@ -174,7 +171,7 @@ def test_agent_map_key_must_equal_agent_id() -> None:
     assert GUARD_RUNNERS["AgentGuard"](
         make_contract("AgentGuard", inputs=good_inputs)
     ).status == GuardStatus.PASS
-    assert _semantic("AgentGuard", good_inputs).status == SemanticStatus.PASS
+    assert _semantic("AgentGuard", good_inputs).status == GuardStatus.PASS
 
 
 def test_space_reverse_relation_must_be_exact_rcc8_converse() -> None:
@@ -192,9 +189,9 @@ def test_space_reverse_relation_must_be_exact_rcc8_converse() -> None:
     assert [row["code"] for row in structural.errors] == [
         "SPACE_RCC8_CONVERSE_CONTRADICTION"
     ]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_SPACE_RCC8_CONVERSE_CONFLICT"
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == [
+        "SPACE_RCC8_CONVERSE_CONTRADICTION"
     ]
 
     good_inputs = {
@@ -206,7 +203,7 @@ def test_space_reverse_relation_must_be_exact_rcc8_converse() -> None:
     assert GUARD_RUNNERS["SpaceGuard"](
         make_contract("SpaceGuard", inputs=good_inputs)
     ).status == GuardStatus.PASS
-    assert _semantic("SpaceGuard", good_inputs).status == SemanticStatus.PASS
+    assert _semantic("SpaceGuard", good_inputs).status == GuardStatus.PASS
 
 
 def test_resource_inventory_does_not_hide_cumulative_transition_overspend() -> None:
@@ -234,9 +231,9 @@ def test_resource_inventory_does_not_hide_cumulative_transition_overspend() -> N
     assert [row["code"] for row in structural.errors] == [
         "RESOURCE_CUMULATIVE_OVERCONSUMPTION"
     ]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_RESOURCE_DOUBLE_CONSUMPTION"
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == [
+        "RESOURCE_CUMULATIVE_OVERCONSUMPTION"
     ]
 
     good_inputs = {
@@ -254,7 +251,7 @@ def test_resource_inventory_does_not_hide_cumulative_transition_overspend() -> N
     assert GUARD_RUNNERS["ResourceGuard"](
         make_contract("ResourceGuard", inputs=good_inputs)
     ).status == GuardStatus.PASS
-    assert _semantic("ResourceGuard", good_inputs).status == SemanticStatus.PASS
+    assert _semantic("ResourceGuard", good_inputs).status == GuardStatus.PASS
 
 
 def test_causal_equations_need_at_least_one_executable_behavior_obligation() -> None:
@@ -273,9 +270,9 @@ def test_causal_equations_need_at_least_one_executable_behavior_obligation() -> 
     assert [row["code"] for row in structural.errors] == [
         "CAUSAL_MISSING_BEHAVIOR_OBLIGATION"
     ]
-    assert semantic.status == SemanticStatus.GAP
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_CAUSAL_MISSING_BEHAVIOR_OBLIGATION"
+    assert semantic.status == GuardStatus.GAP
+    assert [row["code"] for row in semantic.errors] == [
+        "CAUSAL_MISSING_BEHAVIOR_OBLIGATION"
     ]
 
     good_inputs = {
@@ -290,8 +287,8 @@ def test_causal_equations_need_at_least_one_executable_behavior_obligation() -> 
         make_contract("CausalGuard", inputs=good_inputs)
     ).status == GuardStatus.PASS
     good_semantic = _semantic("CausalGuard", good_inputs)
-    assert good_semantic.status == SemanticStatus.PASS
-    assert good_semantic.outputs["executed_scenario_ids"] == ["s1"]
+    assert good_semantic.status == GuardStatus.PASS
+    assert causal_scenario_values(good_inputs["causal_model"]) == {"s1": {"x": 1}}
 
 
 def test_conflict_references_must_close_over_players_states_and_actions() -> None:
@@ -314,9 +311,9 @@ def test_conflict_references_must_close_over_players_states_and_actions() -> Non
     assert [row["code"] for row in structural.errors] == [
         "CONFLICT_REFERENCE_CLOSURE"
     ]
-    assert semantic.status == SemanticStatus.FAIL
-    assert [row["code"] for row in semantic.findings] == [
-        "SEM_CONFLICT_REFERENCE_CLOSURE"
+    assert semantic.status == GuardStatus.FAIL
+    assert [row["code"] for row in semantic.errors] == [
+        "CONFLICT_REFERENCE_CLOSURE"
     ]
 
     good_inputs = {
@@ -336,7 +333,7 @@ def test_conflict_references_must_close_over_players_states_and_actions() -> Non
     assert GUARD_RUNNERS["ConflictGuard"](
         make_contract("ConflictGuard", inputs=good_inputs)
     ).status == GuardStatus.PASS
-    assert _semantic("ConflictGuard", good_inputs).status == SemanticStatus.PASS
+    assert _semantic("ConflictGuard", good_inputs).status == GuardStatus.PASS
 
 
 @pytest.mark.parametrize(
@@ -455,12 +452,9 @@ def test_parent_qualification_cannot_hide_a_guard_semantic_known_bad(
     report = run_worldguard(make_contract(guard, inputs=inputs))
 
     assert report.status == expected_status
-    assert report.structural_status == expected_status
-    assert report.semantic_status == SemanticStatus(expected_status.value)
-    assert report.rollout_status == SemanticStatus(expected_status.value)
-    assert report.depth_state["status"] == expected_status.value
+    assert report.guard_results[0].status == expected_status
     assert report.gaps
-    assert report.semantic_receipts[0].findings
+    assert report.guard_results[0].errors
 
 
 @pytest.mark.parametrize("variables", [["y", "x"], ["x", "y"]])
@@ -474,11 +468,11 @@ def test_scenario_value_overrides_the_equation_in_any_declaration_order(variable
     }}
     report = run_worldguard(make_contract("CausalGuard", inputs=inputs, asserts=[{"variable": "y", "op": "==", "value": 101, "scenario": "s"}, {"variable": "y", "op": "==", "value": 201, "scenario": "h"}, {"variable": "y", "op": "==", "value": 8, "scenario": "do-x"}]))
     assert report.status == GuardStatus.PASS
-    output = report.semantic_receipts[0].outputs
-    assert output["scenario_results"]["s"] == {"x": 100, "y": 101}
-    assert output["scenario_results"]["h"] == {"x": 200, "y": 201}
-    assert output["intervention_results"]["do-x"] == {"x": 7, "y": 8}
-    assert output["counterfactual_results"]["cf-y"] == 8
+    output = causal_scenario_values(inputs["causal_model"])
+    assert output["s"] == {"x": 100, "y": 101}
+    assert output["h"] == {"x": 200, "y": 201}
+    assert output["do-x"] == {"x": 7, "y": 8}
+    assert output["do-x"]["y"] == 8
 
 
 def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
@@ -488,8 +482,8 @@ def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
         "scenarios": {"s": {"x": 3, "z": 2}},
     }}
     receipt = _semantic("CausalGuard", inputs)
-    assert receipt.status == SemanticStatus.PASS
-    assert receipt.outputs["scenario_results"]["s"] == {"x": 3, "z": 2, "y": 5}
+    assert receipt.status == GuardStatus.PASS
+    assert causal_scenario_values(inputs["causal_model"])["s"] == {"x": 3, "z": 2, "y": 5}
 
 
 @pytest.mark.parametrize("equations", [
@@ -502,8 +496,8 @@ def test_causal_seed_cannot_resolve_cycles_or_unsafe_equations(equations) -> Non
         "variables": ["x", "y"], "equations": equations, "graph": [],
         "scenarios": {"s": {}},
     }})
-    assert receipt.status == SemanticStatus.GAP
-    assert receipt.findings
+    assert receipt.status == GuardStatus.GAP
+    assert receipt.errors
 
 
 def test_resource_ordered_production_enables_later_consumption() -> None:
@@ -516,19 +510,18 @@ def test_resource_ordered_production_enables_later_consumption() -> None:
         ],
     }
     report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}, asserts=[{"place": "p1", "qty": 1}]))
-    assert report.structural_status == GuardStatus.PASS
-    assert report.semantic_status == SemanticStatus.PASS
+    assert report.status == GuardStatus.PASS
     resources["transitions"].reverse()
     reversed_report = run_worldguard(make_contract("ResourceGuard", inputs={"resources": resources}))
-    assert reversed_report.structural_status == GuardStatus.GAP
-    assert reversed_report.semantic_status == SemanticStatus.GAP
+    assert reversed_report.status == GuardStatus.FAIL
+    assert reversed_report.guard_results[0].errors[0]["code"] == "RESOURCE_MISSING_TOKEN"
 
 
 def test_empty_intentions_are_valid_and_a_missing_intentions_key_is_a_gap() -> None:
     bystander = {"agent_id": "porter", "beliefs": ["ship_docked"], "desires": ["rest"], "intentions": []}
     inputs = {"beliefs": {"porter": bystander}}
     assert GUARD_RUNNERS["AgentGuard"](make_contract("AgentGuard", inputs=inputs)).status == GuardStatus.PASS
-    assert _semantic("AgentGuard", inputs).status == SemanticStatus.PASS
+    assert _semantic("AgentGuard", inputs).status == GuardStatus.PASS
 
     missing = {"beliefs": {"porter": {key: value for key, value in bystander.items() if key != "intentions"}}}
     structural = GUARD_RUNNERS["AgentGuard"](make_contract("AgentGuard", inputs=missing))
@@ -536,5 +529,5 @@ def test_empty_intentions_are_valid_and_a_missing_intentions_key_is_a_gap() -> N
     assert [row["code"] for row in structural.errors] == ["AGENT_INCOMPLETE_BDI"]
     assert structural.missing_slots == [{"agent_id": "porter", "missing": ["intentions"]}]
     semantic = _semantic("AgentGuard", missing)
-    assert semantic.status == SemanticStatus.GAP
-    assert [row["code"] for row in semantic.findings] == ["SEM_AGENT_INCOMPLETE_BDI"]
+    assert semantic.status == GuardStatus.GAP
+    assert [row["code"] for row in semantic.errors] == ["AGENT_INCOMPLETE_BDI"]

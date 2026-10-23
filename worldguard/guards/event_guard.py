@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
-from worldguard.semantic import event_precondition_failures
+from worldguard.semantic import event_precondition_failures, _resolve_event_guard
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -23,7 +23,7 @@ def _duplicate_ids(values: list[str]) -> list[str]:
     return sorted({value for value in values if values.count(value) > 1})
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "EventGuard"
     requested = requested_semantic_ids(contract)
     events = contract.inputs.get("events", [])
@@ -33,16 +33,6 @@ def run(contract: GuardContract):
         event_model.get("transitions", []) if isinstance(event_model, dict) else []
     )
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["numeric_dynamics"]},
-            errors=[error("EVENT_BOUNDARY_NUMERIC_DYNAMICS", "EventGuard does not own numeric dynamics.")],
-        )
 
     if not events and not states and not transitions and not event_model:
         return result(
@@ -235,6 +225,25 @@ def run(contract: GuardContract):
             counterexamples=[{"kind": "trace", "steps": unmet}],
         )
 
+    missing_events = [
+        {"index": index, "needed": name}
+        for index, event in enumerate(events)
+        for name in ("event_id", "at", "fluent axiom")
+        if not isinstance(event, dict) or (
+            not any(event.get(key) for key in ("initiates", "terminates", "releases"))
+            if name == "fluent axiom" else event.get(name) in (None, "")
+        )
+    ]
+    if missing_events:
+        return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+            missing_slots=missing_events,
+            errors=[error("EVENT_MISSING_INITIATION_AXIOM", "Event records need identity, time and a fluent axiom.")])
+    guard_values = event_model.get("guard_values", {})
+    unresolved = [item for item in transitions if _resolve_event_guard(item["guard"], guard_values) is None]
+    if unresolved:
+        return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
+            missing_slots=unresolved,
+            errors=[error("EVENT_UNEVALUABLE_TRANSITION_GUARD", "A transition guard needs a boolean value.")])
     return result(
         contract,
         guard,
@@ -251,3 +260,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"events": events, "event_model": event_model},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native EventGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["EventGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('EVENT_BOUNDARY_NUMERIC_DYNAMICS', 'EventGuard does not own numeric dynamics.')])
+    return checked

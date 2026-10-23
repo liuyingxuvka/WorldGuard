@@ -66,7 +66,7 @@ CASES = [
                     }
                 }
             },
-            GuardStatus.GAP: {
+            GuardStatus.FAIL: {
                 "inputs": {
                     "resources": {
                         "places": {"tank": [{"color": "h2", "qty": 0}]},
@@ -74,6 +74,7 @@ CASES = [
                     }
                 }
             },
+            GuardStatus.GAP: {"inputs": {"resources": {"places": {"p": [{"color": "fuel", "qty": "bad"}]}, "transitions": [{"id": "run"}]}}},
             GuardStatus.BOUNDARY_EXCEEDED: {"requested_semantics": ["resource", "permission"]},
         },
     ),
@@ -113,10 +114,12 @@ def test_guard_status_matrix():
     for guard, cases in CASES:
         runner = GUARD_RUNNERS[guard]
         for expected_status, kwargs in cases.items():
+            if expected_status == GuardStatus.BOUNDARY_EXCEEDED:
+                kwargs = {**cases[GuardStatus.PASS], **kwargs}
             contract = make_contract(guard, **kwargs)
             result = runner(contract)
             assert result.status == expected_status
-            assert result.ledgers
+            assert set(result.to_dict()) == {"guard", "status", "errors", "counterexamples", "missing_slots"}
 
 
 def test_event_guard_treats_scalar_fluent_ids_as_whole_identities() -> None:
@@ -137,3 +140,18 @@ def test_event_guard_treats_scalar_fluent_ids_as_whole_identities() -> None:
     result = GUARD_RUNNERS["EventGuard"](contract)
 
     assert result.status == GuardStatus.PASS
+
+
+def test_resource_capacity_and_first_missing_token_have_distinct_failures():
+    inputs = {"resources": {"places": {"tank": [{"color": "h2", "qty": 2}]},
+        "capacities": {"out": 1}, "transitions": [{"id": "run",
+            "consumes": [{"place": "tank", "color": "h2", "qty": 1}],
+            "produces": [{"place": "out", "color": "kwh", "qty": 2}]}]}}
+    report = GUARD_RUNNERS["ResourceGuard"](make_contract("ResourceGuard", inputs=inputs))
+    assert report.status == GuardStatus.FAIL
+    assert report.errors[0]["code"] == "RESOURCE_CAPACITY_OVERFLOW"
+    inputs["resources"]["places"]["tank"][0]["qty"] = 0
+    report = GUARD_RUNNERS["ResourceGuard"](make_contract("ResourceGuard", inputs=inputs))
+    assert report.status == GuardStatus.FAIL
+    assert report.errors[0]["code"] == "RESOURCE_MISSING_TOKEN"
+    assert report.counterexamples[0]["steps"][0]["available_qty"] == 0

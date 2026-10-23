@@ -1,6 +1,4 @@
 from __future__ import annotations
-import hashlib
-import json
 import math
 from dataclasses import dataclass, field
 from collections.abc import Mapping
@@ -190,10 +188,9 @@ class GuardRequirementDerivation:
     requested_semantics: tuple[str, ...]
     guard_ids: tuple[str, ...]
     unmapped_semantics: tuple[str, ...]
-    fingerprint: str
 
     def to_dict(self) -> dict[str, Any]:
-        return {'schema_version': 'worldguard.guard_requirement_derivation.v1', 'claim_id': self.claim_id, 'requested_semantics': list(self.requested_semantics), 'guard_ids': list(self.guard_ids), 'unmapped_semantics': list(self.unmapped_semantics), 'fingerprint': self.fingerprint}
+        return {'schema_version': 'worldguard.guard_requirement_derivation.v1', 'claim_id': self.claim_id, 'requested_semantics': list(self.requested_semantics), 'guard_ids': list(self.guard_ids), 'unmapped_semantics': list(self.unmapped_semantics)}
 
 def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     """Own the one current claim-semantics-to-Guard derivation path."""
@@ -204,9 +201,7 @@ def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     guard_ids = tuple(dict.fromkeys(guards))
     boundaries = {semantic for guard in guard_ids for semantic in GUARD_BOUNDARY_SEMANTICS.get(guard, ())}
     unmapped = tuple(semantic for semantic in semantics if semantic not in SEMANTIC_GUARD_ROUTES and semantic not in boundaries)
-    identity = {'schema_version': 'worldguard.guard_requirement_derivation.v1', 'claim_id': claim.claim_id, 'requested_semantics': list(semantics), 'guard_ids': list(guard_ids), 'unmapped_semantics': list(unmapped)}
-    canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
-    return GuardRequirementDerivation(claim_id=claim.claim_id, requested_semantics=semantics, guard_ids=guard_ids, unmapped_semantics=unmapped, fingerprint='sha256:' + hashlib.sha256(canonical).hexdigest())
+    return GuardRequirementDerivation(claim_id=claim.claim_id, requested_semantics=semantics, guard_ids=guard_ids, unmapped_semantics=unmapped)
 
 def derive_required_guards(claim: Claim) -> tuple[str, ...]:
     """Return the Guard IDs from the canonical requirement derivation."""
@@ -251,17 +246,16 @@ class GuardDependencies:
 
 @dataclass(frozen=True)
 class OutputRequirements:
-    require_ledgers: bool = True
     require_counterexample_for_non_pass: bool = True
     allowed_status: list[str] = field(default_factory=lambda: ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED'])
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> 'OutputRequirements':
         data = data or {}
-        return cls(require_ledgers=bool(data.get('require_ledgers', True)), require_counterexample_for_non_pass=bool(data.get('require_counterexample_for_non_pass', True)), allowed_status=list(data.get('allowed_status', ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED'])))
+        return cls(require_counterexample_for_non_pass=bool(data.get('require_counterexample_for_non_pass', True)), allowed_status=list(data.get('allowed_status', ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED'])))
 
     def to_dict(self) -> dict[str, Any]:
-        return {'require_ledgers': self.require_ledgers, 'require_counterexample_for_non_pass': self.require_counterexample_for_non_pass, 'allowed_status': self.allowed_status}
+        return {'require_counterexample_for_non_pass': self.require_counterexample_for_non_pass, 'allowed_status': self.allowed_status}
 
 @dataclass(frozen=True)
 class GuardContract:

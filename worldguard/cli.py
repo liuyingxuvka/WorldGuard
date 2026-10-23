@@ -11,56 +11,12 @@ from .io import dump_json, load_mapping
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
 
 
-def _non_pass_guards(child_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {
-            "guard": row.get("guard", ""),
-            "status": row.get("status", ""),
-            "errors": [
-                {"code": error.get("code", ""), "message": error.get("message", "")}
-                for error in row.get("errors", [])
-            ],
-            "counterexamples": row.get("counterexamples", []),
-            "missing_slots": row.get("missing_slots", []),
-        }
-        for row in child_results
-        if row.get("status") != "PASS"
-    ]
+def _unit_summary(report):
+    return {key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")}
 
 
-def _unit_summary(report: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "contract_id": report.get("contract_id", ""),
-        "status": report["status"],
-        "structural_status": report.get("structural_status", ""),
-        "semantic_status": report.get("semantic_status", ""),
-        "gaps": report.get("gaps", []),
-        "non_pass_guards": _non_pass_guards(report.get("child_results", [])),
-        "scope_limits": report.get("scope_limits", []),
-    }
-
-
-def _mesh_summary(report: dict[str, Any]) -> dict[str, Any]:
-    nodes = report.get("node_reports", {})
-    return {
-        "status": report["status"],
-        "structural_status": report.get("structural_status", ""),
-        "semantic_status": report.get("semantic_status", ""),
-        "gaps": [
-            *report.get("findings", []),
-            *(
-                {"node_id": node_id, **gap}
-                for node_id, node in sorted(nodes.items())
-                for gap in node.get("gaps", [])
-            ),
-        ],
-        "non_pass_nodes": {
-            node_id: _unit_summary(node)
-            for node_id, node in sorted(nodes.items())
-            if node.get("status") != "PASS"
-        },
-        "scope_limits": sorted(set(report.get("scope_limits", []))),
-    }
+def _mesh_summary(report):
+    return {key: report[key] for key in ("status", "checked", "gaps", "scope_limits")}
 
 
 def _emit(full: dict[str, Any], summarize, as_json: bool) -> None:

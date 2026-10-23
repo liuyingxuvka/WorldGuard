@@ -134,10 +134,10 @@ def test_default_output_is_a_summary_and_json_is_full():
     summary = json.loads(done.stdout)
     assert summary["claim_statuses"] == ["PASS", "PASS", "FAIL"]
     failing = summary["reports"][2]
-    assert {"status", "semantic_status", "gaps", "scope_limits"} <= set(failing)
-    assert {row["guard"] for row in failing["non_pass_guards"]} == {"ConflictGuard", "NormGuard"}
+    assert {"status", "checked", "gaps", "scope_limits"} <= set(failing)
+    assert {row["guard"] for row in failing["gaps"] if "guard" in row} == {"ConflictGuard", "NormGuard"}
     full = subprocess.run([*command, "--json"], text=True, capture_output=True)
-    assert "child_results" in json.loads(full.stdout)["reports"][0]
+    assert "guard_results" in json.loads(full.stdout)["reports"][0]
 
 
 def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_path):
@@ -231,7 +231,8 @@ def test_actual_cli_preserves_native_yaml_time_values(tmp_path, times, full):
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
     if full:
-        assert len(report["semantic_receipts"][0]["outputs"]["observed_timepoints"]) == 2
+        assert report["checked"] == {"guards": ["EventGuard"], "claim_rows": 1}
+        assert report["claim_binding"]["assertions"][0]["status"] == "PASS"
 
 
 def test_cli_reports_unquoted_yaml_clock_mix_with_quote_hint(tmp_path):
@@ -269,4 +270,4 @@ def test_cli_missing_event_time_keeps_native_gap(tmp_path):
     assert completed.returncode == 1
     result = json.loads(completed.stdout)
     assert result["status"] == "GAP"
-    assert result["semantic_receipts"][0]["findings"][0]["code"] == "SEM_EVENT_MISSING_AXIOM"
+    assert result["guard_results"][0]["errors"][0]["code"] == "EVENT_MISSING_INITIATION_AXIOM"

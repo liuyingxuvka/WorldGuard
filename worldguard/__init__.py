@@ -16,11 +16,6 @@ __all__ = [
     "QualificationError",
     "MeshReport",
     "ModelMeshContract",
-    "ProviderStatus",
-    "SemanticBinding",
-    "SemanticExecutionReceipt",
-    "SemanticStatus",
-    "EXECUTOR_REGISTRY",
     "run_model_mesh",
     "qualification_context_for_node",
     "run_worldguard",
@@ -47,11 +42,6 @@ _EXPORTS = {
     'qualify_guard_contract': 'worldguard.qualification',
     'GuardResult': 'worldguard.reports',
     'GuardedReport': 'worldguard.reports',
-    'EXECUTOR_REGISTRY': 'worldguard.semantic',
-    'ProviderStatus': 'worldguard.semantic',
-    'SemanticBinding': 'worldguard.semantic',
-    'SemanticExecutionReceipt': 'worldguard.semantic',
-    'SemanticStatus': 'worldguard.semantic',
     'GuardStatus': 'worldguard.status',
 }
 

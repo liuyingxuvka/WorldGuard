@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from worldguard import ProviderStatus, SemanticStatus, run_model_mesh
+from worldguard import run_model_mesh
+from worldguard.semantic import event_replay
 from worldguard.cli import main as worldguard_main
 from worldguard.status import GuardStatus
 
@@ -51,7 +52,7 @@ NEGATIVE_PROBES = [
     (
         "EventGuard",
         {"events": [{"event_id": "e1", "at": "t0"}]},
-        "SEM_EVENT_MISSING_AXIOM",
+        "EVENT_MISSING_INITIATION_AXIOM",
     ),
     (
         "AgentGuard",
@@ -59,7 +60,7 @@ NEGATIVE_PROBES = [
             "beliefs": {"a1": {"agent_id": "a1", "beliefs": ["ready"]}},
             "agent_model": {},
         },
-        "SEM_AGENT_INCOMPLETE_BDI",
+        "AGENT_INCOMPLETE_BDI",
     ),
     (
         "SpaceGuard",
@@ -70,7 +71,7 @@ NEGATIVE_PROBES = [
                 {"x": "a", "y": "c", "at": "t0", "relation": "DC"},
             ]
         },
-        "SEM_SPACE_RCC8_CONFLICT",
+        "SPACE_RCC8_CONTRADICTION",
     ),
     (
         "ResourceGuard",
@@ -83,7 +84,7 @@ NEGATIVE_PROBES = [
                 ],
             }
         },
-        "SEM_RESOURCE_DOUBLE_CONSUMPTION",
+        "RESOURCE_CUMULATIVE_OVERCONSUMPTION",
     ),
     (
         "CausalGuard",
@@ -94,17 +95,17 @@ NEGATIVE_PROBES = [
                 "graph": [["x", "y"]],
             }
         },
-        "SEM_CAUSAL_UNEVALUABLE_EQUATION",
+        "CAUSAL_UNEVALUABLE_EQUATION",
     ),
     (
         "ConflictGuard",
         {"game_model": {"payoffs": [{"player": "p1", "value": 1}]}},
-        "SEM_CONFLICT_INCOMPLETE_GAME",
+        "CONFLICT_INCOMPLETE_GAME",
     ),
     (
         "NormGuard",
         {"norms": [{"modality": "permitted", "action": "start"}]},
-        "SEM_NORM_MISSING_CONDITION_FACT",
+        "NORM_MISSING_CONDITION_FACT",
     ),
 ]
 
@@ -115,12 +116,12 @@ def test_known_shallow_semantic_probe_cannot_project_pass():
     for guard, inputs, expected_code in NEGATIVE_PROBES:
         report = run_model_mesh(_mesh(guard, inputs))
 
-        assert report.semantic_status != SemanticStatus.PASS
         assert report.status != GuardStatus.PASS
         assert expected_code in {
             finding["code"]
-            for receipt in report.semantic_receipts
-            for finding in receipt.findings
+            for node in report.node_reports.values()
+            for checked in node.guard_results
+            for finding in checked.errors
         }
 
 
@@ -135,11 +136,9 @@ def _valid_event_mesh() -> dict:
 def test_valid_bounded_semantic_rollout_reports_distinct_green_components():
     report = run_model_mesh(_valid_event_mesh())
 
-    assert report.structural_status == GuardStatus.PASS
-    assert report.semantic_status == SemanticStatus.PASS
-    assert report.provider_status == ProviderStatus.AVAILABLE
-    assert report.rollout_status == SemanticStatus.PASS
     assert report.status == GuardStatus.PASS
+    assert report.to_dict()["checked"] == {"nodes": 1, "edges": 0}
+    assert report.to_dict()["gaps"] == []
 
 
 def test_retired_closure_profile_is_rejected_instead_of_skipping_semantics():
@@ -170,13 +169,8 @@ def test_provider_unavailable_is_visible_and_fail_closed():
     mesh = _valid_event_mesh()
     mesh["provider_availability"] = {"EventGuard": False}
 
-    report = run_model_mesh(mesh)
-
-    assert report.structural_status == GuardStatus.PASS
-    assert report.semantic_status == SemanticStatus.NOT_RUN
-    assert report.provider_status == ProviderStatus.UNAVAILABLE
-    assert report.status == GuardStatus.GAP
-    assert report.semantic_receipts[0].skipped_reason == "provider_unavailable"
+    with pytest.raises(ValueError, match="provider_availability is retired"):
+        run_model_mesh(mesh)
 
 
 def test_scoped_events_execute_from_their_native_scenario_ids():
@@ -187,13 +181,13 @@ def test_scoped_events_execute_from_their_native_scenario_ids():
     ]}, asserts=[{"holds": "ready", "at": "t0"}])
     report = run_model_mesh(mesh)
     assert report.status == GuardStatus.PASS
-    outputs = report.semantic_receipts[0].outputs
-    assert outputs["executed_event_ids"] == ["left", "right", "shared"]
-    assert outputs["executed_scenario_ids"] == ["left-scenario", "right-scenario"]
-    assert outputs["final_fluent_ids_by_scenario"] == {
-        "left-scenario": ["left-done", "ready"],
-        "right-scenario": ["ready", "right-done"],
-    }
+    events = mesh["nodes"][0]["contract"]["inputs"]["events"]
+    left = list(event_replay(events, scenario_id="left-scenario"))
+    right = list(event_replay(events, scenario_id="right-scenario"))
+    assert [row[0]["event_id"] for row in left] == ["shared", "left"]
+    assert [row[0]["event_id"] for row in right] == ["shared", "right"]
+    assert left[-1][2] == frozenset({"ready", "left-done"})
+    assert right[-1][2] == frozenset({"ready", "right-done"})
 
 
 @pytest.mark.parametrize("missing_scope,expected", [("s_missing", GuardStatus.FAIL), (None, GuardStatus.GAP)])
@@ -210,8 +204,7 @@ def test_missing_event_time_does_not_hide_independent_scenario_failures(missing_
                                       "initiates": "done", "requires": "never"}]},
     })
     assert report.status == expected
-    assert report.semantic_status == SemanticStatus.GAP
-    errors = [error["code"] for result in report.child_results for error in result.errors]
+    errors = [error["code"] for result in report.guard_results for error in result.errors]
     assert ("EVENT_PRECONDITION_UNMET" in errors) is (missing_scope is not None)
     if missing_scope:
         assert report.claim_binding["status"] == "PASS"

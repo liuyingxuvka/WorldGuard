@@ -4,10 +4,9 @@ from dataclasses import replace
 from pathlib import Path
 import pytest
 from worldguard.contracts import GuardContract
-from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES, MESH_RUNTIME_FAILURES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, run_guard_model_contract
+from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, run_guard_model_contract
 from worldguard.guards import GUARD_RUNNERS
 from worldguard.kernel import run_worldguard
-from worldguard.semantic import execute_semantic
 from worldguard.status import GuardStatus
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -29,10 +28,6 @@ def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
     assert all((item['observed_status'] == item['expected_status'] for item in bad_observations))
     assert all((item['observed_codes'] == [item['expected_code']] for item in bad_observations))
 
-def test_mesh_runtime_failures_are_explicitly_outside_individual_guard_universe():
-    protected_codes = {case.code for case in PROTECTED_FAILURE_CLASSES}
-    assert set(MESH_RUNTIME_FAILURES) == {'SEM_EXECUTOR_UNREGISTERED', 'SEM_PROVIDER_UNAVAILABLE'}
-    assert protected_codes.isdisjoint(MESH_RUNTIME_FAILURES)
 
 def test_causal_guard_rejects_partially_defined_structural_equations():
     task_contract_id = 'partial-causal-equations'

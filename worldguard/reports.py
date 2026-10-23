@@ -3,218 +3,59 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
-from .ledgers import LedgerEntry
-from .semantic import ProviderStatus, SemanticExecutionReceipt, SemanticStatus
 from .status import GuardStatus, coerce_status
 
 
 @dataclass(frozen=True)
 class GuardResult:
-    result_id: str
-    contract_id: str
     guard: str
     status: GuardStatus
-    supported_claims: list[str] = field(default_factory=list)
-    rejected_claims: list[str] = field(default_factory=list)
-    missing_slots: list[dict[str, Any]] = field(default_factory=list)
-    boundary_exceeded: dict[str, Any] = field(default_factory=dict)
     errors: list[dict[str, Any]] = field(default_factory=list)
     counterexamples: list[dict[str, Any]] = field(default_factory=list)
-    ledgers: dict[str, list[LedgerEntry]] = field(default_factory=dict)
-    assumptions_used: list[str] = field(default_factory=list)
-    scope_limits: list[str] = field(default_factory=list)
-    consumed_inputs: dict[str, Any] = field(default_factory=dict)
+    missing_slots: list[dict[str, Any]] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         object.__setattr__(self, "status", coerce_status(self.status))
-        if self.status != GuardStatus.PASS and not (
-            self.missing_slots or self.boundary_exceeded or self.errors or self.counterexamples
-        ):
-            raise ValueError(f"{self.guard} {self.status} result lacks non-pass evidence")
-        if not self.ledgers:
-            raise ValueError(f"{self.guard} result lacks ledgers")
+        if self.status != GuardStatus.PASS and not (self.errors or self.counterexamples or self.missing_slots):
+            raise ValueError(f"{self.guard} {self.status} result lacks a problem")
 
-    def all_ledgers(self) -> list[LedgerEntry]:
-        entries: list[LedgerEntry] = []
-        for channel_entries in self.ledgers.values():
-            entries.extend(channel_entries)
-        return entries
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "result_id": self.result_id,
-            "contract_id": self.contract_id,
-            "guard": self.guard,
-            "status": self.status.value,
-            "supported_claims": self.supported_claims,
-            "rejected_claims": self.rejected_claims,
-            "missing_slots": self.missing_slots,
-            "boundary_exceeded": self.boundary_exceeded,
-            "errors": self.errors,
-            "counterexamples": self.counterexamples,
-            "ledgers": {
-                channel: [entry.to_dict() for entry in entries]
-                for channel, entries in self.ledgers.items()
-            },
-            "assumptions_used": self.assumptions_used,
-            "scope_limits": self.scope_limits,
-            "consumed_inputs": self.consumed_inputs,
-        }
+    def to_dict(self):
+        return {"guard": self.guard, "status": self.status.value, "errors": self.errors,
+                "counterexamples": self.counterexamples, "missing_slots": self.missing_slots}
 
 
 @dataclass(frozen=True)
 class GuardedReport:
-    """The one public qualification result for unit and mesh evaluation."""
-
-    REPORT_FIELDS: ClassVar[frozenset[str]] = frozenset(
-        {
-            "status",
-            "structural_status",
-            "semantic_status",
-            "provider_status",
-            "rollout_status",
-            "target_id",
-            "target_revision",
-            "target_fingerprint",
-            "contract_id",
-            "contract_fingerprint",
-            "guard_derivation_fingerprint",
-            "qualification_fingerprint",
-            "declared_guards",
-            "derived_guards",
-            "effective_guards",
-            "omitted_guards",
-            "unexpected_guards",
-            "unmapped_semantics",
-            "child_results",
-            "semantic_receipts",
-            "provider_states",
-            "depth_state",
-            "gaps",
-            "aggregate_ledger",
-            "scope_limits",
-            "claim_boundary",
-            "claim_binding",
-        }
-    )
-
-    status: GuardStatus
-    structural_status: GuardStatus
-    semantic_status: SemanticStatus
-    provider_status: ProviderStatus
-    rollout_status: SemanticStatus
-    target_id: str
-    target_revision: str
-    target_fingerprint: str
     contract_id: str
-    contract_fingerprint: str
-    guard_derivation_fingerprint: str
-    qualification_fingerprint: str
-    declared_guards: list[str]
-    derived_guards: list[str]
-    effective_guards: list[str]
-    omitted_guards: list[str]
-    unexpected_guards: list[str]
-    unmapped_semantics: list[dict[str, Any]]
-    child_results: list[GuardResult]
-    semantic_receipts: list[SemanticExecutionReceipt]
-    provider_states: dict[str, str]
-    depth_state: dict[str, Any]
+    status: GuardStatus
+    checked: dict[str, Any]
     gaps: list[dict[str, Any]]
-    aggregate_ledger: list[LedgerEntry]
+    guard_results: list[GuardResult]
+    claim_binding: dict[str, Any]
+    derived_guards: list[str]
+    unmapped_semantics: list[dict[str, Any]]
     scope_limits: list[str] = field(default_factory=list)
-    claim_boundary: str = ""
-    claim_binding: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self) -> None:
+    REPORT_FIELDS: ClassVar[frozenset[str]] = frozenset({
+        "contract_id", "status", "checked", "gaps", "guard_results", "claim_binding",
+        "derived_guards", "unmapped_semantics", "scope_limits"})
+
+    def __post_init__(self):
         object.__setattr__(self, "status", coerce_status(self.status))
-        object.__setattr__(self, "structural_status", coerce_status(self.structural_status))
-        object.__setattr__(self, "semantic_status", SemanticStatus(self.semantic_status))
-        object.__setattr__(self, "provider_status", ProviderStatus(self.provider_status))
-        object.__setattr__(self, "rollout_status", SemanticStatus(self.rollout_status))
-
-        for name in ("declared_guards", "derived_guards", "effective_guards"):
-            values = list(getattr(self, name))
-            if len(values) != len(set(values)):
-                raise ValueError(f"qualification report has duplicate {name}")
-        if set(self.omitted_guards) != set(self.derived_guards).difference(self.declared_guards):
-            raise ValueError("qualification omitted_guards do not match the derived denominator")
-        if set(self.unexpected_guards) != set(self.declared_guards).difference(self.derived_guards):
-            raise ValueError("qualification unexpected_guards do not match declarations")
-        if self.effective_guards != self.derived_guards:
-            raise ValueError("qualification effective_guards must equal the derived Guards")
-
-        child_guards = [result.guard for result in self.child_results]
-        semantic_guards = [receipt.guard for receipt in self.semantic_receipts]
-        if len(child_guards) != len(set(child_guards)):
-            raise ValueError("a structural Guard owner executed more than once")
-        if len(semantic_guards) != len(set(semantic_guards)):
-            raise ValueError("a semantic Guard owner executed more than once")
-        if set(child_guards) != set(self.effective_guards):
-            raise ValueError("structural results do not match the effective Guard denominator")
-        if set(semantic_guards) != set(self.effective_guards):
-            raise ValueError("semantic receipts do not match the effective Guard denominator")
-        if set(self.provider_states) != set(self.effective_guards):
-            raise ValueError("provider states do not match the effective Guard denominator")
-        if self.status == GuardStatus.PASS:
-            if self.gaps:
-                raise ValueError("a passing qualification cannot contain gaps")
-            if self.structural_status != GuardStatus.PASS:
-                raise ValueError("a passing qualification lacks structural pass")
-            if self.semantic_status != SemanticStatus.PASS:
-                raise ValueError("a passing qualification lacks semantic pass")
-            if self.provider_status not in {
-                ProviderStatus.AVAILABLE,
-                ProviderStatus.NOT_REQUIRED,
-            }:
-                raise ValueError("a passing qualification lacks current provider evidence")
-            if self.rollout_status != SemanticStatus.PASS:
-                raise ValueError("a passing qualification lacks rollout/depth pass")
-
-        if not self.contract_id or not self.contract_fingerprint:
-            raise ValueError("qualification report lacks contract identity")
-        if not self.guard_derivation_fingerprint:
-            raise ValueError("qualification report lacks Guard derivation identity")
-        if not self.target_id or not self.target_fingerprint:
-            raise ValueError("qualification report lacks target identity")
-        if not self.qualification_fingerprint:
-            raise ValueError("qualification report lacks result identity")
-        if not self.claim_boundary:
-            raise ValueError("qualification report lacks claim boundary")
+        if [result.guard for result in self.guard_results] != self.derived_guards:
+            raise ValueError("Guard results must match the derived Guards exactly once")
+        if self.status == GuardStatus.PASS and self.gaps:
+            raise ValueError("a passing report cannot contain problems")
 
     @classmethod
-    def validate_payload_fields(cls, payload: dict[str, Any]) -> None:
-        unknown = sorted(set(payload).difference(cls.REPORT_FIELDS))
+    def validate_payload_fields(cls, payload):
+        unknown = sorted(set(payload) - cls.REPORT_FIELDS)
         if unknown:
             raise ValueError("qualification report has unknown fields: " + ", ".join(unknown))
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "status": self.status.value,
-            "structural_status": self.structural_status.value,
-            "semantic_status": self.semantic_status.value,
-            "provider_status": self.provider_status.value,
-            "rollout_status": self.rollout_status.value,
-            "target_id": self.target_id,
-            "target_revision": self.target_revision,
-            "target_fingerprint": self.target_fingerprint,
-            "contract_id": self.contract_id,
-            "contract_fingerprint": self.contract_fingerprint,
-            "guard_derivation_fingerprint": self.guard_derivation_fingerprint,
-            "qualification_fingerprint": self.qualification_fingerprint,
-            "declared_guards": self.declared_guards,
-            "derived_guards": self.derived_guards,
-            "effective_guards": self.effective_guards,
-            "omitted_guards": self.omitted_guards,
-            "unexpected_guards": self.unexpected_guards,
-            "unmapped_semantics": self.unmapped_semantics,
-            "child_results": [result.to_dict() for result in self.child_results],
-            "semantic_receipts": [receipt.to_dict() for receipt in self.semantic_receipts],
-            "provider_states": self.provider_states,
-            "depth_state": self.depth_state,
-            "gaps": self.gaps,
-            "aggregate_ledger": [entry.to_dict() for entry in self.aggregate_ledger],
-            "scope_limits": self.scope_limits,
-            "claim_boundary": self.claim_boundary,
-            "claim_binding": self.claim_binding,
-        }
+    def to_dict(self):
+        return {"contract_id": self.contract_id, "status": self.status.value,
+                "checked": self.checked, "gaps": self.gaps,
+                "guard_results": [result.to_dict() for result in self.guard_results],
+                "claim_binding": self.claim_binding, "derived_guards": self.derived_guards,
+                "unmapped_semantics": self.unmapped_semantics, "scope_limits": self.scope_limits}

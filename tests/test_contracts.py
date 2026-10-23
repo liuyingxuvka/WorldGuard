@@ -149,13 +149,10 @@ def test_retired_guard_input_paths_fail_visibly(
 
 
 def test_non_pass_result_requires_evidence():
-    with pytest.raises(ValueError, match="lacks non-pass evidence"):
+    with pytest.raises(ValueError, match="lacks a problem"):
         GuardResult(
-            result_id="r",
-            contract_id="c",
             guard="EventGuard",
             status=GuardStatus.GAP,
-            ledgers={"gap": []},
         )
 
 
@@ -179,7 +176,7 @@ def test_contract_serializes_canonical_fields():
     data = contract.to_dict()
     assert data["claim"]["target_guards"] == ["NormGuard"]
     assert data["dependencies"]["read_only"] is True
-    assert data["output_requirements"]["require_ledgers"] is True
+    assert "require_ledgers" not in data["output_requirements"]
 
 
 @pytest.mark.parametrize("times", [

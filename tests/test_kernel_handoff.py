@@ -22,8 +22,7 @@ def test_kernel_preserves_upstream_gap_in_aggregate_ledger():
     report = run_worldguard(contract)
 
     assert report.status == GuardStatus.GAP
-    assert any(entry.channel == "gap" for entry in report.aggregate_ledger)
-    assert all(entry.read_only_for_downstream for entry in report.aggregate_ledger)
+    assert {row["code"] for row in report.gaps} >= {"EVENT_MISSING_EVENT_MODEL", "NORM_MISSING_CONDITION_FACT"}
 
 
 def test_kernel_aggregates_fail_before_gap_and_boundary():
@@ -50,4 +49,4 @@ def test_kernel_aggregates_fail_before_gap_and_boundary():
     report = run_worldguard(contract)
 
     assert report.status == GuardStatus.FAIL
-    assert any(entry.status_impact == "supports_fail" for entry in report.aggregate_ledger)
+    assert any(row["code"] == "NORM_ACTIVE_CONFLICT" and row["status"] == "FAIL" for row in report.gaps)

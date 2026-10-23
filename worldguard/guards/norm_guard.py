@@ -18,7 +18,7 @@ def _condition_expectation(condition):
     return "", None
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "NormGuard"
     requested = requested_semantic_ids(contract)
     norm_model = {
@@ -27,16 +27,6 @@ def run(contract: GuardContract):
     }
     norms = norm_model.get("norms", [])
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["physical_enablement"]},
-            errors=[error("NORM_BOUNDARY_PHYSICAL_ENABLEMENT", "NormGuard does not own resource enablement.")],
-        )
 
     invalid_modalities = sorted(
         {
@@ -176,3 +166,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"norm_model": norm_model},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native NormGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["NormGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('NORM_BOUNDARY_PHYSICAL_ENABLEMENT', 'NormGuard does not own resource enablement.')])
+    return checked

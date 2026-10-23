@@ -55,7 +55,7 @@ def test_every_guard_input_block_in_the_reference_passes() -> None:
         assert [gap["code"] for gap in report.gaps] == ["CLAIM_ASSERTION_FALSE"], guard
         for unresolved in UNRESOLVED_ROWS[guard]:
             report = run_worldguard(make_contract(guard, inputs=yaml.safe_load(block), asserts=[unresolved]))
-            assert report.structural_status.value == "PASS", (guard, report.gaps)
+            assert all(result.status.value == "PASS" for result in report.guard_results), (guard, report.gaps)
             assert report.status.value == "GAP", (guard, report.gaps)
             assert [gap["code"] for gap in report.gaps] == ["CLAIM_ASSERTION_UNRESOLVED"], guard
 

@@ -7,22 +7,12 @@ from worldguard.status import GuardStatus
 from ._helpers import error, requested_semantic_ids, result
 
 
-def run(contract: GuardContract):
+def _check(contract: GuardContract):
     guard = "AgentGuard"
     requested = requested_semantic_ids(contract)
     agents = contract.inputs.get("beliefs", {})
     agent_model = contract.inputs.get("agent_model", {})
 
-    if requested & GUARD_BOUNDARY_SEMANTICS[guard]:
-        return result(
-            contract,
-            guard,
-            GuardStatus.BOUNDARY_EXCEEDED,
-            channel="boundary",
-            impact="marks_boundary",
-            boundary={"owner": guard, "unsupported_claim_parts": ["non_bdi_semantics"]},
-            errors=[error("AGENT_BOUNDARY_NON_BDI", "AgentGuard only owns BDI-style checks.")],
-        )
 
     if agent_model.get("conflicting_intentions"):
         return result(
@@ -104,3 +94,15 @@ def run(contract: GuardContract):
         supported=True,
         consumed_inputs={"agents": agents, "agent_model": agent_model},
     )
+
+
+def run(contract: GuardContract):
+    """Check the complete native AgentGuard rules once, then append its boundary."""
+    checked = _check(contract)
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["AgentGuard"]:
+        from dataclasses import replace
+        from worldguard.status import aggregate_statuses
+        checked = replace(checked,
+            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, error('AGENT_BOUNDARY_NON_BDI', 'AgentGuard only owns BDI-style checks.')])
+    return checked

@@ -18,7 +18,7 @@ def _world(name: str) -> dict:
 
 
 def _codes(report) -> set[str]:
-    return {error["code"] for result in report.child_results for error in result.errors}
+    return {error["code"] for result in report.guard_results for error in result.errors}
 
 
 def test_locked_door_scene_passes_and_a_key_handed_over_too_late_fails() -> None:
@@ -30,7 +30,7 @@ def test_locked_door_scene_passes_and_a_key_handed_over_too_late_fails() -> None
     report = run_worldguard(late_key)
     assert report.status.value == "FAIL"
     assert "EVENT_PRECONDITION_UNMET" in _codes(report)
-    event = next(result for result in report.child_results if result.guard == "EventGuard")
+    event = next(result for result in report.guard_results if result.guard == "EventGuard")
     assert event.counterexamples[0]["steps"][0]["event_id"] == "e_mara_unlock"
     assert event.counterexamples[0]["steps"][0]["missing_fluents"] == ["mara_has_key"]
 
@@ -45,7 +45,7 @@ def test_ferry_trip_passes_and_the_0930_ferry_fails_on_time_and_on_slack() -> No
     report = run_worldguard(early_ferry)
     assert report.status.value == "FAIL"
     assert {"EVENT_PRECONDITION_UNMET", "CAUSAL_CONSTRAINT_VIOLATED"} <= _codes(report)
-    causal = next(result for result in report.child_results if result.guard == "CausalGuard")
+    causal = next(result for result in report.guard_results if result.guard == "CausalGuard")
     assert causal.counterexamples[0]["steps"][0]["constraint"] == "slack_out_h >= 0"
 
     late_return = copy.deepcopy(trip)
@@ -68,10 +68,9 @@ def test_unevaluable_causal_constraints_report_native_gaps(constraint, exogenous
             "constraints": [constraint]}},
     })
     assert report.status.value == "GAP"
-    causal = next(result for result in report.child_results if result.guard == "CausalGuard")
+    causal = next(result for result in report.guard_results if result.guard == "CausalGuard")
     assert [error["code"] for error in causal.errors] == ["CAUSAL_CONSTRAINT_UNEVALUABLE"]
-    semantic = next(receipt for receipt in report.semantic_receipts if receipt.guard == "CausalGuard")
-    assert [finding["code"] for finding in semantic.findings] == ["SEM_CAUSAL_UNEVALUABLE_CONSTRAINT"]
+    assert len([gap for gap in report.gaps if gap["code"] == "CAUSAL_CONSTRAINT_UNEVALUABLE"]) == 1
 
 
 def _gap_codes(report) -> list[str]:
@@ -84,7 +83,7 @@ def test_the_claim_is_checked_against_the_model_not_its_sentence() -> None:
     wrong_order["claim"]["asserts"] = [{"event": "e_iris_enter", "before": "e_mara_unlock"}]
     report = run_worldguard(wrong_order)
     assert report.status.value == "FAIL"
-    assert report.structural_status.value == "PASS"
+    assert all(result.status.value == "PASS" for result in report.guard_results)
     assert _gap_codes(report) == ["CLAIM_ASSERTION_FALSE"]
     assert report.gaps[0]["observed"] == {"e_iris_enter": "t3", "e_mara_unlock": "t2"}
 
@@ -114,7 +113,7 @@ def test_a_claim_without_assertions_is_not_bound_to_the_world_model() -> None:
     scene = _world("scene_locked_door.yaml")
     del scene["claim"]["asserts"]
     report = run_worldguard(scene)
-    assert report.structural_status.value == "PASS"
+    assert all(result.status.value == "PASS" for result in report.guard_results)
     assert report.status.value == "GAP"
     assert _gap_codes(report) == ["CLAIM_NOT_BOUND"]
     assert report.gaps[0]["message"] == "claim not bound to the world model: add claim.asserts"
@@ -127,7 +126,7 @@ def test_scenario_overrides_reach_constraints_and_claim_rows():
     assert "CAUSAL_CONSTRAINT_VIOLATED" in _codes(report)
     row = next(gap for gap in report.gaps if gap["code"] == "CLAIM_ASSERTION_FALSE")
     assert row["observed"]["bus_back_30min_late"] == pytest.approx(-0.05)
-    result = next(child for child in report.child_results if child.guard == "CausalGuard")
+    result = next(child for child in report.guard_results if child.guard == "CausalGuard")
     assert any(step["scenario_id"] == "bus_back_30min_late" for item in result.counterexamples for step in item["steps"])
 
 
@@ -138,7 +137,7 @@ def test_interventions_on_empty_scenarios_reach_constraints_and_claim_rows():
     assert "CAUSAL_CONSTRAINT_VIOLATED" in _codes(report)
     row = next(gap for gap in report.gaps if gap["code"] == "CLAIM_ASSERTION_FALSE")
     assert row["observed"]["bus_30min_late"] == pytest.approx(-0.05)
-    result = next(child for child in report.child_results if child.guard == "CausalGuard")
+    result = next(child for child in report.guard_results if child.guard == "CausalGuard")
     assert any(step["scenario_id"] == "bus_30min_late" for item in result.counterexamples for step in item["steps"])
 
 
@@ -150,8 +149,7 @@ def test_intervention_can_override_exogenous_input_on_a_holdout():
             "interventions": [{"intervention_id": "holdout-do", "scenario_id": "holdout", "set": {"z": 4}}],
             "counterfactuals": [{"counterfactual_id": "cf-x", "intervention_id": "holdout-do", "query": "x"}]}}})
     assert report.status.value == "PASS"
-    assert report.semantic_receipts[0].outputs["intervention_results"]["holdout-do"] == {"z": 4, "x": 5}
-    assert report.semantic_receipts[0].outputs["counterfactual_results"]["cf-x"] == 5
+    assert report.claim_binding["assertions"][0]["observed"] == {"holdout-do": 5}
 
 
 def test_mapping_intervention_is_a_typed_cli_input_error(capsys):
@@ -171,11 +169,10 @@ def test_completed_causal_runs_survive_another_incomplete_run(actual, expected):
             "variables": ["x", "y"], "exogenous": ["u"], "equations": {"x": "u", "y": "x + 1"},
             "scenarios": {"bad_missing": {}, "actual_bad": {"u": actual}}, "constraints": ["x >= 0"]}}})
     assert report.status.value == expected
-    causal = next(child for child in report.child_results if child.guard == "CausalGuard")
-    assert causal.status.value == ("FAIL" if actual < 0 else "PASS")
+    causal = next(child for child in report.guard_results if child.guard == "CausalGuard")
+    assert causal.status.value == expected
     assert report.claim_binding["status"] == ("FAIL" if actual < 0 else "PASS")
     assert report.claim_binding["assertions"][0]["observed"]["actual_bad"] == actual
-    semantic = next(receipt for receipt in report.semantic_receipts if receipt.guard == "CausalGuard")
-    assert semantic.status.value == "GAP"
-    assert semantic.findings[0]["code"] == "SEM_CAUSAL_ROLLOUT_ERROR"
-    assert semantic.findings[0]["evidence"]["errors"][0]["scenario_id"] == "bad_missing"
+    if actual >= 0:
+        assert causal.errors[0]["code"] == "CAUSAL_SCENARIO_UNEVALUABLE"
+        assert causal.missing_slots[0]["scenario_id"] == "bad_missing"

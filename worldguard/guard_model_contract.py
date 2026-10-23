@@ -19,7 +19,6 @@ from typing import Any, Mapping
 
 from .contracts import GuardContract
 from .guards import GUARD_RUNNERS
-from .semantic import EXECUTOR_REGISTRY, SemanticStatus
 from .status import GuardStatus
 
 
@@ -221,97 +220,58 @@ def _failure(
 
 
 PROTECTED_FAILURE_CLASSES = (
-    _failure("EventGuard", "guard", "EVENT_BOUNDARY_NUMERIC_DYNAMICS", "BOUNDARY_EXCEEDED", "EventGuard cannot support a numeric-dynamics claim.", semantics=("numeric_dynamics",)),
-    _failure("EventGuard", "guard", "EVENT_MISSING_EVENT_MODEL", "GAP", "An event claim cannot pass without events or an event model."),
-    _failure("EventGuard", "guard", "EVENT_CONTRADICTORY_FLUENTS", "FAIL", "Contradictory event fluents must reject the claim.", inputs={"event_model": {"contradictory_fluents": ["hot", "cold"]}}),
-    _failure("EventGuard", "guard", "EVENT_FLUENT_TRANSITION_CONTRADICTION", "FAIL", "One event cannot terminate and initiate the same fluent.", inputs={"events": [{"event_id": "e1", "at": "t0", "terminates": ["ready"], "initiates": ["ready"]}]}),
-    _failure("EventGuard", "guard", "EVENT_MISSING_INITIATION_AXIOM", "GAP", "A declared event model cannot pass with missing event axioms.", inputs={"event_model": {"missing_axioms": ["initiates"]}}),
-    _failure("EventGuard", "guard", "EVENT_DANGLING_TRANSITION_STATE", "FAIL", "A transition cannot name a state outside the declared state denominator.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}], "transitions": [{"transition_id": "go", "source_state": "waiting", "target_state": "missing", "guard": True, "effect": "done"}]}}),
-    _failure("EventGuard", "guard", "EVENT_MISSING_STATE_DENOMINATOR", "GAP", "A transition model cannot qualify without declared states.", inputs={"event_model": {"transitions": [{"transition_id": "go", "source_state": "waiting", "target_state": "done", "guard": True, "effect": "done"}]}}),
-    _failure("EventGuard", "guard", "EVENT_DUPLICATE_STATE_TRANSITION_ID", "FAIL", "State and transition ids must be unique.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}, {"state_id": "waiting", "initial": False, "terminal": True}]}}),
-    _failure("EventGuard", "guard", "EVENT_PRECONDITION_UNMET", "FAIL", "An event cannot happen while a fluent it requires does not hold.", inputs={"events": [{"event_id": "enter", "at": "t1", "requires": ["door_open"], "initiates": ["inside"]}]}),
-    _failure("EventGuard", "guard", "EVENT_MISSING_INITIAL_STATE", "GAP", "A transition rollout cannot start without an initial state.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": False, "terminal": False}], "transitions": [{"transition_id": "stay", "source_state": "waiting", "target_state": "waiting", "guard": True, "effect": "wait"}]}}),
-    _failure("AgentGuard", "guard", "AGENT_BOUNDARY_NON_BDI", "BOUNDARY_EXCEEDED", "AgentGuard cannot support a payoff-equilibrium claim.", semantics=("payoff",)),
-    _failure("AgentGuard", "guard", "AGENT_CONFLICTING_INTENTIONS", "FAIL", "Conflicting intentions must reject the BDI claim.", inputs={"agent_model": {"conflicting_intentions": ["start", "stop"]}}),
-    _failure("AgentGuard", "guard", "AGENT_MISSING_BELIEF", "GAP", "A BDI claim cannot pass without its required belief state.", inputs={"agent_model": {"missing_beliefs": ["ready"]}}),
-    _failure("AgentGuard", "guard", "AGENT_IDENTITY_MISMATCH", "FAIL", "A BDI record cannot be owned by a map key different from its agent_id.", inputs={"beliefs": {"alice": {"agent_id": "bob", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}}),
-    _failure("AgentGuard", "guard", "AGENT_INCOMPLETE_BDI", "GAP", "A declared agent needs beliefs, desires, and intentions.", inputs={"beliefs": {"alice": {"agent_id": "alice", "beliefs": ["b"], "desires": [], "intentions": ["i"]}}}),
-    _failure("SpaceGuard", "guard", "SPACE_BOUNDARY_METRIC_GEOMETRY", "BOUNDARY_EXCEEDED", "SpaceGuard cannot support metric-distance claims.", semantics=("metric_distance",)),
-    _failure("SpaceGuard", "guard", "SPACE_MISSING_RELATION", "GAP", "An RCC8 claim cannot pass without a relation."),
-    _failure("SpaceGuard", "guard", "SPACE_RCC8_CONTRADICTION", "FAIL", "Conflicting RCC8 base relations must reject the claim.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "DC"}, {"at": "t0", "x": "a", "y": "b", "relation": "EQ"}]}),
-    _failure("SpaceGuard", "guard", "SPACE_RCC8_REFLEXIVITY_CONTRADICTION", "FAIL", "A non-EQ RCC8 relation from an object to itself must reject the claim.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "a", "relation": "DC"}]}),
-    _failure("SpaceGuard", "guard", "SPACE_RCC8_CONVERSE_CONTRADICTION", "FAIL", "Declared reverse RCC8 relations must be exact converses.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "EC"}, {"at": "t0", "x": "b", "y": "a", "relation": "DC"}]}),
-    _failure("SpaceGuard", "guard", "SPACE_UNEVALUABLE_RCC8", "GAP", "A malformed or unsupported RCC8 record cannot qualify.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "NEAR"}]}),
-    _failure("ResourceGuard", "guard", "RESOURCE_BOUNDARY_NORM_AUTHORIZATION", "BOUNDARY_EXCEEDED", "ResourceGuard cannot support a permission claim.", semantics=("permission",)),
-    _failure("ResourceGuard", "guard", "RESOURCE_MISSING_RESOURCE_MODEL", "GAP", "A resource claim cannot pass without places and transitions."),
-    _failure("ResourceGuard", "guard", "RESOURCE_MISSING_TOKEN", "GAP", "A transition cannot pass when required colored tokens are absent.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 0}]}, "transitions": [{"id": "run", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}]}}),
-    _failure("ResourceGuard", "guard", "RESOURCE_CAPACITY_OVERFLOW", "FAIL", "A transition that exceeds capacity must reject the claim.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 2}]}, "capacities": {"out": 1}, "transitions": [{"id": "run", "consumes": [{"place": "tank", "color": "h2", "qty": 1}], "produces": [{"place": "out", "color": "kwh", "qty": 2}]}]}}),
-    _failure("ResourceGuard", "guard", "RESOURCE_CUMULATIVE_OVERCONSUMPTION", "FAIL", "Inventory presence cannot hide cumulative transition over-consumption.", inputs={"resources": {"inventory": [{"resource_id": "h2", "unit": "unit", "quantity": 1}], "places": {"tank": [{"color": "h2", "qty": 1}]}, "transitions": [{"id": "use-1", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}, {"id": "use-2", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}]}}),
-    _failure("ResourceGuard", "guard", "RESOURCE_UNEVALUABLE_TOKEN", "GAP", "Malformed resource tokens cannot enter a conservation rollout.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": "bad"}]}, "transitions": [{"id": "run", "consumes": []}]}}),
-    _failure("ResourceGuard", "guard", "RESOURCE_UNEVALUABLE_TRANSITION", "GAP", "Malformed resource transitions cannot enter a conservation rollout.", inputs={"resources": {"places": {"tank": [{"color": "h2", "qty": 1}]}, "transitions": [{"consumes": []}]}}),
-    _failure("CausalGuard", "guard", "CAUSAL_BOUNDARY_TEMPORAL_STORY", "BOUNDARY_EXCEEDED", "CausalGuard cannot promote temporal order alone into SCM evidence.", semantics=("temporal_story",)),
-    _failure("CausalGuard", "guard", "CAUSAL_CYCLE", "FAIL", "A directed cycle must reject the SCM claim.", inputs={"causal_model": {"variables": ["x", "y"], "equations": {"x": 1, "y": 2}, "graph": [["x", "y"], ["y", "x"]]}}),
-    _failure("CausalGuard", "guard", "CAUSAL_MISSING_STRUCTURAL_EQUATION", "GAP", "Every declared SCM variable must have a structural equation.", inputs={"causal_model": {"variables": ["x", "y"], "equations": {"x": 1}, "graph": []}}),
-    _failure("CausalGuard", "guard", "CAUSAL_CONSTRAINT_VIOLATED", "FAIL", "A declared constraint that fails in a scenario must reject the claim.", inputs={"causal_model": {"variables": ["slack_h"], "equations": {"slack_h": "-0.5"}, "scenarios": {"plan": {}}, "constraints": ["slack_h >= 0"]}}),
-    _failure("CausalGuard", "guard", "CAUSAL_CONSTRAINT_UNEVALUABLE", "GAP", "A constraint that is not a comparison of declared variables cannot pass.", inputs={"causal_model": {"variables": ["slack_h"], "equations": {"slack_h": "0.5"}, "scenarios": {"plan": {}}, "constraints": ["slack_h"]}}),
-    _failure("CausalGuard", "guard", "CAUSAL_MISSING_BEHAVIOR_OBLIGATION", "GAP", "An equation model cannot qualify behavior without a declared executable scenario, holdout, intervention, or counterfactual.", inputs={"causal_model": {"variables": ["x"], "equations": {"x": 1}, "graph": []}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_BOUNDARY_DEONTIC_OBLIGATION", "BOUNDARY_EXCEEDED", "ConflictGuard cannot support a deontic obligation.", semantics=("deontic",)),
-    _failure("ConflictGuard", "guard", "CONFLICT_INVALID_PROBABILITY", "FAIL", "Invalid transition probabilities must reject the finite-game claim.", inputs={"game_model": {"transitions": [{"probabilities": [0.7, 0.7]}], "payoffs": [{"state": "s"}]}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_DUPLICATE_PARTICIPANT", "FAIL", "Duplicate participant identities must reject the finite-game claim.", inputs={"game_model": {"players": ["a", "a"], "transitions": [{"probabilities": [1.0]}], "payoffs": [{"state": "s"}]}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_MISSING_PAYOFF", "GAP", "A finite-game claim cannot pass without payoff evidence.", inputs={"game_model": {"transitions": []}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_REFERENCE_CLOSURE", "FAIL", "Finite-game transitions and payoffs cannot reference undeclared states or players.", inputs={"game_model": {"players": ["alice", "bob"], "actions": ["share"], "states": ["open"], "transitions": [{"from": "ghost", "to": "void", "probabilities": [1.0]}], "payoffs": [{"player": "mallory", "state": "void", "value": 1}]}}),
-    _failure("ConflictGuard", "guard", "CONFLICT_INCOMPLETE_GAME", "GAP", "A finite game cannot qualify without players, actions, states, transitions, and payoffs.", inputs={"game_model": {"payoffs": [{"player": "alice", "state": "open", "value": 1}]}}),
-    _failure("NormGuard", "guard", "NORM_BOUNDARY_PHYSICAL_ENABLEMENT", "BOUNDARY_EXCEEDED", "NormGuard cannot support physical enablement.", semantics=("physical_enablement",)),
-    _failure("NormGuard", "guard", "NORM_ACTIVE_CONFLICT", "FAIL", "Active norms that forbid and require the same action of one actor must fail.", inputs={'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}),
-    _failure("NormGuard", "guard", "NORM_MODALITY_UNKNOWN", "FAIL", "A modality outside the current deontic enumeration must fail.", inputs={"norms": [{"modality": "maybe", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}),
-    _failure("NormGuard", "guard", "NORM_MISSING_NORM_MODEL", "GAP", "A neutral norm claim cannot pass without a norm model.", text="review the declared norm state", inputs={"norms": []}),
-    _failure("NormGuard", "guard", "NORM_MISSING_CONDITION_FACT", "GAP", "A norm cannot qualify without its referenced condition fact.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "different", "value": True}]}),
-    _failure("NormGuard", "guard", "NORM_UNEVALUABLE_FACT", "GAP", "A fact without an explicit boolean truth value cannot qualify a norm.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized"}]}),
-    _failure("NormGuard", "guard", "NORM_DUPLICATE_FACT_ID", "FAIL", "One fact id cannot carry multiple truth records.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}, {"fact_id": "authorized", "value": False}]}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_MISSING_EVENTS", "GAP", "Semantic event execution cannot pass without executable events."),
-    _failure("EventGuard", "semantic", "SEM_EVENT_CONTRADICTION", "FAIL", "Semantic event execution must reject contradictory fluents.", inputs={"events": [{"event_id": "e1", "at": "t0", "initiates": "ready"}], "event_model": {"contradictory_fluents": ["hot", "cold"]}}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_FLUENT_TRANSITION_CONTRADICTION", "FAIL", "Semantic event execution must reject one event terminating and initiating the same fluent.", inputs={"events": [{"event_id": "e1", "at": "t0", "terminates": ["ready"], "initiates": ["ready"]}]}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_MISSING_AXIOM", "GAP", "Semantic event execution cannot pass a record missing time or fluent axioms.", inputs={"events": [{"event_id": "e1"}]}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_DANGLING_TRANSITION_STATE", "FAIL", "Semantic transition execution must reject a source or target outside the declared state denominator.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}], "transitions": [{"transition_id": "go", "source_state": "waiting", "target_state": "missing", "guard": True, "effect": "done"}]}}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_MISSING_STATE_DENOMINATOR", "GAP", "Semantic transition execution needs a declared state denominator.", inputs={"event_model": {"transitions": [{"transition_id": "go", "source_state": "waiting", "target_state": "done", "guard": True, "effect": "done"}]}}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_DUPLICATE_STATE_TRANSITION_ID", "FAIL", "Semantic transition execution requires unique state and transition ids.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}, {"state_id": "waiting", "initial": False, "terminal": True}]}}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_MISSING_INITIAL_STATE", "GAP", "Semantic transition execution needs an initial state.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": False, "terminal": False}], "transitions": [{"transition_id": "stay", "source_state": "waiting", "target_state": "waiting", "guard": True, "effect": "wait"}]}}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_PRECONDITION_UNMET", "FAIL", "Semantic event execution must reject an event whose required fluent does not hold.", inputs={"events": [{"event_id": "enter", "at": "t1", "requires": ["door_open"], "initiates": ["inside"]}]}),
-    _failure("EventGuard", "semantic", "SEM_EVENT_UNEVALUABLE_TRANSITION_GUARD", "GAP", "Semantic transition execution cannot guess an undeclared guard truth value.", inputs={"event_model": {"states": [{"state_id": "waiting", "initial": True, "terminal": False}], "transitions": [{"transition_id": "stay", "source_state": "waiting", "target_state": "waiting", "guard": "ready", "effect": "wait"}]}}),
-    _failure("AgentGuard", "semantic", "SEM_AGENT_MISSING_MODEL", "GAP", "Semantic BDI execution cannot pass without agent records."),
-    _failure("AgentGuard", "semantic", "SEM_AGENT_INCOMPLETE_BDI", "GAP", "Semantic BDI execution cannot pass an incomplete BDI record.", inputs={"beliefs": {"agent": {"agent_id": "agent", "beliefs": ["b"], "intentions": ["i"]}}}),
-    _failure("AgentGuard", "semantic", "SEM_AGENT_CONFLICTING_INTENTIONS", "FAIL", "Semantic BDI execution must reject conflicting intentions.", inputs={"beliefs": {"agent": {"agent_id": "agent", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}, "agent_model": {"conflicting_intentions": ["start", "stop"]}}),
-    _failure("AgentGuard", "semantic", "SEM_AGENT_IDENTITY_MISMATCH", "FAIL", "Semantic BDI execution must reject a map key that differs from agent_id.", inputs={"beliefs": {"alice": {"agent_id": "bob", "beliefs": ["b"], "desires": ["d"], "intentions": ["i"]}}}),
-    _failure("SpaceGuard", "semantic", "SEM_SPACE_MISSING_RCC8", "GAP", "Semantic spatial execution cannot pass without RCC8 relations."),
-    _failure("SpaceGuard", "semantic", "SEM_SPACE_UNEVALUABLE_RCC8", "GAP", "Semantic spatial execution cannot pass a malformed RCC8 relation.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "NEAR"}]}),
-    _failure("SpaceGuard", "semantic", "SEM_SPACE_RCC8_CONFLICT", "FAIL", "Semantic spatial execution must reject conflicting RCC8 relations.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "DC"}, {"at": "t0", "x": "a", "y": "b", "relation": "EQ"}]}),
-    _failure("SpaceGuard", "semantic", "SEM_SPACE_RCC8_REFLEXIVITY_CONFLICT", "FAIL", "Semantic spatial execution must reject a non-EQ self relation.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "a", "relation": "DC"}]}),
-    _failure("SpaceGuard", "semantic", "SEM_SPACE_RCC8_CONVERSE_CONFLICT", "FAIL", "Semantic spatial execution must reject inconsistent declared converses.", inputs={"spatial_relations": [{"at": "t0", "x": "a", "y": "b", "relation": "EC"}, {"at": "t0", "x": "b", "y": "a", "relation": "DC"}]}),
-    _failure("ResourceGuard", "semantic", "SEM_RESOURCE_MISSING_MODEL", "GAP", "Semantic resource execution cannot pass without places and transitions."),
-    _failure("ResourceGuard", "semantic", "SEM_RESOURCE_DOUBLE_CONSUMPTION", "FAIL", "Semantic inventory validation cannot short-circuit cumulative transition conservation.", inputs={"resources": {"inventory": [{"resource_id": "h2", "unit": "unit", "quantity": 1}], "places": {"tank": [{"color": "h2", "qty": 1}]}, "transitions": [{"id": "use-1", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}, {"id": "use-2", "consumes": [{"place": "tank", "color": "h2", "qty": 1}]}]}}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_MISSING_EQUATIONS", "GAP", "Semantic causal execution cannot pass without variables and equations.", inputs={"causal_model": {"variables": [], "equations": {}, "graph": []}}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_UNEVALUABLE_EQUATION", "GAP", "Semantic causal execution cannot pass a missing or unsafe equation.", inputs={"causal_model": {"variables": ["x", "y"], "equations": {"x": 1}, "graph": []}}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_ROLLOUT_ERROR", "GAP", "Semantic causal execution cannot pass a declared scenario that fails safe scalar rollout.", inputs={"causal_model": {"variables": ["x"], "equations": {"x": "1 / z"}, "exogenous": ["z"], "graph": [], "scenarios": {"s1": {"z": 0}}}}, coverage_context={"scenario_ids": ["s1"]}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_CONSTRAINT_VIOLATED", "FAIL", "Semantic causal execution must reject a constraint that fails in an evaluated scenario.", inputs={"causal_model": {"variables": ["slack_h"], "equations": {"slack_h": "-0.5"}, "scenarios": {"plan": {}}, "constraints": ["slack_h >= 0"]}}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_UNEVALUABLE_CONSTRAINT", "GAP", "Semantic causal execution cannot pass a constraint it cannot evaluate.", inputs={"causal_model": {"variables": ["slack_h"], "equations": {"slack_h": "0.5"}, "scenarios": {"plan": {}}, "constraints": ["slack_h"]}}),
-    _failure("CausalGuard", "semantic", "SEM_CAUSAL_MISSING_BEHAVIOR_OBLIGATION", "GAP", "Semantic causal execution cannot pass an equation model with no executable behavior obligation.", inputs={"causal_model": {"variables": ["x"], "equations": {"x": 1}, "graph": []}}),
-    _failure("ConflictGuard", "semantic", "SEM_CONFLICT_INCOMPLETE_GAME", "GAP", "Semantic conflict execution cannot pass an incomplete finite game.", inputs={"game_model": {"players": ["a"], "actions": {"a": ["hold"]}}}),
-    _failure("ConflictGuard", "semantic", "SEM_CONFLICT_INVALID_TRANSITION", "FAIL", "Semantic conflict execution must reject invalid transition probabilities.", inputs={"game_model": {"players": ["a", "b"], "actions": {"a": ["hold"], "b": ["hold"]}, "states": ["s"], "transitions": [{"from": "s", "to": "s", "probabilities": [0.7, 0.7]}], "payoffs": [{"state": "s", "reward": {"a": 1, "b": 1}}]}}),
-    _failure("ConflictGuard", "semantic", "SEM_CONFLICT_DUPLICATE_PARTICIPANT", "FAIL", "Semantic conflict execution must reject duplicate participant identities.", inputs={"game_model": {"players": ["a", "a"], "actions": ["hold"], "states": ["s"], "transitions": [{"state": "s", "probabilities": [1.0]}], "payoffs": [{"state": "s", "reward": {"a": 1}}]}}),
-    _failure("ConflictGuard", "semantic", "SEM_CONFLICT_REFERENCE_CLOSURE", "FAIL", "Semantic conflict execution must reject foreign transition-state and payoff-player references.", inputs={"game_model": {"players": ["alice", "bob"], "actions": ["share"], "states": ["open"], "transitions": [{"from": "ghost", "to": "void", "probabilities": [1.0]}], "payoffs": [{"player": "mallory", "state": "void", "value": 1}]}}),
-    _failure("NormGuard", "semantic", "SEM_NORM_MISSING_MODEL", "GAP", "Semantic norm execution cannot pass without norms."),
-    _failure("NormGuard", "semantic", "SEM_NORM_MODALITY_UNKNOWN", "FAIL", "Semantic norm execution must reject an unknown modality.", inputs={"norms": [{"modality": "maybe", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}]}),
-    _failure("NormGuard", "semantic", "SEM_NORM_MISSING_CONDITION_FACT", "GAP", "Semantic norm execution cannot pass without condition facts.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": []}),
-    _failure("NormGuard", "semantic", "SEM_NORM_ACTIVE_CONFLICT", "FAIL", "Semantic norm execution must reject active norms that forbid and require the same action of one actor.", inputs={'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}),
-    _failure("NormGuard", "semantic", "SEM_NORM_UNEVALUABLE_FACT", "GAP", "Semantic norm execution cannot use a fact without an explicit boolean truth value.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized"}]}),
-    _failure("NormGuard", "semantic", "SEM_NORM_DUPLICATE_FACT_ID", "FAIL", "Semantic norm execution must reject duplicate fact identities.", inputs={"norms": [{"modality": "permitted", "action": "start", "condition": "authorized"}], "facts": [{"fact_id": "authorized", "value": True}, {"fact_id": "authorized", "value": False}]}),
+    _failure('EventGuard', 'guard', 'EVENT_BOUNDARY_NUMERIC_DYNAMICS', 'BOUNDARY_EXCEEDED', 'EventGuard cannot support a numeric-dynamics claim.', semantics=('numeric_dynamics',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'EventGuard'))),
+    _failure('EventGuard', 'guard', 'EVENT_MISSING_EVENT_MODEL', 'GAP', 'An event claim cannot pass without events or an event model.'),
+    _failure('EventGuard', 'guard', 'EVENT_CONTRADICTORY_FLUENTS', 'FAIL', 'Contradictory event fluents must reject the claim.', inputs={'event_model': {'contradictory_fluents': ['hot', 'cold']}}),
+    _failure('EventGuard', 'guard', 'EVENT_FLUENT_TRANSITION_CONTRADICTION', 'FAIL', 'One event cannot terminate and initiate the same fluent.', inputs={'events': [{'event_id': 'e1', 'at': 't0', 'terminates': ['ready'], 'initiates': ['ready']}]}),
+    _failure('EventGuard', 'guard', 'EVENT_MISSING_INITIATION_AXIOM', 'GAP', 'A declared event model cannot pass with missing event axioms.', inputs={'event_model': {'missing_axioms': ['initiates']}}),
+    _failure('EventGuard', 'guard', 'EVENT_DANGLING_TRANSITION_STATE', 'FAIL', 'A transition cannot name a state outside the declared state denominator.', inputs={'event_model': {'states': [{'state_id': 'waiting', 'initial': True, 'terminal': False}], 'transitions': [{'transition_id': 'go', 'source_state': 'waiting', 'target_state': 'missing', 'guard': True, 'effect': 'done'}]}}),
+    _failure('EventGuard', 'guard', 'EVENT_MISSING_STATE_DENOMINATOR', 'GAP', 'A transition model cannot qualify without declared states.', inputs={'event_model': {'transitions': [{'transition_id': 'go', 'source_state': 'waiting', 'target_state': 'done', 'guard': True, 'effect': 'done'}]}}),
+    _failure('EventGuard', 'guard', 'EVENT_DUPLICATE_STATE_TRANSITION_ID', 'FAIL', 'State and transition ids must be unique.', inputs={'event_model': {'states': [{'state_id': 'waiting', 'initial': True, 'terminal': False}, {'state_id': 'waiting', 'initial': False, 'terminal': True}]}}),
+    _failure('EventGuard', 'guard', 'EVENT_PRECONDITION_UNMET', 'FAIL', 'An event cannot happen while a fluent it requires does not hold.', inputs={'events': [{'event_id': 'enter', 'at': 't1', 'requires': ['door_open'], 'initiates': ['inside']}]}),
+    _failure('EventGuard', 'guard', 'EVENT_MISSING_INITIAL_STATE', 'GAP', 'A transition rollout cannot start without an initial state.', inputs={'event_model': {'states': [{'state_id': 'waiting', 'initial': False, 'terminal': False}], 'transitions': [{'transition_id': 'stay', 'source_state': 'waiting', 'target_state': 'waiting', 'guard': True, 'effect': 'wait'}]}}),
+    _failure('AgentGuard', 'guard', 'AGENT_BOUNDARY_NON_BDI', 'BOUNDARY_EXCEEDED', 'AgentGuard cannot support a payoff-equilibrium claim.', semantics=('payoff',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'AgentGuard'))),
+    _failure('AgentGuard', 'guard', 'AGENT_CONFLICTING_INTENTIONS', 'FAIL', 'Conflicting intentions must reject the BDI claim.', inputs={'agent_model': {'conflicting_intentions': ['start', 'stop']}}),
+    _failure('AgentGuard', 'guard', 'AGENT_MISSING_BELIEF', 'GAP', 'A BDI claim cannot pass without its required belief state.', inputs={'agent_model': {'missing_beliefs': ['ready']}}),
+    _failure('AgentGuard', 'guard', 'AGENT_IDENTITY_MISMATCH', 'FAIL', 'A BDI record cannot be owned by a map key different from its agent_id.', inputs={'beliefs': {'alice': {'agent_id': 'bob', 'beliefs': ['b'], 'desires': ['d'], 'intentions': ['i']}}}),
+    _failure('AgentGuard', 'guard', 'AGENT_INCOMPLETE_BDI', 'GAP', 'A declared agent needs beliefs, desires, and intentions.', inputs={'beliefs': {'alice': {'agent_id': 'alice', 'beliefs': ['b'], 'desires': [], 'intentions': ['i']}}}),
+    _failure('SpaceGuard', 'guard', 'SPACE_BOUNDARY_METRIC_GEOMETRY', 'BOUNDARY_EXCEEDED', 'SpaceGuard cannot support metric-distance claims.', semantics=('metric_distance',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'SpaceGuard'))),
+    _failure('SpaceGuard', 'guard', 'SPACE_MISSING_RELATION', 'GAP', 'An RCC8 claim cannot pass without a relation.'),
+    _failure('SpaceGuard', 'guard', 'SPACE_RCC8_CONTRADICTION', 'FAIL', 'Conflicting RCC8 base relations must reject the claim.', inputs={'spatial_relations': [{'at': 't0', 'x': 'a', 'y': 'b', 'relation': 'DC'}, {'at': 't0', 'x': 'a', 'y': 'b', 'relation': 'EQ'}]}),
+    _failure('SpaceGuard', 'guard', 'SPACE_RCC8_REFLEXIVITY_CONTRADICTION', 'FAIL', 'A non-EQ RCC8 relation from an object to itself must reject the claim.', inputs={'spatial_relations': [{'at': 't0', 'x': 'a', 'y': 'a', 'relation': 'DC'}]}),
+    _failure('SpaceGuard', 'guard', 'SPACE_RCC8_CONVERSE_CONTRADICTION', 'FAIL', 'Declared reverse RCC8 relations must be exact converses.', inputs={'spatial_relations': [{'at': 't0', 'x': 'a', 'y': 'b', 'relation': 'EC'}, {'at': 't0', 'x': 'b', 'y': 'a', 'relation': 'DC'}]}),
+    _failure('SpaceGuard', 'guard', 'SPACE_UNEVALUABLE_RCC8', 'GAP', 'A malformed or unsupported RCC8 record cannot qualify.', inputs={'spatial_relations': [{'at': 't0', 'x': 'a', 'y': 'b', 'relation': 'NEAR'}]}),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_BOUNDARY_NORM_AUTHORIZATION', 'BOUNDARY_EXCEEDED', 'ResourceGuard cannot support a permission claim.', semantics=('permission',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'ResourceGuard'))),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_MISSING_RESOURCE_MODEL', 'GAP', 'A resource claim cannot pass without places and transitions.'),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_MISSING_TOKEN', 'FAIL', 'A transition cannot pass when required colored tokens are absent.', inputs={'resources': {'places': {'tank': [{'color': 'h2', 'qty': 0}]}, 'transitions': [{'id': 'run', 'consumes': [{'place': 'tank', 'color': 'h2', 'qty': 1}]}]}}),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_CAPACITY_OVERFLOW', 'FAIL', 'A transition that exceeds capacity must reject the claim.', inputs={'resources': {'places': {'tank': [{'color': 'h2', 'qty': 2}]}, 'capacities': {'out': 1}, 'transitions': [{'id': 'run', 'consumes': [{'place': 'tank', 'color': 'h2', 'qty': 1}], 'produces': [{'place': 'out', 'color': 'kwh', 'qty': 2}]}]}}),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_CUMULATIVE_OVERCONSUMPTION', 'FAIL', 'Inventory presence cannot hide cumulative transition over-consumption.', inputs={'resources': {'inventory': [{'resource_id': 'h2', 'unit': 'unit', 'quantity': 1}], 'places': {'tank': [{'color': 'h2', 'qty': 1}]}, 'transitions': [{'id': 'use-1', 'consumes': [{'place': 'tank', 'color': 'h2', 'qty': 1}]}, {'id': 'use-2', 'consumes': [{'place': 'tank', 'color': 'h2', 'qty': 1}]}]}}),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_UNEVALUABLE_TOKEN', 'GAP', 'Malformed resource tokens cannot enter a conservation rollout.', inputs={'resources': {'places': {'tank': [{'color': 'h2', 'qty': 'bad'}]}, 'transitions': [{'id': 'run', 'consumes': []}]}}),
+    _failure('ResourceGuard', 'guard', 'RESOURCE_UNEVALUABLE_TRANSITION', 'GAP', 'Malformed resource transitions cannot enter a conservation rollout.', inputs={'resources': {'places': {'tank': [{'color': 'h2', 'qty': 1}]}, 'transitions': [{'consumes': []}]}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_BOUNDARY_TEMPORAL_STORY', 'BOUNDARY_EXCEEDED', 'CausalGuard cannot promote temporal order alone into SCM evidence.', semantics=('temporal_story',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'CausalGuard'))),
+    _failure('CausalGuard', 'guard', 'CAUSAL_CYCLE', 'FAIL', 'A directed cycle must reject the SCM claim.', inputs={'causal_model': {'variables': ['x', 'y'], 'equations': {'x': 1, 'y': 2}, 'graph': [['x', 'y'], ['y', 'x']]}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_MISSING_STRUCTURAL_EQUATION', 'GAP', 'Every declared SCM variable must have a structural equation.', inputs={'causal_model': {'variables': ['x', 'y'], 'equations': {'x': 1}, 'graph': []}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_CONSTRAINT_VIOLATED', 'FAIL', 'A declared constraint that fails in a scenario must reject the claim.', inputs={'causal_model': {'variables': ['slack_h'], 'equations': {'slack_h': '-0.5'}, 'scenarios': {'plan': {}}, 'constraints': ['slack_h >= 0']}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_CONSTRAINT_UNEVALUABLE', 'GAP', 'A constraint that is not a comparison of declared variables cannot pass.', inputs={'causal_model': {'variables': ['slack_h'], 'equations': {'slack_h': '0.5'}, 'scenarios': {'plan': {}}, 'constraints': ['slack_h']}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_MISSING_BEHAVIOR_OBLIGATION', 'GAP', 'An equation model cannot qualify behavior without a declared executable scenario, holdout, intervention, or counterfactual.', inputs={'causal_model': {'variables': ['x'], 'equations': {'x': 1}, 'graph': []}}),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_BOUNDARY_DEONTIC_OBLIGATION', 'BOUNDARY_EXCEEDED', 'ConflictGuard cannot support a deontic obligation.', semantics=('deontic',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'ConflictGuard'))),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_INVALID_PROBABILITY', 'FAIL', 'Invalid transition probabilities must reject the finite-game claim.', inputs={'game_model': {'transitions': [{'probabilities': [0.7, 0.7]}], 'payoffs': [{'state': 's'}]}}),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_DUPLICATE_PARTICIPANT', 'FAIL', 'Duplicate participant identities must reject the finite-game claim.', inputs={'game_model': {'players': ['a', 'a'], 'transitions': [{'probabilities': [1.0]}], 'payoffs': [{'state': 's'}]}}),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_MISSING_PAYOFF', 'GAP', 'A finite-game claim cannot pass without payoff evidence.', inputs={'game_model': {'transitions': []}}),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_REFERENCE_CLOSURE', 'FAIL', 'Finite-game transitions and payoffs cannot reference undeclared states or players.', inputs={'game_model': {'players': ['alice', 'bob'], 'actions': ['share'], 'states': ['open'], 'transitions': [{'from': 'ghost', 'to': 'void', 'probabilities': [1.0]}], 'payoffs': [{'player': 'mallory', 'state': 'void', 'value': 1}]}}),
+    _failure('ConflictGuard', 'guard', 'CONFLICT_INCOMPLETE_GAME', 'GAP', 'A finite game cannot qualify without players, actions, states, transitions, and payoffs.', inputs={'game_model': {'payoffs': [{'player': 'alice', 'state': 'open', 'value': 1}]}}),
+    _failure('NormGuard', 'guard', 'NORM_BOUNDARY_PHYSICAL_ENABLEMENT', 'BOUNDARY_EXCEEDED', 'NormGuard cannot support physical enablement.', semantics=('physical_enablement',), inputs=next((case.inputs for case in NATIVE_GOOD_CASES if case.guard == 'NormGuard'))),
+    _failure('NormGuard', 'guard', 'NORM_ACTIVE_CONFLICT', 'FAIL', 'Active norms that forbid and require the same action of one actor must fail.', inputs={'norms': [{'modality': 'obligatory', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'oath_sworn', 'value': True}}, {'modality': 'forbidden', 'actor': 'keeper', 'action': 'stay_silent', 'condition': {'fact_id': 'flood_coming', 'value': True}}], 'facts': [{'fact_id': 'oath_sworn', 'value': True}, {'fact_id': 'flood_coming', 'value': True}]}),
+    _failure('NormGuard', 'guard', 'NORM_MODALITY_UNKNOWN', 'FAIL', 'A modality outside the current deontic enumeration must fail.', inputs={'norms': [{'modality': 'maybe', 'action': 'start', 'condition': 'authorized'}], 'facts': [{'fact_id': 'authorized', 'value': True}]}),
+    _failure('NormGuard', 'guard', 'NORM_MISSING_NORM_MODEL', 'GAP', 'A neutral norm claim cannot pass without a norm model.', text='review the declared norm state', inputs={'norms': []}),
+    _failure('NormGuard', 'guard', 'NORM_MISSING_CONDITION_FACT', 'GAP', 'A norm cannot qualify without its referenced condition fact.', inputs={'norms': [{'modality': 'permitted', 'action': 'start', 'condition': 'authorized'}], 'facts': [{'fact_id': 'different', 'value': True}]}),
+    _failure('NormGuard', 'guard', 'NORM_UNEVALUABLE_FACT', 'GAP', 'A fact without an explicit boolean truth value cannot qualify a norm.', inputs={'norms': [{'modality': 'permitted', 'action': 'start', 'condition': 'authorized'}], 'facts': [{'fact_id': 'authorized'}]}),
+    _failure('NormGuard', 'guard', 'NORM_DUPLICATE_FACT_ID', 'FAIL', 'One fact id cannot carry multiple truth records.', inputs={'norms': [{'modality': 'permitted', 'action': 'start', 'condition': 'authorized'}], 'facts': [{'fact_id': 'authorized', 'value': True}, {'fact_id': 'authorized', 'value': False}]}),
+    _failure('EventGuard', 'guard', 'EVENT_UNEVALUABLE_TRANSITION_GUARD', 'GAP', 'Semantic transition execution cannot guess an undeclared guard truth value.', inputs={'event_model': {'states': [{'state_id': 'waiting', 'initial': True, 'terminal': False}], 'transitions': [{'transition_id': 'stay', 'source_state': 'waiting', 'target_state': 'waiting', 'guard': 'ready', 'effect': 'wait'}]}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_UNEVALUABLE_EQUATION', 'GAP', 'Semantic causal execution cannot pass a missing or unsafe equation.', inputs={'causal_model': {'variables': ['x'], 'equations': {'x': 'unsafe(x)'}, 'scenarios': {'s': {}}}}),
+    _failure('CausalGuard', 'guard', 'CAUSAL_SCENARIO_UNEVALUABLE', 'GAP', 'Semantic causal execution cannot pass a declared scenario that fails safe scalar rollout.', inputs={'causal_model': {'variables': ['x'], 'equations': {'x': '1 / z'}, 'exogenous': ['z'], 'graph': [], 'scenarios': {'s1': {'z': 0}}}}, coverage_context={'scenario_ids': ['s1']}),
+    _failure("ResourceGuard", "guard", "RESOURCE_UNEVALUABLE_INVENTORY", "GAP", "Malformed inventory quantities cannot enter an audit.", inputs={"resources": {"inventory": [{"resource_id": "fuel", "unit": "kg", "quantity": -1}]}}),
 )
-
-
-MESH_RUNTIME_FAILURES = {
-    "SEM_EXECUTOR_UNREGISTERED": "Owned by mesh executor registration, not by an individual Guard model.",
-    "SEM_PROVIDER_UNAVAILABLE": "Owned by provider availability and mesh rollout lifecycle, not by an individual Guard model.",
-}
 
 
 def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any], semantics: tuple[str, ...] = ()) -> GuardContract:
@@ -351,17 +311,11 @@ def _literal_codes(path: Path, call_name: str) -> set[str]:
 
 
 def discover_guard_owned_failure_codes() -> dict[tuple[str, str], set[str]]:
-    semantic_path = Path(importlib.import_module("worldguard.semantic").__file__).resolve()
-    discovered: dict[tuple[str, str], set[str]] = {}
-    semantic_codes = _literal_codes(semantic_path, "_finding")
+    discovered = {}
     for purpose in GUARD_MODEL_PURPOSES:
         runner = GUARD_RUNNERS[purpose.guard]
-        guard_path = Path(importlib.import_module(runner.__module__).__file__).resolve()
-        discovered[(purpose.guard, "guard")] = _literal_codes(guard_path, "error")
-        prefix = f"SEM_{purpose.guard.removesuffix('Guard').upper()}_"
-        discovered[(purpose.guard, "semantic")] = {
-            code for code in semantic_codes if code.startswith(prefix)
-        }
+        path = Path(importlib.import_module(runner.__module__).__file__).resolve()
+        discovered[(purpose.guard, "guard")] = _literal_codes(path, "error")
     return discovered
 
 
@@ -374,7 +328,7 @@ def run_guard_model_contract() -> dict[str, Any]:
     failures: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
     guards = {purpose.guard for purpose in GUARD_MODEL_PURPOSES}
-    if guards != set(GUARD_RUNNERS) or guards != set(EXECUTOR_REGISTRY):
+    if guards != set(GUARD_RUNNERS):
         failures.append({"code": "GUARD_PURPOSE_INVENTORY_MISMATCH"})
     good_counts = Counter(case.guard for case in NATIVE_GOOD_CASES)
     if set(good_counts) != guards or any(count != 1 for count in good_counts.values()):
@@ -387,20 +341,14 @@ def run_guard_model_contract() -> dict[str, Any]:
     for case in NATIVE_GOOD_CASES:
         contract = _contract(case.case_id, case.guard, case.text, case.inputs)
         structural = GUARD_RUNNERS[case.guard](contract)
-        semantic_status, _, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
-        observed = {"case_id": case.case_id, "guard": case.guard,
-                    "guard_status": structural.status.value, "semantic_status": semantic_status.value}
+        observed = {"case_id": case.case_id, "guard": case.guard, "guard_status": structural.status.value}
         observations.append(observed)
-        if structural.status is not GuardStatus.PASS or semantic_status is not SemanticStatus.PASS:
+        if structural.status != GuardStatus.PASS:
             failures.append({"code": "NATIVE_GOOD_REJECTED", **observed})
     for case in PROTECTED_FAILURE_CLASSES:
         contract = _contract(case.failure_id, case.guard, case.text, case.inputs, case.semantics)
-        if case.layer == "guard":
-            result = GUARD_RUNNERS[case.guard](contract)
-            status, codes = result.status.value, [str(row.get("code", "")) for row in result.errors]
-        else:
-            result, findings, _, _ = EXECUTOR_REGISTRY[case.guard].execute(contract)
-            status, codes = result.value, [str(row.get("code", "")) for row in findings]
+        result = GUARD_RUNNERS[case.guard](contract)
+        status, codes = result.status.value, [str(row.get("code", "")) for row in result.errors]
         observed = {"failure_id": case.failure_id, "guard": case.guard, "layer": case.layer,
                     "expected_status": case.expected_status, "observed_status": status,
                     "expected_code": case.code, "observed_codes": codes}
@@ -414,7 +362,7 @@ def run_guard_model_contract() -> dict[str, Any]:
             "executed_case_count": len(observations),
             "purposes": [item.to_dict() for item in GUARD_MODEL_PURPOSES],
             "protected_failures": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
-            "mesh_runtime_failures": MESH_RUNTIME_FAILURES, "observations": observations, "failures": failures,
+            "observations": observations, "failures": failures,
             "claim_boundary": "Finite author regression over native Guard-owned reactions only; no task understanding, factual truth, installation or release claim."}
 
 
