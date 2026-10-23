@@ -5,39 +5,47 @@ description: "Use for checking that a story, trip, plan or process is consistent
 
 # WorldGuard
 
-Write the world as a small executable model (events, agents, places, resources, causes, norms) and bind the claim to it: `claim.asserts` lists what the claim says as checks on the model, for example `{event: e_unlock, before: e_enter}` or `{variable: slack_h, op: ">=", value: 0}`. WorldGuard checks that the model is consistent (including event `requires` and causal `constraints`) and that every assertion holds in it. It never reads the claim sentence; a claim without `asserts` is `GAP` (`CLAIM_NOT_BOUND`). A consistent model is not proof that the world is factually true.
+Run a small executable world model and bind each claim to it with `claim.asserts`.
+WorldGuard checks the model and those rows; it never reads the claim sentence.
+A consistent model does not establish factual truth. Missing assertions are GAP.
 
-EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard and NormGuard are internal checks of this one skill. WorldGuard picks them from `claim.requested_semantics` (`event`, `agent`, `spatial`, `resource`, `causal`, `conflict`, `norm`; `predictive` adds EventGuard and CausalGuard) and from the kinds of `claim.asserts`; `claim.target_guards` is optional. Unknown semantics stay visible as a gap.
+A mesh is one model tree: story/trip → chapter/day → scene/segment; each node is a world contract.
+Its five abilities are structure (contracts and timeline), counterexamples (failed events or constraints
+with their timeline), known-bad variants (`variants:`) that must fail, binding to real material
+(`claim.asserts` and `source:`), and binding to tests (assertion rows and variants).
+Checks nest along the tree; parent rows may read descendants with `node:`.
 
-## Start
+## Choose a command
 
-The native CLI commands are `check`, `mesh-check` and `timeline`. Every mesh node is checked once; missing node contracts are gaps. A `predictive` request adds event and causal checks without a separate depth or prediction license.
+Run `python <skill-root>/scripts/run_worldguard.py ...`:
 
-Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`. Copy one of these worlds and edit its model and assertions to start a check.
+| Request | Arguments | Read |
+|---|---|---|
+| Check one world | `check --contract world.yaml` | [worldguard-contracts.md](references/worldguard-contracts.md) |
+| Check one model tree | `mesh-check --mesh mesh.yaml` | [model-mesh.md](references/model-mesh.md) |
+| Compare plan and observations | `compare --contract world.yaml --observed observed.yaml` | [worldguard-contracts.md](references/worldguard-contracts.md) |
+| Read back a world | `timeline --contract world.yaml [--scenario id]` | [worldguard-contracts.md](references/worldguard-contracts.md) |
 
-| Shape | Use for | Command: `python <skill-root>/scripts/run_worldguard.py ...` | Reference |
-|---|---|---|---|
-| `unit_contract` | One claim against one world model | `check --contract <file.yaml>` | [worldguard-contracts.md](references/worldguard-contracts.md) |
-| `model_mesh` | Several linked models (scenes, trip legs, handoffs) | `mesh-check --mesh <file.yaml>` | [model-mesh.md](references/model-mesh.md) |
+Start from `check --example scene` or `--example trip`, or copy a world from
+`assets/examples/`. Load [guard-inputs.md](references/guard-inputs.md) for fields,
+copyable input blocks and boundaries of the seven internal Guards: Event, Agent,
+Space, Resource, Causal, Conflict and Norm. Claim semantics and assertion kinds
+select the checks; `target_guards` cannot shrink that set. Unknown semantics GAP.
 
-Load [model-authority.md](references/model-authority.md) only for questions about which model owns a fact, and [closure-report.md](references/closure-report.md) only as an optional checklist when reporting a mesh.
+Use one clock format per contract, with quoted clocks and ISO times across days.
+World events drive `t_<event_id>` in causal expressions and linked token transfers.
+Use `variants:` for edits that must fail and `source:` for original text locations.
 
-Use one time kind per world contract: numbers, one label prefix (`t1`, `t2`), ISO dates/times, or
-quoted same-day clocks (`"9:40"`). Use ISO dates across days; `t4b` and mixed kinds are input errors.
-When event ids repeat across scenarios, qualify event assertions with `scenario`.
-A missing event time prevents ordering only its applicable scenarios; independent known failures remain failures.
+## Read the result
 
-Scenario values replace equations for those variables. Constraints and unscoped variable assertions
-check every scenario, holdout and declared intervention; `scenario` can select an intervention id.
-Write interventions as a list; see the CausalGuard example in the input reference.
+Keep PASS, FAIL, GAP and BOUNDARY_EXCEEDED distinct. Failures take priority over gaps,
+then boundaries, then pass. PASS applies within the stated model scope. Every child
+contributes to a mesh; a passing root cannot hide a non-passing child.
 
-A derived Guard's declared unsupported boundary yields `BOUNDARY_EXCEEDED`; a boundary belonging only
-to an unselected Guard is a gap with a routing hint. Real `FAIL` and missing-input `GAP` take priority.
-
-## Results
-
-Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.
-
-`check` prints a short JSON summary with `contract_id`, `status`, `checked` (Guards and claim rows), `gaps` (one row per problem, each with its `code`) and `scope_limits`. `mesh-check` reports checked node and edge counts and identifies each affected node or edge. Add `--json` for full Guard results and claim rows, or the mesh's `nodes`. A false assertion is `CLAIM_ASSERTION_FALSE` with its `observed` value. Report each problem once with its counterexample or missing slots.
-
-Read a world with `timeline --contract <file.yaml> [--scenario <id>]`. Use `variants:` to declare known-bad edits that must produce the expected non-pass status/code; an escaping variant is `VARIANT_NOT_CAUGHT`. Add `source: "chapter 3 paragraph 12"` to events, transfers, assertion rows or mesh nodes to retain their original location. Syntax is in the unit-contract reference.
+Check/mesh exit 0 on PASS, 1 on non-PASS, 2 on invalid input. Compare exits 0 for all
+matches, 1 for mismatches, 2 for invalid input. Timeline returns a view, not closure.
+Default check summaries contain `status`, `checked`, `gaps`, `scope_limits` and the
+contract id where applicable. Add `--json` only when full node/Guard rows are needed.
+Report status, each gap's code, and a false assertion's `observed` value or named
+missing input, plus scope limits. Use the timeline for the failing event/constraint;
+avoid copying internal report fields into prose.

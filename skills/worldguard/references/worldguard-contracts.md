@@ -28,15 +28,38 @@ Each Guard runs its complete native checks once and returns `guard`, `status`, `
 
 The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem) and `scope_limits`. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Each problem carries its native code and its counterexample or missing slots. Legacy `dependencies` and `output_requirements` input mappings do not change the result.
 
-## Known-bad variants and the timeline
+## Runnable world
+
+Save this as `world.yaml`; `check --contract world.yaml` returns PASS. It has three
+events, two claim rows and one variant that must fail:
 
 ```yaml
+contract_id: door_visit
+claim:
+  claim_id: entered_after_unlock
+  requested_semantics: [event, causal]
+  asserts:
+    - {event: e_unlock, before: e_enter}
+    - {holds: iris_inside, at: t3}
+world_model: {scope_limits: [illustrative sequence]}
+inputs:
+  event_model: {initial_states: [iris_has_key, door_locked]}
+  events:
+    - {event_id: e_give_key, at: t1, source: paragraph 1, requires: [iris_has_key], initiates: [mara_has_key], terminates: [iris_has_key]}
+    - {event_id: e_unlock, at: t2, source: paragraph 2, requires: [mara_has_key, door_locked], initiates: [door_open], terminates: [door_locked]}
+    - {event_id: e_enter, at: t3, source: paragraph 3, requires: [door_open], initiates: [iris_inside]}
+  causal_model:
+    variables: [entry_gap]
+    equations: {entry_gap: "t_e_enter - t_e_unlock"}
+    scenarios: {base: {}}
+    constraints: ["entry_gap >= 0"]
 variants:
   - id: key_given_too_late
-    expect: FAIL
     code: EVENT_PRECONDITION_UNMET
-    set: {"inputs.events[e_give_key].at": t3}
+    set: {"inputs.events[e_give_key].at": t4}
 ```
+
+## Known-bad variants and the timeline
 
 Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY_EXCEEDED`. `code` is optional. `set` replaces existing values, `remove` lists existing fields/items, and `add` maps list paths to lists of appended items. Dot-separated keys, numeric list indices (`[0]`) and exact list ids (`[e_give_key]`, matching `id` or any `_id` field) are supported. Invalid or ambiguous paths are input errors naming the variant. Edits affect an independent in-memory copy with its variants removed. Each result must match status and optional code; otherwise `VARIANT_NOT_CAUGHT` blocks PASS. `checked.variants` gives the count, including for mesh-node contracts.
 
@@ -47,15 +70,16 @@ Optional string `source` fields on events, transitions, assertion rows and mesh 
 ## Compare the world with observations
 
 Run `python <skill-root>/scripts/run_worldguard.py compare --contract world.yaml --observed observed.yaml`.
-For the bundled trip, a small observed file is:
+For the world above, save this as `observed.yaml`. The command exits 1 and reports
+two mismatches: unlock is 0.5 late (tolerance 0.25) and entry_gap differs by -0.5.
 
 ```yaml
-scenario: published_timetable
-source: trip log
-time_tolerance: 5
-tolerance: 0.01
-events: {d1_train_arr: "2026-11-02T10:25"}
-variables: {slack_back_h: 0.75}
+scenario: base
+source: observation log
+time_tolerance: 0.25
+tolerance: 0.1
+events: {e_unlock: t2.5}
+variables: {entry_gap: 0.5}
 ```
 
 Expected values come from the contract's event times and native causal scenario.

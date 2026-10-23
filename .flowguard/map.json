@@ -273,11 +273,11 @@
       "responsibilities": [
         "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
         "Keep contract and reporting instructions aligned with the CLI",
-        "Document compare inputs, native expected values, clock/variable tolerances and observation mismatch exits in the stable contract reference."
+        "Document compare inputs, native expected values, clock/variable tolerances and observation mismatch exits in the stable contract reference.",
+        "Keep one tree/five abilities entry and three runnable references within 25 KB, with model input/mesh/observation guidance and native reporting rules."
       ],
       "files": [
         "skills/worldguard/scripts/*.py",
-        "skills/worldguard/references/closure-report.md",
         "skills/worldguard/references/worldguard-contracts.md"
       ],
       "entrypoints": [],
@@ -294,7 +294,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:90d2db02c68cc84f1c5c7fdd36872638eb9bf66a4516e7fba4771ef34f9a2881"
+      "fingerprint": "sha256:f69aa9398bdc2202ee6b937de0be61ddd31207d0654fa6248ccb4af6d82de81a"
     }
   ],
   "flows": [

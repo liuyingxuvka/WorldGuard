@@ -42,3 +42,14 @@ The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher 
 #### Scenario: Every mesh node is checked
 - **WHEN** the agent runs a mesh
 - **THEN** it reports missing node contracts and native non-pass results without claiming a separate prediction license
+
+### Requirement: One model tree and three runnable references
+
+The skill SHALL introduce executable worlds with bound assertions, the model tree
+and its five abilities in at most six lines. It SHALL list check, mesh-check, compare
+and timeline with references and native status/exit rules. Only guard-inputs.md,
+worldguard-contracts.md and model-mesh.md SHALL remain as references, together with
+the entry within 25,000 bytes (entry <= 6,000; each reference <= 12,000). References
+SHALL contain runnable inputs for their commands, including variants, observation
+comparison and relative mesh contracts. Stable entry name and launcher runtime
+resolution SHALL remain unchanged.

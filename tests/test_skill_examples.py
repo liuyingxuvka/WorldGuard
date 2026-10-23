@@ -80,3 +80,31 @@ def test_installed_skill_runs_trip_example_without_repository_layout(tmp_path):
                           cwd=tmp_path, text=True, capture_output=True)
     assert done.returncode == 0, done.stdout + done.stderr
     assert json.loads(done.stdout)['status'] == 'PASS'
+
+
+def test_contract_reference_world_variants_compare_and_timeline_are_runnable(tmp_path, capsys):
+    from worldguard.cli import main
+    text = (SKILL / 'references/worldguard-contracts.md').read_text()
+    raw = re.search(r'## Runnable world.*?```yaml\n(.*?)```', text, re.S).group(1)
+    observed = re.search(r'## Compare the world.*?```yaml\n(.*?)```', text, re.S).group(1)
+    world, observation = tmp_path / 'world.yaml', tmp_path / 'observed.yaml'
+    world.write_text(raw)
+    observation.write_text(observed)
+    assert main(['check', '--contract', str(world)]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report['status'] == 'PASS' and report['checked']['variants'] == 1
+    assert main(['timeline', '--contract', str(world)]) == 0
+    assert len(json.loads(capsys.readouterr().out)['steps']) == 4
+    assert main(['compare', '--contract', str(world), '--observed', str(observation)]) == 1
+    assert len(json.loads(capsys.readouterr().out)['mismatches']) == 2
+
+
+def test_mesh_reference_with_contract_files_is_runnable(tmp_path, capsys):
+    from worldguard.cli import main
+    text = (SKILL / 'references/model-mesh.md').read_text()
+    blocks = re.findall(r'```yaml\n(.*?)```', text, re.S)
+    assert len(blocks) == 3
+    for name, body in zip(('mesh.yaml', 'part1.yaml', 'part2.yaml'), blocks):
+        (tmp_path / name).write_text(body)
+    assert main(['mesh-check', '--mesh', str(tmp_path / 'mesh.yaml')]) == 0
+    assert json.loads(capsys.readouterr().out)['status'] == 'PASS'

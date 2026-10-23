@@ -75,3 +75,14 @@ Contracts may be embedded mappings or YAML/JSON paths relative to the mesh file;
 unreadable files are input errors naming the node. A mesh is PASS only when every
 node and edge check is PASS. Child reports, source labels and scope limits remain
 available in full JSON.
+
+
+## Authority and reporting
+
+When needed, declare `authority.owns`, `excludes` and `scope_limits` for each node.
+Excluded requested semantics exceed the boundary; a needed semantic absent from an
+explicit ownership list is a gap. Labels and plausible prose do not expand authority.
+Report the aggregate status, affected node/edge ids and each native code with its
+state/value/time difference, counterexample or missing input. Keep required-source
+freshness and allowed/forbidden transfers visible. Full JSON retains all child
+results; a parent assertion does not replace their native checks or clear their gaps.
