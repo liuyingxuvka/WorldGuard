@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
 from .clock import validate_times
+from .variants import validate_variants
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
 GUARD_BOUNDARY_SEMANTICS: dict[str, frozenset[str]] = {
     'EventGuard': frozenset({'numeric_dynamics', 'thermodynamics', 'continuous_dynamics'}),
@@ -194,8 +195,7 @@ class Claim:
 
     def to_dict(self) -> dict[str, Any]:
         result = {'claim_id': self.claim_id, 'text': self.text, 'target_guards': self.target_guards, 'requested_semantics': self.requested_semantics, 'atoms': [atom.to_dict() for atom in self.atoms]}
-        if self.asserts:
-            result['asserts'] = self.asserts
+        result['asserts'] = self.asserts
         return result
 
 def claim_predictive_intent(claim: Claim) -> bool:
@@ -297,6 +297,7 @@ class GuardContract:
     inputs: dict[str, Any] = field(default_factory=dict)
     dependencies: GuardDependencies = field(default_factory=GuardDependencies)
     output_requirements: OutputRequirements = field(default_factory=OutputRequirements)
+    variants: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'GuardContract':
@@ -307,12 +308,18 @@ class GuardContract:
                 raise ValueError(f'{name} must be a mapping')
         world_model = dict(data.get('world_model', {}))
         inputs = dict(data.get('inputs', {}))
+        variants = data.get('variants', [])
+        validate_variants(variants)
         _reject_retired_runtime_input_paths(world_model, inputs)
         _validate_causal_interventions(inputs)
         _validate_event_links(inputs)
         if not str(world_model.get('model_version', '')).strip():
             world_model['model_version'] = 'unversioned'
         claim = Claim.from_dict(data.get('claim', {}))
+        for section in (inputs.get('events', []), inputs.get('resources', {}).get('transitions', []), claim.asserts):
+            for row in section:
+                if isinstance(row, Mapping) and 'source' in row and not isinstance(row['source'], str):
+                    raise ValueError('source must be a string')
         named_times = []
         event_ids = set()
         for index, event in enumerate(inputs.get('events', [])):
@@ -328,7 +335,7 @@ class GuardContract:
         named_times.extend((f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
                            for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row)
         validate_times(named_times)
-        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')))
+        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')), variants=variants)
 
     def for_guard(self, guard: str, upstream_results: list[Any] | None=None) -> 'GuardContract':
         """Bind one child to the same current model and read-only upstream inputs."""
@@ -337,4 +344,6 @@ class GuardContract:
 
     def to_dict(self) -> dict[str, Any]:
         result = {'contract_id': self.contract_id, 'schema_version': self.schema_version, 'run_id': self.run_id, 'claim': self.claim.to_dict(), 'world_model': self.world_model.to_dict(), 'inputs': self.inputs, 'dependencies': self.dependencies.to_dict(), 'output_requirements': self.output_requirements.to_dict()}
+        if self.variants:
+            result['variants'] = self.variants
         return result

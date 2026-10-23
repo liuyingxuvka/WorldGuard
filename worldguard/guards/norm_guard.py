@@ -134,7 +134,8 @@ def _check(contract: GuardContract):
             if event.get("actor") and event.get("action"):
                 for norm in active:
                     if norm.get("modality") in {"forbidden", "prohibited"} and (norm.get("actor"), norm.get("action")) == (event["actor"], event["action"]):
-                        violations.append({"event_id": event["event_id"], "at": event["at"], "norm": norm, "condition": norm["condition"]})
+                        violations.append({"event_id": event["event_id"], "at": event["at"], "norm": norm, "condition": norm["condition"],
+                            **({"scenario_id": scenario_id} if scenario_id else {})})
     if violations:
         return result(contract, guard, GuardStatus.FAIL, channel="norm", impact="supports_fail",
             errors=[error("NORM_VIOLATED_BY_EVENT", "A forbidden action occurs while its norm is active.")],

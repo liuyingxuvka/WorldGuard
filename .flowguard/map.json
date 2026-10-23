@@ -17,7 +17,7 @@
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
         "Expose the native API through literal lazy owner exports",
-        "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json",
+        "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json; expose the native timeline view",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
       "files": [
@@ -49,7 +49,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:1bd8dcfa4f964d05febcdb61ec46aef5eea656ac77edf15899893f7d78c4e80b"
+      "fingerprint": "sha256:f6ad01467e2deff265b9abf1a0f2ccb53e4cacc4c24e4ffdee171924d5e4ff7b"
     },
     {
       "id": "worldguard.core",
@@ -58,7 +58,8 @@
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
-        "Keep compact native reports and the conservative four-status aggregation"
+        "Keep compact native reports and the conservative four-status aggregation",
+        "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine"
       ],
       "files": [
         "worldguard/contracts.py",
@@ -66,7 +67,9 @@
         "worldguard/status.py",
         "worldguard/reports.py",
         "worldguard/semantic.py",
-        "worldguard/clock.py"
+        "worldguard/clock.py",
+        "worldguard/variants.py",
+        "worldguard/timeline.py"
       ],
       "entrypoints": [
         "worldguard/contracts.py:derive_guard_requirements",
@@ -82,13 +85,14 @@
       "depends_on": [],
       "tests": [
         "tests/test_contracts.py",
-        "tests/test_event_time_order.py"
+        "tests/test_event_time_order.py",
+        "tests/test_variants_timeline.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:348957d7a1d3ddc75edc307e0856596917363062d79bc67910af3cb4cb0fe7b9"
+      "fingerprint": "sha256:6f50a7e1c0007e1a28cc08294923657206239dd2a9213078568b9e4809271077"
     },
     {
       "id": "worldguard.guards",
@@ -131,7 +135,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:fa02d4ffd61f0e016de3a192c91c72eee0f102a48f16912f2efbccb02b0d85a6"
+      "fingerprint": "sha256:ec435a7d68d50a121bf950e4974fb10e2e034ed34998e2070e9d271b763d551a"
     },
     {
       "id": "worldguard.qualification",
@@ -141,7 +145,8 @@
         "Run each derived native Guard exactly once",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
         "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
-        "Expose the run_worldguard kernel through one qualification owner"
+        "Expose the run_worldguard kernel through one qualification owner",
+        "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples"
       ],
       "files": [
         "worldguard/qualification.py",
@@ -163,13 +168,14 @@
       "tests": [
         "tests/test_kernel_handoff.py",
         "tests/test_qualification.py",
-        "tests/test_world_model_language.py"
+        "tests/test_world_model_language.py",
+        "tests/test_variants_timeline.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:5ffa0abd73189e8bf6a1a4784dafb4e92ac66fbcff01b4c48238f78a1b0621da"
+      "fingerprint": "sha256:0e6710115f1e71d76004a4a1c1d3b78662f79477ecbac68d7d776f81e57b3ed8"
     },
     {
       "id": "worldguard.mesh",
@@ -178,7 +184,7 @@
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
-        "Preserve every node report and problem under one final status, with checked node and edge counts"
+        "Preserve every node report and problem under one final status, with checked node and edge counts; retain node source references on node problems"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -202,7 +208,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:1fa5c28140d55f0f77d82308c3d2d35ea2a6bfae5812aa31b9da14d189af0874"
+      "fingerprint": "sha256:90172d1b4d4180df3ac721f726492b817cc53fe83e62892a2efe0c2b96851b4d"
     },
     {
       "id": "release",
@@ -283,7 +289,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:d4c112c6147e9a427571d3123925c9e27567900eb6bd0580dd9fcf6e92cb669e"
+      "fingerprint": "sha256:4d3c940ba871c9b68ac43d6de469b435fd5e92ed1a3509ec64777fa20710073e"
     }
   ],
   "flows": [

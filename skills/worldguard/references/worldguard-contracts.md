@@ -27,3 +27,19 @@ Run a contract with `python <skill-root>/scripts/run_worldguard.py check --contr
 Each Guard runs its complete native checks once and returns `guard`, `status`, `errors`, `counterexamples` and `missing_slots`. Boundaries do not skip other checks. Aggregate status preserves the order `FAIL`, `GAP`, `BOUNDARY_EXCEEDED`, `PASS`.
 
 The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem) and `scope_limits`. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Each problem carries its native code and its counterexample or missing slots. Legacy `dependencies` and `output_requirements` input mappings do not change the result.
+
+## Known-bad variants and the timeline
+
+```yaml
+variants:
+  - id: key_given_too_late
+    expect: FAIL
+    code: EVENT_PRECONDITION_UNMET
+    set: {"inputs.events[e_give_key].at": t3}
+```
+
+Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY_EXCEEDED`. `code` is optional. `set` replaces existing values, `remove` lists existing fields/items, and `add` maps list paths to lists of appended items. Dot-separated keys, numeric list indices (`[0]`) and exact list ids (`[e_give_key]`, matching `id` or any `_id` field) are supported. Invalid or ambiguous paths are input errors naming the variant. Edits affect an independent in-memory copy with its variants removed. Each result must match status and optional code; otherwise `VARIANT_NOT_CAUGHT` blocks PASS. `checked.variants` gives the count, including for mesh-node contracts.
+
+`timeline --contract <file> [--scenario <id>]` reads the initial state and every event's resulting fluents, token markings and problem codes; `variables` contains completed scalar runs. Linked transfers follow their events; unlinked transfers appear on the last step. Timeline ordering requires each applicable event to have a time. The timeline uses the same native replay functions and introduces no new validation rules.
+
+Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. Full event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.

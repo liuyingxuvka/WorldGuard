@@ -231,7 +231,7 @@ def test_actual_cli_preserves_native_yaml_time_values(tmp_path, times, full):
     report = json.loads(completed.stdout)
     assert report["status"] == "PASS"
     if full:
-        assert report["checked"] == {"guards": ["EventGuard"], "claim_rows": 1}
+        assert report["checked"] == {"guards": ["EventGuard"], "claim_rows": 1, "variants": 0}
         assert report["claim_binding"]["assertions"][0]["status"] == "PASS"
 
 

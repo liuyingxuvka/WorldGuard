@@ -11,12 +11,20 @@ from .io import dump_json, load_mapping
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
 
 
+def _without_traces(value):
+    if isinstance(value, dict):
+        return {key: _without_traces(child) for key, child in value.items() if key != "trace"}
+    if isinstance(value, list):
+        return [_without_traces(child) for child in value]
+    return value
+
+
 def _unit_summary(report):
-    return {key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")}
+    return _without_traces({key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")})
 
 
 def _mesh_summary(report):
-    return {key: report[key] for key in ("status", "checked", "gaps", "scope_limits")}
+    return _without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits")})
 
 
 def _emit(full: dict[str, Any], summarize, as_json: bool) -> None:
@@ -60,7 +68,22 @@ def main(argv: list[str] | None = None) -> int:
     mesh_check = subparsers.add_parser("mesh-check")
     mesh_check.add_argument("--mesh", required=True)
     mesh_check.add_argument("--json", action="store_true", help="print the full report")
+    timeline_parser = subparsers.add_parser("timeline")
+    timeline_parser.add_argument("--contract", required=True)
+    timeline_parser.add_argument("--scenario")
     args = parser.parse_args(argv)
+    if args.command == "timeline":
+        from .contracts import GuardContract
+        from .kernel import run_worldguard
+        from .timeline import timeline
+        try:
+            contract = GuardContract.from_dict(load_mapping(args.contract))
+            report = run_worldguard(contract)
+            view = timeline(contract, scenario=args.scenario, problems=report.gaps)
+        except (OSError, UnicodeError, ValueError) as exc:
+            return _input_error("timeline", args.contract, exc)
+        print(dump_json(view))
+        return 0
     if args.command == "check":
         from .contracts import GuardContract
         from .kernel import run_worldguard

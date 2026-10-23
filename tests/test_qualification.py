@@ -71,7 +71,7 @@ def test_derived_guard_omission_is_visible_even_when_owner_can_execute() -> None
 
     assert report.derived_guards == ["EventGuard"]
     assert [result.guard for result in report.guard_results] == ["EventGuard"]
-    assert report.checked == {"guards": ["EventGuard"], "claim_rows": 1}
+    assert report.checked == {"guards": ["EventGuard"], "claim_rows": 1, "variants": 0}
     assert report.status == GuardStatus.PASS
 
 

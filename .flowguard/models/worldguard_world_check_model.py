@@ -30,6 +30,7 @@ IMPLEMENTED_BY = {
     "ReportExit": "worldguard/cli.py:main",
 }
 TESTED_BY = {
+    "variants_must_fail": ["tests/test_variants_timeline.py:test_examples_check_their_known_bad_variants_and_catch_a_missing_rule"],
     "forbidden_event_fails": ["tests/test_world_model_language.py:test_storm_prohibition_applies_to_the_actual_boat_event"],
     "event_times_reach_constraints": ["tests/test_world_model_language.py:test_event_times_drive_causal_constraints_without_another_timetable"],
     "unique_tokens_stay_unique": ["tests/test_world_model_language.py:test_unique_traveler_duplication_fails_and_a_foreign_actor_is_a_gap"],
@@ -62,6 +63,7 @@ class CheckRequest:
     rows: str = "order"
     tokens_cloned: bool = False
     forbidden_event: bool = False
+    uncaught_variant: bool = False
 
 
 @dataclass(frozen=True)
@@ -174,10 +176,13 @@ class RunGuards:
     def forbidden_event(self, request):
         return request.forbidden_event
 
+    def uncaught_variant(self, request):
+        return request.uncaught_variant
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
         if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request):
             status = "FAIL"
-        elif state.inputs_missing or evaluated.request.boundary == "unselected":
+        elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request):
             status = "GAP"
         elif evaluated.request.boundary == "owned":
             status = "BOUNDARY_EXCEEDED"
@@ -275,6 +280,10 @@ def forbidden_event_fails(state, trace):
     return _terminal_check(state, lambda request: request.forbidden_event, (1, "FAIL"), "An active prohibition ignored its event")
 
 
+def variants_must_fail(state, trace):
+    return _terminal_check(state, lambda request: request.uncaught_variant, (1, "GAP"), "An uncaught known-bad variant allowed PASS")
+
+
 def clock_times_order_events(state, trace):
     return _terminal_check(state, lambda request: request.time_form == "clock" and not request.event_order_correct, (1, "FAIL"), "A reversed clock-order precondition/claim did not fail")
 
@@ -299,6 +308,7 @@ def pass_needs_bound_true_rows(state, trace):
 
 
 EXTERNAL_INPUTS = (
+    CheckRequest("uncaught_variant", uncaught_variant=True, rows="variants"),
     CheckRequest("forbidden_event", forbidden_event=True, rows="norm"),
     CheckRequest("event_clock", scm_mode="event_clock", rows="variable"),
     CheckRequest("tokens_cloned", tokens_cloned=True, rows="tokens"),
@@ -324,6 +334,7 @@ EXTERNAL_INPUTS = (
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
+    ("variants_must_fail", "A known-bad variant that escapes prevents PASS", variants_must_fail),
     ("forbidden_event_fails", "A forbidden actual action fails", forbidden_event_fails),
     ("event_times_reach_constraints", "One event clock reaches causal constraints", event_times_reach_constraints),
     ("unique_tokens_stay_unique", "A unique color never duplicates", unique_tokens_stay_unique),
@@ -413,11 +424,17 @@ class _NormsIgnoreEvents(RunGuards):
         return False
 
 
+class _VariantsIgnored(RunGuards):
+    def uncaught_variant(self, request):
+        return False
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
         return _explorer(blocks, invariant_names={invariant}, labels=())
     return {
+        "variants_ignored": variant(_VariantsIgnored(), "variants_must_fail"),
         "norms_ignore_events": variant(_NormsIgnoreEvents(), "forbidden_event_fails"),
         "causal_copy_drifts": variant(_CausalCopyDrifts(), "event_times_reach_constraints"),
         "tokens_cloned": variant(_TokensCloned(), "unique_tokens_stay_unique"),
@@ -455,6 +472,11 @@ def _model_outcome(request):
 
 
 def _real_contract(request):
+    if request.uncaught_variant:
+        return {"claim": {"asserts": [{"holds": "done", "at": "t3"}]},
+            "inputs": {"events": [{"event_id": "ready", "at": "t1", "initiates": "ready"},
+                {"event_id": "use", "at": "t2", "initiates": "done"}]},
+            "variants": [{"id": "requires_rule", "code": "EVENT_PRECONDITION_UNMET", "set": {"inputs.events[use].at": "t0"}}]}
     if request.forbidden_event:
         return {"claim": {"asserts": [{"actor": "traveler", "action": "take_boat", "modality": "forbidden"}]},
             "inputs": {"events": [{"event_id": "board", "at": 2, "actor": "traveler", "action": "take_boat", "initiates": "aboard"}],
@@ -524,7 +546,7 @@ def conformance():
                 report = json.loads(output.getvalue())
                 actual = (code, report["status"])
                 gaps = report.get("gaps", [])
-                identities = [(row["code"], row.get("guard"), row.get("claim_row")) for row in gaps]
+                identities = [(row["code"], row.get("guard"), row.get("claim_row"), row.get("variant_id")) for row in gaps]
                 if len(identities) != len(set(identities)):
                     mismatches.append(f"{request.case_id}: one_row_per_problem failed")
             except Exception as exc:

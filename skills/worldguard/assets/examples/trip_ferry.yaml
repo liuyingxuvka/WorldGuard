@@ -13,7 +13,7 @@ inputs:
   event_model: {initial_states: [at_city]}
   events:
     - {actor: traveler, event_id: d1_train_dep, at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
-    - {actor: traveler, event_id: d1_train_arr, at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
+    - {actor: traveler, event_id: d1_train_arr, source: "published timetable train arrival", at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
     - {actor: traveler, event_id: d1_ferry_out, at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
     - {actor: traveler, event_id: d2_ferry_back, at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
     - {actor: traveler, event_id: d2_ferry_arr, at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
@@ -34,3 +34,10 @@ inputs:
     equations: {slack_out_h: "t_d1_ferry_out - t_d1_train_arr", slack_back_h: "t_d2_last_train - t_d2_ferry_arr"}
     scenarios: {published_timetable: {}}
     constraints: ["slack_out_h >= 0", "slack_back_h >= 0"]
+variants:
+  - id: ferry_before_train_arrives
+    code: CAUSAL_CONSTRAINT_VIOLATED
+    set: {"inputs.events[d1_ferry_out].at": "2026-11-02T10:00"}
+  - id: traveler_is_cloned
+    code: RESOURCE_UNIQUE_TOKEN_DUPLICATED
+    set: {"inputs.resources.transitions[d1_train_dep].produces[0].qty": 2}

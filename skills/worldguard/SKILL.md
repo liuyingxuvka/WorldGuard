@@ -11,7 +11,7 @@ EventGuard, AgentGuard, SpaceGuard, ResourceGuard, CausalGuard, ConflictGuard an
 
 ## Start
 
-The native CLI commands are `check` and `mesh-check`. Every mesh node is checked once; missing node contracts are gaps. A `predictive` request adds event and causal checks without a separate depth or prediction license.
+The native CLI commands are `check`, `mesh-check` and `timeline`. Every mesh node is checked once; missing node contracts are gaps. A `predictive` request adds event and causal checks without a separate depth or prediction license.
 
 Pick the shape that fits the request and read its reference. Field formats for every Guard, with copyable examples, are in [guard-inputs.md](references/guard-inputs.md); two complete worlds are in `assets/examples/`. Copy one of these worlds and edit its model and assertions to start a check.
 
@@ -39,3 +39,5 @@ to an unselected Guard is a gap with a routing hint. Real `FAIL` and missing-inp
 Every check returns `PASS`, `FAIL`, `GAP` or `BOUNDARY_EXCEEDED`. Exit code 0 = `PASS`, 1 = non-pass (read `status` and `gaps`), 2 = input error. Keep the four statuses as they are; `PASS` holds only inside the model's declared scope. One node's or one Guard's `PASS` never licenses a whole mesh or a prediction.
 
 `check` prints a short JSON summary with `contract_id`, `status`, `checked` (Guards and claim rows), `gaps` (one row per problem, each with its `code`) and `scope_limits`. `mesh-check` reports checked node and edge counts and identifies each affected node or edge. Add `--json` for full Guard results and claim rows, or the mesh's `nodes`. A false assertion is `CLAIM_ASSERTION_FALSE` with its `observed` value. Report each problem once with its counterexample or missing slots.
+
+Read a world with `timeline --contract <file.yaml> [--scenario <id>]`. Use `variants:` to declare known-bad edits that must produce the expected non-pass status/code; an escaping variant is `VARIANT_NOT_CAUGHT`. Add `source: "chapter 3 paragraph 12"` to events, transfers, assertion rows or mesh nodes to retain their original location. Syntax is in the unit-contract reference.

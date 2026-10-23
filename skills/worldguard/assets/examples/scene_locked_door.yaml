@@ -1,6 +1,3 @@
-# Scene: Jonas gives Mara the key (t1), Mara unlocks the archive door (t2), Iris slips in behind her (t3).
-# Moving the iris_enter transition above mara_unlock makes the check FAIL (Iris would enter before the door is open);
-# so does giving the key at t3 (e_mara_unlock requires mara_has_key at t2).
 contract_id: scene-archive-001
 claim:
   claim_id: c_iris_enters
@@ -16,8 +13,8 @@ world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3
 inputs:
   event_model: {initial_states: [jonas_has_key, door_locked]}
   events:
-    - {event_id: e_give_key, action: give_key, actor: Jonas, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
-    - {event_id: e_mara_unlock, action: unlock_door, actor: Mara, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
+    - {event_id: e_give_key, source: "scene 3 paragraph 1", action: give_key, actor: Jonas, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
+    - {event_id: e_mara_unlock, source: "scene 3 paragraph 2", action: unlock_door, actor: Mara, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
     - {event_id: e_iris_enter, action: enter_archive, actor: Iris, at: t3, requires: [door_unlocked], initiates: iris_in_archive}
   beliefs:
     Mara:  {agent_id: Mara,  beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
@@ -29,3 +26,10 @@ inputs:
       - {id: give_key, consumes: [{place: jonas_key, color: key, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}]}
       - {id: mara_unlock, consumes: [{place: mara_key, color: key, qty: 1}, {place: door_locked, color: lock, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}, {place: door_open, color: open, qty: 1}]}
       - {id: iris_enter, consumes: [{place: door_open, color: open, qty: 1}], produces: [{place: iris_inside, color: iris, qty: 1}]}
+variants:
+  - id: key_given_too_late
+    code: EVENT_PRECONDITION_UNMET
+    set: {"inputs.events[e_give_key].at": t3}
+  - id: iris_enters_before_unlock
+    code: EVENT_PRECONDITION_UNMET
+    set: {"inputs.events[e_iris_enter].at": t1.5}

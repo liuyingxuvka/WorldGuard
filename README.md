@@ -34,7 +34,7 @@ Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py che
 
 ## What It Does
 
-The native CLI commands are `check` and `mesh-check`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
+The native CLI commands are `check`, `mesh-check` and `timeline`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
 
 WorldGuard provides two core check shapes:
 
@@ -63,6 +63,10 @@ unique ids, a declared scenario id and numeric assignments; malformed or collidi
 A declared boundary of a Guard already derived from the claim yields `BOUNDARY_EXCEEDED`. A boundary
 belonging only to an unselected Guard remains an unmapped `GAP` with a hint naming its normal semantic.
 Real failures and gaps keep their priority: `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+
+A single event clock drives the world: causal expressions can read `t_<event_id>` in hours, and resource transitions can link to `event: <id>` instead of repeating time/order. Declare `resources.unique`, event `actor`/`with`/`action` and optional `world_model.entities` explicitly. Active prohibitions check actual actions; declared intentions need matching events when actors are present. RCC8 checks use the full base-relation composition table on declared triples.
+
+User worlds can carry `variants:` with an id, expected non-pass status, optional code, and `set`/`remove`/`add` paths. Every check runs them on independent in-memory copies; an escaping variant produces `GAP` `VARIANT_NOT_CAUGHT`. `timeline --contract <file> [--scenario <id>]` reads initial state and event steps, token markings, native problem codes and scalar runs. Event/transition/assertion/node `source` strings point back to original material. Full event counterexamples contain their path prefix; summaries stay short.
 
 ## Guard Families
 

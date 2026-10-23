@@ -104,11 +104,14 @@ class ModelNode:
     input_ports: list[ModelPort] = field(default_factory=list)
     output_ports: list[ModelPort] = field(default_factory=list)
     contract: GuardContract | None = None
+    source: str = ""
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "ModelNode":
         if not isinstance(data, Mapping):
             raise ValueError("model node must be a mapping")
+        if not isinstance(data.get("source", ""), str):
+            raise ValueError("model node source must be a string")
         if data.get("contract") is not None and not isinstance(data["contract"], Mapping):
             raise ValueError("model node contract must be a mapping or null")
         contract_data = data.get("contract")
@@ -131,6 +134,7 @@ class ModelNode:
             input_ports=input_ports,
             output_ports=output_ports,
             contract=GuardContract.from_dict(contract_data) if contract_data else None,
+            source=data.get("source", ""),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -145,6 +149,8 @@ class ModelNode:
         }
         if self.contract:
             data["contract"] = self.contract.to_dict()
+        if self.source:
+            data["source"] = self.source
         return data
 
 
@@ -365,11 +371,12 @@ class MeshReport:
     findings: list[MeshFinding] = field(default_factory=list)
     checked: dict[str, int] = field(default_factory=dict)
     scope_limits: list[str] = field(default_factory=list)
+    sources: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self):
         return {"status": self.status.value, "checked": self.checked,
-                "gaps": [*[finding.to_dict() for finding in self.findings],
-                         *[{"node_id": node_id, **gap} for node_id, report in sorted(self.node_reports.items()) for gap in report.gaps]],
+                "gaps": [*[{**({"source": self.sources[finding.node_id]} if self.sources.get(finding.node_id) else {}), **finding.to_dict()} for finding in self.findings],
+                         *[{**({"source": self.sources[node_id]} if self.sources.get(node_id) else {}), "node_id": node_id, **gap} for node_id, report in sorted(self.node_reports.items()) for gap in report.gaps]],
                 "nodes": {node_id: report.to_dict() for node_id, report in sorted(self.node_reports.items())},
                 "scope_limits": self.scope_limits}
 
@@ -443,6 +450,7 @@ def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any]) -> MeshReport:
     status = aggregate_statuses([*[r.status for r in node_reports.values()], *[f.status for f in findings]])
     return MeshReport(status=status, node_reports=node_reports, findings=findings,
         checked={"nodes": len(mesh.nodes), "edges": len(mesh.edges)},
+        sources={node.model_id: node.source for node in mesh.nodes if node.source},
         scope_limits=sorted({limit for node in mesh.nodes for limit in node.authority.scope_limits}))
 
 
