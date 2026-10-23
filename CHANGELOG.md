@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.19 - 2026-10-23 - Stateful world trees and observation comparison
+
+- Connect successive models with `continues`. Check final-to-initial fluents, forward event time, shared unique token locations and optional causal scenario variables. Missing variable values remain gaps; conflicting values fail.
+- Use `parent_child` for containment without requiring ports. Parent `node:` assertion rows can read descendants, while every child keeps its own result. Mesh summaries include root counts.
+- Load node contracts from YAML or JSON paths relative to the mesh file. Invalid `freshness_status` values are now input errors instead of silently becoming unknown.
+- Compare plans with actual observations using `compare --contract --observed`. Expected times and scenario values come from the world; results name matches and mismatches with declared tolerances. ISO and clock time differences use minutes.
+- Run the existing story and trip worlds with `check --example scene` or `--example trip`, including from an installed skill. Keep the fuel-cell toy example and use the new two-part story mesh as a starting point.
+- Read a shorter skill entry and three runnable references: `guard-inputs.md`, `worldguard-contracts.md` and `model-mesh.md`. Authority and reporting guidance now live in the mesh reference.
+- Model handoff rules with independent known-bad variants and native CLI replay; extend the world-check model to cover observation tolerances.
+
 ## v0.7.18 - 2026-10-23 - One clock, native problems and testable worlds
 
 - Short summaries now contain `status`, `checked`, `gaps` and `scope_limits` (plus `contract_id` for a unit), with one row per problem. Full reports contain native `guard_results` and claim rows, or mesh `nodes`. Removed `structural_status`, `semantic_status`, `non_pass_guards`, parallel execution axes, result attestations and duplicate pointer findings. Exit codes and the four statuses keep their meanings; mesh `provider_availability` is now rejected as retired input.
