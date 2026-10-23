@@ -95,7 +95,7 @@
       "layer": "guards",
       "summary": "Seven sole native Guard checkers and their finite failure catalog",
       "responsibilities": [
-        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants; apply active prohibitions to actor/action events and require matching intention events when actors are supplied",
+        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants; apply active prohibitions to actor/action events and require matching intention events when actors are supplied; check every declared RCC8 triple with the full composition table and converses without inferring missing relations",
         "Maintain native good cases and protected failure-class oracles without author-supervision proof"
       ],
       "files": [
@@ -126,11 +126,12 @@
         "tests/test_guard_model_contract.py",
         "tests/test_guard_semantic_dna_closure.py",
         "tests/test_skill_examples.py",
-        "tests/test_world_model_language.py"
+        "tests/test_world_model_language.py",
+        "tests/guards/test_rcc8_composition.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:1a3bf4579b376a553e1ea59f4f873af2557a96ebac4e7a2b713cf71ecff74511"
+      "fingerprint": "sha256:fa02d4ffd61f0e016de3a192c91c72eee0f102a48f16912f2efbccb02b0d85a6"
     },
     {
       "id": "worldguard.qualification",

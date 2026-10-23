@@ -21,6 +21,75 @@ _RCC8_CONVERSE = {
 }
 
 
+# Randell, Cui and Cohn (1992), RCC8 base-relation composition.
+_RCC8_COMPOSITION = {
+    ('DC', 'DC'): frozenset(['DC', 'EC', 'EQ', 'NTPP', 'NTPPI', 'PO', 'TPP', 'TPPI']),
+    ('DC', 'EC'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('DC', 'PO'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('DC', 'TPP'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('DC', 'NTPP'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('DC', 'TPPI'): frozenset(['DC']),
+    ('DC', 'NTPPI'): frozenset(['DC']),
+    ('EC', 'DC'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('EC', 'EC'): frozenset(['DC', 'EC', 'EQ', 'PO', 'TPP', 'TPPI']),
+    ('EC', 'PO'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('EC', 'TPP'): frozenset(['EC', 'NTPP', 'PO', 'TPP']),
+    ('EC', 'NTPP'): frozenset(['NTPP', 'PO', 'TPP']),
+    ('EC', 'TPPI'): frozenset(['DC', 'EC']),
+    ('EC', 'NTPPI'): frozenset(['DC']),
+    ('PO', 'DC'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('PO', 'EC'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('PO', 'PO'): frozenset(['DC', 'EC', 'EQ', 'NTPP', 'NTPPI', 'PO', 'TPP', 'TPPI']),
+    ('PO', 'TPP'): frozenset(['NTPP', 'PO', 'TPP']),
+    ('PO', 'NTPP'): frozenset(['NTPP', 'PO', 'TPP']),
+    ('PO', 'TPPI'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('PO', 'NTPPI'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('TPP', 'DC'): frozenset(['DC']),
+    ('TPP', 'EC'): frozenset(['DC', 'EC']),
+    ('TPP', 'PO'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('TPP', 'TPP'): frozenset(['NTPP', 'TPP']),
+    ('TPP', 'NTPP'): frozenset(['NTPP']),
+    ('TPP', 'TPPI'): frozenset(['DC', 'EC', 'EQ', 'PO', 'TPP', 'TPPI']),
+    ('TPP', 'NTPPI'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('NTPP', 'DC'): frozenset(['DC']),
+    ('NTPP', 'EC'): frozenset(['DC']),
+    ('NTPP', 'PO'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('NTPP', 'TPP'): frozenset(['NTPP']),
+    ('NTPP', 'NTPP'): frozenset(['NTPP']),
+    ('NTPP', 'TPPI'): frozenset(['DC', 'EC', 'NTPP', 'PO', 'TPP']),
+    ('NTPP', 'NTPPI'): frozenset(['DC', 'EC', 'EQ', 'NTPP', 'NTPPI', 'PO', 'TPP', 'TPPI']),
+    ('TPPI', 'DC'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('TPPI', 'EC'): frozenset(['EC', 'NTPPI', 'PO', 'TPPI']),
+    ('TPPI', 'PO'): frozenset(['NTPPI', 'PO', 'TPPI']),
+    ('TPPI', 'TPP'): frozenset(['EQ', 'PO', 'TPP', 'TPPI']),
+    ('TPPI', 'NTPP'): frozenset(['NTPP', 'PO', 'TPP']),
+    ('TPPI', 'TPPI'): frozenset(['NTPPI', 'TPPI']),
+    ('TPPI', 'NTPPI'): frozenset(['NTPPI']),
+    ('NTPPI', 'DC'): frozenset(['DC', 'EC', 'NTPPI', 'PO', 'TPPI']),
+    ('NTPPI', 'EC'): frozenset(['NTPPI', 'PO', 'TPPI']),
+    ('NTPPI', 'PO'): frozenset(['NTPPI', 'PO', 'TPPI']),
+    ('NTPPI', 'TPP'): frozenset(['NTPPI', 'PO', 'TPPI']),
+    ('NTPPI', 'NTPP'): frozenset(['EQ', 'NTPP', 'NTPPI', 'PO', 'TPP', 'TPPI']),
+    ('NTPPI', 'TPPI'): frozenset(['NTPPI']),
+    ('NTPPI', 'NTPPI'): frozenset(['NTPPI']),
+    ('EQ', 'PO'): frozenset(['PO']),
+    ('PO', 'EQ'): frozenset(['PO']),
+    ('EQ', 'TPPI'): frozenset(['TPPI']),
+    ('TPPI', 'EQ'): frozenset(['TPPI']),
+    ('EQ', 'EC'): frozenset(['EC']),
+    ('EC', 'EQ'): frozenset(['EC']),
+    ('EQ', 'DC'): frozenset(['DC']),
+    ('DC', 'EQ'): frozenset(['DC']),
+    ('EQ', 'NTPPI'): frozenset(['NTPPI']),
+    ('NTPPI', 'EQ'): frozenset(['NTPPI']),
+    ('EQ', 'TPP'): frozenset(['TPP']),
+    ('TPP', 'EQ'): frozenset(['TPP']),
+    ('EQ', 'NTPP'): frozenset(['NTPP']),
+    ('NTPP', 'EQ'): frozenset(['NTPP']),
+    ('EQ', 'EQ'): frozenset(['EQ']),
+}
+
+
 def _check(contract: GuardContract):
     guard = "SpaceGuard"
     requested = requested_semantic_ids(contract)
@@ -137,15 +206,20 @@ def _check(contract: GuardContract):
             ],
         )
 
+    # Only declared pairs and their converses participate; no new relation is inferred.
+    graph = dict(seen)
+    for (at, a, b), values in seen.items():
+        graph.setdefault((at, b, a), {_RCC8_CONVERSE[value] for value in values})
     composition_conflicts = []
-    for (at, a, b), observed in seen.items():
-        if observed != {"NTPP"}:
-            continue
-        for (other_at, b2, c), right in seen.items():
-            if at == other_at and b == b2 and right == {"NTPP"}:
-                end = seen.get((at, a, c))
-                if end and end != {"NTPP"}:
-                    composition_conflicts.append({"at": at, "chain": [a, b, c], "observed": sorted(end), "expected": "NTPP"})
+    for (at, a, b), left in graph.items():
+        for (other_at, b2, c), right in graph.items():
+            if at != other_at or b != b2 or (at, a, c) not in graph:
+                continue
+            allowed = set().union(*(_RCC8_COMPOSITION[(r, q)] for r in left for q in right))
+            observed = graph[at, a, c]
+            if not observed <= allowed:
+                composition_conflicts.append({"at": at, "chain": [a, b, c],
+                    "relations": [sorted(left), sorted(right), sorted(observed)], "allowed": sorted(allowed)})
     if composition_conflicts:
         return result(contract, guard, GuardStatus.FAIL, channel="space", impact="supports_fail",
             errors=[error("SPACE_RCC8_CONTRADICTION", "Declared RCC8 composition is inconsistent.")],
