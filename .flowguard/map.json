@@ -210,7 +210,9 @@
         "tests/test_model_mesh.py",
         "tests/test_semantic_rollout.py"
       ],
-      "models": [],
+      "models": [
+        ".flowguard/models/worldguard_mesh_handoff_model.py"
+      ],
       "status": "confirmed",
       "fingerprint": "sha256:dbb23e447b118dc2e6263b1a0049afe1273d48dc8a7f3704aaeda49e90162d9e"
     },
@@ -317,7 +319,26 @@
         "worldguard:main",
         "worldguard.mesh:run_model_mesh",
         "worldguard.qualification:qualify_guard_contract"
-      ]
+      ],
+      "model": ".flowguard/models/worldguard_mesh_handoff_model.py"
+    },
+    {
+      "id": "compare",
+      "summary": "compare the native world with supplied observations",
+      "steps": [
+        "worldguard:main",
+        "worldguard.qualification:compare_world"
+      ],
+      "model": ".flowguard/models/worldguard_world_check_model.py"
+    },
+    {
+      "id": "timeline",
+      "summary": "read event and state evolution from the native world",
+      "steps": [
+        "worldguard:main",
+        "worldguard.core:timeline"
+      ],
+      "model": ".flowguard/models/worldguard_world_check_model.py"
     }
   ],
   "accepted_debts": []

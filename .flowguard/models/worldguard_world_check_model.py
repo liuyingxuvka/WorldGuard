@@ -28,8 +28,10 @@ IMPLEMENTED_BY = {
     "EvaluateClaimRows": "worldguard/claim_binding.py:evaluate_claim_binding",
     "Aggregate": "worldguard/status.py:aggregate_statuses",
     "ReportExit": "worldguard/cli.py:main",
+    "CompareObserved": "worldguard/compare.py:compare_world",
 }
 TESTED_BY = {
+    "compare_flags_values_outside_tolerance": ["tests/test_compare.py:test_trip_arrival_uses_minutes_and_declared_tolerance"],
     "variants_must_fail": ["tests/test_variants_timeline.py:test_examples_check_their_known_bad_variants_and_catch_a_missing_rule"],
     "forbidden_event_fails": ["tests/test_world_model_language.py:test_storm_prohibition_applies_to_the_actual_boat_event"],
     "event_times_reach_constraints": ["tests/test_world_model_language.py:test_event_times_drive_causal_constraints_without_another_timetable"],
@@ -64,6 +66,8 @@ class CheckRequest:
     tokens_cloned: bool = False
     forbidden_event: bool = False
     uncaught_variant: bool = False
+    compare: bool = False
+    compare_mismatch: bool = False
 
 
 @dataclass(frozen=True)
@@ -179,8 +183,11 @@ class RunGuards:
     def uncaught_variant(self, request):
         return request.uncaught_variant
 
+    def comparison_mismatch(self, request):
+        return request.compare and request.compare_mismatch
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
-        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request):
+        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request) or self.comparison_mismatch(evaluated.request):
             status = "FAIL"
         elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request):
             status = "GAP"
@@ -307,7 +314,14 @@ def pass_needs_bound_true_rows(state, trace):
     return _terminal_check(state, lambda request: request.rows == "none", (1, "GAP"), "An unbound claim did not remain a gap")
 
 
+def compare_flags_values_outside_tolerance(state, trace):
+    return _terminal_check(state, lambda request: request.compare and request.compare_mismatch,
+                           (1, "FAIL"), "A supplied observation outside tolerance was accepted")
+
+
 EXTERNAL_INPUTS = (
+    CheckRequest("compare_match", rows="comparison", compare=True),
+    CheckRequest("compare_mismatch", rows="comparison", compare=True, compare_mismatch=True),
     CheckRequest("uncaught_variant", uncaught_variant=True, rows="variants"),
     CheckRequest("forbidden_event", forbidden_event=True, rows="norm"),
     CheckRequest("event_clock", scm_mode="event_clock", rows="variable"),
@@ -334,6 +348,7 @@ EXTERNAL_INPUTS = (
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
+    ("compare_flags_values_outside_tolerance", "Observed differences outside tolerance fail", compare_flags_values_outside_tolerance),
     ("variants_must_fail", "A known-bad variant that escapes prevents PASS", variants_must_fail),
     ("forbidden_event_fails", "A forbidden actual action fails", forbidden_event_fails),
     ("event_times_reach_constraints", "One event clock reaches causal constraints", event_times_reach_constraints),
@@ -429,11 +444,17 @@ class _VariantsIgnored(RunGuards):
         return False
 
 
+class _ToleranceIgnored(RunGuards):
+    def comparison_mismatch(self, request):
+        return False
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
         return _explorer(blocks, invariant_names={invariant}, labels=())
     return {
+        "tolerance_ignored": variant(_ToleranceIgnored(), "compare_flags_values_outside_tolerance"),
         "variants_ignored": variant(_VariantsIgnored(), "variants_must_fail"),
         "norms_ignore_events": variant(_NormsIgnoreEvents(), "forbidden_event_fails"),
         "causal_copy_drifts": variant(_CausalCopyDrifts(), "event_times_reach_constraints"),
@@ -542,7 +563,12 @@ def conformance():
             expected = _model_outcome(request)
             try:
                 with redirect_stdout(output):
-                    code = main(["check", "--contract", str(path)])
+                    if request.compare:
+                        observation = Path(folder) / (request.case_id + "-observed.json")
+                        observation.write_text(json.dumps({"events": {"first": "t10" if request.compare_mismatch else "t9.1"}, "time_tolerance": .2}))
+                        code = main(["compare", "--contract", str(path), "--observed", str(observation)])
+                    else:
+                        code = main(["check", "--contract", str(path)])
                 report = json.loads(output.getvalue())
                 actual = (code, report["status"])
                 gaps = report.get("gaps", [])
