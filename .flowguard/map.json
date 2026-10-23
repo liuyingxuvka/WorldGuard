@@ -49,7 +49,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:f6ad01467e2deff265b9abf1a0f2ccb53e4cacc4c24e4ffdee171924d5e4ff7b"
+      "fingerprint": "sha256:4aa06c50bd779bde57e895ee7609e3249fe611301f00d19272308c4ebc45ca30"
     },
     {
       "id": "worldguard.core",
