@@ -49,7 +49,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:d9de25f5212597bba516952837bc128e944c489d49a6f15a1484d5398df56f52"
+      "fingerprint": "sha256:76cbd4976668865c12ff156a4ff6efb2758e5f7c9aeff8fc7b637d2f563972f7"
     },
     {
       "id": "worldguard.core",
@@ -59,7 +59,8 @@
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
         "Keep compact native reports and the conservative four-status aggregation",
-        "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine"
+        "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine",
+        "Check declared event preconditions without assuming an order inside simultaneous groups; retain uncertainty after conflicting same-time writes until a definite later write."
       ],
       "files": [
         "worldguard/contracts.py",
@@ -92,7 +93,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:0b435a08a426a4810d7ffd8cfbd4a87931eafd7ea3933cc654bec3be9c0f09e3"
+      "fingerprint": "sha256:07e334ff99e8006165c98d3e4c1e75a444cba41fb54fa82caa8888752d9b26ca"
     },
     {
       "id": "worldguard.guards",
@@ -100,7 +101,8 @@
       "summary": "Seven sole native Guard checkers and their finite failure catalog",
       "responsibilities": [
         "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants; apply active prohibitions to actor/action events and require matching intention events when actors are supplied; check every declared RCC8 triple with the full composition table and converses without inferring missing relations",
-        "Maintain native good cases and protected failure-class oracles without author-supervision proof"
+        "Maintain native good cases and protected failure-class oracles without author-supervision proof",
+        "Keep independently known event precondition failures when separate metadata or same-time ordering is incomplete."
       ],
       "files": [
         "worldguard/guards/*.py",
@@ -135,7 +137,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:ec435a7d68d50a121bf950e4974fb10e2e034ed34998e2070e9d271b763d551a"
+      "fingerprint": "sha256:1d171d51c0295b7acd53023232f558aa5aa8e165de6e422e61e72811dcc6d266"
     },
     {
       "id": "worldguard.qualification",
@@ -147,7 +149,8 @@
         "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
         "Expose the run_worldguard kernel through one qualification owner",
         "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
-        "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts."
+        "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts.",
+        "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result."
       ],
       "files": [
         "worldguard/qualification.py",
@@ -178,7 +181,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:b260574e82d7bc6514b7e4b101507d0ab9785f662a18a10ef4ea939cce1c6921"
+      "fingerprint": "sha256:6d9a7a039254ce999ddfcb50071f80c94424fa24a19e30e448a068e6f357693e"
     },
     {
       "id": "worldguard.mesh",
@@ -188,7 +191,8 @@
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
         "Preserve every node report and problem under one final status, with checked node and edge counts; retain node source references on node problems",
-        "Carry fluent state, event clocks, shared unique token positions and requested causal variables over continues edges; allow structural parent_child edges and count roots; load contract paths relative to the mesh, reject invalid freshness and enforce descendant-only node rows."
+        "Carry fluent state, event clocks, shared unique token positions and requested causal variables over continues edges; allow structural parent_child edges and count roots; load contract paths relative to the mesh, reject invalid freshness and enforce descendant-only node rows.",
+        "Keep missing event times as handoff gaps with native node reports; preserve independently decidable state, token and variable failures; reject port_mappings by presence only on continues edges."
       ],
       "files": [
         "worldguard/mesh.py"
@@ -214,7 +218,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:dbb23e447b118dc2e6263b1a0049afe1273d48dc8a7f3704aaeda49e90162d9e"
+      "fingerprint": "sha256:0086d04ed8e8cf493d8f805b994024aedee003f6d29387f0032fc4b02403dacd"
     },
     {
       "id": "release",

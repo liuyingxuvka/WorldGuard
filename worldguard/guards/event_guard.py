@@ -84,6 +84,18 @@ def _check(contract: GuardContract):
             counterexamples=[{"kind": "trace", "steps": overlapping_fluents}],
         )
 
+    unmet = event_precondition_failures(events, event_model.get("initial_states", []))
+    if unmet:
+        return result(
+            contract,
+            guard,
+            GuardStatus.FAIL,
+            channel="event",
+            impact="supports_fail",
+            errors=[error("EVENT_PRECONDITION_UNMET", "An event happens while a fluent it requires does not hold.")],
+            counterexamples=[{"kind": "trace", "steps": unmet}],
+        )
+
     missing = list(event_model.get("missing_axioms", []))
     for state in states:
         if (
@@ -230,17 +242,6 @@ def _check(contract: GuardContract):
         return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
             errors=[error("EVENT_SAME_TIME_ORDER_UNKNOWN", "Related events share a time; give them different times.")],
             missing_slots=simultaneous)
-    unmet = event_precondition_failures(events, event_model.get("initial_states", []))
-    if unmet:
-        return result(
-            contract,
-            guard,
-            GuardStatus.FAIL,
-            channel="event",
-            impact="supports_fail",
-            errors=[error("EVENT_PRECONDITION_UNMET", "An event happens while a fluent it requires does not hold.")],
-            counterexamples=[{"kind": "trace", "steps": unmet}],
-        )
 
     missing_events = [
         {"index": index, "needed": name}

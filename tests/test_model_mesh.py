@@ -516,13 +516,15 @@ def test_contract_paths_resolve_beside_mesh_and_missing_file_names_node(tmp_path
     assert code == 2 and 'node a' in json.dumps(report) and 'missing.yaml' in json.dumps(report)
 
 
-@pytest.mark.parametrize('change', ['freshness', 'ports', 'clock'])
+@pytest.mark.parametrize('change', ['freshness', 'ports', 'empty_ports', 'empty_port_map', 'clock'])
 def test_continues_rejects_invalid_inputs(tmp_path, capsys, change):
     tree = continued_tree()
     if change == 'freshness':
         tree['nodes'][1]['freshness_status'] = 'fresh'
     elif change == 'ports':
         tree['edges'][2]['port_mappings'] = [{'mapping_id': 'bad', 'source_port_id': 'x', 'target_port_id': 'y'}]
+    elif change in {'empty_ports', 'empty_port_map'}:
+        tree['edges'][2]['port_mappings'] = [] if change == 'empty_ports' else {}
     else:
         tree['nodes'][2]['contract']['inputs']['events'][0]['at'] = '2026-11-02T10:00'
         tree['nodes'][2]['contract']['claim']['asserts'][0]['at'] = '2026-11-02T10:00'
@@ -574,3 +576,44 @@ def test_unmentioned_source_fluents_do_not_need_target_copies(tmp_path, capsys):
     tree = continued_tree()
     tree['nodes'][1]['contract']['inputs']['event_model']['initial_states'].append('source_only')
     assert _mesh_cli(tmp_path, capsys, tree)[0] == 0
+
+
+@pytest.mark.parametrize('side', [1, 2])
+@pytest.mark.parametrize('independent_failure', [False, True])
+def test_continues_missing_event_time_preserves_native_node_reports(tmp_path, capsys, side, independent_failure):
+    tree = continued_tree()
+    del tree['nodes'][side]['contract']['inputs']['events'][0]['at']
+    if independent_failure:
+        other = 3 - side
+        tree['nodes'][other]['contract']['claim']['asserts'][0]['value'] = False
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1
+    assert report['status'] == ('FAIL' if independent_failure else 'GAP')
+    assert set(report['nodes']) == {'root', 'a', 'b'}
+    assert report['nodes'][tree['nodes'][side]['model_id']]['status'] == 'GAP'
+    assert any(row['code'] == 'MESH_HANDOFF_TIME_MISSING' for row in report['gaps'])
+
+
+@pytest.mark.parametrize('dimension,expected_code', [
+    ('fluent', 'MESH_HANDOFF_STATE_MISMATCH'),
+    ('token', 'MESH_HANDOFF_STATE_MISMATCH'),
+    ('variable', 'MESH_HANDOFF_VALUE_MISMATCH'),
+])
+def test_missing_target_time_does_not_hide_independent_handoff_failures(tmp_path, capsys, dimension, expected_code):
+    tree = continued_tree()
+    source, target = (tree['nodes'][index]['contract']['inputs'] for index in (1, 2))
+    del target['events'][0]['at']
+    if dimension == 'fluent':
+        target['event_model']['initial_states'] = []
+    elif dimension == 'token':
+        source['resources'] = {'unique': ['token'], 'places': {'left': [{'color': 'token', 'qty': 1}]}}
+        target['resources'] = {'unique': ['token'], 'places': {'right': [{'color': 'token', 'qty': 1}]}}
+    else:
+        tree['edges'][2]['variables'] = ['v']
+        for inputs, value in ((source, 1), (target, 2)):
+            inputs['causal_model'] = {'variables': ['v'], 'equations': {'v': str(value)}, 'scenarios': {'actual': {}}}
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and report['status'] == 'FAIL'
+    assert report['nodes']['b']['status'] == 'GAP'
+    assert any(row['code'] == 'MESH_HANDOFF_TIME_MISSING' for row in report['gaps'])
+    assert any(row['code'] == expected_code for row in report['gaps'])

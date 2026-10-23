@@ -222,6 +222,8 @@ class ModelEdge:
             raise ValueError(
                 f"unknown model edge relation for {data.get('edge_id', '')}: {relation or '<missing>'}"
             )
+        if relation == "continues" and "port_mappings" in data:
+            raise ValueError("continues edges do not accept port_mappings")
         port_mappings = [
             ModelPortMapping.from_dict(item) for item in data.get("port_mappings", [])
         ]
@@ -504,33 +506,43 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, source: GuardC
         findings.append(_finding(mesh, status, code, message, edge_id=edge.edge_id, evidence=evidence))
     source_events = source.inputs.get("events", [])
     target_events = target.inputs.get("events", [])
-    named_times = [(f"edge {edge.edge_id} {side} event {event.get('event_id')}", event.get("at"))
-                   for side, events in (("source", source_events), ("target", target_events)) for event in events]
+    missing_times = [{"side": side, "index": index}
+                     for side, events in (("source", source_events), ("target", target_events))
+                     for index, event in enumerate(events) if not isinstance(event, Mapping) or "at" not in event]
+    named_times = [(f"edge {edge.edge_id} {side} event {event.get('event_id')}", event["at"])
+                   for side, events in (("source", source_events), ("target", target_events))
+                   for event in events if isinstance(event, Mapping) and "at" in event]
     validate_times(named_times)
-    if source_events and target_events:
-        end = max((event["at"] for event in source_events), key=time_key)
-        start = min((event["at"] for event in target_events), key=time_key)
-        if time_key(start) < time_key(end):
-            add(GuardStatus.FAIL, "MESH_HANDOFF_TIME_BACKWARDS", "Target begins before the source ends.", source_end=end, target_start=start)
-    source_initial = source.inputs.get("event_model", {}).get("initial_states", [])
-    target_initial = target.inputs.get("event_model", {}).get("initial_states", [])
-    holding = frozenset(_fluent_values(source_initial))
-    for _event, _before, after in event_replay(source_events, source_initial):
-        holding = after
-    target_start = set(_fluent_values(target_initial))
-    mentioned = set(target_start)
-    for event in target_events:
-        for key in ("requires", "initiates", "terminates", "releases"):
-            mentioned.update(_fluent_values(event.get(key)))
-    for fluent in sorted(mentioned):
-        if (fluent in holding) != (fluent in target_start):
-            add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A target fluent differs from the source end state.",
-                fluent=fluent, source_end=fluent in holding, target_initial=fluent in target_start)
+    source_missing_time = any(row["side"] == "source" for row in missing_times)
+    if missing_times:
+        add(GuardStatus.GAP, "MESH_HANDOFF_TIME_MISSING", "Event times are needed to compare the handoff.", events=missing_times)
+    else:
+        if source_events and target_events:
+            end = max((event["at"] for event in source_events), key=time_key)
+            start = min((event["at"] for event in target_events), key=time_key)
+            if time_key(start) < time_key(end):
+                add(GuardStatus.FAIL, "MESH_HANDOFF_TIME_BACKWARDS", "Target begins before the source ends.", source_end=end, target_start=start)
+    if not source_missing_time and all(isinstance(event, Mapping) for event in target_events):
+        source_initial = source.inputs.get("event_model", {}).get("initial_states", [])
+        target_initial = target.inputs.get("event_model", {}).get("initial_states", [])
+        holding = frozenset(_fluent_values(source_initial))
+        for _event, _before, after in event_replay(source_events, source_initial):
+            holding = after
+        target_start = set(_fluent_values(target_initial))
+        mentioned = set(target_start)
+        for event in target_events:
+            for key in ("requires", "initiates", "terminates", "releases"):
+                mentioned.update(_fluent_values(event.get(key)))
+        for fluent in sorted(mentioned):
+            if (fluent in holding) != (fluent in target_start):
+                add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A target fluent differs from the source end state.",
+                    fluent=fluent, source_end=fluent in holding, target_initial=fluent in target_start)
     source_resources = source.inputs.get("resources", {})
     target_resources = target.inputs.get("resources", {})
     shared = set(source_resources.get("unique", [])) & set(target_resources.get("unique", []))
-    if shared:
-        final, source_error = token_replay(source_resources, events=source_events)
+    linked_transfers = any(isinstance(row, Mapping) and "event" in row for row in source_resources.get("transitions", []))
+    if shared and not (source_missing_time and linked_transfers):
+        final, source_error = token_replay(source_resources, events=source_events if not source_missing_time else [])
         initial, target_error = token_replay({**target_resources, "transitions": []})
         if source_error is not None or target_error is not None:
             add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A unique token state cannot be replayed across this edge.",
@@ -543,8 +555,8 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, source: GuardC
                     add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A unique token starts at a different location.",
                         color=color, source_end=left, target_initial=right)
     if edge.variables:
-        source_values = causal_scenario_values(source.inputs.get("causal_model", {}), event_time_values(source_events))
-        target_values = causal_scenario_values(target.inputs.get("causal_model", {}), event_time_values(target_events))
+        source_values = causal_scenario_values(source.inputs.get("causal_model", {}), event_time_values([event for event in source_events if isinstance(event, Mapping)]))
+        target_values = causal_scenario_values(target.inputs.get("causal_model", {}), event_time_values([event for event in target_events if isinstance(event, Mapping)]))
         for scenario in sorted(target_values) or ["<none>"]:
             left = next(iter(source_values.values())) if len(source_values) == 1 else source_values.get(scenario, {})
             right = target_values.get(scenario, {})

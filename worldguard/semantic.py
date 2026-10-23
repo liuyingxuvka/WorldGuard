@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ast
 import math
+from itertools import groupby
 from typing import Any, Mapping
 
 from .clock import time_key
@@ -50,11 +51,26 @@ def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) ->
         if any("at" not in event for event in applicable):
             # Missing axioms prevent ordering only this scenario, including its shared events.
             continue
-        for event, before, _ in event_replay(applicable, initial_fluents, scenario_id):
-            missing = sorted(set(_fluent_values(event.get("requires"))) - before)
-            if missing:
-                row = {"event_id": event.get("event_id"), "at": event.get("at"), "missing_fluents": missing, "holding_fluents": sorted(before)}
-                failures.append({**row, "scenario_id": scenario_id} if scenario_id else row)
+        uncertain: set[str] = set()
+        replay = event_replay(applicable, initial_fluents, scenario_id)
+        for _, group in groupby(replay, key=lambda row: time_key(row[0]["at"])):
+            rows = list(group)
+            before = rows[0][1]
+            starts = [set(_fluent_values(event.get("initiates"))) for event, _, _ in rows]
+            started = set().union(*starts)
+            stopped = set().union(*(set(_fluent_values(event.get("terminates"))) |
+                                    set(_fluent_values(event.get("releases"))) for event, _, _ in rows))
+            for index, (event, _, _) in enumerate(rows):
+                # Another event at this time may supply a requirement; input order is not evidence.
+                possible_starts = set().union(*(values for other, values in enumerate(starts) if other != index))
+                missing = sorted(set(_fluent_values(event.get("requires"))) - before - uncertain - possible_starts)
+                if missing:
+                    row = {"event_id": event.get("event_id"), "at": event.get("at"), "missing_fluents": missing,
+                           "holding_fluents": sorted(before - uncertain)}
+                    failures.append({**row, "scenario_id": scenario_id} if scenario_id else row)
+            # Reuse the native replay, but do not trust its arbitrary order for conflicting writes.
+            uncertain.difference_update(started | stopped)
+            uncertain.update(started & stopped)
     return failures
 
 

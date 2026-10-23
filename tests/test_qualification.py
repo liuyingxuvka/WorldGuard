@@ -226,3 +226,23 @@ def test_real_native_non_pass_outranks_a_declared_boundary(broken, expected):
     assert report.status == expected
     assert report.guard_results[0].status == expected
     assert not any(gap["code"] == "QUALIFICATION_SEMANTIC_UNMAPPED" for gap in report.gaps)
+
+
+@pytest.mark.parametrize("inputs,expected_code", [
+    ({"events": ["bad"]}, "EVENT_MISSING_INITIATION_AXIOM"),
+    ({"resources": {"places": {"p": [{"color": "x", "qty": 1}]}, "transitions": ["bad"]}},
+     "RESOURCE_UNEVALUABLE_TRANSITION"),
+])
+def test_malformed_native_records_keep_their_typed_guard_gap(tmp_path, capsys, inputs, expected_code):
+    import json
+    from worldguard.cli import main
+
+    semantics = "event" if "events" in inputs else "resource"
+    path = tmp_path / "malformed.json"
+    path.write_text(json.dumps({"claim": {"requested_semantics": [semantics], "asserts": []}, "inputs": inputs}))
+    assert main(["check", "--contract", str(path), "--json"]) == 1
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    assert report["status"] == "GAP"
+    assert expected_code in {row["code"] for row in report["gaps"]}

@@ -77,8 +77,8 @@ def _semantic_gap_rows(
 
 
 def _counterexample_context(contract, results):
-    events = {(str(row.get("scenario_id") or ""), str(row.get("event_id"))): row for row in contract.inputs.get("events", [])}
-    transfers = {str(row.get("id")): row for row in contract.inputs.get("resources", {}).get("transitions", [])}
+    events = {(str(row.get("scenario_id") or ""), str(row.get("event_id"))): row for row in contract.inputs.get("events", []) if isinstance(row, Mapping)}
+    transfers = {str(row.get("id")): row for row in contract.inputs.get("resources", {}).get("transitions", []) if isinstance(row, Mapping)}
     timelines = {}
     updated = []
     for result in results:

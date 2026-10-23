@@ -123,3 +123,59 @@ def test_absent_event_time_remains_a_native_gap(assertions):
     assert report.guard_results[0].status.value == "GAP"
     assert [row["code"] for row in report.guard_results[0].errors] == ["EVENT_MISSING_INITIATION_AXIOM"]
     assert report.claim_binding["status"] == "GAP"
+
+
+@pytest.mark.parametrize("gap", ["tie", "missing_axiom"])
+@pytest.mark.parametrize("failure_time", ["t0", "t3"])
+def test_independent_event_failure_survives_other_event_gaps(gap, failure_time):
+    events = [
+        {"event_id": "give", "at": "t1", "initiates": "ready"},
+        {"event_id": "use", "at": "t1", "requires": "ready", "initiates": "done"},
+        {"event_id": "broken", "at": failure_time, "requires": "never", "initiates": "broken_done"},
+    ]
+    model = {}
+    if gap == "missing_axiom":
+        events[1]["at"] = "t2"
+        model["missing_axioms"] = ["unrelated_declared_rule"]
+    report = run_worldguard({
+        "claim": {"requested_semantics": ["event"], "asserts": [{"holds": "done", "at": "t4"}]},
+        "inputs": {"events": events, "event_model": model},
+    })
+    event = next(row for row in report.guard_results if row.guard == "EventGuard")
+    assert report.status.value == event.status.value == "FAIL"
+    assert "EVENT_PRECONDITION_UNMET" in {row["code"] for row in event.errors}
+    failures = [step for example in event.counterexamples for step in example["steps"]]
+    assert [row["event_id"] for row in failures] == ["broken"]
+    assert failures[0]["missing_fluents"] == ["never"]
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_tied_fluent_writes_do_not_invent_a_later_precondition_failure(reverse):
+    tied = [
+        {"event_id": "give", "at": "t1", "initiates": "ready"},
+        {"event_id": "remove", "at": "t1", "terminates": "ready"},
+    ]
+    if reverse:
+        tied.reverse()
+    report = run_worldguard({
+        "claim": {"requested_semantics": ["event"], "asserts": [{"holds": "done", "at": "t3"}]},
+        "inputs": {"events": [*tied,
+            {"event_id": "use", "at": "t2", "requires": "ready", "initiates": "done"}]},
+    })
+    event = next(row for row in report.guard_results if row.guard == "EventGuard")
+    assert event.status.value == report.status.value == "GAP"
+    assert [row["code"] for row in event.errors] == ["EVENT_SAME_TIME_ORDER_UNKNOWN"]
+
+
+def test_a_later_definite_write_restores_precondition_knowledge_after_a_tie():
+    report = run_worldguard({
+        "claim": {"requested_semantics": ["event"], "asserts": [{"holds": "done", "at": "t4"}]},
+        "inputs": {"events": [
+            {"event_id": "give", "at": "t1", "initiates": "ready"},
+            {"event_id": "remove", "at": "t1", "terminates": "ready"},
+            {"event_id": "remove_later", "at": "t2", "terminates": "ready"},
+            {"event_id": "use", "at": "t3", "requires": "ready", "initiates": "done"}]},
+    })
+    event = next(row for row in report.guard_results if row.guard == "EventGuard")
+    assert event.status.value == report.status.value == "FAIL"
+    assert event.counterexamples[0]["steps"][0]["event_id"] == "use"
