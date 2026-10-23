@@ -617,3 +617,29 @@ def test_missing_target_time_does_not_hide_independent_handoff_failures(tmp_path
     assert report['nodes']['b']['status'] == 'GAP'
     assert any(row['code'] == 'MESH_HANDOFF_TIME_MISSING' for row in report['gaps'])
     assert any(row['code'] == expected_code for row in report['gaps'])
+
+
+def test_missing_source_time_does_not_hide_an_unmoved_unique_color_mismatch(tmp_path, capsys):
+    tree = continued_tree()
+    source, target = (tree['nodes'][index]['contract']['inputs'] for index in (1, 2))
+    del source['events'][0]['at']
+    source['events'][0]['actor'] = 'y'
+    source['resources'] = {'unique': ['x'], 'places': {
+        'left': [{'color': 'x', 'qty': 1}], 'yard': [{'color': 'y', 'qty': 1}]},
+        'transitions': [{'id': 'move-y', 'event': 'a',
+            'consumes': [{'place': 'yard', 'color': 'y', 'qty': 1}],
+            'produces': [{'place': 'elsewhere', 'color': 'y', 'qty': 1}]}]}
+    target['resources'] = {'unique': ['x'], 'places': {'right': [{'color': 'x', 'qty': 1}]}}
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and report['status'] == 'FAIL'
+    assert any(row['code'] == 'MESH_HANDOFF_STATE_MISMATCH' and row['evidence'].get('color') == 'x'
+               for row in report['gaps'])
+
+
+def test_continues_roundtrip_omits_only_its_forbidden_port_mapping_field():
+    tree = continued_tree()
+    mesh = ModelMeshContract.from_dict(tree)
+    serialized = mesh.to_dict()
+    assert 'port_mappings' not in serialized['edges'][2]
+    assert serialized['edges'][0]['port_mappings'] == []
+    assert ModelMeshContract.from_dict(serialized).to_dict() == serialized

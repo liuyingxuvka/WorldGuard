@@ -150,10 +150,11 @@ def test_independent_event_failure_survives_other_event_gaps(gap, failure_time):
 
 
 @pytest.mark.parametrize("reverse", [False, True])
-def test_tied_fluent_writes_do_not_invent_a_later_precondition_failure(reverse):
+@pytest.mark.parametrize("ending", ["terminates", "releases"])
+def test_tied_fluent_writes_do_not_invent_a_later_precondition_failure(reverse, ending):
     tied = [
         {"event_id": "give", "at": "t1", "initiates": "ready"},
-        {"event_id": "remove", "at": "t1", "terminates": "ready"},
+        {"event_id": "remove", "at": "t1", ending: "ready"},
     ]
     if reverse:
         tied.reverse()

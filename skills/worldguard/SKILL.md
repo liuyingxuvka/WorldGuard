@@ -13,7 +13,7 @@ A mesh is one model tree: story/trip → chapter/day → scene/segment; each nod
 Its five abilities are structure (contracts and timeline), counterexamples (failed events or constraints
 with their timeline), known-bad variants (`variants:`) that must fail, binding to real material
 (`claim.asserts` and `source:`), and binding to tests (assertion rows and variants).
-Checks nest along the tree; parent rows may read descendants with `node:`.
+Checks nest along the tree; parent rows may read descendants with `node:`. Read it with `timeline` or `mesh-check`.
 
 ## Choose a command
 

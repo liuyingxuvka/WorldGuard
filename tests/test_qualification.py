@@ -246,3 +246,13 @@ def test_malformed_native_records_keep_their_typed_guard_gap(tmp_path, capsys, i
     report = json.loads(captured.out)
     assert report["status"] == "GAP"
     assert expected_code in {row["code"] for row in report["gaps"]}
+
+
+def test_malformed_event_keeps_native_gap_with_an_entity_registry():
+    report = run_worldguard({
+        'world_model': {'entities': {'known': {}}},
+        'claim': {'requested_semantics': ['event'], 'asserts': []},
+        'inputs': {'events': ['bad']},
+    })
+    assert report.status.value == 'GAP'
+    assert 'EVENT_MISSING_INITIATION_AXIOM' in {row['code'] for row in report.gaps}

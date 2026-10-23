@@ -233,8 +233,8 @@ def _check(contract: GuardContract):
                 continue
             if first.get("scenario_id") and second.get("scenario_id") and first["scenario_id"] != second["scenario_id"]:
                 continue
-            first_writes = _fluent_ids(first.get("initiates")) | _fluent_ids(first.get("terminates"))
-            second_writes = _fluent_ids(second.get("initiates")) | _fluent_ids(second.get("terminates"))
+            first_writes = _fluent_ids(first.get("initiates")) | _fluent_ids(first.get("terminates")) | _fluent_ids(first.get("releases"))
+            second_writes = _fluent_ids(second.get("initiates")) | _fluent_ids(second.get("terminates")) | _fluent_ids(second.get("releases"))
             shared = (first_writes & (second_writes | _fluent_ids(second.get("requires")))) | (second_writes & _fluent_ids(first.get("requires")))
             if shared:
                 simultaneous.append({"event_ids": [first.get("event_id"), second.get("event_id")], "at": first["at"], "fluents": sorted(shared)})

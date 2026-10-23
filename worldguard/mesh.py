@@ -272,7 +272,7 @@ class ModelEdge:
             "source_model_id": self.source_model_id,
             "target_model_id": self.target_model_id,
             "relation": self.relation,
-            "port_mappings": [mapping.to_dict() for mapping in self.port_mappings],
+            **({"port_mappings": [mapping.to_dict() for mapping in self.port_mappings]} if self.relation != "continues" else {}),
             "allowed_use": self.allowed_use,
             "forbidden_use": self.forbidden_use,
             "read_only": self.read_only,
@@ -540,9 +540,29 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, source: GuardC
     source_resources = source.inputs.get("resources", {})
     target_resources = target.inputs.get("resources", {})
     shared = set(source_resources.get("unique", [])) & set(target_resources.get("unique", []))
-    linked_transfers = any(isinstance(row, Mapping) and "event" in row for row in source_resources.get("transitions", []))
-    if shared and not (source_missing_time and linked_transfers):
-        final, source_error = token_replay(source_resources, events=source_events if not source_missing_time else [])
+    replay_resources = source_resources
+    if shared and source_missing_time:
+        timed_events = {event.get("event_id") for event in source_events
+                        if isinstance(event, Mapping) and "at" in event and not event.get("scenario_id")}
+        transfers = source_resources.get("transitions", [])
+        def colors(transfer):
+            return {str(arc.get("color")) for key in ("consumes", "produces")
+                    for arc in transfer.get(key, []) if isinstance(arc, Mapping)}
+        uncertain = set().union(*(colors(row) for row in transfers
+                                  if isinstance(row, Mapping) and "event" in row and row["event"] not in timed_events))
+        # A transfer coupling two colors cannot give either a known end state if one is uncertain.
+        while True:
+            coupled = set().union(*(colors(row) for row in transfers if isinstance(row, Mapping) and colors(row) & uncertain))
+            if coupled <= uncertain:
+                break
+            uncertain.update(coupled)
+        shared -= uncertain
+        replay_resources = {**source_resources, "transitions": [row for row in transfers
+            if isinstance(row, Mapping) and not colors(row) & uncertain
+            and ("event" not in row or row["event"] in timed_events)]}
+    if shared:
+        final, source_error = token_replay(replay_resources, validate=not source_missing_time,
+            events=[event for event in source_events if isinstance(event, Mapping)])
         initial, target_error = token_replay({**target_resources, "transitions": []})
         if source_error is not None or target_error is not None:
             add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A unique token state cannot be replayed across this edge.",

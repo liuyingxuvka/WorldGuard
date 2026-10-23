@@ -137,7 +137,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:1d171d51c0295b7acd53023232f558aa5aa8e165de6e422e61e72811dcc6d266"
+      "fingerprint": "sha256:cc8f781f44392654c8dcf87bf3d9d1a6561a496ac0f87b5a29f837a05a2b8273"
     },
     {
       "id": "worldguard.qualification",
@@ -150,7 +150,7 @@
         "Expose the run_worldguard kernel through one qualification owner",
         "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
         "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts.",
-        "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result."
+        "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result. Read entity uses only from mapping event records."
       ],
       "files": [
         "worldguard/qualification.py",
@@ -181,7 +181,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:6d9a7a039254ce999ddfcb50071f80c94424fa24a19e30e448a068e6f357693e"
+      "fingerprint": "sha256:797e5feb9411c49fe6b799d018cbadf0e48bc32522f5813e5b04056ff332dfc8"
     },
     {
       "id": "worldguard.mesh",
@@ -218,7 +218,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:0086d04ed8e8cf493d8f805b994024aedee003f6d29387f0032fc4b02403dacd"
+      "fingerprint": "sha256:d3dd450dfa184b1d65b460045a2b63ed4c09f8baa7518612aa82e3f46461878a"
     },
     {
       "id": "release",

@@ -136,6 +136,8 @@ def qualify_guard_contract(contract, *, context=None):
         inputs = contract.inputs
         used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))
         for event in inputs.get("events", []):
+            if not isinstance(event, Mapping):
+                continue
             if event.get("actor"):
                 used.add(event["actor"])
             used.update(event.get("with", []))
