@@ -409,7 +409,7 @@ def test_omitted_target_guard_does_not_skip_the_derived_guard_in_a_mesh() -> Non
 def test_expected_contractless_node_is_counted_and_blocks_aggregate_pass():
     report = run_model_mesh({"mesh_id": "contractless", "nodes": [{"model_id": "missing-contract"}]})
     assert report.status == GuardStatus.GAP
-    assert report.to_dict()["checked"] == {"nodes": 1, "edges": 0}
+    assert report.to_dict()["checked"] == {"nodes": 1, "edges": 0, "roots": 1}
     assert "missing-contract" not in report.node_reports
     assert any(finding.code == "MESH_EXPECTED_NODE_CONTRACT_MISSING" for finding in report.findings)
 
@@ -421,3 +421,156 @@ def test_retired_semantic_coverage_cli_is_a_typed_input_error(tmp_path, capsys):
     error = json.loads(capsys.readouterr().out)["error"]
     assert error["code"] == "WORLDGUARD_INPUT_INVALID"
     assert error["message"] == "semantic_coverage is retired; every node in the mesh is checked"
+
+
+@pytest.mark.parametrize('filename,status,code,detail', [
+    ('chapters_ok.yaml', 'PASS', None, None),
+    ('end_state_contradiction.yaml', 'FAIL', 'MESH_HANDOFF_STATE_MISMATCH', 'lamp_dark'),
+    ('ch2_resurrects.yaml', 'FAIL', 'MESH_HANDOFF_STATE_MISMATCH', 'cora_at_mainland'),
+    ('time_backwards.yaml', 'FAIL', 'MESH_HANDOFF_TIME_BACKWARDS', None),
+])
+def test_continues_carries_state_and_time(filename, status, code, detail, capsys):
+    from pathlib import Path
+    path = Path(__file__).parent / 'fixtures/trials/mesh_continues' / filename
+    assert main(['mesh-check', '--mesh', str(path), '--json']) == (0 if status == 'PASS' else 1)
+    report = json.loads(capsys.readouterr().out)
+    assert report['status'] == status
+    if code:
+        assert any(row['code'] == code for row in report['gaps'])
+    if detail:
+        assert detail in json.dumps(report['gaps'])
+
+
+def continued_tree():
+    def contract(name, initial, at, begins, ends):
+        return {'contract_id': name, 'claim': {'claim_id': name, 'asserts': [{'holds': begins, 'at': at}]},
+                'inputs': {'event_model': {'initial_states': initial}, 'events': [
+                    {'event_id': name, 'at': at, 'initiates': [begins], 'terminates': [ends]}]}}
+    return {'mesh_id': 'tree', 'nodes': [
+        {'model_id': 'root', 'contract': {'claim': {'claim_id': 'summary', 'asserts': [{'node': 'b', 'holds': 'done', 'at': 't2'}]}}},
+        {'model_id': 'a', 'contract': contract('a', ['dark'], 't1', 'lit', 'dark')},
+        {'model_id': 'b', 'contract': contract('b', ['lit'], 't2', 'done', 'lit')}],
+        'edges': [{'edge_id': 'root-a', 'source_model_id': 'root', 'target_model_id': 'a', 'relation': 'parent_child'},
+                  {'edge_id': 'root-b', 'source_model_id': 'root', 'target_model_id': 'b', 'relation': 'parent_child'},
+                  {'edge_id': 'a-b', 'source_model_id': 'a', 'target_model_id': 'b', 'relation': 'continues'}]}
+
+
+def _mesh_cli(tmp_path, capsys, data):
+    path = tmp_path / 'mesh.yaml'
+    path.write_text(yaml.safe_dump(data))
+    result = main(['mesh-check', '--mesh', str(path), '--json'])
+    captured = capsys.readouterr()
+    return result, json.loads(captured.out or captured.err)
+
+
+def test_parent_rows_read_descendants_without_running_parent_guards(tmp_path, capsys):
+    tree = continued_tree()
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 0 and report['status'] == 'PASS'
+    assert report['checked']['roots'] == 1
+    assert report['nodes']['root']['checked']['guards'] == []
+    tree['nodes'][0]['contract']['claim']['asserts'][0]['value'] = False
+    assert _mesh_cli(tmp_path, capsys, tree)[1]['status'] == 'FAIL'
+
+
+def test_node_rows_read_descendants_only(tmp_path, capsys):
+    tree = continued_tree()
+    tree['edges'] = [edge for edge in tree['edges'] if edge['edge_id'] != 'root-b']
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and report['status'] == 'GAP'
+    assert 'descendant' in json.dumps(report['gaps'])
+    standalone = tree['nodes'][0]['contract']
+    path = tmp_path / 'standalone.yaml'
+    path.write_text(yaml.safe_dump(standalone))
+    assert main(['check', '--contract', str(path)]) == 1
+    assert 'node rows need mesh-check' in capsys.readouterr().out
+
+
+def test_child_failure_reaches_root_even_when_parent_assertion_is_true(tmp_path, capsys):
+    tree = continued_tree()
+    tree['nodes'][2]['contract']['claim']['asserts'][0]['value'] = False
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and report['status'] == 'FAIL'
+    assert report['nodes']['root']['status'] == 'PASS'
+    assert report['nodes']['b']['status'] == 'FAIL'
+
+
+def test_continues_cycle_fails(tmp_path, capsys):
+    tree = continued_tree()
+    tree['edges'].append({'edge_id': 'back', 'source_model_id': 'b', 'target_model_id': 'a', 'relation': 'continues'})
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and any(row['code'] == 'MESH_DEPENDENCY_CYCLE' for row in report['gaps'])
+
+
+def test_contract_paths_resolve_beside_mesh_and_missing_file_names_node(tmp_path, capsys):
+    tree = continued_tree()
+    baseline = run_model_mesh(tree).to_dict()
+    for node in tree['nodes']:
+        path = tmp_path / (node['model_id'] + '.yaml')
+        path.write_text(yaml.safe_dump(node['contract']))
+        node['contract'] = path.name
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 0 and report == baseline
+    tree['nodes'][1]['contract'] = 'missing.yaml'
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 2 and 'node a' in json.dumps(report) and 'missing.yaml' in json.dumps(report)
+
+
+@pytest.mark.parametrize('change', ['freshness', 'ports', 'clock'])
+def test_continues_rejects_invalid_inputs(tmp_path, capsys, change):
+    tree = continued_tree()
+    if change == 'freshness':
+        tree['nodes'][1]['freshness_status'] = 'fresh'
+    elif change == 'ports':
+        tree['edges'][2]['port_mappings'] = [{'mapping_id': 'bad', 'source_port_id': 'x', 'target_port_id': 'y'}]
+    else:
+        tree['nodes'][2]['contract']['inputs']['events'][0]['at'] = '2026-11-02T10:00'
+        tree['nodes'][2]['contract']['claim']['asserts'][0]['at'] = '2026-11-02T10:00'
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 2 and report['error']['code'] == 'WORLDGUARD_INPUT_INVALID'
+
+
+def test_continues_compares_unique_token_positions(tmp_path, capsys):
+    tree = continued_tree()
+    source, target = (tree['nodes'][index]['contract']['inputs'] for index in (1, 2))
+    source['events'][0]['actor'] = 'token'
+    source['resources'] = {'unique': ['token'], 'places': {'left': [{'color': 'token', 'qty': 1}]},
+        'transitions': [{'id': 'move', 'event': 'a', 'consumes': [{'place': 'left', 'color': 'token', 'qty': 1}],
+                         'produces': [{'place': 'right', 'color': 'token', 'qty': 1}]}]}
+    target['resources'] = {'unique': ['token'], 'places': {'left': [{'color': 'token', 'qty': 1}]}}
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and any(row['code'] == 'MESH_HANDOFF_STATE_MISMATCH' and row['evidence'].get('color') == 'token' for row in report['gaps'])
+
+
+def test_continues_compares_requested_scenario_values_and_missing_values(tmp_path, capsys):
+    tree = continued_tree()
+    tree['edges'][2]['variables'] = ['v']
+    for index in (1, 2):
+        tree['nodes'][index]['contract']['inputs']['causal_model'] = {
+            'variables': ['v'], 'exogenous': ['seed'], 'equations': {'v': 'seed'}, 'scenarios': {'first': {'seed': 1}}}
+    assert _mesh_cli(tmp_path, capsys, tree)[0] == 0
+    target = tree['nodes'][2]['contract']['inputs']['causal_model']
+    target['scenarios']['first']['seed'] = 1 + 5e-10
+    assert _mesh_cli(tmp_path, capsys, tree)[0] == 0
+    target['scenarios']['second'] = {'seed': 2}
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and any(row['code'] == 'MESH_HANDOFF_VALUE_MISMATCH' for row in report['gaps'])
+    tree['nodes'][1]['contract']['inputs'].pop('causal_model')
+    assert any(row['code'] == 'MESH_HANDOFF_VALUE_MISSING' for row in _mesh_cli(tmp_path, capsys, tree)[1]['gaps'])
+
+
+def test_continues_trip_cannot_depart_before_prior_arrival(tmp_path, capsys):
+    tree = continued_tree()
+    for index, at in ((1, '2026-11-02T10:20'), (2, '2026-11-02T10:00')):
+        contract = tree['nodes'][index]['contract']
+        contract['inputs']['events'][0]['at'] = at
+        contract['claim']['asserts'][0]['at'] = at
+    tree['nodes'][0]['contract']['claim']['asserts'][0]['at'] = '2026-11-02T10:00'
+    code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert code == 1 and any(row['code'] == 'MESH_HANDOFF_TIME_BACKWARDS' for row in report['gaps'])
+
+
+def test_unmentioned_source_fluents_do_not_need_target_copies(tmp_path, capsys):
+    tree = continued_tree()
+    tree['nodes'][1]['contract']['inputs']['event_model']['initial_states'].append('source_only')
+    assert _mesh_cli(tmp_path, capsys, tree)[0] == 0

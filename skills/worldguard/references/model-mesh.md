@@ -1,94 +1,77 @@
-# WorldGuard ModelMesh
+# One tree of world models
 
-Use ModelMesh when a question depends on more than one model, model version, or model-to-model handoff.
+Split a world when separate parts need their own contracts and checks. For a two-part
+story, save this `mesh.yaml` beside `part1.yaml` and `part2.yaml`:
 
-## Core Rule
+```yaml
+mesh_id: two_parts
+nodes:
+  - model_id: whole
+    contract:
+      claim:
+        claim_id: ending
+        asserts: [{node: part2, holds: arrived, at: t2}]
+  - {model_id: part1, contract: part1.yaml}
+  - {model_id: part2, contract: part2.yaml}
+edges:
+  - {edge_id: whole_1, source_model_id: whole, target_model_id: part1, relation: parent_child}
+  - {edge_id: whole_2, source_model_id: whole, target_model_id: part2, relation: parent_child}
+  - {edge_id: next, source_model_id: part1, target_model_id: part2, relation: continues}
+```
 
-`GuardContract` is the unit-level check. `ModelMeshContract` is the topology-level check.
+`part1.yaml`:
 
-Do not report a mesh as `PASS` merely because a child `GuardContract` passed. Mesh closure must also check authority, handoff, freshness, cycles, and child evidence preservation. Each node's contract binds its claim with `claim.asserts` like a unit contract: a false node assertion fails the mesh, and a node claim without assertions is a gap.
+```yaml
+contract_id: part1
+claim: {claim_id: departed, asserts: [{holds: travelling, at: t1}]}
+inputs:
+  event_model: {initial_states: [at_home]}
+  events:
+    - {event_id: depart, at: t1, initiates: [travelling], terminates: [at_home]}
+```
 
-## ModelMeshContract Fields
+`part2.yaml`:
 
-Required canonical fields:
+```yaml
+contract_id: part2
+claim: {claim_id: arrived, asserts: [{holds: arrived, at: t2}]}
+inputs:
+  event_model: {initial_states: [travelling]}
+  events:
+    - {event_id: arrive, at: t2, initiates: [arrived], terminates: [travelling]}
+```
 
-- `mesh_id`
-- `schema_version`
-- `run_id`
-- `nodes`
-- `edges`
-- `snapshots`
+Run `python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh mesh.yaml`;
+add `--json` for node reports. For two trip segments, replace `t1`/`t2` with quoted
+ISO date-times and name the departure/arrival events and fluents for the trip.
 
-## ModelNode Fields
+`continues` carries the source's final unscoped fluent state to the target start.
+Every fluent the target mentions must have the same start value; source-only fluents
+are outside that target's obligation. Event time formats must agree across the edge,
+and the target cannot begin before the source ends. Shared unique token colors must
+start where they ended. Optional `variables: [name]` compares native causal scenario
+values: by matching scenario name, or one source scenario against every target
+scenario, with absolute tolerance 1e-9. Missing values are GAP; mismatches FAIL.
+`continues` rejects port mappings. Dependencies, including continues, cannot cycle.
 
-- `model_id`
-- `model_version`
-- `model_kind`
-- `authority`
-- `freshness_status`: `current`, `stale`, or `unknown`
-- `input_ports` and `output_ports`: typed `port_id`, `value_type`, and `cardinality` inventories
-- `contract`: optional embedded `GuardContract`
+`parent_child` defines containment from parent to child; ports are optional. A `node:`
+assertion can read only a descendant of its holder and requires `mesh-check`.
+A summary node may have only these rows and no inputs: true rows PASS, false rows
+FAIL, unresolved rows GAP. Each child still runs independently; a passing parent
+cannot hide a child's non-PASS. `checked.roots` counts nodes without a parent edge.
 
-## ModelEdge Fields
+`consumes_output_of` checks port labels and requires exact nonempty `port_mappings`;
+it does not carry state. To express “the next node continues from here”, use
+`continues`. If parent-child ports are supplied, the same type/cardinality checks
+apply. Other relations are `depends_on`, `refines`, `replaces`, `conflicts_with`,
+`same_world_version` and `supersedes`; they do not transfer ports.
 
-- `edge_id`
-- `source_model_id`
-- `target_model_id`
-- `relation`
-- `port_mappings`: exact `mapping_id`, producer `source_port_id`, and consumer `target_port_id`
-- `allowed_use`
-- `forbidden_use`
-- `read_only`
-- `requires_current_source`
-
-`parent_child` and `consumes_output_of` transfer data/state and therefore require at least one exact port mapping. Other relation kinds do not accept transfer mappings. Producer outputs and consumer inputs must exist and have the same type and cardinality. Unknown relations, missing mappings, unknown ports, and incompatible ports are current validation failures; they never become `depends_on` or an untyped handoff. If `allowed_use` is non-empty, transferred producer port ids must stay inside it. A transferred port outside that list is a handoff boundary violation.
-
-## Handoff rules
-
-- Handoffs are read-only.
-- Downstream nodes may not mutate upstream reports, fill upstream gaps, delete upstream counterexamples, or relabel upstream statuses.
-- If `requires_current_source` is true and the source node is stale or unknown, return `GAP`.
-- `parent_child` and `consumes_output_of` require non-empty exact port mappings; other relations reject port mappings.
-- Every source port must be a declared source-node output and every target port a declared target-node input with identical type and cardinality.
-- If any transferred source port is listed in `forbidden_use`, return `FAIL`.
-- If `allowed_use` is non-empty and any transferred source port is outside it, return `BOUNDARY_EXCEEDED`.
-- If a source or target node id is missing, return `GAP`.
-- Dependency cycles return `FAIL`.
-- Missing or unknown relation kinds are rejected before evaluation and never converted to `depends_on`.
-
-## Relation meanings
-
-- `parent_child`: source is a parent or child model boundary.
-- `depends_on`: target depends on source evidence.
-- `refines`: target narrows or deepens source.
-- `replaces`: target replaces source; old source use needs disposition.
-- `conflicts_with`: source and target expose incompatible claims.
-- `consumes_output_of`: target consumes named source outputs.
-- `same_world_version`: source and target belong to the same state/version.
-- `supersedes`: source is newer and supersedes target or target's prior evidence.
-
-## WorldStateSnapshot Fields
-
-- `snapshot_id`
-- `model_ids`
-- `status`
-- `notes`
-
-Snapshots are optional metadata for version/state context. They do not replace node freshness or edge handoff checks.
-
-## MeshReport Fields
-
-The summary contains `status`, `checked` (`nodes` and `edges` counts), `gaps` and `scope_limits`. Each problem carries its `node_id` or `edge_id` when applicable. Add `--json` for `nodes`, mapping node ids to complete unit reports.
-
-Every node is checked once; a missing contract produces `GAP` `MESH_EXPECTED_NODE_CONTRACT_MISSING`. Every native Guard problem and claim assertion contributes to the aggregate status. No expected-node list or exclusion skips a node. `provider_availability` is retired and rejected on input.
-
-## Forbidden shortcuts
-
-- Do not let a child `PASS` become parent `PASS` without mesh closure.
-- Do not let a downstream `PASS` repair upstream `GAP`.
-- Do not treat stale evidence as current evidence. Migrate and revalidate it to
-  the current schema or block the handoff.
-
-## Non-Goals
-
-WorldGuard core ModelMesh does not own domain concepts such as chapter, scene, paragraph, literature item, quest, level, or task arc. Upper-layer adapters may translate those concepts into model nodes, edges, and claims.
+Optional authority, ports, allowed/forbidden use lists, read_only and snapshots keep
+their defaults. Handoffs are read-only; forbidden transfers FAIL and transfers outside
+an explicit allowed list exceed the boundary. Sources default to current; only
+`current`, `stale`, `unknown` are valid freshness values. A handoff requiring current
+source state gaps on stale/unknown sources. Missing endpoints or contracts GAP.
+Contracts may be embedded mappings or YAML/JSON paths relative to the mesh file;
+unreadable files are input errors naming the node. A mesh is PASS only when every
+node and edge check is PASS. Child reports, source labels and scope limits remain
+available in full JSON.

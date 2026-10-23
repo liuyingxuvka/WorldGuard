@@ -248,3 +248,11 @@ python -m worldguard.cli mesh-check --mesh examples/model_mesh/basic_mesh.yaml
 WorldGuard 不是物理求解器、法律判断器、安全认证器、市场模型或部署可行性判断器。fuel-cell 示例只是测试用的 toy fixture，不证明真实燃料电池物理、法律合规、安全认证、部署准备、市场真实性或商业策略。
 
 这个核心包也不直接包含小说写作、学术论文修改或游戏设计工作流。那些应该作为上层技能来使用 WorldGuard 的通用 contract。
+
+Mesh `continues` edges check final-to-initial fluent state, time, shared unique tokens
+and optional scenario variables. `parent_child` forms a tree without requiring ports;
+parent `node:` assertion rows can read descendants. Node contracts may be relative
+YAML/JSON paths. See [the complete small example](skills/worldguard/references/model-mesh.md).
+
+模型树的 `continues` 边检查前一节点结束状态与后一节点初始状态、时间、唯一令牌位置及指定变量。
+`parent_child` 不必声明端口；父节点可用 `node:` 断言读取后代，合约也可写成相对文件路径。

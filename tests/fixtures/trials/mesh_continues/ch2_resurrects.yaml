@@ -1,0 +1,207 @@
+mesh_id: lighthouse
+schema_version: worldguard.model_mesh.v1
+run_id: lighthouse-run
+nodes:
+- model_id: ch1
+  model_version: v1
+  model_kind: event_model
+  freshness_status: current
+  authority:
+    owns:
+    - event
+    - agent
+    - spatial
+    - resource
+    excludes: []
+    scope_limits:
+    - ch1
+  contract:
+    claim:
+      claim_id: c_ch1
+      text: Ben brings oil at t1, Ada lights the lamp at t2, Cora arrives at t3 and
+        reads the logbook in the lamp room at t4.
+      requested_semantics:
+      - event
+      - agent
+      - spatial
+      - resource
+      asserts:
+      - event: e_oil_delivered
+        before: e_lamp_lit
+      - holds: lamp_lit
+        at: t2
+      - holds: cora_on_island
+        at: t3
+      - agent: Cora
+        intends: inspect_logbook
+      - relation: NTPP
+        x: logbook
+        y: lamp_room
+        at: t4
+      - place: lamp_room
+        color: cora
+        qty: 1
+    world_model:
+      model_id: lighthouse
+      model_version: ch1
+      scope_limits:
+      - chapter 1 only
+    inputs:
+      event_model:
+        initial_states:
+        - ben_has_oil
+        - ben_at_mainland
+        - ada_on_island
+        - lamp_dark
+        - cora_at_mainland
+      events:
+      - event_id: e_oil_delivered
+        at: t1
+        requires:
+        - ben_has_oil
+        initiates: ada_has_oil
+        terminates: ben_has_oil
+      - event_id: e_lamp_lit
+        at: t2
+        requires:
+        - ada_has_oil
+        - lamp_dark
+        initiates: lamp_lit
+        terminates: lamp_dark
+      - event_id: e_cora_arrives
+        at: t3
+        requires:
+        - cora_at_mainland
+        initiates: cora_on_island
+        terminates: cora_at_mainland
+      - event_id: e_cora_reads
+        at: t4
+        requires:
+        - cora_on_island
+        initiates: logbook_read
+      beliefs:
+        Ada:
+          agent_id: Ada
+          beliefs:
+          - ship_due_tonight
+          desires:
+          - keep_light_burning
+          intentions:
+          - light_lamp
+        Ben:
+          agent_id: Ben
+          beliefs:
+          - ada_needs_oil
+          desires:
+          - get_paid
+          intentions:
+          - deliver_oil
+        Cora:
+          agent_id: Cora
+          beliefs:
+          - logbook_falsified
+          desires:
+          - expose_fraud
+          intentions:
+          - inspect_logbook
+      spatial_relations:
+      - at: t4
+        x: logbook
+        y: lamp_room
+        relation: NTPP
+      - at: t4
+        x: lamp_room
+        y: lighthouse
+        relation: NTPP
+      - at: t4
+        x: cora
+        y: lamp_room
+        relation: NTPP
+      resources:
+        places:
+          mainland:
+          - color: cora
+            qty: 1
+          boat: []
+          island_dock: []
+          lamp_room: []
+        capacities:
+          boat: 2
+        transitions:
+        - id: cora_boards
+          consumes:
+          - place: mainland
+            color: cora
+            qty: 1
+          produces:
+          - place: boat
+            color: cora
+            qty: 1
+        - id: cora_lands
+          consumes:
+          - place: boat
+            color: cora
+            qty: 1
+          produces:
+          - place: island_dock
+            color: cora
+            qty: 1
+        - id: cora_climbs
+          consumes:
+          - place: island_dock
+            color: cora
+            qty: 1
+          produces:
+          - place: lamp_room
+            color: cora
+            qty: 1
+- model_id: ch2
+  model_version: v1
+  model_kind: event_model
+  freshness_status: current
+  authority:
+    owns:
+    - event
+    - agent
+    - spatial
+    - resource
+    excludes: []
+    scope_limits:
+    - ch2
+  contract:
+    claim:
+      claim_id: c_ch2
+      text: Cora confronts Ada in the lamp room at t5; Ben rows Cora back at t6.
+      requested_semantics:
+      - event
+      asserts:
+      - event: e_confront
+        before: e_row_back
+    world_model:
+      model_id: lighthouse-ch2
+      model_version: v1
+      scope_limits:
+      - chapter 2 only
+    inputs:
+      event_model:
+        initial_states:
+        - logbook_read
+        - ada_on_island
+        - cora_at_mainland
+      events:
+      - event_id: e_confront
+        at: t5
+        requires:
+        - logbook_read
+        initiates: ada_exposed
+      - event_id: e_row_back
+        at: t6
+        requires:
+        - cora_at_mainland
+        initiates: cora_home
+edges:
+- edge_id: ch1_then_ch2
+  source_model_id: ch1
+  target_model_id: ch2
+  relation: continues
+snapshots: []

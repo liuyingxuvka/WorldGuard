@@ -206,7 +206,7 @@ def claim_predictive_intent(claim: Claim) -> bool:
 def claim_semantics(claim: Claim) -> tuple[str, ...]:
     values = [*claim.requested_semantics]
     values.extend((item for atom in claim.atoms for item in atom.requested_semantics))
-    values.extend((CLAIM_ASSERTION_KINDS[kind] for kind in map(claim_assertion_kind, claim.asserts) if kind))
+    values.extend((CLAIM_ASSERTION_KINDS[kind] for kind in map(claim_assertion_kind, (row for row in claim.asserts if "node" not in row)) if kind))
     if claim_predictive_intent(claim):
         values.append('predictive')
     return tuple(dict.fromkeys((str(item).strip().lower() for item in values if str(item).strip())))
@@ -333,7 +333,7 @@ class GuardContract:
             if 'at' in event:
                 named_times.append((f"inputs.events[{index}] ({event_id})", event['at']))
         named_times.extend((f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
-                           for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row)
+                           for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row and 'node' not in row)
         validate_times(named_times)
         return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')), variants=variants)
 

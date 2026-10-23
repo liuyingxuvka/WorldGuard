@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from copy import deepcopy
 from typing import Any
 
@@ -23,6 +23,8 @@ class QualificationContext:
     node_id: str = ""
     target_id: str = ""
     target_revision: str = ""
+    node_contracts: Mapping[str, GuardContract] | None = field(default=None, repr=False, compare=False)
+    descendant_ids: frozenset[str] = frozenset()
 
     @classmethod
     def from_dict(cls, data):
@@ -115,7 +117,7 @@ def qualify_guard_contract(contract, *, context=None):
     if not isinstance(contract, GuardContract):
         contract = GuardContract.from_dict(dict(contract))
     if context is not None and not isinstance(context, QualificationContext):
-        QualificationContext.from_dict(context)
+        context = QualificationContext.from_dict(context)
     declared = contract.claim.target_guards
     if len(declared) != len(set(declared)):
         raise QualificationError("duplicate declared Guard ownership")
@@ -127,7 +129,8 @@ def qualify_guard_contract(contract, *, context=None):
     unmapped = _semantic_gap_rows(contract, derivation.unmapped_semantics)
     results = [GUARD_RUNNERS[guard](contract.for_guard(guard)) for guard in derived]
     results = _counterexample_context(contract, results)
-    binding = evaluate_claim_binding(contract)
+    binding = evaluate_claim_binding(contract, node_contracts=context.node_contracts if context else None,
+                                     descendant_ids=context.descendant_ids if context else frozenset())
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
     if contract.world_model.entities:
         inputs = contract.inputs
@@ -169,7 +172,7 @@ def qualify_guard_contract(contract, *, context=None):
             gaps.append(problem)
     for variant in contract.variants:
         try:
-            revised = qualify_guard_contract(apply_variant(contract.to_dict(), variant))
+            revised = qualify_guard_contract(apply_variant(contract.to_dict(), variant), context=context)
         except ValueError as exc:
             raise ValueError(f"variant {variant['id']}: {exc}") from exc
         codes = sorted({row["code"] for row in revised.gaps})

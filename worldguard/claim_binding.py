@@ -220,7 +220,7 @@ _EVALUATORS = {
 }
 
 
-def evaluate_claim_binding(contract: GuardContract) -> dict[str, Any]:
+def evaluate_claim_binding(contract: GuardContract, *, node_contracts=None, descendant_ids=frozenset()) -> dict[str, Any]:
     """Evaluate every claim assertion against the model; a claim without assertions is not bound (GAP)."""
     rows: list[dict[str, Any]] = []
     for index, assertion in enumerate(contract.claim.asserts):
@@ -231,7 +231,16 @@ def evaluate_claim_binding(contract: GuardContract) -> dict[str, Any]:
         else:
             row["guard"] = SEMANTIC_GUARD_ROUTES[CLAIM_ASSERTION_KINDS[kind]][0]
             try:
-                status, detail = _EVALUATORS[kind](contract.inputs, assertion)
+                target = assertion.get("node")
+                if "node" in assertion and node_contracts is None:
+                    status, detail = _gap("node rows need mesh-check")
+                elif "node" in assertion and target not in descendant_ids:
+                    status, detail = _gap(f"node {target!r} is not a parent_child descendant of this node")
+                elif "node" in assertion and target not in node_contracts:
+                    status, detail = _gap(f"descendant node {target!r} has no readable contract")
+                else:
+                    inputs = node_contracts[target].inputs if "node" in assertion else contract.inputs
+                    status, detail = _EVALUATORS[kind](inputs, assertion)
             except (TypeError, ValueError, KeyError, AttributeError) as exc:
                 status, detail = _gap(f"cannot evaluate: {exc}")
         row["status"] = status

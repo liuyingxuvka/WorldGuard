@@ -16,7 +16,7 @@
       "layer": "interface",
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
-        "Expose the native API through literal lazy owner exports",
+        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries.",
         "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json; expose the native timeline view",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
@@ -49,14 +49,14 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:4aa06c50bd779bde57e895ee7609e3249fe611301f00d19272308c4ebc45ca30"
+      "fingerprint": "sha256:156c38936762a4455a17842b6a2792e0fc9cc6e7e3462689accb6c8f59026940"
     },
     {
       "id": "worldguard.core",
       "layer": "core",
       "summary": "Shared contracts, compact reports, clock and finite replay helpers",
       "responsibilities": [
-        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
         "Keep compact native reports and the conservative four-status aggregation",
         "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine"
@@ -92,7 +92,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:6f50a7e1c0007e1a28cc08294923657206239dd2a9213078568b9e4809271077"
+      "fingerprint": "sha256:0b435a08a426a4810d7ffd8cfbd4a87931eafd7ea3933cc654bec3be9c0f09e3"
     },
     {
       "id": "worldguard.guards",
@@ -142,7 +142,7 @@
       "layer": "unit",
       "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
-        "Run each derived native Guard exactly once",
+        "Run each derived native Guard exactly once Resolve node rows only against parent_child descendants in a native mesh context; standalone references gap and summary-only nodes need no local Guard execution.",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
         "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
         "Expose the run_worldguard kernel through one qualification owner",
@@ -175,16 +175,17 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:0e6710115f1e71d76004a4a1c1d3b78662f79477ecbac68d7d776f81e57b3ed8"
+      "fingerprint": "sha256:977eb4fabbd06c1314288d9fb8cb2b41e526794f56664c4e8222e76b8dfaa92b"
     },
     {
       "id": "worldguard.mesh",
       "layer": "mesh",
-      "summary": "Native per-node checks with mesh topology, authority and handoffs",
+      "summary": "Check one model tree and its actual state handoffs while preserving every child result.",
       "responsibilities": [
         "Validate model authority, ports, handoffs, freshness and graph structure",
         "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
-        "Preserve every node report and problem under one final status, with checked node and edge counts; retain node source references on node problems"
+        "Preserve every node report and problem under one final status, with checked node and edge counts; retain node source references on node problems",
+        "Carry fluent state, event clocks, shared unique token positions and requested causal variables over continues edges; allow structural parent_child edges and count roots; load contract paths relative to the mesh, reject invalid freshness and enforce descendant-only node rows."
       ],
       "files": [
         "worldguard/mesh.py"
@@ -208,7 +209,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:90172d1b4d4180df3ac721f726492b817cc53fe83e62892a2efe0c2b96851b4d"
+      "fingerprint": "sha256:dbb23e447b118dc2e6263b1a0049afe1273d48dc8a7f3704aaeda49e90162d9e"
     },
     {
       "id": "release",

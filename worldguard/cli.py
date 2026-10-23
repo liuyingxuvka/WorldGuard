@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh
         try:
-            mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh)))
+            mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh), base_dir=Path(args.mesh).resolve().parent))
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("mesh-check", args.mesh, exc)
         _emit(mesh_report.to_dict(), _mesh_summary, args.json)

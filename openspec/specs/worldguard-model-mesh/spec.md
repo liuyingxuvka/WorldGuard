@@ -55,3 +55,21 @@ The CLI SHALL provide `worldguard mesh-check --mesh <path>` for generic mesh che
 #### Scenario: Mesh check emits JSON
 - **WHEN** the CLI runs against a valid mesh file
 - **THEN** it prints a short JSON summary containing `status`, gaps and non-pass nodes; adding `--json` emits the full report with `node_reports`, `findings`, and `aggregate_ledger`.
+
+## Stateful continuation and containment
+
+The mesh SHALL accept `continues` without ports and reject cycles including it.
+It SHALL compare unscoped source final fluents with target initial values for all
+target-mentioned fluents, homogeneous event clocks and nondecreasing handoff time,
+shared unique token locations, and optional native scenario variable values at
+absolute tolerance 1e-9. State/time/value mismatches SHALL FAIL with named edge and
+values; missing variable values SHALL GAP. Source-only fluents need not be copied.
+
+`parent_child` SHALL allow absent ports and define descendants and root counts.
+A claim assertion with `node` SHALL read only a descendant's world inputs during
+mesh-check; standalone or non-descendant references SHALL GAP. Such rows SHALL not
+derive Guards for their holder. Summary-only contracts SHALL permit no local inputs.
+Child non-PASS results SHALL remain part of the aggregate regardless of parent rows.
+Node contracts SHALL support paths relative to the mesh file and unreadable paths
+SHALL be input errors naming the node. Invalid freshness statuses SHALL be input
+errors instead of being silently mapped to unknown.
