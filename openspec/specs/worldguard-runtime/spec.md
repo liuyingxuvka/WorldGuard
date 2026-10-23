@@ -62,7 +62,7 @@ The runtime SHALL provide a fuel-cell toy example replay that verifies schema, h
 - **THEN** the command succeeds, reports all seven Guards, and includes explicit toy-scope limits.
 
 ### Requirement: Runtime CLI Checks
-The runtime SHALL provide only `check` and `mesh-check` as native CLI commands. To revise a fact, edit the contract and rerun its existing assertions.
+The runtime SHALL provide `check`, `mesh-check`, `timeline` and `compare` as native CLI commands. To revise a fact, edit the contract and rerun its existing assertions.
 
 #### Scenario: Single contract CLI remains compatible
 - **WHEN** `worldguard check --example fuel_cell` runs
@@ -125,3 +125,14 @@ the shared table. The status priority SHALL remain `FAIL` > `GAP` > `BOUNDARY_EX
 A unit contract MAY declare unique known-bad variants with expected FAIL, GAP or BOUNDARY_EXCEEDED status, optional native problem code and in-memory set/remove/add edits. Every check SHALL run each variant without recursively applying variants. Status or code mismatches SHALL produce GAP VARIANT_NOT_CAUGHT; malformed paths, ids or expectations SHALL produce input error 2 naming the variant. Paths SHALL support exact map keys, list indices and unique id selectors. No edit SHALL change the source file or original contract.
 
 The timeline command SHALL read initial state, time-ordered events, fluents, token markings, problem codes and scalar runs using the same native replay owners. Source strings on events, transfers, assertion rows and nodes SHALL survive on related problems. Full event counterexamples SHALL retain their path prefixes; summaries SHALL remain concise.
+
+### Requirement: Native world observation comparison
+
+`compare --contract --observed` SHALL derive expected event times and scenario
+variable values from the contract, compare only supplied observations and return
+matches/mismatches with signed actual-minus-expected differences and tolerances.
+ISO/clock time differences SHALL use minutes; label/numeric clocks their own scale.
+Unknown ids/scenarios, ambiguous scenarios for variables, mixed time kinds and
+invalid tolerances SHALL be input errors (exit 2). All matches SHALL exit 0 and any
+mismatch SHALL exit 1 with value_outside_tolerance. Optional source SHALL be copied.
+The comparison SHALL be pure, without freezing, hashing or revision artifacts.

@@ -16,7 +16,7 @@
       "layer": "interface",
       "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
       "responsibilities": [
-        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries.",
+        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries. Expose compare --contract --observed with native JSON results and 0/1/2 status exits.",
         "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json; expose the native timeline view",
         "Construct the packaged fuel-cell example without adding domain semantics"
       ],
@@ -49,7 +49,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:156c38936762a4455a17842b6a2792e0fc9cc6e7e3462689accb6c8f59026940"
+      "fingerprint": "sha256:d749fba4be2ecf05af3aa156b1d4530772916be143581ff7b1281a9290568798"
     },
     {
       "id": "worldguard.core",
@@ -146,12 +146,14 @@
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
         "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
         "Expose the run_worldguard kernel through one qualification owner",
-        "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples"
+        "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
+        "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts."
       ],
       "files": [
         "worldguard/qualification.py",
         "worldguard/kernel.py",
-        "worldguard/claim_binding.py"
+        "worldguard/claim_binding.py",
+        "worldguard/compare.py"
       ],
       "entrypoints": [
         "worldguard/kernel.py:run_worldguard",
@@ -169,13 +171,14 @@
         "tests/test_kernel_handoff.py",
         "tests/test_qualification.py",
         "tests/test_world_model_language.py",
-        "tests/test_variants_timeline.py"
+        "tests/test_variants_timeline.py",
+        "tests/test_compare.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:977eb4fabbd06c1314288d9fb8cb2b41e526794f56664c4e8222e76b8dfaa92b"
+      "fingerprint": "sha256:b260574e82d7bc6514b7e4b101507d0ab9785f662a18a10ef4ea939cce1c6921"
     },
     {
       "id": "worldguard.mesh",
@@ -269,7 +272,8 @@
       "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
         "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
-        "Keep contract and reporting instructions aligned with the CLI"
+        "Keep contract and reporting instructions aligned with the CLI",
+        "Document compare inputs, native expected values, clock/variable tolerances and observation mismatch exits in the stable contract reference."
       ],
       "files": [
         "skills/worldguard/scripts/*.py",
@@ -290,7 +294,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:4d3c940ba871c9b68ac43d6de469b435fd5e92ed1a3509ec64777fa20710073e"
+      "fingerprint": "sha256:90d2db02c68cc84f1c5c7fdd36872638eb9bf66a4516e7fba4771ef34f9a2881"
     }
   ],
   "flows": [

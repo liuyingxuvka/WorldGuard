@@ -43,3 +43,28 @@ Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY
 `timeline --contract <file> [--scenario <id>]` reads the initial state and every event's resulting fluents, token markings and problem codes; `variables` contains completed scalar runs. Linked transfers follow their events; unlinked transfers appear on the last step. Timeline ordering requires each applicable event to have a time. The timeline uses the same native replay functions and introduces no new validation rules.
 
 Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. Full event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.
+
+## Compare the world with observations
+
+Run `python <skill-root>/scripts/run_worldguard.py compare --contract world.yaml --observed observed.yaml`.
+For the bundled trip, a small observed file is:
+
+```yaml
+scenario: published_timetable
+source: trip log
+time_tolerance: 5
+tolerance: 0.01
+events: {d1_train_arr: "2026-11-02T10:25"}
+variables: {slack_back_h: 0.75}
+```
+
+Expected values come from the contract's event times and native causal scenario.
+A sole causal scenario can be selected implicitly; otherwise name it. Only supplied
+observations are compared. ISO/clock differences and time_tolerance use minutes;
+numeric/label clocks use their own scale. Variable tolerance uses that variable's unit.
+Differences are signed actual minus expected; absolute differences control tolerance.
+Output has matches and mismatches with ids, values, differences and tolerances, and
+copies optional source unchanged. Exit 0 means all comparisons match, 1 means at
+least one mismatch, 2 means an invalid input, unknown id/scenario or mixed time kinds.
+To check whether the plan still works at actual times, put those times into a world
+scenario and run `check`. Compare creates no frozen artifacts and edits no model.

@@ -71,7 +71,18 @@ def main(argv: list[str] | None = None) -> int:
     timeline_parser = subparsers.add_parser("timeline")
     timeline_parser.add_argument("--contract", required=True)
     timeline_parser.add_argument("--scenario")
+    comparison = subparsers.add_parser("compare", help="Compare a world with supplied observations.")
+    comparison.add_argument("--contract", required=True)
+    comparison.add_argument("--observed", required=True)
     args = parser.parse_args(argv)
+    if args.command == "compare":
+        from .compare import compare_world
+        try:
+            result = compare_world(load_mapping(args.contract), load_mapping(args.observed))
+        except (OSError, UnicodeError, ValueError) as exc:
+            return _input_error("compare", f"{args.contract} / {args.observed}", exc)
+        print(dump_json(result))
+        return 0 if result["status"] == "PASS" else 1
     if args.command == "timeline":
         from .contracts import GuardContract
         from .kernel import run_worldguard

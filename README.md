@@ -256,3 +256,10 @@ YAML/JSON paths. See [the complete small example](skills/worldguard/references/m
 
 模型树的 `continues` 边检查前一节点结束状态与后一节点初始状态、时间、唯一令牌位置及指定变量。
 `parent_child` 不必声明端口；父节点可用 `node:` 断言读取后代，合约也可写成相对文件路径。
+
+Compare supplied observations with native planned event/scenario values:
+`python skills/worldguard/scripts/run_worldguard.py compare --contract world.yaml --observed observed.yaml`.
+The JSON lists matches and mismatches with declared tolerances; unknown ids are input errors.
+
+用 `compare --contract world.yaml --observed observed.yaml` 对比计划和实际观测：
+输出匹配与超差项，时间容差对 ISO/钟点写法按分钟计算；未观测项不算不匹配。
