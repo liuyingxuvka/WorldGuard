@@ -1,0 +1,51 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-303: the timeline shows the whole world (rule timeline_shows_every_problem, known-bad timeline_drops_non_event_problems)",
+  "components": [
+    {
+      "id": "core",
+      "layer": "core",
+      "summary": "Shared contracts, compact reports, clock and finite replay helpers",
+      "responsibilities": [
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
+        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
+        "Keep compact native reports and the conservative four-status aggregation",
+        "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine",
+        "Check declared event preconditions without assuming an order inside simultaneous groups; retain uncertainty after conflicting same-time writes until a definite later write.",
+        "The timeline shows every claim row with its result, every declared sub-model and every problem of the native report"
+      ],
+      "files": [
+        "worldguard/contracts.py",
+        "worldguard/io.py",
+        "worldguard/status.py",
+        "worldguard/reports.py",
+        "worldguard/semantic.py",
+        "worldguard/clock.py",
+        "worldguard/variants.py",
+        "worldguard/timeline.py"
+      ],
+      "entrypoints": [
+        "worldguard/contracts.py:derive_guard_requirements",
+        "worldguard/status.py:aggregate_statuses",
+        "worldguard/semantic.py:token_replay"
+      ],
+      "state": [
+        "Immutable contract and report values"
+      ],
+      "side_effects": [
+        "Read declared mapping files (YAML only when PyYAML is installed) and emit JSON only when requested"
+      ],
+      "depends_on": [],
+      "tests": [
+        "tests/test_contracts.py",
+        "tests/test_event_time_order.py",
+        "tests/test_variants_timeline.py"
+      ],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py"
+      ]
+    }
+  ],
+  "flows": [],
+  "remove": []
+}
