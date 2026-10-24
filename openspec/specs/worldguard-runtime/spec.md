@@ -109,7 +109,7 @@ the shared table. The status priority SHALL remain `FAIL` > `GAP` > `BOUNDARY_EX
 ### Requirement: User world variants and readable state
 A unit contract MAY declare unique known-bad variants with expected FAIL, GAP or BOUNDARY_EXCEEDED status, optional native problem code and in-memory set/remove/add edits. Every check SHALL run each variant without recursively applying variants. Status or code mismatches SHALL produce GAP VARIANT_NOT_CAUGHT; malformed paths, ids or expectations SHALL produce input error 2 naming the variant. Paths SHALL support exact map keys, list indices and unique id selectors. No edit SHALL change the source file or original contract.
 
-The timeline command SHALL read initial state, time-ordered events, fluents, token markings, problem codes and scalar runs using the same native replay owners. Source strings on events, transfers, assertion rows and nodes SHALL survive on related problems. Full event counterexamples SHALL retain their path prefixes; summaries SHALL remain concise.
+The timeline command SHALL read claim rows with their results, declared sub-models, initial state, time-ordered events, fluents, token markings, every problem code and scalar runs using the same native replay owners and report. Source strings on events, transfers, assertion rows and nodes SHALL survive on related problems. Full event counterexamples SHALL retain their path prefixes; summaries SHALL remain concise.
 
 ### Requirement: Native world observation comparison
 

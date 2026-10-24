@@ -62,6 +62,9 @@ keeping list order for multiple transfers fired by one event. Resource-only worl
 keep list order. Same-named fluents and places must agree initially and after each
 event: the fluent holds exactly when the place has at least one token. The first
 mismatch per name gives FAIL `WORLD_EVENT_TOKEN_MISMATCH` with the step and trace.
+A single token's place must also agree with the spatial relations declared at the
+same time: a declared-disjoint region FAILs `WORLD_SPACE_TOKEN_MISMATCH`, an
+unrelated region is GAP `WORLD_SPACE_TOKEN_UNRELATED`.
 These checks apply regardless of which Guards the claim derives.
 
 Use one clock kind per contract: YAML numbers, labels with one prefix (`t1`, `t2`),
@@ -81,8 +84,13 @@ Statuses remain distinct: `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
 A claim without assertions is GAP `CLAIM_NOT_BOUND`; false assertions FAIL with
 `CLAIM_ASSERTION_FALSE`, and unresolved assertions GAP. Check and mesh exit 0 on
 PASS, 1 on non-PASS, 2 on invalid input. Their defaults are short JSON summaries;
-`--json` adds full child/Guard rows. Mesh reports include depth-first `tree` lines.
-Timeline defaults to readable text, with source and problem codes per step;
+`--json` adds full child/Guard rows. Mesh reports include depth-first `tree` lines:
+each node's own status, ` (tree <status>)` when its subtree differs, each
+`continues` edge's result and codes, and `GAP planned` for a node without a contract;
+the root line agrees with the overall status.
+Timeline defaults to readable text: each claim row with its result, one line per
+declared agent, space, conflict and norm sub-model, the steps with source and
+problem codes, and a `problems:` section for every other problem of the check.
 `--json` preserves the complete view. It reads a model rather than proving closure.
 
 ## Compare actual observations
@@ -152,7 +160,9 @@ WorldGuard 把故事、行程、计划或过程写成可执行世界模型，用
 有事件又有资源转移时，每个转移用 `event:` 点名触发事件；全部或部分没连，都是
 GAP `RESOURCE_TRANSITION_UNLINKED`，会列出转移 ID。显式指错事件仍是输入错误。
 同名状态和地点在初始及每个事件后都要一致：状态成立当且仅当地点至少有一个令牌；
-否则 FAIL `WORLD_EVENT_TOKEN_MISMATCH` 给出第一次冲突的步骤。只有资源的模型仍按列表重放。
+否则 FAIL `WORLD_EVENT_TOKEN_MISMATCH` 给出第一次冲突的步骤。
+单个令牌的位置还要和同一时刻声明的空间关系相容：推出不相交是 FAIL `WORLD_SPACE_TOKEN_MISMATCH`，
+没有关系是 GAP `WORLD_SPACE_TOKEN_UNRELATED`。只有资源的模型仍按列表重放。
 缺时间仍是原生缺口；独立、已确定的失败不会被其他缺口遮住。
 
 合约和树都可写 `variants:`：在独立副本上制造已知坏，必须达到声明状态和问题码；
@@ -160,7 +170,9 @@ GAP `RESOURCE_TRANSITION_UNLINKED`，会列出转移 ID。显式指错事件仍�
 退役字段一经出现就是输入错误，按报错提示移除并改用当前格式。
 
 `timeline --contract world.yaml`、`timeline --mesh mesh.yaml` 默认输出可读文字；
-`--json` 保留完整结构。树摘要有逐行的 `tree`。`compare --contract|--mesh --observed`
+文字先列每条说法行和结果、每个声明的子模型（`agents:`、`space:`、`conflict:`、`norms:`），
+再列事件步骤，最后 `problems:` 列出其余全部问题；`--json` 保留完整结构。树摘要有逐行的 `tree`：
+节点自己的状态、子树不同时的 `(tree …)`、每条 `continues` 边的结果和问题码，没有合约的节点写 `GAP planned`。`compare --contract|--mesh --observed`
 只比较提供的观测，树的观测按 `nodes` 分组。ISO/钟点容差用分钟，数值/标签钟用自己的尺度。
 加 `--write-observed OUT` 只把选中的事件发生时间写入新副本，不改变量或原文件，已有文件拒绝覆盖。
 对副本再跑 `check` 或 `mesh-check`，查看实际时间是否破坏后续计划。
