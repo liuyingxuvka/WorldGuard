@@ -14,7 +14,7 @@ from typing import Any, Callable
 
 from .contracts import CLAIM_ASSERTION_KINDS, SEMANTIC_GUARD_ROUTES, GuardContract, claim_assertion_kind
 from .clock import event_time_values
-from .semantic import _RCC8_CONVERSE, _event_time_key, _fluent_values, causal_scenario_values, event_replay, norm_activity, token_replay
+from .semantic import RCC8_CONVERSE, event_time_key, fluent_values, causal_scenario_values, event_replay, norm_activity, token_replay
 from .status import GuardStatus, aggregate_statuses
 
 _COMPARE: dict[str, Callable[[float, float], bool]] = {
@@ -55,9 +55,8 @@ def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap("scenario is not declared by the event model")
     initial = _mapping(inputs.get("event_model")).get("initial_states", [])
     fluent = str(row["holds"])
-    known = set(_fluent_values(initial)) | {
-        name for event in events for key in ("initiates", "terminates", "releases", "requires")
-        for name in _fluent_values(event.get(key))
+    known = set(fluent_values(initial)) | {
+        name for event in events for key in ("initiates", "terminates", "releases", "requires") for name in fluent_values(event.get(key))
     }
     if fluent not in known:
         return _gap(f"fluent {fluent!r} is not in the world model")
@@ -65,9 +64,9 @@ def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap("a holds assertion needs at")
     if any("at" not in event for event in events):
         return _gap("event times are missing; fluent state cannot be ordered")
-    holding = frozenset(_fluent_values(initial))
+    holding = frozenset(fluent_values(initial))
     for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
-        if _event_time_key(event.get("at", "")) > _event_time_key(row["at"]):
+        if event_time_key(event.get("at", "")) > event_time_key(row["at"]):
             break
         holding = after
     expected = row.get("value", True) is not False
@@ -94,7 +93,7 @@ def _before(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     unknown = [event_id for event_id in (first, second) if event_id not in times]
     if unknown:
         return _gap("events not in the world model: " + ", ".join(unknown))
-    return _verdict(_event_time_key(times[first]) < _event_time_key(times[second]), {first: times[first], second: times[second]})
+    return _verdict(event_time_key(times[first]) < event_time_key(times[second]), {first: times[first], second: times[second]})
 
 
 def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
@@ -103,9 +102,7 @@ def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     places = _mapping(resources.get("places"))
     transitions = [item for item in resources.get("transitions", []) if isinstance(item, dict)]
     place, color, after = str(row["place"]), row.get("color"), row.get("after")
-    known = set(map(str, places)) | {
-        str(arc.get("place")) for item in transitions for key in ("consumes", "produces") for arc in item.get(key, [])
-    }
+    known = set(map(str, places)) | {str(arc.get("place")) for item in transitions for key in ("consumes", "produces") for arc in item.get(key, [])}
     if place not in known:
         return _gap(f"place {place!r} is not in the world model")
     if after is not None and str(after) not in {str(item.get("id")) for item in transitions}:
@@ -153,10 +150,7 @@ def _relation(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     rows = [item for item in inputs.get("spatial_relations", []) if isinstance(item, dict)]
     x, y, at = row.get("x"), row.get("y"), row.get("at")
     declared = {str(item.get("relation", "")).upper() for item in rows if (item.get("x"), item.get("y"), item.get("at")) == (x, y, at)}
-    declared |= {
-        _RCC8_CONVERSE.get(str(item.get("relation", "")).upper(), "")
-        for item in rows if (item.get("x"), item.get("y"), item.get("at")) == (y, x, at)
-    }
+    declared |= {RCC8_CONVERSE.get(str(item.get("relation", "")).upper(), "") for item in rows if (item.get("x"), item.get("y"), item.get("at")) == (y, x, at)}
     declared.discard("")
     if not declared:
         return _gap(f"no declared relation between {x!r} and {y!r} at {at!r}")
@@ -179,20 +173,25 @@ def _norm(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         events = _scoped_events(inputs, row)
         if events is None or any("at" not in event for event in events):
             return _gap("norm applicability needs a declared scenario and event times")
-        initial = _fluent_values(_mapping(inputs.get("event_model")).get("initial_states", []))
-        known = set(initial) | {fluent for event in events for key in ("initiates", "terminates", "releases", "requires") for fluent in _fluent_values(event.get(key))}
+        initial = fluent_values(_mapping(inputs.get("event_model")).get("initial_states", []))
+        known = set(initial) | {
+            fluent for event in events for key in ("initiates", "terminates", "releases", "requires") for fluent in fluent_values(event.get(key))
+        }
         fluents = frozenset(initial)
         for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
-            if _event_time_key(event["at"]) >= _event_time_key(row["at"]):
+            if event_time_key(event["at"]) >= event_time_key(row["at"]):
                 break
             fluents = after
     active, missing = norm_activity(relevant, inputs.get("facts", []), fluents, known)
     if missing:
         return _gap("a norm condition names an undeclared fact")
-    modalities = sorted({
-        "forbidden" if str(item.get("modality")) == "prohibited" else str(item.get("modality"))
-        for item in active if (str(item.get("actor", "")), str(item.get("action", ""))) == pair
-    })
+    modalities = sorted(
+        {
+            "forbidden" if str(item.get("modality")) == "prohibited" else str(item.get("modality"))
+            for item in active
+            if (str(item.get("actor", "")), str(item.get("action", ""))) == pair
+        }
+    )
     wanted = "forbidden" if str(row["modality"]) == "prohibited" else str(row["modality"])
     return _verdict(wanted in modalities and not _OPPOSITE.get(wanted, set()) & set(modalities), {"active_modalities": modalities})
 

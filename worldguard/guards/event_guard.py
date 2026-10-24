@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.clock import time_key
-from worldguard.semantic import event_precondition_failures, _resolve_event_guard
+from worldguard.semantic import event_precondition_failures, resolve_event_guard
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -257,7 +257,7 @@ def _check(contract: GuardContract):
             missing_slots=missing_events,
             errors=[error("EVENT_MISSING_INITIATION_AXIOM", "Event records need identity, time and a fluent axiom.")])
     guard_values = event_model.get("guard_values", {})
-    unresolved = [item for item in transitions if _resolve_event_guard(item["guard"], guard_values) is None]
+    unresolved = [item for item in transitions if resolve_event_guard(item["guard"], guard_values) is None]
     if unresolved:
         return result(contract, guard, GuardStatus.GAP, channel="gap", impact="creates_gap",
             missing_slots=unresolved,

@@ -12,7 +12,7 @@ from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses
 from .timeline import timeline
 from .clock import time_key
-from .semantic import _fluent_values, token_replay
+from .semantic import fluent_values, token_replay
 from .variants import apply_variant
 
 
@@ -119,11 +119,11 @@ def _event_token_consistency(contract):
     if any('at' not in event for event in events):
         return []
     initial = inputs.get('event_model', {}).get('initial_states', [])
-    known = set(initial) if isinstance(initial, Mapping) else set(_fluent_values(initial))
+    known = set(initial) if isinstance(initial, Mapping) else set(fluent_values(initial))
     for event in events:
         for name in ('requires', 'initiates', 'terminates', 'releases'):
             value = event.get(name)
-            known.update(value if isinstance(value, Mapping) else _fluent_values(value))
+            known.update(value if isinstance(value, Mapping) else fluent_values(value))
     names = known & resources.get('places', {}).keys()
     if not names:
         return []
@@ -144,9 +144,9 @@ def _event_token_consistency(contract):
             instant = time_key(step['at'])
             if instant not in seen_times:
                 group = by_time[instant]
-                starts = set().union(*(set(_fluent_values(event.get('initiates'))) for event in group))
-                stops = set().union(*(set(_fluent_values(event.get('terminates'))) |
-                                      set(_fluent_values(event.get('releases'))) for event in group))
+                starts = set().union(*(set(fluent_values(event.get('initiates'))) for event in group))
+                stops = set().union(*(set(fluent_values(event.get('terminates'))) |
+                                      set(fluent_values(event.get('releases'))) for event in group))
                 uncertainty.difference_update(starts | stops)
                 uncertainty.update(starts & stops)
                 seen_times.add(instant)

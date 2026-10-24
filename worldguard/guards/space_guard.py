@@ -9,7 +9,7 @@ from ._helpers import error, requested_semantic_ids, result
 
 
 _RCC8 = {"DC", "EC", "PO", "EQ", "TPP", "NTPP", "TPPI", "NTPPI"}
-_RCC8_CONVERSE = {
+RCC8_CONVERSE = {
     "DC": "DC",
     "EC": "EC",
     "PO": "PO",
@@ -176,7 +176,7 @@ def _check(contract: GuardContract):
         reverse = seen.get((at, y, x), set())
         if not reverse:
             continue
-        expected = {_RCC8_CONVERSE[relation] for relation in observed}
+        expected = {RCC8_CONVERSE[relation] for relation in observed}
         if reverse != expected:
             converse_conflicts.append(
                 {
@@ -209,7 +209,7 @@ def _check(contract: GuardContract):
     # Only declared pairs and their converses participate; no new relation is inferred.
     graph = dict(seen)
     for (at, a, b), values in seen.items():
-        graph.setdefault((at, b, a), {_RCC8_CONVERSE[value] for value in values})
+        graph.setdefault((at, b, a), {RCC8_CONVERSE[value] for value in values})
     composition_conflicts = []
     for (at, a, b), left in graph.items():
         for (other_at, b2, c), right in graph.items():

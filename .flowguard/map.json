@@ -71,7 +71,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:f1368dfa30aee95bc0a32989eeff092799ebde0ff6beb5053494f458f0845de5"
+      "fingerprint": "sha256:b8d16218aef9cdc3b0a226d8d28e5022891faaf505fe33b8999728c64dd66d92"
     },
     {
       "id": "core",
@@ -116,7 +116,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:569f56e0640db930dc1d51aa9c2b287919c2f30731b813b182a5fa48fe7b5f55"
+      "fingerprint": "sha256:5c47b79cfab1e3e82f0216d171daf20e34bf9cdcefa27d2254e548df75015257"
     },
     {
       "id": "guards",
@@ -161,7 +161,7 @@
         ".flowguard/models/worldguard_guard_semantics_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:ef98a59926197c53f115be1ab57994e8e48d7b2bb52d1709eae55ae0d65eff2c"
+      "fingerprint": "sha256:80f1cd5dc39255065092ac7c419d3cda100e7ca7a3f54803b34c3ae360cadddf"
     },
     {
       "id": "qualification",
@@ -170,8 +170,7 @@
       "responsibilities": [
         "Run each derived native Guard exactly once Resolve node rows only against parent_child descendants in a native mesh context; standalone references gap and summary-only nodes need no local Guard execution.",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
-        "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs",
-        "Expose the run_worldguard kernel through one qualification owner",
+        "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs; expose the run_worldguard kernel through this one owner",
         "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
         "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts.",
         "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result. Read entity uses only from mapping event records.",
@@ -206,7 +205,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:21accab4cc4d3200d13438e7e559ec1a5e650eb59205ad11481c91bea32c3dad"
+      "fingerprint": "sha256:72e56a2a133a872c15050fb6c809d9d9da446c42ca8eefa672099e04951bdc93"
     },
     {
       "id": "mesh",
@@ -242,7 +241,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:af9b621146f8f8f91c121f4e4c9b3ab526995c7727e3c7ffc29ce9afc069a06d"
+      "fingerprint": "sha256:a4fb42326f871ea0804af58ca57e64989e311e7bea257c3670e4edc36d5e28d3"
     },
     {
       "id": "installer",

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
-from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts, norm_activity, event_replay, _fluent_values
+from worldguard.semantic import NORM_MODALITIES, active_norm_conflicts, norm_activity, event_replay, fluent_values
 from worldguard.status import GuardStatus
 
 from ._helpers import error, requested_semantic_ids, result
@@ -16,14 +16,8 @@ def _check(contract: GuardContract):
     }
     norms = norm_model.get("norms", [])
 
-
     invalid_modalities = sorted(
-        {
-            str(norm.get("modality", ""))
-            for norm in norms
-            if isinstance(norm, dict)
-            and str(norm.get("modality", "")) not in NORM_MODALITIES
-        }
+        {str(norm.get("modality", "")) for norm in norms if isinstance(norm, dict) and str(norm.get("modality", "")) not in NORM_MODALITIES}
     )
     if invalid_modalities:
         return result(
@@ -38,9 +32,7 @@ def _check(contract: GuardContract):
                     "Norm modality is outside the current deontic enumeration.",
                 )
             ],
-            counterexamples=[
-                {"kind": "model_conflict", "steps": invalid_modalities}
-            ],
+            counterexamples=[{"kind": "model_conflict", "steps": invalid_modalities}],
         )
 
     if not norms:
@@ -58,9 +50,7 @@ def _check(contract: GuardContract):
     malformed_facts = [
         {"index": index, "fact": fact}
         for index, fact in enumerate(facts)
-        if not isinstance(fact, dict)
-        or not fact.get("fact_id")
-        or not isinstance(fact.get("value"), bool)
+        if not isinstance(fact, dict) or not fact.get("fact_id") or not isinstance(fact.get("value"), bool)
     ]
     if malformed_facts:
         return result(
@@ -79,9 +69,7 @@ def _check(contract: GuardContract):
         )
 
     fact_ids = [str(fact["fact_id"]) for fact in facts]
-    duplicate_fact_ids = sorted(
-        {fact_id for fact_id in fact_ids if fact_ids.count(fact_id) > 1}
-    )
+    duplicate_fact_ids = sorted({fact_id for fact_id in fact_ids if fact_ids.count(fact_id) > 1})
     if duplicate_fact_ids:
         return result(
             contract,
@@ -95,14 +83,14 @@ def _check(contract: GuardContract):
                     "A norm model cannot give one fact identity multiple truth values.",
                 )
             ],
-            counterexamples=[
-                {"kind": "model_conflict", "steps": duplicate_fact_ids}
-            ],
+            counterexamples=[{"kind": "model_conflict", "steps": duplicate_fact_ids}],
         )
 
     events = contract.inputs.get("events", [])
-    initial = _fluent_values(contract.inputs.get("event_model", {}).get("initial_states", []))
-    known_fluents = set(initial) | {fluent for event in events for key in ("initiates", "terminates", "requires", "releases") for fluent in _fluent_values(event.get(key))}
+    initial = fluent_values(contract.inputs.get("event_model", {}).get("initial_states", []))
+    known_fluents = set(initial) | {
+        fluent for event in events for key in ("initiates", "terminates", "requires", "releases") for fluent in fluent_values(event.get(key))
+    }
     active_norms, unevaluable_conditions = norm_activity(norms, facts, initial, known_fluents)
     if unevaluable_conditions:
         return result(
@@ -134,12 +122,25 @@ def _check(contract: GuardContract):
             if event.get("actor") and event.get("action"):
                 for norm in active:
                     if norm.get("modality") in {"forbidden", "prohibited"} and (norm.get("actor"), norm.get("action")) == (event["actor"], event["action"]):
-                        violations.append({"event_id": event["event_id"], "at": event["at"], "norm": norm, "condition": norm["condition"],
-                            **({"scenario_id": scenario_id} if scenario_id else {})})
+                        violations.append(
+                            {
+                                "event_id": event["event_id"],
+                                "at": event["at"],
+                                "norm": norm,
+                                "condition": norm["condition"],
+                                **({"scenario_id": scenario_id} if scenario_id else {}),
+                            }
+                        )
     if violations:
-        return result(contract, guard, GuardStatus.FAIL, channel="norm", impact="supports_fail",
+        return result(
+            contract,
+            guard,
+            GuardStatus.FAIL,
+            channel="norm",
+            impact="supports_fail",
             errors=[error("NORM_VIOLATED_BY_EVENT", "A forbidden action occurs while its norm is active.")],
-            counterexamples=[{"kind": "trace", "steps": violations}])
+            counterexamples=[{"kind": "trace", "steps": violations}],
+        )
     if conflicts:
         return result(
             contract,
@@ -174,7 +175,10 @@ def run(contract: GuardContract):
     if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["NormGuard"]:
         from dataclasses import replace
         from worldguard.status import aggregate_statuses
-        checked = replace(checked,
+
+        checked = replace(
+            checked,
             status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
-            errors=[*checked.errors, error('NORM_BOUNDARY_PHYSICAL_ENABLEMENT', 'NormGuard does not own resource enablement.')])
+            errors=[*checked.errors, error('NORM_BOUNDARY_PHYSICAL_ENABLEMENT', 'NormGuard does not own resource enablement.')],
+        )
     return checked

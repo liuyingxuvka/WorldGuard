@@ -5,7 +5,7 @@ import pytest
 from tests.helpers import make_contract
 from worldguard.guards import GUARD_RUNNERS
 from worldguard.kernel import run_worldguard
-from worldguard.semantic import causal_scenario_values, _resolve_event_guard
+from worldguard.semantic import causal_scenario_values, resolve_event_guard
 from worldguard.status import GuardStatus
 
 
@@ -71,7 +71,7 @@ def test_event_closed_transition_executes_from_initial_to_target_state() -> None
 
     assert structural.status == GuardStatus.PASS
     assert semantic.status == GuardStatus.PASS
-    assert _resolve_event_guard("ready", inputs["event_model"]["guard_values"]) is True
+    assert resolve_event_guard("ready", inputs["event_model"]["guard_values"]) is True
     inputs["event_model"]["guard_values"] = {}
     unresolved = _semantic("EventGuard", inputs)
     assert unresolved.status == GuardStatus.GAP
@@ -481,8 +481,8 @@ def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
         "exogenous": ["z"], "graph": [["x", "y"]],
         "scenarios": {"s": {"x": 3, "z": 2}},
     }}
-    receipt = _semantic("CausalGuard", inputs)
-    assert receipt.status == GuardStatus.PASS
+    result = _semantic("CausalGuard", inputs)
+    assert result.status == GuardStatus.PASS
     assert causal_scenario_values(inputs["causal_model"])["s"] == {"x": 3, "z": 2, "y": 5}
 
 
@@ -492,12 +492,12 @@ def test_causal_identity_root_and_exogenous_input_remain_available() -> None:
     {"x": "__import__('os')", "y": "x + 1"},
 ])
 def test_causal_seed_cannot_resolve_cycles_or_unsafe_equations(equations) -> None:
-    receipt = _semantic("CausalGuard", {"causal_model": {
+    result = _semantic("CausalGuard", {"causal_model": {
         "variables": ["x", "y"], "equations": equations, "graph": [],
         "scenarios": {"s": {}},
     }})
-    assert receipt.status == GuardStatus.GAP
-    assert receipt.errors
+    assert result.status == GuardStatus.GAP
+    assert result.errors
 
 
 def test_resource_ordered_production_enables_later_consumption() -> None:

@@ -5,7 +5,32 @@ from collections.abc import Mapping
 from typing import Any
 from .clock import validate_times
 from .variants import validate_variants
-SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {'event': ('EventGuard',), 'events': ('EventGuard',), 'temporal': ('EventGuard',), 'timeline': ('EventGuard',), 'agent': ('AgentGuard',), 'bdi': ('AgentGuard',), 'space': ('SpaceGuard',), 'spatial': ('SpaceGuard',), 'rcc8': ('SpaceGuard',), 'resource': ('ResourceGuard',), 'conservation': ('ResourceGuard',), 'causal': ('CausalGuard',), 'causality': ('CausalGuard',), 'intervention': ('CausalGuard',), 'counterfactual': ('CausalGuard',), 'conflict': ('ConflictGuard',), 'game': ('ConflictGuard',), 'norm': ('NormGuard',), 'normative': ('NormGuard',), 'prediction': ('EventGuard', 'CausalGuard'), 'predictive': ('EventGuard', 'CausalGuard'), 'forecast': ('EventGuard', 'CausalGuard'), 'future_outcome': ('EventGuard', 'CausalGuard')}
+
+SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {
+    'event': ('EventGuard',),
+    'events': ('EventGuard',),
+    'temporal': ('EventGuard',),
+    'timeline': ('EventGuard',),
+    'agent': ('AgentGuard',),
+    'bdi': ('AgentGuard',),
+    'space': ('SpaceGuard',),
+    'spatial': ('SpaceGuard',),
+    'rcc8': ('SpaceGuard',),
+    'resource': ('ResourceGuard',),
+    'conservation': ('ResourceGuard',),
+    'causal': ('CausalGuard',),
+    'causality': ('CausalGuard',),
+    'intervention': ('CausalGuard',),
+    'counterfactual': ('CausalGuard',),
+    'conflict': ('ConflictGuard',),
+    'game': ('ConflictGuard',),
+    'norm': ('NormGuard',),
+    'normative': ('NormGuard',),
+    'prediction': ('EventGuard', 'CausalGuard'),
+    'predictive': ('EventGuard', 'CausalGuard'),
+    'forecast': ('EventGuard', 'CausalGuard'),
+    'future_outcome': ('EventGuard', 'CausalGuard'),
+}
 GUARD_BOUNDARY_SEMANTICS: dict[str, frozenset[str]] = {
     'EventGuard': frozenset({'numeric_dynamics', 'thermodynamics', 'continuous_dynamics'}),
     'AgentGuard': frozenset({'payoff', 'equilibrium', 'causal_effect', 'permission'}),
@@ -15,10 +40,46 @@ GUARD_BOUNDARY_SEMANTICS: dict[str, frozenset[str]] = {
     'ConflictGuard': frozenset({'obligation', 'permission', 'deontic'}),
     'NormGuard': frozenset({'token', 'capacity', 'physical_enablement'}),
 }
-CLAIM_ASSERTION_KINDS: dict[str, str] = {'holds': 'event', 'before': 'event', 'place': 'resource', 'variable': 'causal', 'agent': 'agent', 'relation': 'spatial', 'modality': 'norm', 'player': 'conflict'}
+CLAIM_ASSERTION_KINDS: dict[str, str] = {
+    'holds': 'event',
+    'before': 'event',
+    'place': 'resource',
+    'variable': 'causal',
+    'agent': 'agent',
+    'relation': 'spatial',
+    'modality': 'norm',
+    'player': 'conflict',
+}
 PREDICTIVE_SEMANTICS = {'prediction', 'predictive', 'forecast', 'future_outcome'}
-RETIRED_WORLD_MODEL_INPUT_FIELDS = {'event_line', 'agents', 'rcc8_relations', 'resources', 'causal_variables', 'causal_equations', 'causal_graph', 'conflict_players', 'conflict_actions', 'conflict_states', 'conflict_payoffs', 'conflict_transitions', 'norms', 'facts', 'variable_observations', 'signal_observations'}
-RETIRED_TOP_LEVEL_INPUT_FIELDS = {'agents', 'norm_model', 'signal_observations', 'time_series_observations', 'scenarios', 'holdout_scenarios', 'interventions', 'counterfactuals'}
+RETIRED_WORLD_MODEL_INPUT_FIELDS = {
+    'event_line',
+    'agents',
+    'rcc8_relations',
+    'resources',
+    'causal_variables',
+    'causal_equations',
+    'causal_graph',
+    'conflict_players',
+    'conflict_actions',
+    'conflict_states',
+    'conflict_payoffs',
+    'conflict_transitions',
+    'norms',
+    'facts',
+    'variable_observations',
+    'signal_observations',
+}
+RETIRED_TOP_LEVEL_INPUT_FIELDS = {
+    'agents',
+    'norm_model',
+    'signal_observations',
+    'time_series_observations',
+    'scenarios',
+    'holdout_scenarios',
+    'interventions',
+    'counterfactuals',
+}
+
 
 def _reject_retired_runtime_input_paths(world_model: dict[str, Any], inputs: dict[str, Any]) -> None:
     retired_world = sorted(RETIRED_WORLD_MODEL_INPUT_FIELDS.intersection(world_model))
@@ -75,6 +136,7 @@ def _reject_retired_runtime_input_paths(world_model: dict[str, Any], inputs: dic
         if isinstance(condition, dict) and 'fact' in condition:
             raise ValueError(f'inputs.norms[{index}].condition.fact is retired; use fact_id')
 
+
 def _validate_causal_interventions(inputs: Mapping[str, Any]) -> None:
     causal = inputs.get('causal_model')
     if not isinstance(causal, Mapping):
@@ -89,8 +151,11 @@ def _validate_causal_interventions(inputs: Mapping[str, Any]) -> None:
     if not isinstance(interventions, list):
         raise ValueError('inputs.causal_model.interventions must be a list of mappings')
     known = {str(name) for name in causal.get('variables', [])} | {str(name) for name in causal.get('exogenous', [])}
-    known.update('t_' + str(event['event_id']) for event in inputs.get('events', [])
-                 if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id'))
+    known.update(
+        't_' + str(event['event_id'])
+        for event in inputs.get('events', [])
+        if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id')
+    )
     seen = set()
     for index, row in enumerate(interventions):
         location = f'inputs.causal_model.interventions[{index}]'
@@ -155,8 +220,9 @@ def _reject_retired_contract_keys(data: Mapping[str, Any]) -> None:
     if isinstance(claim, Mapping):
         for name in ('target_guard', 'target_guards', 'atoms'):
             if name in claim:
-                remedy = ('put the semantics in claim.requested_semantics' if name == 'atoms'
-                          else 'the Guards come from claim.requested_semantics and claim.asserts')
+                remedy = (
+                    'put the semantics in claim.requested_semantics' if name == 'atoms' else 'the Guards come from claim.requested_semantics and claim.asserts'
+                )
                 raise ValueError(f'`claim.{name}` is retired; {remedy}')
 
 
@@ -178,12 +244,16 @@ class Claim:
             raise ValueError('claim.asserts must be a list of mappings')
         if not requested and not asserts:
             raise ValueError('claim requires current requested_semantics or claim.asserts')
-        return cls(claim_id=str(data.get('claim_id', '')), text=str(data.get('text', '')),
-                   requested_semantics=[str(item) for item in requested], asserts=[dict(item) for item in asserts])
+        return cls(
+            claim_id=str(data.get('claim_id', '')),
+            text=str(data.get('text', '')),
+            requested_semantics=[str(item) for item in requested],
+            asserts=[dict(item) for item in asserts],
+        )
 
     def to_dict(self) -> dict[str, Any]:
-        return {'claim_id': self.claim_id, 'text': self.text,
-                'requested_semantics': self.requested_semantics, 'asserts': self.asserts}
+        return {'claim_id': self.claim_id, 'text': self.text, 'requested_semantics': self.requested_semantics, 'asserts': self.asserts}
+
 
 def claim_semantics(claim: Claim) -> tuple[str, ...]:
     values = [*claim.requested_semantics]
@@ -192,16 +262,24 @@ def claim_semantics(claim: Claim) -> tuple[str, ...]:
         values.append('predictive')
     return tuple(dict.fromkeys((str(item).strip().lower() for item in values if str(item).strip())))
 
+
 @dataclass(frozen=True)
 class GuardRequirementDerivation:
     """Canonical claim-to-Guard denominator shared by every WorldGuard route."""
+
     claim_id: str
     requested_semantics: tuple[str, ...]
     guard_ids: tuple[str, ...]
     unmapped_semantics: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
-        return {'claim_id': self.claim_id, 'requested_semantics': list(self.requested_semantics), 'guard_ids': list(self.guard_ids), 'unmapped_semantics': list(self.unmapped_semantics)}
+        return {
+            'claim_id': self.claim_id,
+            'requested_semantics': list(self.requested_semantics),
+            'guard_ids': list(self.guard_ids),
+            'unmapped_semantics': list(self.unmapped_semantics),
+        }
+
 
 def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     """Own the one current claim-semantics-to-Guard derivation path."""
@@ -214,12 +292,15 @@ def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     unmapped = tuple(semantic for semantic in semantics if semantic not in SEMANTIC_GUARD_ROUTES and semantic not in boundaries)
     return GuardRequirementDerivation(claim_id=claim.claim_id, requested_semantics=semantics, guard_ids=guard_ids, unmapped_semantics=unmapped)
 
+
 def derive_required_guards(claim: Claim) -> tuple[str, ...]:
     """Return the Guard IDs from the canonical requirement derivation."""
     return derive_guard_requirements(claim).guard_ids
 
+
 def unmapped_claim_semantics(claim: Claim) -> tuple[str, ...]:
     return derive_guard_requirements(claim).unmapped_semantics
+
 
 @dataclass(frozen=True)
 class WorldModel:
@@ -235,11 +316,28 @@ class WorldModel:
     def from_dict(cls, data: dict[str, Any]) -> 'WorldModel':
         if 'artifact_version' in data:
             raise ValueError('world_model.artifact_version is retired; migrate the input to world_model.model_version')
-        return cls(model_id=str(data.get('model_id', '')), model_version=str(data.get('model_version', '')), entities=dict(data.get('entities', {})), relations=dict(data.get('relations', {})), assumptions=list(data.get('assumptions', [])), scope_limits=list(data.get('scope_limits', [])), data=dict(data))
+        return cls(
+            model_id=str(data.get('model_id', '')),
+            model_version=str(data.get('model_version', '')),
+            entities=dict(data.get('entities', {})),
+            relations=dict(data.get('relations', {})),
+            assumptions=list(data.get('assumptions', [])),
+            scope_limits=list(data.get('scope_limits', [])),
+            data=dict(data),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         result = dict(self.data)
-        result.update({'model_id': self.model_id, 'model_version': self.model_version, 'entities': self.entities, 'relations': self.relations, 'assumptions': self.assumptions, 'scope_limits': self.scope_limits})
+        result.update(
+            {
+                'model_id': self.model_id,
+                'model_version': self.model_version,
+                'entities': self.entities,
+                'relations': self.relations,
+                'assumptions': self.assumptions,
+                'scope_limits': self.scope_limits,
+            }
+        )
         return result
 
 
@@ -285,20 +383,26 @@ class GuardContract:
             event_ids.add(identity)
             if 'at' in event:
                 named_times.append((f"inputs.events[{index}] ({event_id})", event['at']))
-        named_times.extend((f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
-                           for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row and 'node' not in row)
+        named_times.extend(
+            (f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
+            for index, row in enumerate(claim.asserts)
+            if ('holds' in row or 'modality' in row) and 'at' in row and 'node' not in row
+        )
         validate_times(named_times)
-        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), claim=claim,
-                   world_model=WorldModel.from_dict(world_model), inputs=inputs, variants=variants)
+        return cls(
+            contract_id=str(data.get('contract_id', '') or claim.claim_id),
+            claim=claim,
+            world_model=WorldModel.from_dict(world_model),
+            inputs=inputs,
+            variants=variants,
+        )
 
     def for_guard(self, guard: str) -> 'GuardContract':
         """Give a derived Guard the same current model and inputs."""
-        return GuardContract(contract_id=f'{self.contract_id}:{guard}', claim=self.claim,
-                             world_model=self.world_model, inputs=self.inputs)
+        return GuardContract(contract_id=f'{self.contract_id}:{guard}', claim=self.claim, world_model=self.world_model, inputs=self.inputs)
 
     def to_dict(self) -> dict[str, Any]:
-        result = {'contract_id': self.contract_id, 'claim': self.claim.to_dict(),
-                  'world_model': self.world_model.to_dict(), 'inputs': self.inputs}
+        result = {'contract_id': self.contract_id, 'claim': self.claim.to_dict(), 'world_model': self.world_model.to_dict(), 'inputs': self.inputs}
         if self.variants:
             result['variants'] = self.variants
         return result

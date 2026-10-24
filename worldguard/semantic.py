@@ -12,7 +12,7 @@ from .clock import time_key
 NORM_MODALITIES = frozenset({"permitted", "obligatory", "forbidden", "prohibited"})
 
 
-def _event_time_key(value: Any) -> float:
+def event_time_key(value: Any) -> float:
     """Delegate all event time ordering to the canonical clock owner."""
     return time_key(value)
 
@@ -27,14 +27,14 @@ def missing_bdi_fields(record: Mapping[str, Any]) -> list[str]:
 
 def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str = ""):
     """Yield (event, fluents holding before it, fluents holding after it) for one scenario, in time order."""
-    holding = frozenset(_fluent_values(initial_fluents))
+    holding = frozenset(fluent_values(initial_fluents))
     applicable = [
         event for event in events
         if isinstance(event, dict) and (not event.get("scenario_id") or str(event["scenario_id"]) == scenario_id)
     ]
-    for event in sorted(applicable, key=lambda item: _event_time_key(item.get("at", ""))):
-        ended = set(_fluent_values(event.get("terminates"))) | set(_fluent_values(event.get("releases")))
-        after = frozenset((holding - ended) | set(_fluent_values(event.get("initiates"))))
+    for event in sorted(applicable, key=lambda item: event_time_key(item.get("at", ""))):
+        ended = set(fluent_values(event.get("terminates"))) | set(fluent_values(event.get("releases")))
+        after = frozenset((holding - ended) | set(fluent_values(event.get("initiates"))))
         yield event, holding, after
         holding = after
 
@@ -56,14 +56,14 @@ def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) ->
         for _, group in groupby(replay, key=lambda row: time_key(row[0]["at"])):
             rows = list(group)
             before = rows[0][1]
-            starts = [set(_fluent_values(event.get("initiates"))) for event, _, _ in rows]
+            starts = [set(fluent_values(event.get("initiates"))) for event, _, _ in rows]
             started = set().union(*starts)
-            stopped = set().union(*(set(_fluent_values(event.get("terminates"))) |
-                                    set(_fluent_values(event.get("releases"))) for event, _, _ in rows))
+            stopped = set().union(*(set(fluent_values(event.get("terminates"))) |
+                                    set(fluent_values(event.get("releases"))) for event, _, _ in rows))
             for index, (event, _, _) in enumerate(rows):
                 # Another event at this time may supply a requirement; input order is not evidence.
                 possible_starts = set().union(*(values for other, values in enumerate(starts) if other != index))
-                missing = sorted(set(_fluent_values(event.get("requires"))) - before - uncertain - possible_starts)
+                missing = sorted(set(fluent_values(event.get("requires"))) - before - uncertain - possible_starts)
                 if missing:
                     row = {"event_id": event.get("event_id"), "at": event.get("at"), "missing_fluents": missing,
                            "holding_fluents": sorted(before - uncertain)}
@@ -133,13 +133,13 @@ def _string_values(value: Any) -> list[str]:
     return [str(value)]
 
 
-def _fluent_values(value: Any) -> list[str]:
+def fluent_values(value: Any) -> list[str]:
     if isinstance(value, dict):
         return [str(key) for key, active in value.items() if active]
     return _string_values(value)
 
 
-def _resolve_event_guard(value: Any, declared_values: Mapping[str, Any]) -> bool | None:
+def resolve_event_guard(value: Any, declared_values: Mapping[str, Any]) -> bool | None:
     """Evaluate the deliberately small current EventGuard predicate surface."""
 
     if isinstance(value, bool):
@@ -159,7 +159,7 @@ def _resolve_event_guard(value: Any, declared_values: Mapping[str, Any]) -> bool
 _RCC8 = {"DC", "EC", "PO", "EQ", "TPP", "NTPP", "TPPI", "NTPPI"}
 
 
-_RCC8_CONVERSE = {
+RCC8_CONVERSE = {
     "DC": "DC",
     "EC": "EC",
     "PO": "PO",
@@ -189,7 +189,7 @@ _ALLOWED_AST = (
 )
 
 
-def _equation_error(expression: Any, known_names: set[str]) -> str:
+def equation_error(expression: Any, known_names: set[str]) -> str:
     if isinstance(expression, (int, float, bool)):
         return ""
     if not isinstance(expression, str) or not expression.strip():
@@ -260,7 +260,7 @@ def _evaluate_equations(
 _CONSTRAINT_AST = (*_ALLOWED_AST, ast.Compare, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq)
 
 
-def _causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dict[str, Any], event_times=None):
+def causal_runs(causal: Mapping[str, Any], variables: list[str], equations: dict[str, Any], event_times=None):
     """One finite execution owner shared by checks, constraints and claim rows."""
     seeds = {name: {key: {**(event_times or {}), **values} for key, values in _scenario_records(causal.get(name, {})).items()}
              for name in ("scenarios", "holdout_scenarios")}
@@ -294,9 +294,9 @@ def causal_scenario_values(causal: Mapping[str, Any], event_times=None) -> dict[
     variables = [str(item) for item in causal.get("variables", [])]
     equations = causal.get("equations", {}) if isinstance(causal.get("equations"), dict) else {}
     known = set(variables) | {str(item) for item in causal.get("exogenous", [])} | set(event_times or {})
-    if not variables or any(variable not in equations or _equation_error(equations[variable], known) for variable in variables):
+    if not variables or any(variable not in equations or equation_error(equations[variable], known) for variable in variables):
         return {}
-    results, _errors = _causal_runs(causal, variables, equations, event_times)
+    results, _errors = causal_runs(causal, variables, equations, event_times)
     return {**results["scenarios"], **results["holdout_scenarios"], **results["interventions"]}
 
 

@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 from .clock import event_time_values, time_kind
 from .contracts import GuardContract
-from .semantic import _fluent_values, causal_scenario_values, event_replay, token_replay
+from .semantic import fluent_values, causal_scenario_values, event_replay, token_replay
 
 
 def _tokens(marking):
@@ -109,7 +109,7 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
     applicable = [event for event in events if not event.get("scenario_id") or str(event["scenario_id"]) == scenario]
     if any("at" not in event for event in applicable):
         raise ValueError("timeline needs an at time for each applicable event")
-    initial = _fluent_values(inputs.get("event_model", {}).get("initial_states", []))
+    initial = fluent_values(inputs.get("event_model", {}).get("initial_states", []))
     resources = inputs.get("resources", {})
     transitions = [row for row in resources.get("transitions", []) if isinstance(row, Mapping)]
     marking, _ = token_replay({**resources, "transitions": []}, validate=False)

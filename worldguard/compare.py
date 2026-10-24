@@ -11,7 +11,7 @@ from .contracts import GuardContract
 from .semantic import causal_scenario_values
 
 
-def _number(value: Any, name: str, *, nonnegative: bool = False) -> float:
+def finite_number(value: Any, name: str, *, nonnegative: bool = False) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or (nonnegative and value < 0):
         raise ValueError(f"{name} must be a finite {'nonnegative ' if nonnegative else ''}number")
     try:
@@ -23,7 +23,7 @@ def _number(value: Any, name: str, *, nonnegative: bool = False) -> float:
     return result
 
 
-def _compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
+def compare_world_values(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
     """Derive expected times and scenario values from the world and compare only observed ids."""
     if not isinstance(contract, GuardContract):
         contract = GuardContract.from_dict(dict(contract))
@@ -31,8 +31,8 @@ def _compare_world(contract: GuardContract | Mapping[str, Any], observed: Mappin
         raise ValueError("observed world must be a mapping")
     if "nodes" in observed:
         raise ValueError("node observations need --mesh, not --contract")
-    time_tolerance = _number(observed.get("time_tolerance", 0), "time_tolerance", nonnegative=True)
-    tolerance = _number(observed.get("tolerance", 0), "tolerance", nonnegative=True)
+    time_tolerance = finite_number(observed.get("time_tolerance", 0), "time_tolerance", nonnegative=True)
+    tolerance = finite_number(observed.get("tolerance", 0), "tolerance", nonnegative=True)
     events, variables = observed.get("events", {}), observed.get("variables", {})
     if not isinstance(events, Mapping) or not isinstance(variables, Mapping):
         raise ValueError("observed events and variables must be id-to-value mappings")
@@ -71,8 +71,8 @@ def _compare_world(contract: GuardContract | Mapping[str, Any], observed: Mappin
     for variable_id, actual in variables.items():
         if variable_id not in known_variables or variable_id not in values.get(scenario, {}):
             raise ValueError(f"variable {variable_id!r} is unknown or unavailable in scenario {scenario!r}")
-        actual_number = _number(actual, f"observed variable {variable_id}")
-        expected = _number(values[scenario][variable_id], f"expected variable {variable_id}")
+        actual_number = finite_number(actual, f"observed variable {variable_id}")
+        expected = finite_number(values[scenario][variable_id], f"expected variable {variable_id}")
         record(variable_id, "variable", expected, actual, actual_number - expected, tolerance)
     result = {"status": "FAIL" if mismatches else "PASS", "contract_id": contract.contract_id,
             "matches": matches, "mismatches": mismatches,
@@ -83,12 +83,12 @@ def _compare_world(contract: GuardContract | Mapping[str, Any], observed: Mappin
 
 def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
     """Compare through the one native world comparator without writing values."""
-    return _compare_world(contract, observed)[0]
+    return compare_world_values(contract, observed)[0]
 
 
 def compare_with_observed_copy(world, observed):
     """Compare once, returning a deep copy changing only the selected event times."""
-    result, contract, selected = _compare_world(world, observed)
+    result, contract, selected = compare_world_values(world, observed)
     copied = deepcopy(dict(world) if isinstance(world, Mapping) else contract.to_dict())
     for event_id, index in selected.items():
         copied["inputs"]["events"][index]["at"] = deepcopy(observed["events"][event_id])

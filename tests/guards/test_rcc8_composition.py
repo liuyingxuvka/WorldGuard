@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from worldguard.guards.space_guard import _RCC8, _RCC8_CONVERSE, _RCC8_COMPOSITION
+from worldguard.guards.space_guard import _RCC8, RCC8_CONVERSE, _RCC8_COMPOSITION
 from worldguard.kernel import run_worldguard
 
 
@@ -12,7 +12,7 @@ def test_full_rcc8_table_preserves_converse_and_identity_for_all_64_entries():
         for right in _RCC8:
             allowed = _RCC8_COMPOSITION[left, right]
             assert allowed and allowed <= _RCC8
-            assert {_RCC8_CONVERSE[value] for value in allowed} == _RCC8_COMPOSITION[_RCC8_CONVERSE[right], _RCC8_CONVERSE[left]]
+            assert {RCC8_CONVERSE[value] for value in allowed} == _RCC8_COMPOSITION[RCC8_CONVERSE[right], RCC8_CONVERSE[left]]
         assert _RCC8_COMPOSITION["EQ", left] == _RCC8_COMPOSITION[left, "EQ"] == {left}
     assert _RCC8_COMPOSITION["NTPP", "DC"] == {"DC"}
     assert _RCC8_COMPOSITION["EC", "NTPP"] == {"PO", "TPP", "NTPP"}
@@ -29,7 +29,7 @@ def test_declared_rcc8_triplet_fails_including_converse_only_paths():
     assert any(set(step["chain"]) == {"logbook", "lamp_room", "cellar"} and "allowed" in step for step in steps)
     for relation in world["inputs"]["spatial_relations"]:
         relation["x"], relation["y"] = relation["y"], relation["x"]
-        relation["relation"] = _RCC8_CONVERSE[relation["relation"]]
+        relation["relation"] = RCC8_CONVERSE[relation["relation"]]
     assert run_worldguard(world).status.value == "FAIL"
 
 
