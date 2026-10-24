@@ -124,7 +124,8 @@
       "summary": "Seven native domain Guards with one test-only good/bad case catalog.",
       "responsibilities": [
         "Own native event, agent, space, resource, causal, conflict and norm rules",
-        "Preserve exact native failure codes and real good/bad regression inputs in tests"
+        "Preserve exact native failure codes and real good/bad regression inputs in tests",
+        "Each Guard's catalog good case passes and each catalog bad case fails with exactly its native code (model guard_semantics)"
       ],
       "files": [
         "worldguard/guards/*.py",
@@ -156,7 +157,9 @@
         "tests/guards/test_rcc8_composition.py",
         "tests/guard_catalog.py"
       ],
-      "models": [],
+      "models": [
+        ".flowguard/models/worldguard_guard_semantics_model.py"
+      ],
       "status": "confirmed",
       "fingerprint": "sha256:ef98a59926197c53f115be1ab57994e8e48d7b2bb52d1709eae55ae0d65eff2c"
     },
