@@ -143,6 +143,13 @@ and keep list order within one event. Resource-only worlds SHALL retain list ord
 A known fluent also declared as a place SHALL agree initially and after every event:
 truth iff at least one token. The first mismatch per name SHALL FAIL with
 `WORLD_EVENT_TOKEN_MISMATCH`, its time, event, place, truth, tokens and trace prefix.
+A single token color (declared unique or with total one at that time) SHALL agree
+with every `NTPP`/`TPP`/`EQ`/`DC`/`EC` spatial row naming it at the same time, using
+the containment closure and declared disjointness of that instant's rows: a place
+disjoint from the row's region, or inside a `DC`/`EC` region, SHALL FAIL
+`WORLD_SPACE_TOKEN_MISMATCH`; an unrelated place SHALL be GAP
+`WORLD_SPACE_TOKEN_UNRELATED`, each with `at`, `x`, `token_place`, `spatial_region`
+and `relation`, regardless of requested semantics.
 Checks SHALL run regardless of claim-derived Guards; same-time uncertainty and native
 missing-time GAP semantics SHALL remain visible without inventing definite facts.
 

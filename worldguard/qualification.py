@@ -166,6 +166,104 @@ def _event_token_consistency(contract):
     return gaps
 
 
+_INSIDE = {"NTPP", "TPP", "EQ"}
+_CONTAINS = {"NTPPI", "TPPI"}
+_APART = {"DC", "EC"}
+
+
+def _regions_at(rows):
+    """Containment closure and declared disjoint pairs from the spatial rows of one instant."""
+    within = {}
+    apart = set()
+    for row in rows:
+        x, y = str(row.get("x")), str(row.get("y"))
+        relation = str(row.get("relation", "")).upper()
+        if relation in _INSIDE:
+            within.setdefault(x, set()).add(y)
+            if relation == "EQ":
+                within.setdefault(y, set()).add(x)
+        elif relation in _CONTAINS:
+            within.setdefault(y, set()).add(x)
+        elif relation in _APART:
+            apart.update({(x, y), (y, x)})
+    closure = {}
+    for start in within:
+        seen, todo = set(), list(within[start])
+        while todo:
+            region = todo.pop()
+            if region not in seen:
+                seen.add(region)
+                todo.extend(within.get(region, ()))
+        closure[start] = seen - {start}
+    return closure, apart
+
+
+def _space_relation(place, region, closure, apart):
+    """'inside' when the place and region nest, 'apart' when declared disjoint, else 'unrelated'."""
+    up_place = {place} | closure.get(place, set())
+    up_region = {region} | closure.get(region, set())
+    if place == region or region in up_place or place in up_region:
+        return "inside"
+    if any((left, right) in apart for left in up_place for right in up_region):
+        return "apart"
+    return "unrelated"
+
+
+def _space_token_consistency(contract):
+    """A single token's replayed place must agree with the spatial relations declared at the same time."""
+    inputs = contract.inputs
+    relations = [row for row in inputs.get("spatial_relations", []) or [] if isinstance(row, Mapping)]
+    resources = inputs.get("resources", {})
+    if not relations or not resources.get("places"):
+        return []
+    events = [row for row in inputs.get("events", []) if isinstance(row, Mapping) and not row.get("scenario_id")]
+    if any("at" not in event for event in events):
+        return []
+    _, malformed = token_replay(resources, validate=False, events=events)
+    if malformed:
+        return []
+    try:
+        steps = timeline(contract)["steps"]
+        instants = [(time_key(row["at"]), row) for row in relations]
+        stepped = [(time_key(step["at"]) if step["at"] is not None else None, step) for step in steps]
+    except (TypeError, ValueError):
+        return []
+    unique = set(map(str, resources.get("unique", [])))
+    gaps = []
+    reported = set()
+    for instant, row in instants:
+        color, region = str(row.get("x")), str(row.get("y"))
+        relation = str(row.get("relation", "")).upper()
+        if relation not in _INSIDE | _APART or (color, row.get("at")) in reported:
+            continue
+        current = steps[0]
+        for at, step in stepped:
+            if at is None or at <= instant:
+                current = step
+        places = {place: colors.get(color, 0) for place, colors in current.get("tokens", {}).items()}
+        held = [place for place, quantity in places.items() if quantity > 0]
+        total = sum(quantity for quantity in places.values() if quantity > 0)
+        if len(held) != 1 or not (color in unique or total == 1):
+            continue
+        place = held[0]
+        closure, apart = _regions_at([other for at, other in instants if at == instant])
+        found = _space_relation(place, region, closure, apart)
+        if relation in _INSIDE and found == "apart" or relation in _APART and found == "inside" and (
+                place == region or region in closure.get(place, set())):
+            code, status = "WORLD_SPACE_TOKEN_MISMATCH", "FAIL"
+            message = "a single token's place contradicts the spatial relation declared at the same time"
+        elif relation in _INSIDE and found == "unrelated":
+            code, status = "WORLD_SPACE_TOKEN_UNRELATED", "GAP"
+            message = "a single token's place and its spatial region are not related by any declared relation"
+        else:
+            continue
+        reported.add((color, row.get("at")))
+        gaps.append({"code": code, "status": status, "message": message,
+                     "counterexample": {"at": row.get("at"), "x": color, "token_place": place,
+                                        "spatial_region": region, "relation": relation}})
+    return gaps
+
+
 def qualify_guard_contract(contract, *, context=None):
     """Run each derived Guard once and evaluate each declared claim row."""
     if not isinstance(contract, GuardContract):
@@ -181,6 +279,7 @@ def qualify_guard_contract(contract, *, context=None):
                                      descendant_ids=context.descendant_ids if context else frozenset())
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
     gaps.extend(_event_token_consistency(contract))
+    gaps.extend(_space_token_consistency(contract))
     if contract.world_model.entities:
         inputs = contract.inputs
         used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))

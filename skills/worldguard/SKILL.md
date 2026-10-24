@@ -31,19 +31,15 @@ Copy `assets/examples/` worlds; [guard-inputs.md](references/guard-inputs.md) co
 the seven Guards. Semantics and assertion kinds derive checks; unknown semantics
 GAP. Retired fields are input errors: remove the named field.
 
-Use one clock format, quoted clocks and ISO times across days. Event times supply
-`t_<event_id>` in causal expressions. Every token transfer names its event when
-events exist; same-named places and fluents must agree. A mesh has one root and
-only `parent_child` / `continues` edges using `from` / `to`.
+Use one clock format; clock, token and space agreement rules are in guard-inputs.md.
+A mesh has one root and only `parent_child` / `continues` edges using `from` / `to`.
 
 ## Read the result
 
 Keep FAIL > GAP > BOUNDARY_EXCEEDED > PASS; PASS is scoped. Every child contributes.
-Check/mesh exit 0 on PASS, 1 on non-PASS, 2 on invalid input. Compare exits 0 for all
-matches, 1 for mismatches, 2 on invalid input. `--write-observed OUT` writes a new
+Exit 0 on PASS (compare: all match), 1 otherwise, 2 on invalid input. `--write-observed OUT` writes a new
 independent world/tree with only compared event times changed; rerun its checks.
 
-Check summaries are short JSON: `contract_id`, `status`, `checked`, `gaps`,
-`scope_limits`; mesh summaries also show `tree`. Add `--json` for full reports.
+Summaries are short JSON (keys in worldguard-contracts.md); `--json` gives full reports.
 Timeline shows claim rows, sub-models, steps and every problem; `--json` for all.
 Report status, codes, observed differences or missing inputs, trace and scope limits.

@@ -38,6 +38,7 @@ IMPLEMENTED_BY = {
     "CheckEventTokens": "worldguard/qualification.py:_event_token_consistency",
     "CopySelectedObservation": "worldguard/compare.py:compare_with_observed_copy",
     "ShowTimeline": "worldguard/timeline.py:timeline",
+    "CheckSpaceTokens": "worldguard/qualification.py:_space_token_consistency",
 }
 TESTED_BY = {
     "retired_keys_are_input_errors": ["tests/test_contracts.py:test_retired_contract_keys_are_input_errors"],
@@ -64,6 +65,7 @@ TESTED_BY = {
     ],
     "pass_needs_bound_true_rows": ["tests/test_world_model_language.py:test_a_claim_without_assertions_is_not_bound_to_the_world_model"],
     "timeline_shows_every_problem": ["tests/test_variants_timeline.py:test_timeline_shows_claims_submodels_and_every_problem"],
+    "space_matches_tokens": ["tests/test_qualification.py:test_space_rows_agree_with_token_places"],
 }
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -87,6 +89,7 @@ class CheckRequest:
     transition_unlinked: bool = False
     observed_copy: bool = False
     timeline: bool = False
+    space_token: str = "none"
 
 
 @dataclass(frozen=True)
@@ -216,10 +219,13 @@ class RunGuards:
     def transition_unlinked(self, request):
         return request.transition_unlinked
 
+    def space_token(self, request):
+        return request.space_token
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
-        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request) or self.comparison_mismatch(evaluated.request) or self.token_event_mismatch(evaluated.request):
+        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request) or self.comparison_mismatch(evaluated.request) or self.token_event_mismatch(evaluated.request) or self.space_token(evaluated.request) == "disjoint":
             status = "FAIL"
-        elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request) or self.transition_unlinked(evaluated.request):
+        elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request) or self.transition_unlinked(evaluated.request) or self.space_token(evaluated.request) == "unrelated":
             status = "GAP"
         elif evaluated.request.boundary == "owned":
             status = "BOUNDARY_EXCEEDED"
@@ -379,6 +385,15 @@ def observedcopy_only_selected_event(state, trace):
     return InvariantResult.pass_()
 
 
+def space_matches_tokens(state, trace):
+    disjoint = _terminal_check(state, lambda request: request.space_token == "disjoint", (1, "FAIL"),
+                               "A single token's place contradicting its spatial region did not fail")
+    if not disjoint.ok:
+        return disjoint
+    return _terminal_check(state, lambda request: request.space_token == "unrelated", (1, "GAP"),
+                           "A single token's place unrelated to its spatial region was not a gap")
+
+
 def timeline_shows_every_problem(state, trace):
     if state.terminal and state.request is not None and state.request.timeline and not state.timeline_complete:
         return InvariantResult.fail("The timeline dropped a problem or claim row of the native report")
@@ -418,6 +433,9 @@ EXTERNAL_INPUTS = (
     CheckRequest("transition_unlinked", transition_unlinked=True, rows="tokens"),
     CheckRequest("observed_copy", compare=True, compare_mismatch=True, observed_copy=True, rows="comparison"),
     CheckRequest("timeline_late_ferry", scm_mode="event_clock", rows="variable", timeline=True),
+    CheckRequest("space_token_agrees", rows="tokens", space_token="agrees"),
+    CheckRequest("space_token_disjoint", rows="tokens", space_token="disjoint"),
+    CheckRequest("space_token_unrelated", rows="tokens", space_token="unrelated"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
     ("compare_flags_values_outside_tolerance", "Observed differences outside tolerance fail", compare_flags_values_outside_tolerance),
@@ -437,6 +455,7 @@ INVARIANTS = tuple(Invariant(name, description, check) for name, description, ch
     ("transitions_name_events", "A resource transition must name its event", transitions_name_events),
     ("observedcopy_only_selected_event", "Observed copy only changes the selected event time", observedcopy_only_selected_event),
     ("timeline_shows_every_problem", "The timeline shows every claim row and every problem code of the check", timeline_shows_every_problem),
+    ("space_matches_tokens", "A single token's place agrees with the spatial relations declared at the same time", space_matches_tokens),
 ))
 REQUIRED_LABELS = ("input_error", "failed", "gap", "boundary_exceeded", "passed")
 MAX_SEQUENCE_LENGTH = 1
@@ -546,6 +565,11 @@ class _ObservedCopyShiftsDownstream(ReportExit):
         return ("event:first:at", "event:second:at") if request.observed_copy else ()
 
 
+class _SpaceTokenDriftIgnored(RunGuards):
+    def space_token(self, request):
+        return "none"
+
+
 class _TimelineDropsNonEventProblems(ReportExit):
     def timeline_complete(self, request, state):
         return state.aggregate_status == "PASS"
@@ -574,6 +598,7 @@ def broken_variants():
         "transition_event_link_ignored": variant(_TransitionEventLinkIgnored(), "transitions_name_events"),
         "observed_copy_shifts_downstream": variant(_ObservedCopyShiftsDownstream(), "observedcopy_only_selected_event"),
         "timeline_drops_non_event_problems": variant(_TimelineDropsNonEventProblems(), "timeline_shows_every_problem"),
+        "space_token_drift_ignored": variant(_SpaceTokenDriftIgnored(), "space_matches_tokens"),
     }
 
 
@@ -605,7 +630,16 @@ def _real_contract(request):
         destination = contract["claim"] if request.retired_key in {"target_guard", "target_guards", "atoms"} else contract
         destination[request.retired_key] = None
         return contract
-    if request.token_event_mismatch or request.transition_unlinked:
+    if request.space_token != "none":
+        contract = _real_contract(replace(request, space_token="none", rows="tokens_world"))
+        region = {"agrees": "out", "disjoint": "home", "unrelated": "home"}[request.space_token]
+        rows = [{"at": "t2", "x": "traveler", "y": region, "relation": "NTPP"}]
+        if request.space_token == "disjoint":
+            rows.append({"at": "t2", "x": "home", "y": "out", "relation": "DC"})
+        contract["inputs"]["spatial_relations"] = rows
+        contract["inputs"]["events"][0]["actor"] = "traveler"
+        return contract
+    if request.token_event_mismatch or request.transition_unlinked or request.rows == "tokens_world":
         transition = {"id": "move", "event": "move", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],
                       "produces": [{"place": "other" if request.token_event_mismatch else "out", "color": "traveler", "qty": 1}]}
         if request.transition_unlinked:
@@ -723,6 +757,9 @@ def conformance():
                 gaps = report.get("gaps", [])
                 if request.token_event_mismatch:
                     assert any(row["code"] == "WORLD_EVENT_TOKEN_MISMATCH" for row in gaps), "missing token/event contradiction witness"
+                if request.space_token in {"disjoint", "unrelated"}:
+                    code = "WORLD_SPACE_TOKEN_MISMATCH" if request.space_token == "disjoint" else "WORLD_SPACE_TOKEN_UNRELATED"
+                    assert any(row["code"] == code for row in gaps), f"missing {code} witness"
                 if request.transition_unlinked:
                     gap = next(row for row in gaps if row["code"] == "RESOURCE_TRANSITION_UNLINKED")
                     assert gap["missing_slots"] == ["move"], "unlinked transition identity was not preserved"

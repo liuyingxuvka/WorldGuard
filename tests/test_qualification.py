@@ -51,14 +51,14 @@ def test_one_row_per_problem_in_short_and_full_reports():
     assert set(short) == {'contract_id', 'status', 'checked', 'gaps', 'scope_limits'}
     assert set(full) == GuardedReport.REPORT_FIELDS
 
-@pytest.mark.parametrize('name,expected,status', [('resource_skip.yaml', 'RESOURCE_CUMULATIVE_OVERCONSUMPTION', 'FAIL'), ('resource_first.yaml', 'RESOURCE_MISSING_TOKEN', 'FAIL'), ('two_places.yaml', 'SPACE_RCC8_CONTRADICTION', 'FAIL')])
+@pytest.mark.parametrize('name,expected,status', [('resource_skip.yaml', 'RESOURCE_CUMULATIVE_OVERCONSUMPTION', 'FAIL'), ('resource_first.yaml', 'RESOURCE_MISSING_TOKEN', 'FAIL'), ('two_places.yaml', 'SPACE_RCC8_CONTRADICTION WORLD_SPACE_TOKEN_MISMATCH', 'FAIL')])
 def test_trial_native_problems_are_reported_once(name, expected, status):
     from pathlib import Path
     import yaml
     contract = yaml.safe_load((Path(__file__).parent / 'fixtures/trials/story_mut_out' / name).read_text())
     report = run_worldguard(contract)
     assert report.status.value == status
-    assert [row['code'] for row in report.gaps] == [expected]
+    assert sorted(row['code'] for row in report.gaps) == expected.split()
 
 @pytest.mark.parametrize('file,expected', [('sb_metric_distance.yaml', 'BOUNDARY_EXCEEDED'), ('sb_numeric_dynamics.yaml', 'BOUNDARY_EXCEEDED'), ('sb_payoff.yaml', 'BOUNDARY_EXCEEDED'), ('sb_permission.yaml', 'BOUNDARY_EXCEEDED'), ('trip_boundary.yaml', 'BOUNDARY_EXCEEDED'), ('trip_boundary_neg.yaml', 'FAIL')])
 def test_declared_boundary_trials_keep_their_native_status(file, expected, capsys):
@@ -136,3 +136,31 @@ def test_unmapped_semantics_preserve_claim_identity():
     report=run_worldguard(contract)
     assert report.unmapped_semantics==[{'semantic':'unregistered-domain','affected_claim_ids':['claim:unknown']}]
     assert report.status==GuardStatus.GAP
+
+
+def test_space_rows_agree_with_token_places(tmp_path):
+    from pathlib import Path
+    import yaml
+    from worldguard.cli import main
+    story = yaml.safe_load((Path(__file__).parent / 'fixtures/trials/story_v1.yaml').read_text())
+    assert run_worldguard(story).status is GuardStatus.PASS
+    unrelated = deepcopy(story)
+    for row in unrelated['inputs']['spatial_relations']:
+        if row['x'] == 'cora':
+            row['y'] = 'mainland'
+    report = run_worldguard(unrelated)
+    assert report.status is GuardStatus.GAP
+    (gap,) = report.gaps
+    assert gap['code'] == 'WORLD_SPACE_TOKEN_UNRELATED'
+    assert gap['counterexample'] == {'at': 't4', 'x': 'cora', 'token_place': 'lamp_room', 'spatial_region': 'mainland', 'relation': 'NTPP'}
+    path = tmp_path / 'unrelated.yaml'
+    path.write_text(yaml.safe_dump(unrelated))
+    assert main(['check', '--contract', str(path)]) == 1
+    apart = deepcopy(unrelated)
+    apart['inputs']['spatial_relations'].append({'at': 't4', 'x': 'mainland', 'y': 'lighthouse', 'relation': 'DC'})
+    report = run_worldguard(apart)
+    assert report.status is GuardStatus.FAIL
+    assert [row['code'] for row in report.gaps] == ['WORLD_SPACE_TOKEN_MISMATCH']
+    path = tmp_path / 'apart.yaml'
+    path.write_text(yaml.safe_dump(apart))
+    assert main(['check', '--contract', str(path)]) == 1
