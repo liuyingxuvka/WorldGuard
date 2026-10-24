@@ -16,3 +16,13 @@ def test_skill_has_three_references_with_a_bounded_total():
     paragraphs = (SKILL / 'SKILL.md').read_text().split('\n\n')
     note = next(part for part in paragraphs if part.startswith('- Node:'))
     assert [line.split(':', 1)[0] for line in note.splitlines()] == ['- Node', '- Parent', '- Known-bad', '- Real binding', '- Test binding', '- Readback', '- Current vs target']
+
+
+def test_skill_starts_from_the_model():
+    text = (SKILL / "SKILL.md").read_text()
+    headings = [line for line in text.splitlines() if line.startswith("## ")]
+    assert headings[0] == "## Start from the model"
+    assert headings.index("## Start from the model") < headings.index("## Choose a command")
+    section = text.split("## Start from the model", 1)[1].split("\n## ", 1)[0]
+    for word in ("timeline", "asserts", "variants", "continues", "contract", "planned"):
+        assert word in section, word

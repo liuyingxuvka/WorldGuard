@@ -11,7 +11,7 @@ Boundary ids are listed per Guard; request one with its normal semantic for
 `BOUNDARY_EXCEEDED`.
 
 An unselected Guard's boundary remains `QUALIFICATION_SEMANTIC_UNMAPPED` GAP with
-an owner/semantic hint. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
+an owner/semantic hint.
 
 ## EventGuard
 
@@ -29,11 +29,10 @@ Claim assertion: `{holds: iris_inside, at: t2}` (after every event at or before 
 Use one time kind throughout all events and `holds.at` assertions in a contract: a YAML number,
 a label such as `t1`/`day2` with one shared prefix, an ISO date/date-time, or a quoted same-day
 clock such as `"9:40"` or `"17:12:30"`. ISO times must consistently include or omit timezones.
-For trips crossing midnight, use ISO dates. Quote clock times: YAML reads unquoted `9:40` as the
-number 580, so mixing it with `"10:20"` is an input error. Unknown times such as `evening` or
+For trips crossing midnight, use ISO dates. Quote clock times: YAML reads unquoted `9:40` as 580. Unknown times such as `evening` or
 `t4b`, mixed kinds/prefixes, and duplicate event ids within one scenario are input errors.
 For `before`/`holds`, add `scenario: <id>` to select a declared scenario; ambiguous reused event ids
-without it and unknown scenarios are gaps. Spatial relation `at` values remain uninterpreted labels.
+without it and unknown scenarios are gaps. Spatial `at` values use the same clock.
 A missing event time remains a native missing-axiom `GAP`; an explicitly supplied invalid time is an input error.
 Events run in parsed time order;
 `initiates`, `terminates`, `releases` name fluents (one id or a list). Optional: `requires` (fluents that must

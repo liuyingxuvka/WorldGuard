@@ -32,8 +32,8 @@ The WorldGuard skill SHALL provide guidance for calling the installed runtime fo
 - **WHEN** the local skill is inspected
 - **THEN** it includes a `mesh-check` command example and references for the model tree and continuation checks.
 
-### Requirement: Codex entry is a short shape table
-The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh rules SHALL stay in their references and SHALL be loaded only for that shape. New unit checks SHALL start from a copied shipped example world with explicit model fields and assertions.
+### Requirement: Codex entry starts from the model, then a short shape table
+The `worldguard` skill SHALL start `SKILL.md` with `## Start from the model`: read an existing world or tree back with `timeline` / `mesh-check` first, or build one in five steps (claim rows, the inputs they need, one known-bad variant per claim, a tree for chapters or days, contract-less planned nodes). It SHALL then keep the seven-line model tree block and a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh rules SHALL stay in their references and SHALL be loaded only for that shape. New unit checks SHALL start from a copied shipped example world with explicit model fields and assertions.
 
 #### Scenario: Ordinary bounded check enters WorldGuard
 - **WHEN** an agent needs one claim checked against one world model

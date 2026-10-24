@@ -5,6 +5,7 @@
 - Mesh tree lines show each node's subtree status when it differs from its own, each continues edge's result and code, and planned nodes without a contract; the root line now agrees with the overall status.
 - `timeline` shows each claim row with its result, one line per declared agent, space, conflict and norm sub-model, and every problem of the check (not only those on an event); mesh timelines label each world by its node id.
 - A single token's place must agree with the spatial relations declared at the same time: a contradiction fails with WORLD_SPACE_TOKEN_MISMATCH and an unrelated place is a GAP WORLD_SPACE_TOKEN_UNRELATED.
+- The skill starts from the model: read an existing world or tree first, or build one in five steps (claim rows, the inputs they need, one known-bad variant per claim, a tree for chapters or days, contract-less planned nodes). The as-happened copy written by compare is no longer called the target.
 - Maintenance checks of WorldGuard's own model tree run on FlowGuard 0.70.12.
 
 ## v0.7.21 - 2026-10-24 - One world format and one model tree

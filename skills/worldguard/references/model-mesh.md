@@ -49,7 +49,7 @@ inputs:
     - {event_id: arrive, at: t2, initiates: [arrived], terminates: [travelling]}
 ```
 
-Run `python <skill-root>/scripts/run_worldguard.py mesh-check --mesh mesh.yaml`.
+Run `mesh-check --mesh mesh.yaml`.
 `mesh-check --example story` loads the same portable three-node shape from the skill.
 `--json` adds node reports; both forms include depth-first `tree` lines: each node's
 own status, ` (tree <status>)` when its subtree differs, and each `continues` edge's
@@ -72,6 +72,9 @@ agree and time cannot run backwards. Shared unique colors retain location. Optio
 `variables: [name]` compares native causal scenario values: matching scenario names,
 or one earlier scenario against every next scenario, at absolute tolerance 1e-9.
 Missing values GAP; state, time, token or value differences FAIL with the edge id.
+
+A planned node is a node without `contract`: it reads `GAP planned`
+(`MESH_EXPECTED_NODE_CONTRACT_MISSING`) and the tree cannot PASS until its contract is added.
 
 ## Known-bad edits and observations
 

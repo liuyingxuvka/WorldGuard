@@ -4,7 +4,7 @@ nodes:
   contract:
     claim:
       claim_id: the_door_opens
-      text: The key reaches Mara before she unlocks the door.
+      text: Chapter 2 ends with the door open; the chapter handoff checks that the key reached Mara first.
       asserts:
       - node: chapter2
         holds: door_open

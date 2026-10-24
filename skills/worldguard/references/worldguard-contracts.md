@@ -10,32 +10,28 @@ A contract contains `contract_id`, `claim`, `world_model`, `inputs` and optional
 `entities`, `relations`, `assumptions` and `scope_limits`. Contract id defaults to
 claim id; model version defaults to `unversioned`. Retired keys are input errors:
 remove the named key and put claim semantics in `requested_semantics` or `asserts`.
-Supply the inputs used by each derived Guard:
-
-| Guard | Current model/input family |
-|---|---|
-| EventGuard | Events, time/order, fluent changes and declared scenarios |
-| AgentGuard | Agents, beliefs, intentions, knowledge |
-| SpaceGuard | Spatial objects/relations |
-| ResourceGuard | Resources, quantities, units and constraints |
-| CausalGuard | Variables, graph/equations, scenarios and declared interventions/counterfactuals |
-| ConflictGuard | Agents, actions, payoffs and conflict model |
-| NormGuard | Norms, facts and rule priorities |
-
-See [guard-inputs.md](guard-inputs.md); missing required inputs GAP.
+Supply the inputs each derived Guard uses; [guard-inputs.md](guard-inputs.md) lists them per Guard; missing required inputs GAP.
 
 WorldGuard derives Guards from claim semantics and assertion kinds; `derived_guards`
 names the executed set. Prediction selects EventGuard plus CausalGuard. Unknown
 semantics stay visible as `QUALIFICATION_SEMANTIC_UNMAPPED`.
 
-Run a contract with `python <skill-root>/scripts/run_worldguard.py check --contract <file.yaml>`, or `run_worldguard(contract)` in Python.
+Run `check --contract <file.yaml>`, or `run_worldguard(contract)` in Python.
 
 ## Results
 
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
-The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem) and `scope_limits`. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Each problem carries its native code and its counterexample or missing slots.
+The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem) and `scope_limits`. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Each problem carries its native code and its counterexample or missing slots. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
+
+## Build a world from a story or trip
+
+1. Claim rows that must hold (`claim.asserts`).
+2. Only the inputs those rows need (`events`, `resources`, `spatial_relations`, `causal_model`).
+3. Per must-hold row one `variants:` edit that must fail with its `code`.
+4. Chapters or days: a tree ([model-mesh.md](model-mesh.md)); unwritten ones have no `contract`.
+5. `timeline` after each edit. Full trip: `assets/examples/trip_ferry.yaml`.
 
 ## Runnable world
 
@@ -78,7 +74,7 @@ Optional string `source` fields on events, transitions, assertion rows and mesh 
 ## Compare the world with observations
 
 For the world above, save `observed.yaml` below. Run
-`python <skill-root>/scripts/run_worldguard.py compare --contract world.yaml --observed observed.yaml`.
+`compare --contract world.yaml --observed observed.yaml`.
 It exits 1: unlock is 0.5 late (tolerance 0.25), entry_gap differs by -0.5.
 
 ```yaml
@@ -108,11 +104,4 @@ For a tree, use `compare --mesh mesh.yaml --observed log.yaml`. Observations hav
 shared `time_tolerance`, `tolerance` and `source` may appear outside `nodes`. Every
 comparison row names its `node`. A written tree embeds its resolved contracts and
 changes only selected observed event times; `mesh-check --mesh OUT` reveals
-continuation or later-node failures. Comparison alone is a value check, not closure.
-
-With unscoped events, every token transfer names its event; missing links give
-GAP `RESOURCE_TRANSITION_UNLINKED` with ids, wrong explicit links are input errors.
-Complete links use event time and same-event list order; resource-only worlds use
-list order. Same-named places/fluents agree initially and after every event. FAIL
-`WORLD_EVENT_TOKEN_MISMATCH` names `at`, `event_id`, `place`, `fluent_holds`,
-`tokens`, trace. These world checks run regardless of derived Guards.
+continuation or later-node failures.

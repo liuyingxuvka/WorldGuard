@@ -14,11 +14,16 @@ factual truth. English instructions come first; 中文说明 follows below.
 ## Start with a world or one model tree
 
 ```bash
+python skills/worldguard/scripts/run_worldguard.py timeline --example trip
 python skills/worldguard/scripts/run_worldguard.py check --example scene
 python skills/worldguard/scripts/run_worldguard.py check --example trip
 python skills/worldguard/scripts/run_worldguard.py mesh-check --example story
-python skills/worldguard/scripts/run_worldguard.py timeline --example trip
 ```
+
+Start from the model: read an existing world or tree with `timeline` (and
+`mesh-check`) first; for a new one write the claim rows, only the inputs they need,
+one known-bad variant per claim, a tree for chapters or days, and contract-less
+planned nodes for parts not written yet.
 
 Copy a world from `skills/worldguard/assets/examples/` and edit its inputs and
 assertions. The commands are `check`, `mesh-check`, `timeline` and `compare`.
@@ -138,7 +143,7 @@ No license file is included; source visibility alone grants no unrestricted reus
 WorldGuard 把故事、行程、计划或过程写成可执行世界模型，用 `claim.asserts`
 逐行检查说法；不会读取说法句子来猜结论。PASS 只适用于已声明模型和边界，不证明现实真伪。
 
-从 `check --example scene|trip` 开始；`mesh-check --example story` 是技能自带的一棵树。
+先从模型开始：用 `timeline --example trip` 读回一个世界，再用 `check --example scene|trip` 检查；没写完的章节先放没有 `contract` 的节点（`GAP planned`）。`mesh-check --example story` 是技能自带的一棵树。
 节点只写 `model_id`、`contract` 和可选 `source`；合约可内嵌，也可用相对文件路径。
 边只用 `from` / `to`，关系只有 `parent_child` 和 `continues`。必须恰有一个根，
 每节点至多一个父节点，否则 GAP `MESH_NOT_ONE_TREE`。父节点可用 `node:` 读取后代；
