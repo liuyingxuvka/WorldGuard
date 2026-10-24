@@ -72,16 +72,16 @@ def main(argv=None):
                 for row in report.tree:
                     identity=row.strip().split()[0];node=next(n for n in mesh.nodes if n.model_id==identity)
                     if node.contract is not None and node.contract.inputs.get("events"):
-                        views[identity]=timeline(node.contract,problems=report.node_reports[identity].gaps)
+                        views[identity]=timeline(node.contract,report=report.node_reports[identity])
                 if args.json:print(dump_json({"mesh_id":mesh.mesh_id,"tree":report.tree,"nodes":views}))
                 else:
                     print("\n".join(report.tree))
                     for row in report.tree:
                         identity=row.strip().split()[0]
                         if identity in views:
-                            padding=row[:len(row)-len(row.lstrip())];print("\n".join(padding+line for line in render_timeline_text(views[identity]).splitlines()))
+                            padding=row[:len(row)-len(row.lstrip())];print("\n".join(padding+line for line in render_timeline_text(views[identity],label=identity).splitlines()))
             else:
-                contract=GuardContract.from_dict(load_mapping(args.contract));report=run_worldguard(contract);view=timeline(contract,scenario=args.scenario,problems=report.gaps)
+                contract=GuardContract.from_dict(load_mapping(args.contract));report=run_worldguard(contract);view=timeline(contract,scenario=args.scenario,report=report)
                 print(dump_json(view) if args.json else render_timeline_text(view))
         except (OSError,UnicodeError,ValueError) as exc:return _input_error("timeline",args.mesh or args.contract or args.example,exc)
         return 0

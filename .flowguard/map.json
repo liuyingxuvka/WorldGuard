@@ -71,7 +71,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:ae3edc790d0e7050d7029e4187bb004faf9924fad1a9d55628abe7bf91bb1eef"
+      "fingerprint": "sha256:f1368dfa30aee95bc0a32989eeff092799ebde0ff6beb5053494f458f0845de5"
     },
     {
       "id": "core",
@@ -82,7 +82,8 @@
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
         "Keep compact native reports and the conservative four-status aggregation",
         "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine",
-        "Check declared event preconditions without assuming an order inside simultaneous groups; retain uncertainty after conflicting same-time writes until a definite later write."
+        "Check declared event preconditions without assuming an order inside simultaneous groups; retain uncertainty after conflicting same-time writes until a definite later write.",
+        "The timeline shows every claim row with its result, every declared sub-model and every problem of the native report"
       ],
       "files": [
         "worldguard/contracts.py",
@@ -115,7 +116,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:f7dd60a491879f7bd45b82cc5b98bd7f9c6ede8855e328f16ecee6c5fa568a2f"
+      "fingerprint": "sha256:569f56e0640db930dc1d51aa9c2b287919c2f30731b813b182a5fa48fe7b5f55"
     },
     {
       "id": "guards",
@@ -293,7 +294,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:ce86cd8d15c19f20e81b428172b4163b41e556a725288221060e0e8e2a33e4c8"
+      "fingerprint": "sha256:d18dd1e4dc906f7bb7193718bc990ffa7196d4343cac45b1bf8c59c2dae2bfa1"
     }
   ],
   "flows": [

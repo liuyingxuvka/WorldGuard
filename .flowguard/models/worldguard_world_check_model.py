@@ -37,6 +37,7 @@ IMPLEMENTED_BY = {
     "RejectRetiredKeys": "worldguard/contracts.py:_reject_retired_contract_keys",
     "CheckEventTokens": "worldguard/qualification.py:_event_token_consistency",
     "CopySelectedObservation": "worldguard/compare.py:compare_with_observed_copy",
+    "ShowTimeline": "worldguard/timeline.py:timeline",
 }
 TESTED_BY = {
     "retired_keys_are_input_errors": ["tests/test_contracts.py:test_retired_contract_keys_are_input_errors"],
@@ -62,6 +63,7 @@ TESTED_BY = {
         "tests/test_qualification.py:test_each_derived_guard_boundary_is_a_final_boundary",
     ],
     "pass_needs_bound_true_rows": ["tests/test_world_model_language.py:test_a_claim_without_assertions_is_not_bound_to_the_world_model"],
+    "timeline_shows_every_problem": ["tests/test_variants_timeline.py:test_timeline_shows_claims_submodels_and_every_problem"],
 }
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -84,6 +86,7 @@ class CheckRequest:
     token_event_mismatch: bool = False
     transition_unlinked: bool = False
     observed_copy: bool = False
+    timeline: bool = False
 
 
 @dataclass(frozen=True)
@@ -132,6 +135,7 @@ class State:
     terminal: bool = False
     duplicated_problems: bool = False
     copied_fields: tuple[str, ...] = ()
+    timeline_complete: bool = True
 
 
 class ParseContract:
@@ -268,7 +272,7 @@ class Aggregate:
 class ReportExit:
     name = "ReportExit"
     reads = ("aggregate_status",)
-    writes = ("exit_code", "status", "terminal", "duplicated_problems", "copied_fields")
+    writes = ("exit_code", "status", "terminal", "duplicated_problems", "copied_fields", "timeline_complete")
     accepted_input_type = Aggregated
     input_description = "Final native status"
     output_description = "Actual exit/status terminal, not a reachability-only label"
@@ -280,12 +284,17 @@ class ReportExit:
     def copied_fields(self, request):
         return ("event:first:at",) if request.observed_copy else ()
 
+    def timeline_complete(self, request, state):
+        """The timeline view carries every problem code and claim row of the same native report."""
+        return True
+
     def apply(self, aggregate: Aggregated, state: State) -> Iterable[FunctionResult]:
         status = state.aggregate_status
         exit_code = 0 if status == "PASS" else 1
         label = {"FAIL": "failed", "GAP": "gap", "BOUNDARY_EXCEEDED": "boundary_exceeded", "PASS": "passed"}[status]
         yield FunctionResult(Terminal(exit_code, status), replace(state, exit_code=exit_code, status=status, terminal=True,
-            duplicated_problems=self.duplicated_problems(state), copied_fields=self.copied_fields(aggregate.request)), label)
+            duplicated_problems=self.duplicated_problems(state), copied_fields=self.copied_fields(aggregate.request),
+            timeline_complete=self.timeline_complete(aggregate.request, state)), label)
 
 
 def _terminal_check(state, applies, expected, message):
@@ -370,6 +379,12 @@ def observedcopy_only_selected_event(state, trace):
     return InvariantResult.pass_()
 
 
+def timeline_shows_every_problem(state, trace):
+    if state.terminal and state.request is not None and state.request.timeline and not state.timeline_complete:
+        return InvariantResult.fail("The timeline dropped a problem or claim row of the native report")
+    return InvariantResult.pass_()
+
+
 EXTERNAL_INPUTS = (
     CheckRequest("compare_match", rows="comparison", compare=True),
     CheckRequest("compare_mismatch", rows="comparison", compare=True, compare_mismatch=True),
@@ -402,6 +417,7 @@ EXTERNAL_INPUTS = (
     CheckRequest("token_event_mismatch", token_event_mismatch=True, rows="tokens"),
     CheckRequest("transition_unlinked", transition_unlinked=True, rows="tokens"),
     CheckRequest("observed_copy", compare=True, compare_mismatch=True, observed_copy=True, rows="comparison"),
+    CheckRequest("timeline_late_ferry", scm_mode="event_clock", rows="variable", timeline=True),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
     ("compare_flags_values_outside_tolerance", "Observed differences outside tolerance fail", compare_flags_values_outside_tolerance),
@@ -420,6 +436,7 @@ INVARIANTS = tuple(Invariant(name, description, check) for name, description, ch
     ("tokens_match_events", "Every linked event shares one token/fluent state", tokens_match_events),
     ("transitions_name_events", "A resource transition must name its event", transitions_name_events),
     ("observedcopy_only_selected_event", "Observed copy only changes the selected event time", observedcopy_only_selected_event),
+    ("timeline_shows_every_problem", "The timeline shows every claim row and every problem code of the check", timeline_shows_every_problem),
 ))
 REQUIRED_LABELS = ("input_error", "failed", "gap", "boundary_exceeded", "passed")
 MAX_SEQUENCE_LENGTH = 1
@@ -529,6 +546,11 @@ class _ObservedCopyShiftsDownstream(ReportExit):
         return ("event:first:at", "event:second:at") if request.observed_copy else ()
 
 
+class _TimelineDropsNonEventProblems(ReportExit):
+    def timeline_complete(self, request, state):
+        return state.aggregate_status == "PASS"
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
@@ -551,6 +573,7 @@ def broken_variants():
         "token_event_drift_ignored": variant(_TokenEventDriftIgnored(), "tokens_match_events"),
         "transition_event_link_ignored": variant(_TransitionEventLinkIgnored(), "transitions_name_events"),
         "observed_copy_shifts_downstream": variant(_ObservedCopyShiftsDownstream(), "observedcopy_only_selected_event"),
+        "timeline_drops_non_event_problems": variant(_TimelineDropsNonEventProblems(), "timeline_shows_every_problem"),
     }
 
 
@@ -705,6 +728,20 @@ def conformance():
                     assert gap["missing_slots"] == ["move"], "unlinked transition identity was not preserved"
                 if request.tokens_cloned:
                     assert any(row["code"] == "RESOURCE_UNIQUE_TOKEN_DUPLICATED" for row in gaps), "the original clone contradiction disappeared"
+                if request.timeline:
+                    view_output = io.StringIO()
+                    with redirect_stdout(view_output):
+                        main(["timeline", "--contract", str(path), "--json"])
+                    view = json.loads(view_output.getvalue())
+                    shown = {code for step in view["steps"] for code in step.get("problems", [])}
+                    shown |= {code for row in view.get("claims", []) if row.get("code") for code in [row["code"]]}
+                    shown |= {row["code"] for row in view.get("problems", [])}
+                    full = io.StringIO()
+                    with redirect_stdout(full):
+                        main(["check", "--contract", str(path), "--json"])
+                    report_codes = {row["code"] for row in json.loads(full.getvalue())["gaps"]}
+                    if shown != report_codes or len(view.get("claims", [])) != len(_real_contract(request)["claim"]["asserts"]):
+                        mismatches.append(f"timeline_shows_every_problem: timeline shows {sorted(shown)}, check reports {sorted(report_codes)}")
                 identities = [(row["code"], row.get("guard"), row.get("claim_row"), row.get("variant_id")) for row in gaps]
                 if len(identities) != len(set(identities)):
                     mismatches.append(f"{request.case_id}: one_row_per_problem failed")

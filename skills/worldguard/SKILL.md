@@ -45,6 +45,5 @@ independent world/tree with only compared event times changed; rerun its checks.
 
 Check summaries are short JSON: `contract_id`, `status`, `checked`, `gaps`,
 `scope_limits`; mesh summaries also show `tree`. Add `--json` for full reports.
-Timeline defaults to text; `--json` preserves the complete view and `--scenario id`
-selects a contract scenario. It reads state and problems rather than proving closure.
+Timeline shows claim rows, sub-models, steps and every problem; `--json` for all.
 Report status, codes, observed differences or missing inputs, trace and scope limits.

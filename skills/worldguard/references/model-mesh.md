@@ -80,7 +80,7 @@ loaded nodes/edges. Each independent copy reruns the whole tree without recursio
 A variant that escapes its expected status/code produces `VARIANT_NOT_CAUGHT`.
 Malformed paths or edits are input errors naming the variant.
 
-`timeline --mesh mesh.yaml` prints the tree followed by each node's event timeline;
+`timeline --mesh mesh.yaml` prints the tree, then each node's timeline as `<node>: world …`;
 `--json` gives the full structure. Use `compare --mesh mesh.yaml --observed log.yaml`
 with a `nodes: {model_id: observations}` mapping; each result names its node. Adding
 `--write-observed OUT` writes an independent embedded-contract tree changing only

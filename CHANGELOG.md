@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Mesh tree lines show each node's subtree status when it differs from its own, each continues edge's result and code, and planned nodes without a contract; the root line now agrees with the overall status.
+- `timeline` shows each claim row with its result, one line per declared agent, space, conflict and norm sub-model, and every problem of the check (not only those on an event); mesh timelines label each world by its node id.
 - Maintenance checks of WorldGuard's own model tree run on FlowGuard 0.70.12.
 
 ## v0.7.21 - 2026-10-24 - One world format and one model tree

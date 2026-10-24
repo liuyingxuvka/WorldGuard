@@ -169,9 +169,9 @@ def test_reused_event_ids_keep_their_own_scenario_source_and_trace():
 def test_timeline_prints_text_by_default_and_json_on_request(capsys):
     assert main(['timeline','--example','trip'])==0
     text=capsys.readouterr().out
-    assert 'world ' in text and 'd1_ferry_out' in text and len(text.encode('utf-8'))<=1500
+    assert 'world ' in text and 'd1_ferry_out' in text and len(text.encode('utf-8'))<=2000
     assert main(['timeline','--example','trip','--json'])==0
-    assert set(json.loads(capsys.readouterr().out))=={'contract_id','clock','steps','variables'}
+    assert set(json.loads(capsys.readouterr().out))=={'contract_id','clock','steps','variables','claims','submodels','problems'}
 
 
 def test_timeline_reads_a_whole_mesh(capsys):
@@ -179,3 +179,37 @@ def test_timeline_reads_a_whole_mesh(capsys):
     text=capsys.readouterr().out
     assert 'story PASS' in text and 'chapter1 PASS -> continues chapter2 PASS' in text
     assert 'hand_over_key' in text and 'unlock' in text
+
+
+def test_timeline_shows_claims_submodels_and_every_problem(tmp_path, capsys):
+    trip=Path(__file__).resolve().parents[1]/'skills/worldguard/assets/examples/trip_ferry.yaml'
+    late=tmp_path/'late.yaml'
+    late.write_text(trip.read_text().replace('event_id: d2_ferry_arr, at: "2026-11-03T15:45"','event_id: d2_ferry_arr, at: "2026-11-03T16:40"'))
+    assert main(['check','--contract',str(late),'--json'])==1
+    codes={row['code'] for row in json.loads(capsys.readouterr().out)['gaps']}
+    assert len(codes)==5
+    assert main(['timeline','--contract',str(late)])==0
+    text=capsys.readouterr().out
+    shown={code for code in codes if code in text}
+    assert shown==codes
+    assert 'row 1: event d2_ferry_arr before d2_last_train FAIL CLAIM_ASSERTION_FALSE' in text
+    assert 'row 2: ' in text and text.count('FAIL CLAIM_ASSERTION_FALSE')==2
+    assert '!! CAUSAL_CONSTRAINT_VIOLATED' in [line for line in text.splitlines() if line.startswith('variables [published_timetable]')][0]
+    assert 'problems:\n  RESOURCE_CUMULATIVE_OVERCONSUMPTION (ResourceGuard): ' in text
+    assert main(['timeline','--contract',str(late),'--json'])==0
+    view=json.loads(capsys.readouterr().out)
+    assert {row['code'] for row in view['problems']}=={'CAUSAL_CONSTRAINT_VIOLATED','RESOURCE_CUMULATIVE_OVERCONSUMPTION'}
+    story=Path(__file__).resolve().parent/'fixtures/trials/story_v1.yaml'
+    assert main(['timeline','--contract',str(story)])==0
+    text=capsys.readouterr().out
+    rows=[line for line in text.splitlines() if line.startswith('claim ') and ' row ' in line]
+    assert len(rows)==6 and all(line.endswith(' PASS') for line in rows)
+    assert any(line.startswith('agents: ') for line in text.splitlines())
+    assert any(line.startswith('space: ') for line in text.splitlines())
+
+
+def test_timeline_mesh_labels_world_blocks_by_node(capsys):
+    assert main(['timeline','--example','story'])==0
+    lines=capsys.readouterr().out.splitlines()
+    assert '  chapter1: world key_handoff (clock: label)' in lines
+    assert any(line.startswith('  chapter2: world ') for line in lines)

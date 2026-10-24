@@ -147,8 +147,12 @@ Checks SHALL run regardless of claim-derived Guards; same-time uncertainty and n
 missing-time GAP semantics SHALL remain visible without inventing definite facts.
 
 ### Requirement: Readable timeline
-Timeline SHALL default to text with state, tokens, sources and problem codes per step;
-`--json` SHALL preserve the complete view. `--mesh` SHALL read the whole tree and
+Timeline SHALL default to text with each claim row and its result, one line per
+declared agent, space, conflict and norm sub-model, state, tokens, sources and problem
+codes per step, causal codes on the variables line and a `problems:` section for every
+other problem, so that its problem codes equal the check's; it SHALL add no checks.
+`--json` SHALL preserve the complete view with `claims`, `submodels` and `problems`.
+Mesh world blocks SHALL start with their node id. `--mesh` SHALL read the whole tree and
 `--example scene|trip|story` SHALL resolve bundled skill assets. `--scenario` SHALL
 apply only to a single contract. Source strings SHALL remain unchecked pointers to
 original text, without content qualification or age checks.
