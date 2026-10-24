@@ -24,4 +24,5 @@ def test_the_story_order_of_resource_transitions_is_checked() -> None:
     data = yaml.safe_load(SCENE.read_text(encoding="utf-8"))
     transitions = data["inputs"]["resources"]["transitions"]
     data["inputs"]["resources"]["transitions"] = [transitions[0], transitions[2], transitions[1]]
+    transitions[1]["event"], transitions[2]["event"] = transitions[2]["event"], transitions[1]["event"]
     assert run_worldguard(GuardContract.from_dict(data)).status.value == "FAIL"

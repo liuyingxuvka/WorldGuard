@@ -135,10 +135,10 @@ def _validate_event_links(inputs: Mapping[str, Any]) -> None:
     if not isinstance(unique, list) or any(not isinstance(item, str) or not item for item in unique):
         raise ValueError('resources.unique must be a list of color ids')
     transitions = resources.get('transitions', [])
-    if any(isinstance(row, Mapping) and 'event' in row for row in transitions):
-        for index, row in enumerate(transitions):
-            if not isinstance(row, Mapping) or row.get('event') not in event_ids:
-                raise ValueError(f'resources.transitions[{index}].event must name an unscoped event; all transitions must use event links')
+    for index, row in enumerate(transitions):
+        if isinstance(row, Mapping) and 'event' in row:
+            if not isinstance(row['event'], str) or row['event'] not in event_ids:
+                raise ValueError(f'resources.transitions[{index}].event must name an unscoped event')
 
 
 def claim_assertion_kind(assertion: Any) -> str:
@@ -146,68 +146,49 @@ def claim_assertion_kind(assertion: Any) -> str:
     keys = [key for key in CLAIM_ASSERTION_KINDS if isinstance(assertion, dict) and key in assertion]
     return keys[0] if len(keys) == 1 else ''
 
-@dataclass(frozen=True)
-class ClaimAtom:
-    atom_id: str
-    text: str = ''
-    requested_semantics: list[str] = field(default_factory=list)
-    predictive_intent: bool = False
 
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'ClaimAtom':
-        retired = sorted({'id', 'semantics', 'predictive'}.intersection(data))
-        if retired:
-            raise ValueError('claim atom uses retired fields: ' + ', '.join(retired))
-        requested = data.get('requested_semantics', [])
-        if isinstance(requested, str):
-            requested = [requested]
-        return cls(atom_id=str(data.get('atom_id', '')), text=str(data.get('text', '')), requested_semantics=[str(item) for item in requested], predictive_intent=bool(data.get('predictive_intent', False)))
+def _reject_retired_contract_keys(data: Mapping[str, Any]) -> None:
+    for name in ('schema_version', 'run_id', 'dependencies', 'output_requirements'):
+        if name in data:
+            raise ValueError(f'`{name}` is retired; remove it')
+    claim = data.get('claim', {})
+    if isinstance(claim, Mapping):
+        for name in ('target_guard', 'target_guards', 'atoms'):
+            if name in claim:
+                remedy = ('put the semantics in claim.requested_semantics' if name == 'atoms'
+                          else 'the Guards come from claim.requested_semantics and claim.asserts')
+                raise ValueError(f'`claim.{name}` is retired; {remedy}')
 
-    def to_dict(self) -> dict[str, Any]:
-        return {'atom_id': self.atom_id, 'text': self.text, 'requested_semantics': self.requested_semantics, 'predictive_intent': self.predictive_intent}
 
 @dataclass(frozen=True)
 class Claim:
     claim_id: str
     text: str
-    target_guards: list[str] = field(default_factory=list)
     requested_semantics: list[str] = field(default_factory=list)
-    atoms: list[ClaimAtom] = field(default_factory=list)
     asserts: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'Claim':
-        if 'target_guard' in data:
-            raise ValueError('claim.target_guard is retired; migrate the input to claim.target_guards')
-        target_guards = data.get('target_guards', [])
-        if isinstance(target_guards, str):
-            target_guards = [target_guards]
-        requested_semantics = data.get('requested_semantics', [])
-        if isinstance(requested_semantics, str):
-            requested_semantics = [requested_semantics]
-        atoms = [ClaimAtom.from_dict(item) for item in data.get('atoms', [])]
+        _reject_retired_contract_keys({'claim': data})
+        requested = data.get('requested_semantics', [])
+        if isinstance(requested, str):
+            requested = [requested]
         asserts = data.get('asserts', [])
-        if not isinstance(asserts, list) or not all((isinstance(item, dict) for item in asserts)):
+        if not isinstance(asserts, list) or not all(isinstance(item, dict) for item in asserts):
             raise ValueError('claim.asserts must be a list of mappings')
-        if not requested_semantics and (not atoms) and (not asserts):
-            raise ValueError('claim requires current requested_semantics or structured atoms (or claim.asserts)')
-        return cls(claim_id=str(data.get('claim_id', '')), text=str(data.get('text', '')), target_guards=list(target_guards), requested_semantics=[str(item) for item in requested_semantics], atoms=atoms, asserts=[dict(item) for item in asserts])
+        if not requested and not asserts:
+            raise ValueError('claim requires current requested_semantics or claim.asserts')
+        return cls(claim_id=str(data.get('claim_id', '')), text=str(data.get('text', '')),
+                   requested_semantics=[str(item) for item in requested], asserts=[dict(item) for item in asserts])
 
     def to_dict(self) -> dict[str, Any]:
-        result = {'claim_id': self.claim_id, 'text': self.text, 'target_guards': self.target_guards, 'requested_semantics': self.requested_semantics, 'atoms': [atom.to_dict() for atom in self.atoms]}
-        result['asserts'] = self.asserts
-        return result
-
-def claim_predictive_intent(claim: Claim) -> bool:
-    semantics = {str(item).strip().lower() for item in claim.requested_semantics if str(item).strip()}
-    semantics.update((str(item).strip().lower() for atom in claim.atoms for item in atom.requested_semantics if str(item).strip()))
-    return bool(any((atom.predictive_intent for atom in claim.atoms)) or semantics.intersection(PREDICTIVE_SEMANTICS))
+        return {'claim_id': self.claim_id, 'text': self.text,
+                'requested_semantics': self.requested_semantics, 'asserts': self.asserts}
 
 def claim_semantics(claim: Claim) -> tuple[str, ...]:
     values = [*claim.requested_semantics]
-    values.extend((item for atom in claim.atoms for item in atom.requested_semantics))
     values.extend((CLAIM_ASSERTION_KINDS[kind] for kind in map(claim_assertion_kind, (row for row in claim.asserts if "node" not in row)) if kind))
-    if claim_predictive_intent(claim):
+    if {str(item).strip().lower() for item in claim.requested_semantics} & PREDICTIVE_SEMANTICS:
         values.append('predictive')
     return tuple(dict.fromkeys((str(item).strip().lower() for item in values if str(item).strip())))
 
@@ -220,7 +201,7 @@ class GuardRequirementDerivation:
     unmapped_semantics: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
-        return {'schema_version': 'worldguard.guard_requirement_derivation.v1', 'claim_id': self.claim_id, 'requested_semantics': list(self.requested_semantics), 'guard_ids': list(self.guard_ids), 'unmapped_semantics': list(self.unmapped_semantics)}
+        return {'claim_id': self.claim_id, 'requested_semantics': list(self.requested_semantics), 'guard_ids': list(self.guard_ids), 'unmapped_semantics': list(self.unmapped_semantics)}
 
 def derive_guard_requirements(claim: Claim) -> GuardRequirementDerivation:
     """Own the one current claim-semantics-to-Guard derivation path."""
@@ -261,48 +242,20 @@ class WorldModel:
         result.update({'model_id': self.model_id, 'model_version': self.model_version, 'entities': self.entities, 'relations': self.relations, 'assumptions': self.assumptions, 'scope_limits': self.scope_limits})
         return result
 
-@dataclass(frozen=True)
-class GuardDependencies:
-    upstream_results: list[Any] = field(default_factory=list)
-    read_only: bool = True
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any] | None) -> 'GuardDependencies':
-        data = data or {}
-        return cls(upstream_results=list(data.get('upstream_results', [])), read_only=bool(data.get('read_only', True)))
-
-    def to_dict(self) -> dict[str, Any]:
-        return {'upstream_results': self.upstream_results, 'read_only': self.read_only}
-
-@dataclass(frozen=True)
-class OutputRequirements:
-    require_counterexample_for_non_pass: bool = True
-    allowed_status: list[str] = field(default_factory=lambda: ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED'])
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any] | None) -> 'OutputRequirements':
-        data = data or {}
-        return cls(require_counterexample_for_non_pass=bool(data.get('require_counterexample_for_non_pass', True)), allowed_status=list(data.get('allowed_status', ['PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED'])))
-
-    def to_dict(self) -> dict[str, Any]:
-        return {'require_counterexample_for_non_pass': self.require_counterexample_for_non_pass, 'allowed_status': self.allowed_status}
 
 @dataclass(frozen=True)
 class GuardContract:
     contract_id: str
-    schema_version: str
-    run_id: str
     claim: Claim
     world_model: WorldModel
     inputs: dict[str, Any] = field(default_factory=dict)
-    dependencies: GuardDependencies = field(default_factory=GuardDependencies)
-    output_requirements: OutputRequirements = field(default_factory=OutputRequirements)
     variants: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'GuardContract':
         if not isinstance(data, Mapping):
             raise ValueError('contract must be a mapping')
+        _reject_retired_contract_keys(data)
         for name in ('claim', 'world_model', 'inputs'):
             if name in data and not isinstance(data[name], Mapping):
                 raise ValueError(f'{name} must be a mapping')
@@ -335,15 +288,17 @@ class GuardContract:
         named_times.extend((f"claim.asserts[{index}] ({row.get('holds', 'modality')})", row['at'])
                            for index, row in enumerate(claim.asserts) if ('holds' in row or 'modality' in row) and 'at' in row and 'node' not in row)
         validate_times(named_times)
-        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), schema_version=str(data.get('schema_version', 'worldguard.contract.v1')), run_id=str(data.get('run_id', 'worldguard-run')), claim=claim, world_model=WorldModel.from_dict(world_model), inputs=inputs, dependencies=GuardDependencies.from_dict(data.get('dependencies')), output_requirements=OutputRequirements.from_dict(data.get('output_requirements')), variants=variants)
+        return cls(contract_id=str(data.get('contract_id', '') or claim.claim_id), claim=claim,
+                   world_model=WorldModel.from_dict(world_model), inputs=inputs, variants=variants)
 
-    def for_guard(self, guard: str, upstream_results: list[Any] | None=None) -> 'GuardContract':
-        """Bind one child to the same current model and read-only upstream inputs."""
-        dependencies = GuardDependencies(upstream_results=upstream_results or [], read_only=True)
-        return GuardContract(contract_id=f'{self.contract_id}:{guard}', schema_version=self.schema_version, run_id=self.run_id, claim=Claim(claim_id=self.claim.claim_id, text=self.claim.text, target_guards=[guard], requested_semantics=self.claim.requested_semantics, atoms=self.claim.atoms, asserts=self.claim.asserts), world_model=self.world_model, inputs=self.inputs, dependencies=dependencies, output_requirements=self.output_requirements)
+    def for_guard(self, guard: str) -> 'GuardContract':
+        """Give a derived Guard the same current model and inputs."""
+        return GuardContract(contract_id=f'{self.contract_id}:{guard}', claim=self.claim,
+                             world_model=self.world_model, inputs=self.inputs)
 
     def to_dict(self) -> dict[str, Any]:
-        result = {'contract_id': self.contract_id, 'schema_version': self.schema_version, 'run_id': self.run_id, 'claim': self.claim.to_dict(), 'world_model': self.world_model.to_dict(), 'inputs': self.inputs, 'dependencies': self.dependencies.to_dict(), 'output_requirements': self.output_requirements.to_dict()}
+        result = {'contract_id': self.contract_id, 'claim': self.claim.to_dict(),
+                  'world_model': self.world_model.to_dict(), 'inputs': self.inputs}
         if self.variants:
             result['variants'] = self.variants
         return result

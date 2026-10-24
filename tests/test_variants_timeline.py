@@ -127,7 +127,7 @@ def test_timeline_cli_scopes_scenarios_and_full_report_only_has_trace(tmp_path, 
     assert main(["check", "--contract", str(path), "--json"]) == 1
     full = json.loads(capsys.readouterr().out)
     assert "trace" in full["guard_results"][0]["counterexamples"][0]["steps"][0]
-    assert main(["timeline", "--contract", str(path)]) == 0
+    assert main(["timeline", "--contract", str(path), "--json"]) == 0
     assert json.loads(capsys.readouterr().out)["steps"][1]["event_id"] == "e_mara_unlock"
     assert main(["timeline", "--contract", str(path), "--scenario", "absent"]) == 2
     assert "absent" in json.loads(capsys.readouterr().out)["error"]["message"]
@@ -143,7 +143,7 @@ def test_source_references_survive_assertion_transfer_and_mesh_problems():
         {"model_id": "missing", "source": "chapter 4"}]})
     assert next(row for row in mesh.to_dict()["gaps"] if row.get("node_id") == "missing")["source"] == "chapter 4"
     scene["inputs"]["resources"]["transitions"][0]["source"] = "chapter 3 paragraph 1"
-    scene["inputs"]["resources"]["places"]["jonas_key"][0]["qty"] = 0
+    scene["inputs"]["resources"]["places"]["jonas_has_key"][0]["qty"] = 0
     report = run_worldguard(scene)
     assert next(row for row in report.gaps if row["code"] == "RESOURCE_MISSING_TOKEN")["source"] == "chapter 3 paragraph 1"
 
@@ -164,3 +164,18 @@ def test_reused_event_ids_keep_their_own_scenario_source_and_trace():
     step = report.guard_results[0].counterexamples[0]["steps"][0]
     assert step["source"] == "alternative A"
     assert step["trace"] == [{"at": "t1", "event_id": "act"}]
+
+
+def test_timeline_prints_text_by_default_and_json_on_request(capsys):
+    assert main(['timeline','--example','trip'])==0
+    text=capsys.readouterr().out
+    assert 'world ' in text and 'd1_ferry_out' in text and len(text.encode('utf-8'))<=1500
+    assert main(['timeline','--example','trip','--json'])==0
+    assert set(json.loads(capsys.readouterr().out))=={'contract_id','clock','steps','variables'}
+
+
+def test_timeline_reads_a_whole_mesh(capsys):
+    assert main(['timeline','--example','story'])==0
+    text=capsys.readouterr().out
+    assert 'story PASS' in text and 'chapter1 PASS -> continues chapter2' in text
+    assert 'hand_over_key' in text and 'unlock' in text

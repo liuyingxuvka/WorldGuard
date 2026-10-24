@@ -12,47 +12,69 @@
   "test_command": "",
   "components": [
     {
-      "id": "worldguard",
+      "id": "release",
       "layer": "interface",
-      "summary": "Public lazy API, CLI dispatch with summary/--json output, and the fuel-cell example",
+      "summary": "CI on every push and publication of one CI-checked source",
       "responsibilities": [
-        "Expose the native API through literal lazy owner exports Resolve mesh contract file paths beside the mesh input and include root counts in summaries. Expose compare --contract --observed with native JSON results and 0/1/2 status exits. Resolve scene/trip examples from their single skill asset copy in repository or installed layouts, retaining fuel_cell behavior.",
-        "Dispatch CLI leaves to qualification, mesh owners; print a short summary by default and the full report with --json; expose the native timeline view",
-        "Construct the packaged fuel-cell example without adding domain semantics"
+        "Run the test suite, strict FlowGuard map check, release check and skill install check on every push",
+        "Check source/version/changelog identity, wait for CI success on the exact SHA, and create the stable tag and Release at that commit"
+      ],
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/publish-release.yml"
+      ],
+      "entrypoints": [],
+      "state": [
+        "Remote tag and Release identity"
+      ],
+      "side_effects": [
+        "CI is read-only; an explicit release commit or manual workflow publishes with GitHub token"
+      ],
+      "depends_on": [],
+      "tests": [
+        "tests/test_source_style.py"
+      ],
+      "models": [],
+      "status": "confirmed",
+      "fingerprint": "sha256:b5d822ba182c022144c3b978f40dfc4bbf35cfcd8492bee0148ec73ba5cd5e74"
+    },
+    {
+      "id": "cli",
+      "layer": "interface",
+      "summary": "Commands for checking, comparing and reading world contracts and model trees.",
+      "responsibilities": [
+        "Expose check, mesh-check, timeline and observation comparison through the portable CLI",
+        "Load scene/trip and story examples from portable skill assets"
       ],
       "files": [
         "worldguard/__init__.py",
         "worldguard/__main__.py",
-        "worldguard/cli.py",
-        "worldguard/examples/__init__.py",
-        "worldguard/examples/fuel_cell.py"
+        "worldguard/cli.py"
       ],
       "entrypoints": [
-        "worldguard/cli.py:main",
-        "worldguard/examples/fuel_cell.py:run_check"
+        "worldguard/cli.py:main"
       ],
       "state": [],
       "side_effects": [
         "Read declared CLI inputs; print a summary or the full JSON report"
       ],
       "depends_on": [
-        "worldguard.core",
-        "worldguard.mesh",
-        "worldguard.qualification"
+        "core",
+        "mesh",
+        "qualification"
       ],
       "tests": [
         "tests/test_cli_module.py",
-        "tests/test_fuel_cell_demo.py",
         "tests/test_version.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:76cbd4976668865c12ff156a4ff6efb2758e5f7c9aeff8fc7b637d2f563972f7"
+      "fingerprint": "sha256:ae3edc790d0e7050d7029e4187bb004faf9924fad1a9d55628abe7bf91bb1eef"
     },
     {
-      "id": "worldguard.core",
+      "id": "core",
       "layer": "core",
       "summary": "Shared contracts, compact reports, clock and finite replay helpers",
       "responsibilities": [
@@ -93,24 +115,21 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:07e334ff99e8006165c98d3e4c1e75a444cba41fb54fa82caa8888752d9b26ca"
+      "fingerprint": "sha256:f7dd60a491879f7bd45b82cc5b98bd7f9c6ede8855e328f16ecee6c5fa568a2f"
     },
     {
-      "id": "worldguard.guards",
+      "id": "guards",
       "layer": "guards",
-      "summary": "Seven sole native Guard checkers and their finite failure catalog",
+      "summary": "Seven native domain Guards with one test-only good/bad case catalog.",
       "responsibilities": [
-        "Run every native declaration and execution rule in one Guard checker; preserve actual failures alongside boundaries; emit one code per problem; detect ambiguous simultaneous events, duplicate unique tokens and missing event participants; apply active prohibitions to actor/action events and require matching intention events when actors are supplied; check every declared RCC8 triple with the full composition table and converses without inferring missing relations",
-        "Maintain native good cases and protected failure-class oracles without author-supervision proof",
-        "Keep independently known event precondition failures when separate metadata or same-time ordering is incomplete."
+        "Own native event, agent, space, resource, causal, conflict and norm rules",
+        "Preserve exact native failure codes and real good/bad regression inputs in tests"
       ],
       "files": [
         "worldguard/guards/*.py",
-        "worldguard/guard_model_contract.py",
         "skills/worldguard/references/guard-inputs.md"
       ],
       "entrypoints": [
-        "worldguard/guard_model_contract.py:run_guard_model_contract",
         "worldguard/guards/event_guard.py:run",
         "worldguard/guards/agent_guard.py:run",
         "worldguard/guards/space_guard.py:run",
@@ -124,7 +143,7 @@
         "Return native Guard results; family checks execute finite good and known-bad cases"
       ],
       "depends_on": [
-        "worldguard.core"
+        "core"
       ],
       "tests": [
         "tests/guards/test_status_matrix.py",
@@ -133,14 +152,15 @@
         "tests/test_guard_semantic_dna_closure.py",
         "tests/test_skill_examples.py",
         "tests/test_world_model_language.py",
-        "tests/guards/test_rcc8_composition.py"
+        "tests/guards/test_rcc8_composition.py",
+        "tests/guard_catalog.py"
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:cc8f781f44392654c8dcf87bf3d9d1a6561a496ac0f87b5a29f837a05a2b8273"
+      "fingerprint": "sha256:e692e417113b61e2aee3a2b0fd670e932fd007c2c996fb7f0c4793f2e830111a"
     },
     {
-      "id": "worldguard.qualification",
+      "id": "qualification",
       "layer": "unit",
       "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
       "responsibilities": [
@@ -167,8 +187,8 @@
         "Execute selected native Guards and return a bounded report"
       ],
       "depends_on": [
-        "worldguard.core",
-        "worldguard.guards"
+        "core",
+        "guards"
       ],
       "tests": [
         "tests/test_kernel_handoff.py",
@@ -181,18 +201,16 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:797e5feb9411c49fe6b799d018cbadf0e48bc32522f5813e5b04056ff332dfc8"
+      "fingerprint": "sha256:9076f08882b3d7a1852f09ed27e5a609f34cd760ddaa10216fc74e942d3cfd1f"
     },
     {
-      "id": "worldguard.mesh",
+      "id": "mesh",
       "layer": "mesh",
-      "summary": "Check one model tree and its actual state handoffs while preserving every child result.",
+      "summary": "One tree of contracts joined by parent_child and continues, with mesh-level variants.",
       "responsibilities": [
-        "Validate model authority, ports, handoffs, freshness and graph structure",
-        "Execute every node contract once; missing contracts gap, false assertions fail, and unbound claims gap the mesh",
-        "Preserve every node report and problem under one final status, with checked node and edge counts; retain node source references on node problems",
-        "Carry fluent state, event clocks, shared unique token positions and requested causal variables over continues edges; allow structural parent_child edges and count roots; load contract paths relative to the mesh, reject invalid freshness and enforce descendant-only node rows.",
-        "Keep missing event times as handoff gaps with native node reports; preserve independently decidable state, token and variable failures; reject port_mappings by presence only on continues edges."
+        "Aggregate real child outcomes and descendant-only parent assertions",
+        "Check one rooted parent tree and state/time/value continuity",
+        "Replay declared tree variants with exact failure codes and preserve native findings"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -207,8 +225,8 @@
         "Execute declared native mesh nodes and emit in-memory evidence"
       ],
       "depends_on": [
-        "worldguard.core",
-        "worldguard.qualification"
+        "core",
+        "qualification"
       ],
       "tests": [
         "tests/test_model_mesh.py",
@@ -218,37 +236,10 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:d3dd450dfa184b1d65b460045a2b63ed4c09f8baa7518612aa82e3f46461878a"
+      "fingerprint": "sha256:737db0863fe98c97f1a1a9ad8a3cd0c7c677299c1df86fa5b5afa25fa689f2a2"
     },
     {
-      "id": "release",
-      "layer": "interface",
-      "summary": "CI on every push and publication of one CI-checked source",
-      "responsibilities": [
-        "Run the test suite, strict FlowGuard map check, release check and skill install check on every push",
-        "Check source/version/changelog identity, wait for CI success on the exact SHA, and create the stable tag and Release at that commit"
-      ],
-      "files": [
-        ".github/workflows/ci.yml",
-        ".github/workflows/publish-release.yml"
-      ],
-      "entrypoints": [],
-      "state": [
-        "Remote tag and Release identity"
-      ],
-      "side_effects": [
-        "CI is read-only; an explicit release commit or manual workflow publishes with GitHub token"
-      ],
-      "depends_on": [],
-      "tests": [
-        "tests/test_source_style.py"
-      ],
-      "models": [],
-      "status": "confirmed",
-      "fingerprint": "sha256:b5d822ba182c022144c3b978f40dfc4bbf35cfcd8492bee0148ec73ba5cd5e74"
-    },
-    {
-      "id": "scripts",
+      "id": "installer",
       "layer": "interface",
       "summary": "Portable skill installer and installed-copy check",
       "responsibilities": [
@@ -258,7 +249,8 @@
         "scripts/*.py"
       ],
       "entrypoints": [
-        "scripts/install_skill.py:installed_differences"
+        "scripts/install_skill.py:installed_differences",
+        "scripts/install_skill.py:main"
       ],
       "state": [],
       "side_effects": [
@@ -273,14 +265,14 @@
       "fingerprint": "sha256:3df667359e2dd52853d73c8053fdd215863d004ee09066a761f8b14185669bca"
     },
     {
-      "id": "skills.worldguard.scripts",
+      "id": "launcher",
       "layer": "interface",
       "summary": "Portable skill launcher and the references it serves",
       "responsibilities": [
         "Run the installed runtime copy when present, otherwise the repository package, without writing bytecode",
         "Keep contract and reporting instructions aligned with the CLI",
         "Document compare inputs, native expected values, clock/variable tolerances and observation mismatch exits in the stable contract reference.",
-        "Keep one tree/five abilities entry and three runnable references within 25 KB, with model input/mesh/observation guidance and native reporting rules."
+        "Keep the seven-line operational entry and three runnable references within 25 KB, with model input/mesh/observation guidance and native reporting rules."
       ],
       "files": [
         "skills/worldguard/scripts/*.py",
@@ -292,7 +284,7 @@
         "Run only the native WorldGuard CLI"
       ],
       "depends_on": [
-        "worldguard"
+        "cli"
       ],
       "tests": [
         "tests/test_cli_module.py",
@@ -300,7 +292,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:f69aa9398bdc2202ee6b937de0be61ddd31207d0654fa6248ccb4af6d82de81a"
+      "fingerprint": "sha256:ce86cd8d15c19f20e81b428172b4163b41e556a725288221060e0e8e2a33e4c8"
     }
   ],
   "flows": [
@@ -308,11 +300,11 @@
       "id": "check",
       "summary": "check one world contract",
       "steps": [
-        "worldguard:main",
-        "worldguard.core:GuardContract",
-        "worldguard.qualification:qualify_guard_contract",
-        "worldguard.qualification:evaluate_claim_binding",
-        "worldguard.core:aggregate_statuses"
+        "cli:main",
+        "core:GuardContract",
+        "qualification:qualify_guard_contract",
+        "qualification:evaluate_claim_binding",
+        "core:aggregate_statuses"
       ],
       "model": ".flowguard/models/worldguard_world_check_model.py"
     },
@@ -320,29 +312,41 @@
       "id": "mesh-check",
       "summary": "check a tree of world contracts",
       "steps": [
-        "worldguard:main",
-        "worldguard.mesh:run_model_mesh",
-        "worldguard.qualification:qualify_guard_contract"
+        "cli:main",
+        "mesh:run_model_mesh",
+        "qualification:qualify_guard_contract"
       ],
       "model": ".flowguard/models/worldguard_mesh_handoff_model.py"
     },
     {
       "id": "compare",
-      "summary": "compare the native world with supplied observations",
+      "summary": "Compare a world or a mesh with observations and optionally write an independent event-time copy",
       "steps": [
-        "worldguard:main",
-        "worldguard.qualification:compare_world"
+        "cli:main",
+        "qualification:compare_world",
+        "qualification:compare_with_observed_copy",
+        "mesh:compare_mesh_with_observed_copy"
       ],
       "model": ".flowguard/models/worldguard_world_check_model.py"
     },
     {
       "id": "timeline",
-      "summary": "read event and state evolution from the native world",
+      "summary": "Read text or JSON state evolution for one world or a whole model tree",
       "steps": [
-        "worldguard:main",
-        "worldguard.core:timeline"
+        "cli:main",
+        "core:timeline"
       ],
       "model": ".flowguard/models/worldguard_world_check_model.py"
+    },
+    {
+      "id": "mesh-variants",
+      "summary": "Apply each declared known-bad tree edit and rerun the actual tree with exact status and code",
+      "steps": [
+        "mesh:run_model_mesh",
+        "core:apply_variant",
+        "mesh:run_model_mesh"
+      ],
+      "model": ".flowguard/models/worldguard_mesh_handoff_model.py"
     }
   ],
   "accepted_debts": []

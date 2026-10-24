@@ -8,14 +8,14 @@ The project SHALL define a public package surface through `pyproject.toml`, `REA
 
 #### Scenario: Public files are present
 - **WHEN** the project root is inspected
-- **THEN** `pyproject.toml`, `README.md`, `worldguard/`, `examples/`, and `tests/` exist.
+- **THEN** `pyproject.toml`, `README.md`, `worldguard/`, `skills/worldguard/assets/examples/`, and `tests/` exist.
 
 ### Requirement: Route Evidence Exclusion
 The public package and Git commit surface SHALL exclude `.flowpilot/`, root-level route `evidence/`, stale repair-v4 evidence, and WG-13 repair checkers as core product files.
 
 #### Scenario: Non-core paths are ignored
 - **WHEN** Git status and packaging metadata are inspected
-- **THEN** route-local evidence and runtime state are ignored or excluded while copied example fixtures remain available under `examples/`.
+- **THEN** route-local evidence and runtime state are ignored or excluded while copied example fixtures remain available under `skills/worldguard/assets/examples/`.
 
 ### Requirement: Local Version Synchronization
 The project SHALL support editable local installation and local Git synchronization after implementation.

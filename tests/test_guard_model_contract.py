@@ -4,15 +4,14 @@ from dataclasses import replace
 from pathlib import Path
 import pytest
 from worldguard.contracts import GuardContract
-from worldguard.guard_model_contract import GUARD_MODEL_PURPOSES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, run_guard_model_contract
+from tests.guard_catalog import GUARD_MODEL_PURPOSES, NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES, discover_guard_owned_failure_codes, run_guard_catalog
 from worldguard.guards import GUARD_RUNNERS
 from worldguard.kernel import run_worldguard
 from worldguard.status import GuardStatus
 ROOT = Path(__file__).resolve().parents[1]
 
-
 def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
-    report = run_guard_model_contract()
+    report = run_guard_catalog()
     assert report['ok'] is True
     assert report['purpose_count'] == 7
     assert Counter((case.guard for case in NATIVE_GOOD_CASES)) == Counter({purpose.guard: 1 for purpose in GUARD_MODEL_PURPOSES})
@@ -28,12 +27,11 @@ def test_guard_model_contract_has_one_good_per_guard_and_one_bad_per_failure():
     assert all((item['observed_status'] == item['expected_status'] for item in bad_observations))
     assert all((item['observed_codes'] == [item['expected_code']] for item in bad_observations))
 
-
 def test_causal_guard_rejects_partially_defined_structural_equations():
     task_contract_id = 'partial-causal-equations'
     run_id = 'partial-causal-equations'
     model_instance_id = 'partial-scm'
-    contract = GuardContract.from_dict({'contract_id': task_contract_id, 'run_id': run_id, 'claim': {'claim_id': 'partial-causal-equations', 'text': 'the declared SCM is complete', 'target_guards': ['CausalGuard'], 'requested_semantics': ['causal']}, 'world_model': {'model_id': model_instance_id, 'model_version': 'v1'}, 'inputs': {'causal_model': {'variables': ['x', 'y'], 'equations': {'x': 1}, 'graph': []}}})
+    contract = GuardContract.from_dict({'contract_id': task_contract_id, 'claim': {'claim_id': 'partial-causal-equations', 'text': 'the declared SCM is complete', 'requested_semantics': ['causal']}, 'world_model': {'model_id': model_instance_id, 'model_version': 'v1'}, 'inputs': {'causal_model': {'variables': ['x', 'y'], 'equations': {'x': 1}, 'graph': []}}})
     result = GUARD_RUNNERS['CausalGuard'](contract.for_guard('CausalGuard'))
     assert result.status is GuardStatus.GAP
     assert [item['code'] for item in result.errors] == ['CAUSAL_MISSING_STRUCTURAL_EQUATION']

@@ -1,35 +1,150 @@
 contract_id: scene-archive-001
 claim:
   claim_id: c_iris_enters
-  text: Iris slips into the archive at t3 behind Mara, who unlocked the door at t2 with the key Jonas gave her at t1.
-  requested_semantics: [event, resource, agent]
-  asserts:   # what the claim says, checked against the model below
-    - {event: e_give_key, before: e_mara_unlock}
-    - {event: e_mara_unlock, before: e_iris_enter}
-    - {holds: iris_in_archive, at: t3}
-    - {place: iris_inside, color: iris, qty: 1}
-    - {agent: Iris, intends: enter_archive}
-world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only], entities: {Mara: {kind: person}, Jonas: {kind: person}, Iris: {kind: person}}}
+  text: Iris slips into the archive at t3 behind Mara, who unlocked the door at t2
+    with the key Jonas gave her at t1.
+  requested_semantics:
+  - event
+  - resource
+  - agent
+  asserts:
+  - event: e_give_key
+    before: e_mara_unlock
+  - event: e_mara_unlock
+    before: e_iris_enter
+  - holds: iris_in_archive
+    at: t3
+  - place: iris_in_archive
+    color: iris
+    qty: 1
+  - agent: Iris
+    intends: enter_archive
+world_model:
+  model_id: archive-scene
+  model_version: v1
+  scope_limits:
+  - scene 3 only
+  entities:
+    Mara:
+      kind: person
+    Jonas:
+      kind: person
+    Iris:
+      kind: person
 inputs:
-  event_model: {initial_states: [jonas_has_key, door_locked]}
+  event_model:
+    initial_states:
+    - jonas_has_key
+    - door_locked
   events:
-    - {event_id: e_give_key, source: "scene 3 paragraph 1", action: give_key, actor: Jonas, at: t1, requires: [jonas_has_key], initiates: mara_has_key, terminates: jonas_has_key}
-    - {event_id: e_mara_unlock, source: "scene 3 paragraph 2", action: unlock_door, actor: Mara, at: t2, requires: [mara_has_key, door_locked], initiates: door_unlocked, terminates: door_locked}
-    - {event_id: e_iris_enter, action: enter_archive, actor: Iris, at: t3, requires: [door_unlocked], initiates: iris_in_archive}
+  - event_id: e_give_key
+    source: scene 3 paragraph 1
+    action: give_key
+    actor: Jonas
+    at: t1
+    requires:
+    - jonas_has_key
+    initiates: mara_has_key
+    terminates: jonas_has_key
+  - event_id: e_mara_unlock
+    source: scene 3 paragraph 2
+    action: unlock_door
+    actor: Mara
+    at: t2
+    requires:
+    - mara_has_key
+    - door_locked
+    initiates: door_unlocked
+    terminates: door_locked
+  - event_id: e_iris_enter
+    action: enter_archive
+    actor: Iris
+    at: t3
+    requires:
+    - door_unlocked
+    initiates: iris_in_archive
   beliefs:
-    Mara:  {agent_id: Mara,  beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
-    Jonas: {agent_id: Jonas, beliefs: [mara_trustworthy], desires: [protect_archive], intentions: [give_key]}
-    Iris:  {agent_id: Iris,  beliefs: [map_in_archive], desires: [steal_map], intentions: [enter_archive]}
+    Mara:
+      agent_id: Mara
+      beliefs:
+      - door_locked
+      desires:
+      - read_map
+      intentions:
+      - unlock_door
+    Jonas:
+      agent_id: Jonas
+      beliefs:
+      - mara_trustworthy
+      desires:
+      - protect_archive
+      intentions:
+      - give_key
+    Iris:
+      agent_id: Iris
+      beliefs:
+      - map_in_archive
+      desires:
+      - steal_map
+      intentions:
+      - enter_archive
   resources:
-    places: {jonas_key: [{color: key, qty: 1}], mara_key: [], door_locked: [{color: lock, qty: 1}], door_open: [], iris_inside: []}
+    places:
+      jonas_has_key:
+      - color: key
+        qty: 1
+      mara_has_key: []
+      door_locked:
+      - color: lock
+        qty: 1
+      door_unlocked: []
+      iris_in_archive: []
     transitions:
-      - {id: give_key, consumes: [{place: jonas_key, color: key, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}]}
-      - {id: mara_unlock, consumes: [{place: mara_key, color: key, qty: 1}, {place: door_locked, color: lock, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}, {place: door_open, color: open, qty: 1}]}
-      - {id: iris_enter, consumes: [{place: door_open, color: open, qty: 1}], produces: [{place: iris_inside, color: iris, qty: 1}]}
+    - id: give_key
+      consumes:
+      - place: jonas_has_key
+        color: key
+        qty: 1
+      produces:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      event: e_give_key
+    - id: mara_unlock
+      consumes:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      - place: door_locked
+        color: lock
+        qty: 1
+      produces:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      - place: door_unlocked
+        color: open
+        qty: 1
+      event: e_mara_unlock
+    - id: iris_enter
+      consumes:
+      - place: door_unlocked
+        color: open
+        qty: 1
+      produces:
+      - place: iris_in_archive
+        color: iris
+        qty: 1
+      - place: door_unlocked
+        color: open
+        qty: 1
+      event: e_iris_enter
 variants:
-  - id: key_given_too_late
-    code: EVENT_PRECONDITION_UNMET
-    set: {"inputs.events[e_give_key].at": t3}
-  - id: iris_enters_before_unlock
-    code: EVENT_PRECONDITION_UNMET
-    set: {"inputs.events[e_iris_enter].at": t1.5}
+- id: key_given_too_late
+  code: EVENT_PRECONDITION_UNMET
+  set:
+    inputs.events[e_give_key].at: t3
+- id: iris_enters_before_unlock
+  code: EVENT_PRECONDITION_UNMET
+  set:
+    inputs.events[e_iris_enter].at: t1.5

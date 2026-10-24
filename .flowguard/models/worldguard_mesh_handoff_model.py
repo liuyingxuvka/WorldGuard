@@ -12,12 +12,13 @@ from flowguard import FunctionResult, Invariant, InvariantResult, Workflow
 from flowguard.explorer import Explorer
 
 MODEL_ID = 'mesh_handoff'
-PARENT = 'worldguard.mesh'
-COMPONENTS = ['worldguard.mesh']
+PARENT = 'mesh'
+COMPONENTS = ['mesh']
 IMPLEMENTED_BY = {
     'RunMesh': 'worldguard/mesh.py:run_model_mesh',
     'Continue': 'worldguard/mesh.py:_continues_findings',
     'Descendants': 'worldguard/mesh.py:_descendants',
+    'TreeStructure': 'worldguard/mesh.py:_tree_structure',
 }
 TESTED_BY = {
     'continues_requires_matching_state': ['tests/test_model_mesh.py:test_continues_carries_state_and_time'],
@@ -25,6 +26,8 @@ TESTED_BY = {
     'node_rows_read_descendants_only': ['tests/test_model_mesh.py:test_node_rows_read_descendants_only'],
     'child_non_pass_reaches_root': ['tests/test_model_mesh.py:test_child_failure_reaches_root_even_when_parent_assertion_is_true'],
     'dependency_cycle_fails': ['tests/test_model_mesh.py:test_continues_cycle_fails'],
+    'one_root': ['tests/test_model_mesh.py:test_a_mesh_with_two_roots_is_not_one_tree'],
+    'mesh_variants_must_fail': ['tests/test_model_mesh.py:test_mesh_variant_must_fail_with_its_code'],
 }
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -37,6 +40,9 @@ class Request:
     descendant: bool = True
     child_status: str = 'PASS'
     cycle: bool = False
+    one_root: bool = True
+    has_variant: bool = False
+    variant_caught: bool = True
 
 
 @dataclass(frozen=True)
@@ -45,12 +51,13 @@ class State:
     status: str = ''
     exit_code: int | None = None
     codes: tuple[str, ...] = ()
+    variants_checked: bool = False
 
 
 class RunMesh:
     name = 'RunMesh'
     reads = ()
-    writes = ('request', 'status', 'exit_code', 'codes')
+    writes = ('request', 'status', 'exit_code', 'codes', 'variants_checked')
     mutation = ''
 
     def apply(self, request, state):
@@ -68,9 +75,14 @@ class RunMesh:
                 (failures if request.child_status == 'FAIL' else gaps).append('CLAIM_ASSERTION_FALSE' if request.child_status == 'FAIL' else 'CLAIM_ASSERTION_UNRESOLVED')
         if request.cycle and self.mutation != 'cycles_ignored':
             failures.append('MESH_DEPENDENCY_CYCLE')
+        if not request.one_root and self.mutation != 'multiple_roots_allowed':
+            gaps.append('MESH_NOT_ONE_TREE')
+        variants_checked = request.has_variant and self.mutation != 'variants_not_run'
+        if variants_checked and not request.variant_caught:
+            gaps.append('VARIANT_NOT_CAUGHT')
         status = 'FAIL' if failures else 'GAP' if gaps else 'BOUNDARY_EXCEEDED' if boundaries else 'PASS'
         code = 0 if status == 'PASS' else 1
-        result = State(request, status, code, tuple(sorted(set(failures + gaps + boundaries))))
+        result = State(request, status, code, tuple(sorted(set(failures + gaps + boundaries))), variants_checked)
         yield FunctionResult((code, status), result, label=status.lower())
 
 
@@ -82,7 +94,7 @@ def requires_state(state, trace):
 
 def forward_time(state, trace):
     if state.request and not state.request.time_forward and 'MESH_HANDOFF_TIME_BACKWARDS' not in state.codes:
-        return InvariantResult.fail('target began before source ended')
+        return InvariantResult.fail('next node began before preceding node ended')
     return InvariantResult.pass_()
 
 
@@ -104,17 +116,37 @@ def cycles_fail(state, trace):
     return InvariantResult.pass_()
 
 
+def one_root(state, trace):
+    if state.request and not state.request.one_root:
+        if state.status == 'PASS' or 'MESH_NOT_ONE_TREE' not in state.codes:
+            return InvariantResult.fail('a disconnected or multi-root mesh passed as one tree')
+    return InvariantResult.pass_()
+
+
+def mesh_variants_must_fail(state, trace):
+    if state.request and state.request.has_variant:
+        if not state.variants_checked:
+            return InvariantResult.fail('the declared tree variant was not executed')
+        if not state.request.variant_caught and (state.status == 'PASS' or 'VARIANT_NOT_CAUGHT' not in state.codes):
+            return InvariantResult.fail('a tree variant escaped its required failure')
+    return InvariantResult.pass_()
+
+
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
-    ('continues_requires_matching_state', 'source end state matches target start', requires_state),
+    ('continues_requires_matching_state', 'preceding end state matches next node start', requires_state),
     ('continues_moves_time_forward', 'continuations do not move backwards', forward_time),
     ('node_rows_read_descendants_only', 'node rows read descendants only', descendants_only),
     ('child_non_pass_reaches_root', 'children keep their non-pass status in the tree', children_preserved),
     ('dependency_cycle_fails', 'dependency cycles fail', cycles_fail),
+    ('one_root', 'only one connected parent-child root is a tree', one_root),
+    ('mesh_variants_must_fail', 'every tree variant runs and must match its declared failure', mesh_variants_must_fail),
 ))
-CASES = (Request('chapters_ok.yaml'), Request('end_state_contradiction.yaml', state_matches=False),
-         Request('ch2_resurrects.yaml', state_matches=False), Request('time_backwards.yaml', time_forward=False),
-         Request('unrelated', descendant=False), Request('child_fail', child_status='FAIL'), Request('child_gap', child_status='GAP'),
-         Request('child_boundary', child_status='BOUNDARY_EXCEEDED'), Request('cycle', cycle=True))
+CASES = (Request('chapters_ok_rooted.yaml'), Request('end_state_contradiction.yaml', state_matches=False, one_root=False),
+         Request('ch2_resurrects.yaml', state_matches=False, one_root=False), Request('time_backwards.yaml', time_forward=False, one_root=False),
+         Request('unrelated', descendant=False, one_root=False), Request('child_fail', child_status='FAIL'), Request('child_gap', child_status='GAP'),
+         Request('child_boundary', child_status='BOUNDARY_EXCEEDED'), Request('cycle', cycle=True),
+         Request('chapters_ok.yaml', one_root=False), Request('caught_variant', has_variant=True),
+         Request('uncaught_variant', has_variant=True, variant_caught=False))
 
 
 def explorer(step, names=None):
@@ -134,6 +166,8 @@ def broken_variants():
         ('node_rows_read_any_node', 'node_rows_read_descendants_only'),
         ('root_hides_child', 'child_non_pass_reaches_root'),
         ('cycles_ignored', 'dependency_cycle_fails'),
+        ('multiple_roots_allowed', 'one_root'),
+        ('variants_not_run', 'mesh_variants_must_fail'),
     ):
         step = RunMesh()
         step.mutation = mutation
@@ -170,8 +204,12 @@ def conformance():
                     data['nodes'][2]['contract']['claim']['asserts'][0]['holds'] = 'unknown_fluent'
                 elif request.case == 'child_boundary':
                     data['nodes'][2]['contract']['claim']['requested_semantics'] = ['event', 'numeric_dynamics']
+                elif request.has_variant:
+                    change = ({'nodes[a].contract.inputs.events[a].initiates': []} if request.variant_caught
+                              else {'nodes[a].contract.claim.claim_id': 'same-world-new-label'})
+                    data['variants'] = [{'id': request.case, 'code': 'MESH_HANDOFF_STATE_MISMATCH', 'set': change}]
                 else:
-                    data['edges'].append({'edge_id': 'back', 'source_model_id': 'b', 'target_model_id': 'a', 'relation': 'continues'})
+                    data['edges'].append({'edge_id': 'back', 'from': 'b', 'to': 'a', 'relation': 'continues'})
                 path = Path(folder) / (request.case + '.json')
                 path.write_text(json.dumps(data))
             expected = next(RunMesh().apply(request, State())).new_state
@@ -182,6 +220,11 @@ def conformance():
             codes = {row['code'] for row in result.get('gaps', [])}
             if (code, result['status']) != (expected.exit_code, expected.status) or not set(expected.codes) <= codes:
                 mismatches.append(f'{request.case}: expected {expected.status}/{expected.codes}, actual {code}/{result["status"]}/{sorted(codes)}')
+            if request.has_variant:
+                variants = result.get('variants', [])
+                if (result.get('checked', {}).get('variants') != 1 or len(variants) != 1
+                        or variants[0].get('caught') is not request.variant_caught):
+                    mismatches.append(f'{request.case}: the native tree variant was not checked with its declared outcome')
     return ReplayReport(len(CASES), mismatches)
 
 

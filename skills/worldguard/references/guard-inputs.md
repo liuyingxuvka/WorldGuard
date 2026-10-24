@@ -1,24 +1,17 @@
 # Guard inputs
 
-A contract has `claim`, `world_model` and `inputs`. Ask for Guards through `claim.requested_semantics`
-(`event`, `agent`, `spatial`, `resource`, `causal`, `conflict`, `norm`; `predictive` adds EventGuard and
-CausalGuard). The claim `text` is a description only: WorldGuard never reads it, so every fact the claim
-depends on must be in `inputs`. Each block below passes as written; copy it under `inputs:`.
-Two complete, passing worlds: `assets/examples/scene_locked_door.yaml` (story) and
-`assets/examples/trip_ferry.yaml` (trip).
+Use `claim`, `world_model`, `inputs`. `requested_semantics` names event, agent,
+spatial, resource, causal, conflict or norm; predictive derives Event and Causal.
+Each input block below passes with its matching `claim.asserts` row. Claim prose is
+never read. False rows FAIL `CLAIM_ASSERTION_FALSE`; unknown model items GAP
+`CLAIM_ASSERTION_UNRESOLVED`; absent rows GAP `CLAIM_NOT_BOUND`. Complete worlds:
+`assets/examples/scene_locked_door.yaml` and `trip_ferry.yaml`.
 
-Bind the claim to the model with `claim.asserts`, a list of rows checked against the model (each Guard below
-shows its row; a row also selects its Guard). A false row is `FAIL` (`CLAIM_ASSERTION_FALSE`, with the observed
-value); a row naming something the model does not declare is `GAP` (`CLAIM_ASSERTION_UNRESOLVED`); a claim
-without `asserts` is `GAP` (`CLAIM_NOT_BOUND`: claim not bound to the world model).
+Boundary ids are listed per Guard; request one with its normal semantic for
+`BOUNDARY_EXCEEDED`.
 
-To mark a part of the claim that a Guard does not own, add its id to `requested_semantics`; that Guard then
-reports `BOUNDARY_EXCEEDED`. The ids are listed per Guard.
-
-A boundary id listed below yields `BOUNDARY_EXCEEDED` only alongside a Guard already derived from
-normal semantics or assertions. A boundary of an unselected Guard remains `QUALIFICATION_SEMANTIC_UNMAPPED`
-`GAP`, with a hint naming that Guard and its normal semantic. Real failures and gaps retain priority:
-`FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+An unselected Guard's boundary remains `QUALIFICATION_SEMANTIC_UNMAPPED` GAP with
+an owner/semantic hint. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
 ## EventGuard
 
@@ -91,8 +84,9 @@ resources:
 Claim assertion: `{place: on_ferry, color: traveler, qty: 1}` (tokens after all transitions; add
 `after: <transition id>` for an earlier point).
 
-`places` hold the starting tokens (`color`, `qty`). `transitions` fire in list order: the list is the story or
-clock order, and each step can only consume tokens that earlier steps left. `capacities` (optional) cap tokens
+`places` hold starting tokens (`color`, `qty`). Without events, transitions fire in list order;
+with events, every transition names its event and complete links run by event time. Each step
+can consume only tokens that earlier steps left. `capacities` (optional) cap tokens
 per place. Catches: a step that needs a token that is not there (locked door, missed ferry, someone in two
 places), capacity overflow. Boundary ids: `permission`, `authorization`, `obligation`.
 
@@ -163,7 +157,8 @@ Catches: the same actor and action both forbidden and permitted/required by acti
 ## Shared event clock and entities
 
 - In equations/constraints, `t_<event_id>` is the unscoped event time in hours; ISO times start at midnight on the first event day. Example: `equations: {slack: "t_ferry - t_train"}`. Scenario/intervention assignments can override these names. Do not declare a variable with the same name.
-- Link every resource transition to an event, or leave all unlinked: `{id: board, event: e_board, consumes: [...], produces: [...]}`. Linked transitions run by event time; ties keep list order.
+- Every transition names its event when the world has events: `{id: board, event: e_board, consumes: [...], produces: [...]}`. Missing links (some or all) give GAP `RESOURCE_TRANSITION_UNLINKED`, naming the transfer ids. Explicit links to absent or scoped events are input errors. Complete links run by event time; transfers at one event keep list order.
+- A place and fluent with the same name must agree initially and after each event: the fluent holds exactly when the place has at least one token. Otherwise FAIL `WORLD_EVENT_TOKEN_MISMATCH` names the first inconsistent step. These world checks run regardless of requested Guards.
 - `resources.unique: [traveler]` rejects a color whose total across places exceeds one after a step.
 - An event can name `actor: traveler` and `with: [friend]`; every unique color moved by a linked transition must be among its participants.
 - Optional `world_model.entities: {traveler: {kind: person}, port: {kind: place}}` registers ids used by beliefs, spatial pairs, event participants and unique colors. Missing ids produce `ENTITY_UNDECLARED`.

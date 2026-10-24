@@ -354,8 +354,10 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
             key = str(place), str(token["color"])
             marking[key] = marking.get(key, 0.0) + float(token["qty"])
     transitions = list(resources.get("transitions", []))
-    event_map = {str(event.get("event_id")): event for event in events if not event.get("scenario_id")}
-    if transitions and any("event" in transition for transition in transitions):
+    event_map = {str(event.get("event_id")): event for event in events if isinstance(event, Mapping) and not event.get("scenario_id")}
+    if transitions and all(isinstance(transition, Mapping) and "event" in transition for transition in transitions):
+        if any(str(transition["event"]) not in event_map for transition in transitions):
+            return marking, {"kind": "bad_transition", "needed": "an unscoped event for each link"}
         if any("at" not in event_map[str(transition["event"])] for transition in transitions):
             return marking, {"kind": "bad_transition", "needed": "time for each linked event"}
         transitions.sort(key=lambda transition: time_key(event_map[str(transition["event"])]["at"]))
@@ -392,7 +394,9 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
             if duplicated:
                 return marking, {"kind": "duplicated", "transition": transition["id"], "tokens": duplicated}
             if "event" in transition:
-                event = event_map[str(transition["event"])]
+                event = event_map.get(str(transition["event"]))
+                if event is None:
+                    return marking, {"kind": "bad_transition", "transition": transition["id"], "needed": "an unscoped event"}
                 participants = {event.get("actor"), *event.get("with", [])}
                 moved = {arc.get("color") for key in ("consumes", "produces") for arc in transition.get(key, [])}
                 unnamed = sorted((moved & set(resources.get("unique", []))) - participants)

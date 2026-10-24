@@ -1,10 +1,10 @@
 # worldguard-runtime Specification
 
 ## Purpose
-Provide the installable `worldguard` package: contracts, seven Guard runners, kernel, ModelMesh, CLI and the fuel-cell toy example.
+Provide the installable `worldguard` package: contracts, seven Guard runners, kernel, one model tree and four CLI commands.
 ## Requirements
 ### Requirement: Installable WorldGuard Runtime
-The system SHALL provide an installable Python package named `worldguard` with contract, ledger, Guard runner, Kernel, CLI, ModelMesh, example, and test surfaces.
+The system SHALL provide an installable Python package named `worldguard` with contract, Guard runner, kernel, CLI, model-tree, example and test surfaces.
 
 #### Scenario: Package import works
 - **WHEN** a local environment runs `python -c "import worldguard; print(worldguard.__version__)"`
@@ -14,12 +14,11 @@ The system SHALL provide an installable Python package named `worldguard` with c
 - **WHEN** a local environment imports `worldguard`
 - **THEN** `ModelMeshContract`, `MeshReport`, and `run_model_mesh` are available from the public runtime API.
 
-### Requirement: Canonical Contract And Result Fields
-The runtime SHALL expose canonical `GuardContract`, `GuardResult`, `LedgerEntry`, `GuardedReport`, and `GuardStatus` types with the fields described in the WorldGuard technical specification.
-
-#### Scenario: Non-pass evidence is enforced
-- **WHEN** a `GuardResult` is created with `GAP`, `FAIL`, or `BOUNDARY_EXCEEDED`
-- **THEN** validation requires missing slots, boundary trace, errors, or counterexamples and rejects unsupported non-pass results.
+### Requirement: Current contract and result fields
+A contract SHALL contain `contract_id`, `claim`, `world_model`, `inputs` and optional
+`variants`. Claim semantics and assertion kinds SHALL derive Guards; retired keys
+SHALL be rejected by presence with an input error naming the key and migration fix.
+Results SHALL retain native statuses, errors, counterexamples and missing inputs.
 
 ### Requirement: Claims bound to the world model
 The runtime SHALL evaluate each `claim.asserts` row against the world model and SHALL NOT read the claim text. A claim without assertions SHALL be `GAP` with gap code `CLAIM_NOT_BOUND`; a false assertion SHALL be `FAIL` with gap code `CLAIM_ASSERTION_FALSE` and the observed model value; an assertion that names something the model does not declare SHALL be `GAP` with `CLAIM_ASSERTION_UNRESOLVED`. EventGuard SHALL check `events[].requires` and CausalGuard SHALL check `causal_model.constraints`.
@@ -43,30 +42,16 @@ The runtime SHALL provide EventGuard, AgentGuard, SpaceGuard, ResourceGuard, Cau
 - **WHEN** the guard fixture tests run
 - **THEN** each Guard has at least one passing fixture for all four statuses.
 
-### Requirement: Read-only Kernel Handoff
-The Kernel and ModelMesh runtime SHALL preserve upstream results as read-only dependencies and aggregate child ledgers without rewriting child status, missing slots, boundaries, or counterexamples.
-
-#### Scenario: Upstream GAP cannot be repaired downstream
-- **WHEN** EventGuard returns `GAP` and NormGuard depends on the missing event fact
-- **THEN** the aggregate report remains non-pass and the EventGuard gap remains visible in the aggregate ledger.
-
-#### Scenario: Mesh handoff cannot repair child gap
-- **WHEN** a node-level Guard result returns `GAP` and a downstream mesh edge consumes that node
-- **THEN** the mesh report remains non-pass and preserves the original child gap ledger.
-
-### Requirement: Fuel-cell Toy Replay
-The runtime SHALL provide a fuel-cell toy example replay that verifies schema, handoff, ledgers, expected reports, and no-real-world scope boundaries without claiming real physical, legal, safety, deployment, market, or strategy validity.
-
-#### Scenario: Fuel-cell check succeeds without overclaiming
-- **WHEN** `python -m worldguard.examples.fuel_cell --check` runs
-- **THEN** the command succeeds, reports all seven Guards, and includes explicit toy-scope limits.
+### Requirement: Native evidence survives aggregation
+The kernel and tree SHALL preserve child statuses, errors, counterexamples and missing
+inputs. A parent assertion SHALL not clear a child's non-pass result.
 
 ### Requirement: Runtime CLI Checks
 The runtime SHALL provide `check`, `mesh-check`, `timeline` and `compare` as native CLI commands. To revise a fact, edit the contract and rerun its existing assertions.
 
 #### Scenario: Single contract CLI remains compatible
-- **WHEN** `worldguard check --example fuel_cell` runs
-- **THEN** the existing fuel-cell toy check still succeeds.
+- **WHEN** `worldguard check --example scene` runs
+- **THEN** the bundled scene is checked by its native Guards and assertions.
 
 #### Scenario: Mesh CLI runs
 - **WHEN** `worldguard mesh-check --mesh <path>` runs
@@ -135,13 +120,35 @@ ISO/clock time differences SHALL use minutes; label/numeric clocks their own sca
 Unknown ids/scenarios, ambiguous scenarios for variables, mixed time kinds and
 invalid tolerances SHALL be input errors (exit 2). All matches SHALL exit 0 and any
 mismatch SHALL exit 1 with value_outside_tolerance. Optional source SHALL be copied.
-The comparison SHALL be pure, without freezing, hashing or revision artifacts.
+The comparison SHALL not edit the input. `--write-observed OUT` SHALL write an independent copy
+changing only selected observed event occurrences' `at` fields, refuse an existing output and
+leave variable values unchanged. The same behavior SHALL apply to mesh observations grouped by
+`nodes`, and each comparison row SHALL name its node.
 
 ### Requirement: Single-copy story and trip examples
 
-`check --example` SHALL accept scene, trip and fuel_cell. Scene/trip SHALL resolve
+`check --example` SHALL accept scene and trip. Scene/trip SHALL resolve
 only the skill's bundled world files, first beside the repository package and then
 beside the installed runtime. Missing files SHALL return an input error explaining
-that examples ship with the skill. Fuel-cell behavior SHALL remain unchanged.
+that examples ship with the skill. `mesh-check --example story` SHALL load the bundled tree.
 The repository mesh example SHALL contain a summary root, two parts and continues
-state handoff without ignored declaration metadata.
+state handoff with `from` / `to` and only `parent_child` / `continues` edges.
+
+### Requirement: Events and token places agree
+When unscoped events and resource transitions coexist, every transition SHALL name
+its unscoped event. Missing links, some or all, SHALL produce contract-level GAP
+`RESOURCE_TRANSITION_UNLINKED` with the actual transition ids; incorrect explicit
+links SHALL remain input errors. Complete links SHALL replay by canonical event time
+and keep list order within one event. Resource-only worlds SHALL retain list order.
+A known fluent also declared as a place SHALL agree initially and after every event:
+truth iff at least one token. The first mismatch per name SHALL FAIL with
+`WORLD_EVENT_TOKEN_MISMATCH`, its time, event, place, truth, tokens and trace prefix.
+Checks SHALL run regardless of claim-derived Guards; same-time uncertainty and native
+missing-time GAP semantics SHALL remain visible without inventing definite facts.
+
+### Requirement: Readable timeline
+Timeline SHALL default to text with state, tokens, sources and problem codes per step;
+`--json` SHALL preserve the complete view. `--mesh` SHALL read the whole tree and
+`--example scene|trip|story` SHALL resolve bundled skill assets. `--scenario` SHALL
+apply only to a single contract. Source strings SHALL remain unchecked pointers to
+original text, without content qualification or age checks.

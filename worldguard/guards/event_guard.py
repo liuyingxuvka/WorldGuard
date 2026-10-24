@@ -116,7 +116,7 @@ def _check(contract: GuardContract):
                 "effect",
             )
         ):
-            missing.append("complete transition source/target/guard/effect record")
+            missing.append("complete transition source/destination/guard/effect record")
     if missing:
         return result(
             contract,
@@ -204,7 +204,7 @@ def _check(contract: GuardContract):
             errors=[
                 error(
                     "EVENT_DANGLING_TRANSITION_STATE",
-                    "Every transition source and target must name a declared state.",
+                    "Every transition source and destination must name a declared state.",
                 )
             ],
             counterexamples=[{"kind": "trace", "steps": dangling}],

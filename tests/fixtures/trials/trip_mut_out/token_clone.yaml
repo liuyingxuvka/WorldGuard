@@ -43,24 +43,28 @@ inputs:
     - in_munich
     initiates: on_train
     terminates: in_munich
+    actor: traveler
   - event_id: d1_train_arr
     at: 2026-11-02T09:25
     requires:
     - on_train
     initiates: in_salzburg
     terminates: on_train
+    actor: traveler
   - event_id: d1_bus_out
     at: 2026-11-02T10:30
     requires:
     - in_salzburg
     initiates: on_bus
     terminates: in_salzburg
+    actor: traveler
   - event_id: d1_bus_arr
     at: 2026-11-02T12:30
     requires:
     - on_bus
     initiates: in_hallstatt
     terminates: on_bus
+    actor: traveler
   - event_id: d1_check_in
     at: 2026-11-02T15:00
     requires:
@@ -79,30 +83,35 @@ inputs:
     - in_hallstatt
     initiates: on_boat
     terminates: in_hallstatt
+    actor: traveler
   - event_id: d2_boat_arr
     at: 2026-11-03T14:40
     requires:
     - on_boat
     initiates: at_station
     terminates: on_boat
+    actor: traveler
   - event_id: d2_bus_back
     at: 2026-11-03T15:00
     requires:
     - at_station
     initiates: on_bus
     terminates: at_station
+    actor: traveler
   - event_id: d2_bus_back_arr
     at: 2026-11-03T16:45
     requires:
     - on_bus
     initiates: in_salzburg
     terminates: on_bus
+    actor: traveler
   - event_id: d2_train_home
     at: 2026-11-03T17:12
     requires:
     - in_salzburg
     initiates: in_munich
     terminates: in_salzburg
+    actor: traveler
   resources:
     places:
       munich:
@@ -126,6 +135,7 @@ inputs:
       - place: train
         color: traveler
         qty: 1
+      event: d1_train_out
     - id: d1_train_arr
       consumes:
       - place: train
@@ -135,6 +145,7 @@ inputs:
       - place: salzburg
         color: traveler
         qty: 1
+      event: d1_train_arr
     - id: d1_bus_out
       consumes:
       - place: salzburg
@@ -144,6 +155,7 @@ inputs:
       - place: bus
         color: traveler
         qty: 1
+      event: d1_bus_out
     - id: d1_bus_arr
       consumes:
       - place: bus
@@ -153,6 +165,7 @@ inputs:
       - place: hallstatt
         color: traveler
         qty: 1
+      event: d1_bus_arr
     - id: d2_boat
       consumes:
       - place: hallstatt
@@ -162,6 +175,7 @@ inputs:
       - place: boat
         color: traveler
         qty: 1
+      event: d2_boat
     - id: d2_boat_arr
       consumes:
       - place: boat
@@ -174,6 +188,7 @@ inputs:
       - place: hallstatt
         color: traveler
         qty: 1
+      event: d2_boat_arr
     - id: d2_bus_back
       consumes:
       - place: station
@@ -183,6 +198,7 @@ inputs:
       - place: bus
         color: traveler
         qty: 1
+      event: d2_bus_back
     - id: d2_bus_back_arr
       consumes:
       - place: bus
@@ -192,6 +208,7 @@ inputs:
       - place: salzburg
         color: traveler
         qty: 1
+      event: d2_bus_back_arr
     - id: d2_train_home
       consumes:
       - place: salzburg
@@ -201,6 +218,7 @@ inputs:
       - place: munich
         color: traveler
         qty: 1
+      event: d2_train_home
   causal_model:
     variables:
     - train_arr_h

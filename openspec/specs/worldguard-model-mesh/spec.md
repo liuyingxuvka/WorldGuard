@@ -1,75 +1,52 @@
 # worldguard-model-mesh Specification
 
 ## Purpose
-Check several linked models together: authority, read-only handoffs, freshness, cycles and preserved child evidence.
+Check one tree of native contracts while preserving every child's evidence.
+
 ## Requirements
-### Requirement: ModelMesh Contract
-The runtime SHALL expose a generic `ModelMeshContract` that groups model nodes, model edges, and optional world-state snapshots without replacing `GuardContract`.
+### Requirement: One tree and two edge relations
+`ModelMeshContract` SHALL accept `mesh_id`, `nodes`, `edges` and optional `variants`.
+Nodes SHALL contain `model_id`, a contract and optional string `source`; contracts
+MAY be embedded or relative YAML/JSON paths. Edges SHALL contain `edge_id`, `from`,
+`to`, `relation` and optional `variables` for continuation. Only `parent_child` and
+`continues` SHALL be accepted. Retired fields or relations SHALL be input errors.
+Unreadable contract paths SHALL name the node in an input error.
 
-#### Scenario: Mesh contract loads nodes and edges
-- **WHEN** a mapping with `mesh_id`, `nodes`, and `edges` is loaded
-- **THEN** the runtime normalizes it into a `ModelMeshContract` with stable node and edge records.
+Exactly one root, at most one parent per node and connectivity through containment
+SHALL be required; otherwise GAP `MESH_NOT_ONE_TREE` SHALL list roots or multiple
+parents and explain how to add one summary root. Missing endpoints SHALL be GAP
+`MESH_EDGE_NODE_MISSING`; cycles SHALL FAIL.
 
-### Requirement: Model Authority Boundary
-Each model node SHALL declare an inspectable authority boundary that can mark owned semantics, excluded semantics, and scope limits.
+### Requirement: Stateful continuation and containment
+Continuation SHALL compare earlier final unscoped fluents with next initial values
+for every next-mentioned fluent, compatible event clocks and nondecreasing time,
+shared unique token locations and optional scenario variables at absolute tolerance
+1e-9. Missing values SHALL GAP; definite state/time/token/value differences SHALL
+FAIL with the edge and values. Earlier-only fluents need not be copied.
 
-#### Scenario: Node claim exceeds authority
-- **WHEN** a node contract requests semantics listed in that node authority's `excludes`
-- **THEN** the mesh report returns `BOUNDARY_EXCEEDED` and preserves a boundary finding.
+A `node:` assertion SHALL read only a descendant's world inputs during mesh-check;
+standalone or non-descendant references SHALL GAP. Such rows SHALL not derive Guards
+for their holder. Summary-only contracts MAY have no local inputs. Every child
+SHALL run once and contribute its native status regardless of parent assertions.
+Missing node contracts SHALL produce `MESH_EXPECTED_NODE_CONTRACT_MISSING` GAP.
 
-### Requirement: Read-only Handoff Contracts
-Model edges SHALL preserve downstream handoff rules, including source, target, relation, allowed use, forbidden use, read-only status, and freshness requirements.
+### Requirement: Whole-tree known-bad edits
+Mesh variants SHALL apply independent in-memory set/remove/add edits, then rerun
+the complete tree with recursive variants disabled. Every variant SHALL match its
+expected non-pass status and optional code; otherwise `VARIANT_NOT_CAUGHT` SHALL
+block PASS. Invalid edit paths SHALL produce an input error naming the variant.
 
-#### Scenario: Forbidden downstream use is blocked
-- **WHEN** an edge output reference uses a value listed in `forbidden_use`
-- **THEN** the mesh report returns `FAIL` with a concrete handoff finding.
+### Requirement: Readable portable tree
+Both summary and full mesh reports SHALL contain depth-first `tree` lines using
+two spaces per depth, each node's status and any outgoing `-> continues <id>`.
+`mesh-check --example story` SHALL read the bundled three-node story. `timeline
+--mesh` SHALL print this tree and the event-bearing node timelines; `--json` SHALL
+retain their complete structures. Child problems and scope limits SHALL survive
+aggregation. `source:` SHALL remain an unchecked original-text pointer.
 
-#### Scenario: Downstream use must stay inside allowed use
-- **WHEN** `allowed_use` is non-empty and an edge output reference is outside it
-- **THEN** the mesh report returns `BOUNDARY_EXCEEDED` with a concrete handoff finding.
-
-### Requirement: Freshness And Version Closure
-The mesh checker SHALL prevent stale source models from supporting current downstream claims when an edge requires current source evidence.
-
-#### Scenario: Stale source blocks closure
-- **WHEN** an edge has `requires_current_source: true` and the source node is not current
-- **THEN** the mesh report returns `GAP` with a stale-source finding.
-
-### Requirement: Dependency Cycle Detection
-The mesh checker SHALL reject dependency cycles across mesh edges.
-
-#### Scenario: Cycle is detected
-- **WHEN** model edges create a cycle among node ids
-- **THEN** the mesh report returns `FAIL` with a cycle finding.
-
-### Requirement: Child Guard Evidence Preservation
-The mesh report SHALL preserve child `GuardedReport` statuses and ledgers.
-
-#### Scenario: Child GAP prevents mesh PASS
-- **WHEN** any node-level Guard report returns `GAP`
-- **THEN** the mesh report remains non-pass and includes the child gap ledger in the aggregate ledger.
-
-### Requirement: Mesh CLI
-The CLI SHALL provide `worldguard mesh-check --mesh <path>` for generic mesh checks.
-
-#### Scenario: Mesh check emits JSON
-- **WHEN** the CLI runs against a valid mesh file
-- **THEN** it prints a short JSON summary containing `status`, gaps and non-pass nodes; adding `--json` emits the full report with `node_reports`, `findings`, and `aggregate_ledger`.
-
-## Stateful continuation and containment
-
-The mesh SHALL accept `continues` without ports and reject cycles including it.
-It SHALL compare unscoped source final fluents with target initial values for all
-target-mentioned fluents, homogeneous event clocks and nondecreasing handoff time,
-shared unique token locations, and optional native scenario variable values at
-absolute tolerance 1e-9. State/time/value mismatches SHALL FAIL with named edge and
-values; missing variable values SHALL GAP. Source-only fluents need not be copied.
-
-`parent_child` SHALL allow absent ports and define descendants and root counts.
-A claim assertion with `node` SHALL read only a descendant's world inputs during
-mesh-check; standalone or non-descendant references SHALL GAP. Such rows SHALL not
-derive Guards for their holder. Summary-only contracts SHALL permit no local inputs.
-Child non-PASS results SHALL remain part of the aggregate regardless of parent rows.
-Node contracts SHALL support paths relative to the mesh file and unreadable paths
-SHALL be input errors naming the node. Invalid freshness statuses SHALL be input
-errors instead of being silently mapped to unknown.
+### Requirement: Whole-tree observations
+`compare --mesh --observed` SHALL accept observations under `nodes`, name each node
+in comparison rows and use native single-world tolerance rules. `--write-observed`
+SHALL write a new tree with resolved contracts embedded and only selected observed
+event times changed, leaving original files and variable values unchanged. Running
+mesh-check on that copy SHALL expose native continuation and later-node failures.

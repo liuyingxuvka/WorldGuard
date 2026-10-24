@@ -46,6 +46,7 @@ def test_check_exit_code_follows_the_verdict(tmp_path):
     data = yaml.safe_load(original.read_text(encoding="utf-8"))
     transitions = data["inputs"]["resources"]["transitions"]
     data["inputs"]["resources"]["transitions"] = [transitions[0], transitions[2], transitions[1]]
+    transitions[1]["event"], transitions[2]["event"] = transitions[2]["event"], transitions[1]["event"]
     broken = tmp_path / "broken.yaml"
     broken.write_text(yaml.safe_dump(data), encoding="utf-8")
     for path, expected in [(original, 0), (broken, 1)]:
@@ -127,17 +128,16 @@ def test_repository_launcher_uses_the_repository_package(tmp_path):
 
 
 def test_default_output_is_a_summary_and_json_is_full():
-    command = [sys.executable, "-m", "worldguard", "check", "--example", "fuel_cell"]
-    done = subprocess.run(command, text=True, capture_output=True)
-    assert done.returncode == 0, done.stderr
-    assert len(done.stdout) < 10000
-    summary = json.loads(done.stdout)
-    assert summary["claim_statuses"] == ["PASS", "PASS", "FAIL"]
-    failing = summary["reports"][2]
-    assert {"status", "checked", "gaps", "scope_limits"} <= set(failing)
-    assert {row["guard"] for row in failing["gaps"] if "guard" in row} == {"ConflictGuard", "NormGuard"}
-    full = subprocess.run([*command, "--json"], text=True, capture_output=True)
-    assert "guard_results" in json.loads(full.stdout)["reports"][0]
+    command=[sys.executable,'-m','worldguard','check','--example','scene']
+    done=subprocess.run(command,text=True,capture_output=True)
+    assert done.returncode==0,done.stdout+done.stderr
+    assert len(done.stdout)<10000
+    summary=json.loads(done.stdout)
+    assert set(summary)=={'contract_id','status','checked','gaps','scope_limits','output'}
+    assert summary['status']=='PASS' and 'guard_results' not in summary
+    full=subprocess.run([*command,'--json'],text=True,capture_output=True)
+    assert full.returncode==0
+    assert 'guard_results' in json.loads(full.stdout)
 
 
 def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_path):

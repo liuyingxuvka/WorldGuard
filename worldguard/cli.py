@@ -1,148 +1,105 @@
+"""Portable commands for one world or a tree of worlds."""
 from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path
 from typing import Any
-
 from .io import dump_json, load_mapping
-
 
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
 
-
 def _without_traces(value):
-    if isinstance(value, dict):
-        return {key: _without_traces(child) for key, child in value.items() if key != "trace"}
-    if isinstance(value, list):
-        return [_without_traces(child) for child in value]
+    if isinstance(value,dict):return {k:_without_traces(v) for k,v in value.items() if k!="trace"}
+    if isinstance(value,list):return [_without_traces(v) for v in value]
     return value
 
-
 def _unit_summary(report):
-    return _without_traces({key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")})
-
+    return _without_traces({key:report[key] for key in ("contract_id","status","checked","gaps","scope_limits")})
 
 def _mesh_summary(report):
-    return _without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits")})
+    return _without_traces({key:report[key] for key in ("status","checked","gaps","scope_limits","tree")})
 
+def _emit(full,summarize,as_json):
+    print(dump_json(full if as_json else {**summarize(full),"output":FULL_OUTPUT_HINT}))
 
-def _emit(full: dict[str, Any], summarize, as_json: bool) -> None:
-    if as_json:
-        print(dump_json(full))
-    else:
-        print(dump_json({**summarize(full), "output": FULL_OUTPUT_HINT}))
-
-
-def _example_summary(example: dict[str, Any]) -> dict[str, Any]:
-    return {
-        **{key: value for key, value in example.items() if key != "reports"},
-        "reports": [_unit_summary(report) for report in example.get("reports", [])],
-    }
-
-
-def _input_error(operation: str, input_path: str, exc: Exception) -> int:
-    print(
-        dump_json(
-            {
-                "operation": operation,
-                "status": "error",
-                "error": {
-                    "code": "WORLDGUARD_INPUT_INVALID",
-                    "message": str(exc),
-                    "details": {"input_path": input_path, "error_type": type(exc).__name__},
-                },
-            }
-        )
-    )
+def _input_error(operation,input_path,exc):
+    print(dump_json({"operation":operation,"status":"error","error":{"code":"WORLDGUARD_INPUT_INVALID","message":str(exc),"details":{"input_path":input_path,"error_type":type(exc).__name__}}}))
     return 2
 
+def _example_path(name):
+    filename={"scene":"scene_locked_door.yaml","trip":"trip_ferry.yaml","story":"story_mesh.yaml"}[name]
+    package=Path(__file__).resolve().parent
+    for directory in (package.parent/"skills/worldguard/assets/examples",package.parent.parent/"assets/examples"):
+        candidate=directory/filename
+        if candidate.is_file():return candidate
+    raise ValueError(f"The {name} example is distributed with the WorldGuard portable skill; use its launcher or supply a file.")
 
-def _example_path(name: str) -> Path:
-    filename = {"scene": "scene_locked_door.yaml", "trip": "trip_ferry.yaml"}[name]
-    package = Path(__file__).resolve().parent
-    for directory in (package.parent / "skills/worldguard/assets/examples", package.parent.parent / "assets/examples"):
-        candidate = directory / filename
-        if candidate.is_file():
-            return candidate
-    raise ValueError(f"The {name} example is distributed with the WorldGuard portable skill; use its launcher or provide --contract.")
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="worldguard")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    check = subparsers.add_parser("check")
-    check.add_argument("--contract", default="")
-    check.add_argument("--example", choices=["scene", "trip", "fuel_cell"], default="")
-    check.add_argument("--json", action="store_true", help="print the full report")
-    mesh_check = subparsers.add_parser("mesh-check")
-    mesh_check.add_argument("--mesh", required=True)
-    mesh_check.add_argument("--json", action="store_true", help="print the full report")
-    timeline_parser = subparsers.add_parser("timeline")
-    timeline_parser.add_argument("--contract", required=True)
-    timeline_parser.add_argument("--scenario")
-    comparison = subparsers.add_parser("compare", help="Compare a world with supplied observations.")
-    comparison.add_argument("--contract", required=True)
-    comparison.add_argument("--observed", required=True)
-    args = parser.parse_args(argv)
-    if args.command == "compare":
-        from .compare import compare_world
+def main(argv=None):
+    parser=argparse.ArgumentParser(prog="worldguard");commands=parser.add_subparsers(dest="command",required=True)
+    check=commands.add_parser("check");choice=check.add_mutually_exclusive_group(required=True);choice.add_argument("--contract");choice.add_argument("--example",choices=["scene","trip"]);check.add_argument("--json",action="store_true",help="print the full report")
+    meshcheck=commands.add_parser("mesh-check");choice=meshcheck.add_mutually_exclusive_group(required=True);choice.add_argument("--mesh");choice.add_argument("--example",choices=["story"]);meshcheck.add_argument("--json",action="store_true",help="print the full report")
+    timeline_parser=commands.add_parser("timeline");choice=timeline_parser.add_mutually_exclusive_group(required=True);choice.add_argument("--contract");choice.add_argument("--mesh");choice.add_argument("--example",choices=["scene","trip","story"]);timeline_parser.add_argument("--scenario");timeline_parser.add_argument("--json",action="store_true",help="print the complete timeline structure")
+    comparison=commands.add_parser("compare",help="Compare supplied observations with a world or model tree.");choice=comparison.add_mutually_exclusive_group(required=True);choice.add_argument("--contract");choice.add_argument("--mesh");comparison.add_argument("--observed",required=True);comparison.add_argument("--write-observed",metavar="OUT",help="write an independent copy changing only compared event times")
+    args=parser.parse_args(argv)
+    if args.command=="compare":
+        from .compare import compare_with_observed_copy, compare_world
+        from .mesh import compare_mesh, compare_mesh_with_observed_copy
+        from .mesh import ModelMeshContract
         try:
-            result = compare_world(load_mapping(args.contract), load_mapping(args.observed))
-        except (OSError, UnicodeError, ValueError) as exc:
-            return _input_error("compare", f"{args.contract} / {args.observed}", exc)
-        print(dump_json(result))
-        return 0 if result["status"] == "PASS" else 1
-    if args.command == "timeline":
+            path=args.mesh or args.contract;data=load_mapping(path)
+            world=ModelMeshContract.from_dict(data,base_dir=Path(path).resolve().parent) if args.mesh else data
+            observed=load_mapping(args.observed)
+            if args.write_observed:
+                result,copied=(compare_mesh_with_observed_copy(world,observed) if args.mesh else compare_with_observed_copy(world,observed))
+            else:
+                result=compare_mesh(world,observed) if args.mesh else compare_world(world,observed)
+            if args.write_observed:
+                with Path(args.write_observed).open("x",encoding="utf-8") as stream:stream.write(dump_json(copied)+"\n")
+        except (OSError,UnicodeError,ValueError) as exc:return _input_error("compare",f"{path} / {args.observed}",exc)
+        print(dump_json(result));return 0 if result["status"]=="PASS" else 1
+    if args.command=="timeline":
         from .contracts import GuardContract
         from .kernel import run_worldguard
-        from .timeline import timeline
+        from .mesh import ModelMeshContract,run_model_mesh
+        from .timeline import timeline,render_timeline_text
         try:
-            contract = GuardContract.from_dict(load_mapping(args.contract))
-            report = run_worldguard(contract)
-            view = timeline(contract, scenario=args.scenario, problems=report.gaps)
-        except (OSError, UnicodeError, ValueError) as exc:
-            return _input_error("timeline", args.contract, exc)
-        print(dump_json(view))
+            if args.example:
+                if args.example=="story":args.mesh=str(_example_path("story"))
+                else:args.contract=str(_example_path(args.example))
+            if args.mesh:
+                if args.scenario:raise ValueError("--scenario only applies to --contract")
+                mesh=ModelMeshContract.from_dict(load_mapping(args.mesh),base_dir=Path(args.mesh).resolve().parent);report=run_model_mesh(mesh);views={}
+                for row in report.tree:
+                    identity=row.strip().split()[0];node=next(n for n in mesh.nodes if n.model_id==identity)
+                    if node.contract is not None and node.contract.inputs.get("events"):
+                        views[identity]=timeline(node.contract,problems=report.node_reports[identity].gaps)
+                if args.json:print(dump_json({"mesh_id":mesh.mesh_id,"tree":report.tree,"nodes":views}))
+                else:
+                    print("\n".join(report.tree))
+                    for row in report.tree:
+                        identity=row.strip().split()[0]
+                        if identity in views:
+                            padding=row[:len(row)-len(row.lstrip())];print("\n".join(padding+line for line in render_timeline_text(views[identity]).splitlines()))
+            else:
+                contract=GuardContract.from_dict(load_mapping(args.contract));report=run_worldguard(contract);view=timeline(contract,scenario=args.scenario,problems=report.gaps)
+                print(dump_json(view) if args.json else render_timeline_text(view))
+        except (OSError,UnicodeError,ValueError) as exc:return _input_error("timeline",args.mesh or args.contract or args.example,exc)
         return 0
-    if args.command == "check":
+    if args.command=="check":
         from .contracts import GuardContract
         from .kernel import run_worldguard
-        from .qualification import QualificationContext
-        if args.example == "fuel_cell":
-            from .examples.fuel_cell import run_check as run_fuel_cell_check
-            example = run_fuel_cell_check()
-            _emit(example, _example_summary, args.json)
-            return 0 if example["ok"] else 1
-        if args.example in {"scene", "trip"}:
-            try:
-                args.contract = str(_example_path(args.example))
-            except ValueError as exc:
-                return _input_error("check", args.example, exc)
-        if not args.contract:
-            parser.error("check requires --contract or --example scene|trip|fuel_cell")
         try:
-            contract = GuardContract.from_dict(load_mapping(args.contract))
-            context = QualificationContext(
-                node_id=contract.world_model.model_id or contract.contract_id,
-                target_id=contract.world_model.model_id or contract.contract_id,
-                target_revision=contract.world_model.model_version,
-            )
-            report = run_worldguard(contract, context=context)
-        except (OSError, UnicodeError, ValueError) as exc:
-            return _input_error("check", args.contract, exc)
-        _emit(report.to_dict(), _unit_summary, args.json)
-        return 0 if report.status.value == "PASS" else 1
-    if args.command == "mesh-check":
-        from .mesh import ModelMeshContract, run_model_mesh
+            path=str(_example_path(args.example)) if args.example else args.contract
+            report=run_worldguard(GuardContract.from_dict(load_mapping(path)))
+        except (OSError,UnicodeError,ValueError) as exc:return _input_error("check",args.example or args.contract,exc)
+        _emit(report.to_dict(),_unit_summary,args.json);return 0 if report.status.value=="PASS" else 1
+    if args.command=="mesh-check":
+        from .mesh import ModelMeshContract,run_model_mesh
         try:
-            mesh_report = run_model_mesh(ModelMeshContract.from_dict(load_mapping(args.mesh), base_dir=Path(args.mesh).resolve().parent))
-        except (OSError, UnicodeError, ValueError) as exc:
-            return _input_error("mesh-check", args.mesh, exc)
-        _emit(mesh_report.to_dict(), _mesh_summary, args.json)
-        return 0 if mesh_report.status.value == "PASS" else 1
+            path=str(_example_path(args.example)) if args.example else args.mesh
+            mesh=ModelMeshContract.from_dict(load_mapping(path),base_dir=Path(path).resolve().parent);report=run_model_mesh(mesh)
+        except (OSError,UnicodeError,ValueError) as exc:return _input_error("mesh-check",args.example or args.mesh,exc)
+        _emit(report.to_dict(),_mesh_summary,args.json);return 0 if report.status.value=="PASS" else 1
     return 2
 
-
-if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+if __name__=="__main__":raise SystemExit(main(sys.argv[1:]))

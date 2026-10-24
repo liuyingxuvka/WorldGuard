@@ -71,7 +71,7 @@ def _key(container, token):
     return matches[0]
 
 
-def _target(data, path):
+def _select_path(data, path):
     tokens = _tokens(path)
     current = data
     for token in tokens[:-1]:
@@ -85,13 +85,13 @@ def apply_variant(data, variant):
     result.pop("variants", None)
     try:
         for path, value in variant.get("set", {}).items():
-            parent, key = _target(result, path)
+            parent, key = _select_path(result, path)
             parent[key] = deepcopy(value)
         for path in variant.get("remove", []):
-            parent, key = _target(result, path)
+            parent, key = _select_path(result, path)
             del parent[key]
         for path, values in variant.get("add", {}).items():
-            parent, key = _target(result, path)
+            parent, key = _select_path(result, path)
             if not isinstance(parent[key], list) or not isinstance(values, list):
                 raise ValueError(f"add path {path!r} and its value must be lists")
             parent[key].extend(deepcopy(values))

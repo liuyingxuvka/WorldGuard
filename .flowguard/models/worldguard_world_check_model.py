@@ -6,6 +6,7 @@ worlds through worldguard.cli.main and compares exact exit/status terminals.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from contextlib import redirect_stdout
 from dataclasses import dataclass, replace
 import io
@@ -20,8 +21,12 @@ from flowguard.explorer import Explorer
 
 MODEL_ID = "world_check"
 PARENT = "system"
-COMPONENTS = ["worldguard.qualification"]
+COMPONENTS = ["qualification"]
+NOT_MODELED = {"scripts/install_skill.py:installed_differences": "Filesystem byte comparison is checked by scratch install/check tests; OS file contents are outside this finite world semantics model.", "scripts/install_skill.py:main": "Installer filesystem writes are checked by real scratch-copy install/check tests; this finite world semantics model does not model OS filesystem operations."}
+
 IMPLEMENTED_BY = {
+    "DeriveGuards": "worldguard/contracts.py:derive_guard_requirements",
+    "ReplayTokens": "worldguard/semantic.py:token_replay",
     "ParseContract": "worldguard/contracts.py:GuardContract.from_dict",
     "EvaluateScenarios": "worldguard/semantic.py:causal_scenario_values",
     "RunGuards": "worldguard/qualification.py:qualify_guard_contract",
@@ -29,8 +34,15 @@ IMPLEMENTED_BY = {
     "Aggregate": "worldguard/status.py:aggregate_statuses",
     "ReportExit": "worldguard/cli.py:main",
     "CompareObserved": "worldguard/compare.py:compare_world",
+    "RejectRetiredKeys": "worldguard/contracts.py:_reject_retired_contract_keys",
+    "CheckEventTokens": "worldguard/qualification.py:_event_token_consistency",
+    "CopySelectedObservation": "worldguard/compare.py:compare_with_observed_copy",
 }
 TESTED_BY = {
+    "retired_keys_are_input_errors": ["tests/test_contracts.py:test_retired_contract_keys_are_input_errors"],
+    "tokens_match_events": ["tests/test_world_model_language.py:test_tokens_that_disagree_with_events_fail_at_the_step"],
+    "transitions_name_events": ["tests/test_world_model_language.py:test_unlinked_transition_is_a_gap_naming_it"],
+    "observedcopy_only_selected_event": ["tests/test_compare.py:test_written_observed_copy_shows_the_downstream_break"],
     "compare_flags_values_outside_tolerance": ["tests/test_compare.py:test_trip_arrival_uses_minutes_and_declared_tolerance"],
     "variants_must_fail": ["tests/test_variants_timeline.py:test_examples_check_their_known_bad_variants_and_catch_a_missing_rule"],
     "forbidden_event_fails": ["tests/test_world_model_language.py:test_storm_prohibition_applies_to_the_actual_boat_event"],
@@ -68,6 +80,10 @@ class CheckRequest:
     uncaught_variant: bool = False
     compare: bool = False
     compare_mismatch: bool = False
+    retired_key: str = ""
+    token_event_mismatch: bool = False
+    transition_unlinked: bool = False
+    observed_copy: bool = False
 
 
 @dataclass(frozen=True)
@@ -115,6 +131,7 @@ class State:
     status: str = ""
     terminal: bool = False
     duplicated_problems: bool = False
+    copied_fields: tuple[str, ...] = ()
 
 
 class ParseContract:
@@ -132,12 +149,15 @@ class ParseContract:
     def duplicate(self, request):
         return request.duplicate_ids
 
+    def retired_keys(self, request):
+        return bool(request.retired_key)
+
     def event_order(self, request):
         return request.event_order_correct
 
     def apply(self, request: CheckRequest, state: State) -> Iterable[FunctionResult]:
         state = State(request=request, event_order_correct=self.event_order(request), inputs_missing=request.time_form == "missing")
-        if self.invalid_time(request) or self.duplicate(request):
+        if self.invalid_time(request) or self.duplicate(request) or self.retired_keys(request):
             yield FunctionResult(Terminal(2, "error"), replace(state, exit_code=2, status="error", terminal=True), "input_error")
         else:
             yield FunctionResult(Parsed(request), state, "contract_parsed")
@@ -186,10 +206,16 @@ class RunGuards:
     def comparison_mismatch(self, request):
         return request.compare and request.compare_mismatch
 
+    def token_event_mismatch(self, request):
+        return request.token_event_mismatch
+
+    def transition_unlinked(self, request):
+        return request.transition_unlinked
+
     def apply(self, evaluated: ScenariosEvaluated, state: State) -> Iterable[FunctionResult]:
-        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request) or self.comparison_mismatch(evaluated.request):
+        if not state.event_order_correct or state.scenario_failed or state.intervention_failed or self.tokens_cloned(evaluated.request) or self.forbidden_event(evaluated.request) or self.comparison_mismatch(evaluated.request) or self.token_event_mismatch(evaluated.request):
             status = "FAIL"
-        elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request):
+        elif state.inputs_missing or evaluated.request.boundary == "unselected" or self.uncaught_variant(evaluated.request) or self.transition_unlinked(evaluated.request):
             status = "GAP"
         elif evaluated.request.boundary == "owned":
             status = "BOUNDARY_EXCEEDED"
@@ -242,7 +268,7 @@ class Aggregate:
 class ReportExit:
     name = "ReportExit"
     reads = ("aggregate_status",)
-    writes = ("exit_code", "status", "terminal", "duplicated_problems")
+    writes = ("exit_code", "status", "terminal", "duplicated_problems", "copied_fields")
     accepted_input_type = Aggregated
     input_description = "Final native status"
     output_description = "Actual exit/status terminal, not a reachability-only label"
@@ -251,12 +277,15 @@ class ReportExit:
     def duplicated_problems(self, state):
         return False
 
+    def copied_fields(self, request):
+        return ("event:first:at",) if request.observed_copy else ()
+
     def apply(self, aggregate: Aggregated, state: State) -> Iterable[FunctionResult]:
         status = state.aggregate_status
         exit_code = 0 if status == "PASS" else 1
         label = {"FAIL": "failed", "GAP": "gap", "BOUNDARY_EXCEEDED": "boundary_exceeded", "PASS": "passed"}[status]
         yield FunctionResult(Terminal(exit_code, status), replace(state, exit_code=exit_code, status=status, terminal=True,
-            duplicated_problems=self.duplicated_problems(state)), label)
+            duplicated_problems=self.duplicated_problems(state), copied_fields=self.copied_fields(aggregate.request)), label)
 
 
 def _terminal_check(state, applies, expected, message):
@@ -319,6 +348,28 @@ def compare_flags_values_outside_tolerance(state, trace):
                            (1, "FAIL"), "A supplied observation outside tolerance was accepted")
 
 
+def retired_keys_are_input_errors(state, trace):
+    return _terminal_check(state, lambda request: bool(request.retired_key), (2, "error"),
+                           "A retired contract/claim key escaped the typed input-error boundary")
+
+
+def tokens_match_events(state, trace):
+    return _terminal_check(state, lambda request: request.token_event_mismatch, (1, "FAIL"),
+                           "A token/fluent disagreement at a linked event did not fail")
+
+
+def transitions_name_events(state, trace):
+    return _terminal_check(state, lambda request: request.transition_unlinked, (1, "GAP"),
+                           "An unlinked resource transition was not named as missing event evidence")
+
+
+def observedcopy_only_selected_event(state, trace):
+    if state.terminal and state.request is not None and state.request.observed_copy:
+        if state.copied_fields != ("event:first:at",):
+            return InvariantResult.fail("An observed copy changed a later event, scenario or causal variable")
+    return InvariantResult.pass_()
+
+
 EXTERNAL_INPUTS = (
     CheckRequest("compare_match", rows="comparison", compare=True),
     CheckRequest("compare_mismatch", rows="comparison", compare=True, compare_mismatch=True),
@@ -346,6 +397,11 @@ EXTERNAL_INPUTS = (
     CheckRequest("partial_run_gap", scm_mode="partial_gap", rows="variable"),
     CheckRequest("boundary_with_fail", time_form="clock", event_order_correct=False, boundary="owned"),
     CheckRequest("boundary_with_gap", time_form="missing", boundary="owned"),
+    *(CheckRequest("retired_" + key, retired_key=key) for key in (
+        "schema_version", "run_id", "dependencies", "output_requirements", "target_guard", "target_guards", "atoms")),
+    CheckRequest("token_event_mismatch", token_event_mismatch=True, rows="tokens"),
+    CheckRequest("transition_unlinked", transition_unlinked=True, rows="tokens"),
+    CheckRequest("observed_copy", compare=True, compare_mismatch=True, observed_copy=True, rows="comparison"),
 )
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
     ("compare_flags_values_outside_tolerance", "Observed differences outside tolerance fail", compare_flags_values_outside_tolerance),
@@ -360,6 +416,10 @@ INVARIANTS = tuple(Invariant(name, description, check) for name, description, ch
     ("scenario_values_reach_constraints", "Scenario/do contradictions reach constraints and assertions", scenario_values_reach_constraints),
     ("declared_boundary_is_boundary_exceeded", "An owned boundary has its own final status", declared_boundary_is_boundary_exceeded),
     ("pass_needs_bound_true_rows", "Only bound true rows in a passing world can pass", pass_needs_bound_true_rows),
+    ("retired_keys_are_input_errors", "Retired keys are rejected by presence", retired_keys_are_input_errors),
+    ("tokens_match_events", "Every linked event shares one token/fluent state", tokens_match_events),
+    ("transitions_name_events", "A resource transition must name its event", transitions_name_events),
+    ("observedcopy_only_selected_event", "Observed copy only changes the selected event time", observedcopy_only_selected_event),
 ))
 REQUIRED_LABELS = ("input_error", "failed", "gap", "boundary_exceeded", "passed")
 MAX_SEQUENCE_LENGTH = 1
@@ -449,6 +509,26 @@ class _ToleranceIgnored(RunGuards):
         return False
 
 
+class _RetiredKeysAccepted(ParseContract):
+    def retired_keys(self, request):
+        return False
+
+
+class _TokenEventDriftIgnored(RunGuards):
+    def token_event_mismatch(self, request):
+        return False
+
+
+class _TransitionEventLinkIgnored(RunGuards):
+    def transition_unlinked(self, request):
+        return False
+
+
+class _ObservedCopyShiftsDownstream(ReportExit):
+    def copied_fields(self, request):
+        return ("event:first:at", "event:second:at") if request.observed_copy else ()
+
+
 def broken_variants():
     def variant(broken, invariant):
         blocks = tuple(broken if isinstance(broken, type(block)) else block for block in build_workflow().blocks)
@@ -467,6 +547,10 @@ def broken_variants():
         "interventions_ignored": variant(_InterventionsIgnored(), "scenario_values_reach_constraints"),
         "boundary_ranked_as_gap": variant(_BoundaryRankedAsGap(), "declared_boundary_is_boundary_exceeded"),
         "unbound_claim_passes": variant(_UnboundClaimPasses(), "pass_needs_bound_true_rows"),
+        "retired_keys_accepted": variant(_RetiredKeysAccepted(), "retired_keys_are_input_errors"),
+        "token_event_drift_ignored": variant(_TokenEventDriftIgnored(), "tokens_match_events"),
+        "transition_event_link_ignored": variant(_TransitionEventLinkIgnored(), "transitions_name_events"),
+        "observed_copy_shifts_downstream": variant(_ObservedCopyShiftsDownstream(), "observedcopy_only_selected_event"),
     }
 
 
@@ -493,6 +577,25 @@ def _model_outcome(request):
 
 
 def _real_contract(request):
+    if request.retired_key:
+        contract = _real_contract(replace(request, retired_key=""))
+        destination = contract["claim"] if request.retired_key in {"target_guard", "target_guards", "atoms"} else contract
+        destination[request.retired_key] = None
+        return contract
+    if request.token_event_mismatch or request.transition_unlinked:
+        transition = {"id": "move", "event": "move", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],
+                      "produces": [{"place": "other" if request.token_event_mismatch else "out", "color": "traveler", "qty": 1}]}
+        if request.transition_unlinked:
+            del transition["event"]
+        return {"claim": {"requested_semantics": ["event", "resource"], "asserts": [{"holds": "out", "at": "t2"}]},
+                "inputs": {"event_model": {"initial_states": ["start"]},
+                    "events": [{"event_id": "move", "at": "t1", "requires": "start", "initiates": "out", "terminates": "start"}],
+                    "resources": {"unique": ["traveler"], "places": {"start": [{"color": "traveler", "qty": 1}], "out": [], "other": []},
+                                  "transitions": [transition]}}}
+    if request.observed_copy:
+        contract = _real_contract(replace(request, observed_copy=False))
+        contract["inputs"]["causal_model"] = {"variables": ["distance"], "equations": {"distance": "3"}, "scenarios": {"plan": {}}, "constraints": ["distance >= 0"]}
+        return contract
     if request.uncaught_variant:
         return {"claim": {"asserts": [{"holds": "done", "at": "t3"}]},
             "inputs": {"events": [{"event_id": "ready", "at": "t1", "initiates": "ready"},
@@ -505,8 +608,10 @@ def _real_contract(request):
                 "facts": [{"fact_id": "storm", "value": True}]}}
     if request.tokens_cloned:
         return {"claim": {"asserts": [{"place": "out", "color": "traveler", "qty": 2}]},
-            "inputs": {"resources": {"unique": ["traveler"], "places": {"start": [{"color": "traveler", "qty": 1}]},
-                "transitions": [{"id": "clone", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],
+            "inputs": {"event_model": {"initial_states": ["start"]},
+                "events": [{"event_id": "clone", "at": "t1", "requires": "start", "initiates": "out", "terminates": "start"}],
+                "resources": {"unique": ["traveler"], "places": {"start": [{"color": "traveler", "qty": 1}], "out": []},
+                "transitions": [{"id": "clone", "event": "clone", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],
                     "produces": [{"place": "out", "color": "traveler", "qty": 2}]}]}}}
     if request.scm_mode == "event_clock":
         return {"claim": {"asserts": [{"variable": "slack", "op": ">=", "value": 0}]},
@@ -550,6 +655,23 @@ def _real_contract(request):
     return {"claim": {"claim_id": request.case_id, "requested_semantics": semantics, "asserts": rows}, "inputs": {"events": events}}
 
 
+def _replay_observed_copy(contract, observed):
+    from worldguard.contracts import GuardContract
+    from worldguard.compare import compare_with_observed_copy
+
+    world = GuardContract.from_dict(contract)
+    original = deepcopy(world.to_dict())
+    observation = deepcopy(observed)
+    result, copied = compare_with_observed_copy(world, observed)
+    expected = deepcopy(original)
+    expected["inputs"]["events"][0]["at"] = observed["events"]["first"]
+    assert copied == expected, "observedcopy_only_selected_event: another event/scenario/variable changed"
+    assert world.to_dict() == original and observed == observation, "observed-copy inputs were mutated"
+    assert all("id" in row for row in result["matches"] + result["mismatches"])
+    copied["inputs"]["events"][0]["initiates"] = "independent-copy-proof"
+    assert world.to_dict() == original, "observed copy shares nested input objects"
+
+
 def conformance():
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
@@ -565,13 +687,24 @@ def conformance():
                 with redirect_stdout(output):
                     if request.compare:
                         observation = Path(folder) / (request.case_id + "-observed.json")
-                        observation.write_text(json.dumps({"events": {"first": "t10" if request.compare_mismatch else "t9.1"}, "time_tolerance": .2}))
+                        observed = {"events": {"first": "t10" if request.compare_mismatch else "t9.1"}, "time_tolerance": .2}
+                        if request.observed_copy:
+                            observed.update(events={"first": "t9.1"}, variables={"distance": 99})
+                            _replay_observed_copy(_real_contract(request), observed)
+                        observation.write_text(json.dumps(observed))
                         code = main(["compare", "--contract", str(path), "--observed", str(observation)])
                     else:
                         code = main(["check", "--contract", str(path)])
                 report = json.loads(output.getvalue())
                 actual = (code, report["status"])
                 gaps = report.get("gaps", [])
+                if request.token_event_mismatch:
+                    assert any(row["code"] == "WORLD_EVENT_TOKEN_MISMATCH" for row in gaps), "missing token/event contradiction witness"
+                if request.transition_unlinked:
+                    gap = next(row for row in gaps if row["code"] == "RESOURCE_TRANSITION_UNLINKED")
+                    assert gap["missing_slots"] == ["move"], "unlinked transition identity was not preserved"
+                if request.tokens_cloned:
+                    assert any(row["code"] == "RESOURCE_UNIQUE_TOKEN_DUPLICATED" for row in gaps), "the original clone contradiction disappeared"
                 identities = [(row["code"], row.get("guard"), row.get("claim_row"), row.get("variant_id")) for row in gaps]
                 if len(identities) != len(set(identities)):
                     mismatches.append(f"{request.case_id}: one_row_per_problem failed")

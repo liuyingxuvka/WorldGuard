@@ -67,6 +67,7 @@ inputs:
       - place: train
         color: traveler
         qty: 1
+      event: d1_train_out
     - id: d1_train_arr
       consumes:
       - place: train
@@ -76,6 +77,7 @@ inputs:
       - place: salzburg
         color: traveler
         qty: 1
+      event: d1_train_arr
     - id: d1_bus_out
       consumes:
       - place: salzburg
@@ -85,6 +87,7 @@ inputs:
       - place: bus
         color: traveler
         qty: 1
+      event: d1_bus_out
     - id: d1_bus_arr
       consumes:
       - place: bus
@@ -94,6 +97,7 @@ inputs:
       - place: hallstatt
         color: traveler
         qty: 1
+      event: d1_bus_arr
     - id: d2_boat
       consumes:
       - place: hallstatt

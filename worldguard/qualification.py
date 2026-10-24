@@ -11,6 +11,8 @@ from .guards import GUARD_RUNNERS
 from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses
 from .timeline import timeline
+from .clock import time_key
+from .semantic import _fluent_values, token_replay
 from .variants import apply_variant
 
 
@@ -20,22 +22,19 @@ class QualificationError(ValueError):
 
 @dataclass(frozen=True)
 class QualificationContext:
-    node_id: str = ""
-    target_id: str = ""
-    target_revision: str = ""
     node_contracts: Mapping[str, GuardContract] | None = field(default=None, repr=False, compare=False)
     descendant_ids: frozenset[str] = frozenset()
 
     @classmethod
     def from_dict(cls, data):
         data = dict(data or {})
-        unknown = sorted(set(data) - {"node_id", "target_id", "target_revision"})
+        unknown = sorted(data)
         if unknown:
             raise QualificationError("qualification context has unknown fields: " + ", ".join(unknown))
-        return cls(**data)
+        return cls()
 
     def to_dict(self):
-        return {"node_id": self.node_id, "target_id": self.target_id, "target_revision": self.target_revision}
+        return {}
 
 
 def _semantic_gap_rows(
@@ -49,23 +48,12 @@ def _semantic_gap_rows(
         if str(value).strip()
     }
     for semantic in unmapped_semantics:
-        affected_atoms = sorted(
-            atom.atom_id
-            for atom in contract.claim.atoms
-            if semantic
-            in {
-                str(value).strip().lower()
-                for value in atom.requested_semantics
-                if str(value).strip()
-            }
-        )
         rows.append(
             {
                 "semantic": semantic,
                 "affected_claim_ids": [contract.claim.claim_id]
-                if semantic in claim_level or affected_atoms
+                if semantic in claim_level
                 else [],
-                "affected_atom_ids": affected_atoms,
             }
         )
     for row in rows:
@@ -112,18 +100,78 @@ def _counterexample_context(contract, results):
     return updated
 
 
+def _event_token_consistency(contract):
+    """Compare the two declared views using the native timeline replay."""
+    inputs = contract.inputs
+    events = [row for row in inputs.get('events', [])
+              if isinstance(row, Mapping) and not row.get('scenario_id')]
+    resources = inputs.get('resources', {})
+    transitions = resources.get('transitions', [])
+    if not events:
+        return []
+    unlinked = [row.get('id', f'index:{index}') for index, row in enumerate(transitions)
+                if isinstance(row, Mapping) and 'event' not in row]
+    if unlinked:
+        return [{'code': 'RESOURCE_TRANSITION_UNLINKED', 'status': 'GAP',
+                 'missing_slots': unlinked,
+                 'message': 'every token transition must name the event that fires it'}]
+    # A missing clock is already a native EventGuard GAP, never an input error here.
+    if any('at' not in event for event in events):
+        return []
+    initial = inputs.get('event_model', {}).get('initial_states', [])
+    known = set(initial) if isinstance(initial, Mapping) else set(_fluent_values(initial))
+    for event in events:
+        for name in ('requires', 'initiates', 'terminates', 'releases'):
+            value = event.get(name)
+            known.update(value if isinstance(value, Mapping) else _fluent_values(value))
+    names = known & resources.get('places', {}).keys()
+    if not names:
+        return []
+    _, malformed = token_replay(resources, validate=False, events=events)
+    if malformed:
+        return []
+    view = timeline(contract)
+    by_time = {}
+    for event in events:
+        by_time.setdefault(time_key(event['at']), []).append(event)
+    uncertainty = set()
+    seen_times = set()
+    reported = set()
+    gaps = []
+    trace = []
+    for step in view['steps']:
+        if step['event_id'] is not None:
+            instant = time_key(step['at'])
+            if instant not in seen_times:
+                group = by_time[instant]
+                starts = set().union(*(set(_fluent_values(event.get('initiates'))) for event in group))
+                stops = set().union(*(set(_fluent_values(event.get('terminates'))) |
+                                      set(_fluent_values(event.get('releases'))) for event in group))
+                uncertainty.difference_update(starts | stops)
+                uncertainty.update(starts & stops)
+                seen_times.add(instant)
+            trace.append({'at': step['at'], 'event_id': step['event_id']})
+        for place in sorted(names - uncertainty - reported):
+            tokens = sum(step.get('tokens', {}).get(place, {}).values())
+            holds = place in step['fluents']
+            if holds != (tokens >= 1):
+                example = {'at': step['at'], 'event_id': step['event_id'], 'place': place,
+                           'fluent_holds': holds, 'tokens': tokens, 'trace': list(trace)}
+                if step.get('source'):
+                    example['source'] = step['source']
+                gaps.append({'code': 'WORLD_EVENT_TOKEN_MISMATCH', 'status': 'FAIL',
+                             'message': 'a place and fluent with the same name must agree at every step',
+                             'counterexample': example})
+                reported.add(place)
+    return gaps
+
+
 def qualify_guard_contract(contract, *, context=None):
     """Run each derived Guard once and evaluate each declared claim row."""
     if not isinstance(contract, GuardContract):
         contract = GuardContract.from_dict(dict(contract))
     if context is not None and not isinstance(context, QualificationContext):
         context = QualificationContext.from_dict(context)
-    declared = contract.claim.target_guards
-    if len(declared) != len(set(declared)):
-        raise QualificationError("duplicate declared Guard ownership")
-    unknown = sorted(set(declared) - GUARD_RUNNERS.keys())
-    if unknown:
-        raise QualificationError("unknown declared guards: " + ", ".join(unknown))
     derivation = derive_guard_requirements(contract.claim)
     derived = list(derivation.guard_ids)
     unmapped = _semantic_gap_rows(contract, derivation.unmapped_semantics)
@@ -132,6 +180,7 @@ def qualify_guard_contract(contract, *, context=None):
     binding = evaluate_claim_binding(contract, node_contracts=context.node_contracts if context else None,
                                      descendant_ids=context.descendant_ids if context else frozenset())
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
+    gaps.extend(_event_token_consistency(contract))
     if contract.world_model.entities:
         inputs = contract.inputs
         used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))

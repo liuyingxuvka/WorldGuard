@@ -2,13 +2,12 @@
 
 from importlib import import_module as _import_module
 
-__version__ = "0.7.20"
+__version__ = "0.7.21"
 
 __all__ = [
     "__version__",
     "GuardContract",
     "GuardRequirementDerivation",
-    "ClaimAtom",
     "GuardResult",
     "GuardStatus",
     "GuardedReport",
@@ -20,23 +19,20 @@ __all__ = [
     "qualification_context_for_node",
     "run_worldguard",
     "qualify_guard_contract",
-    "claim_predictive_intent",
     "derive_guard_requirements",
     "derive_required_guards",
 ]
 
 _EXPORTS = {
-    'ClaimAtom': 'worldguard.contracts',
     'GuardContract': 'worldguard.contracts',
     'GuardRequirementDerivation': 'worldguard.contracts',
-    'claim_predictive_intent': 'worldguard.contracts',
     'derive_guard_requirements': 'worldguard.contracts',
     'derive_required_guards': 'worldguard.contracts',
     'run_worldguard': 'worldguard.kernel',
     'ModelMeshContract': 'worldguard.mesh',
     'MeshReport': 'worldguard.mesh',
-    'qualification_context_for_node': 'worldguard.mesh',
     'run_model_mesh': 'worldguard.mesh',
+    'qualification_context_for_node': 'worldguard.mesh',
     'QualificationContext': 'worldguard.qualification',
     'QualificationError': 'worldguard.qualification',
     'qualify_guard_contract': 'worldguard.qualification',

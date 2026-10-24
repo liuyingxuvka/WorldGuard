@@ -126,6 +126,7 @@ inputs:
       - place: train
         color: traveler
         qty: 1
+      event: d1_train_out
     - id: d1_train_arr
       consumes:
       - place: train
@@ -135,6 +136,7 @@ inputs:
       - place: salzburg
         color: traveler
         qty: 1
+      event: d1_train_arr
     - id: d1_bus_out
       consumes:
       - place: salzburg
@@ -144,6 +146,7 @@ inputs:
       - place: bus
         color: traveler
         qty: 1
+      event: d1_bus_out
     - id: d1_bus_arr
       consumes:
       - place: bus
@@ -153,6 +156,7 @@ inputs:
       - place: hallstatt
         color: traveler
         qty: 1
+      event: d1_bus_arr
     - id: d2_boat
       consumes:
       - place: hallstatt
@@ -162,6 +166,7 @@ inputs:
       - place: boat
         color: traveler
         qty: 1
+      event: d2_boat
     - id: d2_boat_arr
       consumes:
       - place: boat
@@ -171,6 +176,7 @@ inputs:
       - place: station
         color: traveler
         qty: 1
+      event: d2_boat_arr
     - id: d2_bus_back
       consumes:
       - place: station
@@ -180,6 +186,7 @@ inputs:
       - place: bus
         color: traveler
         qty: 1
+      event: d2_bus_back
     - id: d2_bus_back_arr
       consumes:
       - place: bus
@@ -189,6 +196,7 @@ inputs:
       - place: salzburg
         color: traveler
         qty: 1
+      event: d2_bus_back_arr
     - id: d2_train_home
       consumes:
       - place: salzburg
@@ -198,6 +206,7 @@ inputs:
       - place: munich
         color: traveler
         qty: 1
+      event: d2_train_home
   causal_model:
     variables:
     - train_arr_h

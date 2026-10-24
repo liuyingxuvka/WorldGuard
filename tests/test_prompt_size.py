@@ -14,5 +14,5 @@ def test_skill_has_three_references_with_a_bounded_total():
     assert {path.name for path in references} == {'guard-inputs.md', 'worldguard-contracts.md', 'model-mesh.md'}
     assert sum(path.stat().st_size for path in [SKILL / 'SKILL.md', *references]) <= 25000
     paragraphs = (SKILL / 'SKILL.md').read_text().split('\n\n')
-    note = next(part for part in paragraphs if 'five abilities' in part)
-    assert len(note.splitlines()) <= 6
+    note = next(part for part in paragraphs if part.startswith('- Node:'))
+    assert [line.split(':', 1)[0] for line in note.splitlines()] == ['- Node', '- Parent', '- Known-bad', '- Real binding', '- Test binding', '- Readback', '- Current vs target']

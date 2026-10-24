@@ -128,6 +128,7 @@ inputs:
       - place: boat
         color: cora
         qty: 1
+      event: e_cora_arrives
     - id: cora_lands
       consumes:
       - place: boat
@@ -137,6 +138,7 @@ inputs:
       - place: island_dock
         color: cora
         qty: 1
+      event: e_cora_arrives
     - id: cora_climbs
       consumes:
       - place: island_dock
@@ -146,3 +148,4 @@ inputs:
       - place: lamp_room
         color: cora
         qty: 1
+      event: e_cora_arrives

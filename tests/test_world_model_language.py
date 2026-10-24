@@ -226,8 +226,13 @@ def test_event_link_input_errors_are_rejected_before_execution(broken):
         del trip["inputs"]["resources"]["transitions"][0]["event"]
     else:
         trip["inputs"]["causal_model"]["variables"].append("t_d1_train_arr")
-    with pytest.raises(ValueError, match="event"):
-        run_worldguard(trip)
+    if broken == "mixed":
+        report = run_worldguard(trip)
+        assert report.status.value == "GAP"
+        assert "RESOURCE_TRANSITION_UNLINKED" in _gap_codes(report)
+    else:
+        with pytest.raises(ValueError, match="event"):
+            run_worldguard(trip)
 
 
 def test_entity_registry_and_simultaneous_related_events_are_explicit_gaps():
@@ -302,3 +307,44 @@ def test_agent_intentions_require_matching_events_when_actors_are_declared():
     assert "AGENT_INTENTION_UNREALISED" in _codes(report)
     missing = next(result for result in report.guard_results if result.guard == "AgentGuard").missing_slots
     assert {"agent_id": "Ada", "intention": "keep_lamp_dark"} in missing
+
+
+def test_tokens_that_disagree_with_events_fail_at_the_step():
+    from worldguard.timeline import timeline
+
+    trip = _world("trip_ferry.yaml")
+    trip["inputs"]["resources"]["places"]["on_beach"] = []
+    for transition in trip["inputs"]["resources"]["transitions"]:
+        arcs = (transition["produces"] if transition["id"] == "d1_ferry_out"
+                else transition["consumes"] if transition["id"] == "d2_ferry_back" else [])
+        for arc in arcs:
+            if arc["place"] == "on_island":
+                arc["place"] = "on_beach"
+    report = run_worldguard(trip)
+    assert report.status.value == "FAIL"
+    problem = next(row for row in report.gaps if row["code"] == "WORLD_EVENT_TOKEN_MISMATCH")
+    example = problem["counterexample"]
+    assert example["event_id"] == "d1_ferry_out"
+    assert example["place"] == "on_island"
+    assert example["fluent_holds"] is True and example["tokens"] == 0
+    assert example["trace"][-1]["event_id"] == "d1_ferry_out"
+    view = timeline(trip, problems=report.gaps)
+    step = next(row for row in view["steps"] if row["event_id"] == "d1_ferry_out")
+    assert "WORLD_EVENT_TOKEN_MISMATCH" in step["problems"]
+
+
+def test_unlinked_transition_is_a_gap_naming_it():
+    trip = _world("trip_ferry.yaml")
+    transition = trip["inputs"]["resources"]["transitions"][0]
+    del transition["event"]
+    report = run_worldguard(trip)
+    assert report.status.value == "GAP"
+    problem = next(row for row in report.gaps if row["code"] == "RESOURCE_TRANSITION_UNLINKED")
+    assert problem["missing_slots"] == [transition["id"]]
+    assert problem["message"] == "every token transition must name the event that fires it"
+    for row in trip["inputs"]["resources"]["transitions"]:
+        row.pop("event", None)
+    report = run_worldguard(trip)
+    assert report.status.value == "GAP"
+    assert next(row for row in report.gaps if row["code"] == "RESOURCE_TRANSITION_UNLINKED")["missing_slots"] == [
+        row["id"] for row in trip["inputs"]["resources"]["transitions"]]

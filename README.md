@@ -2,258 +2,166 @@
 
 <!-- README HERO START -->
 <p align="center">
-  <img src="./assets/readme-hero/hero.png" alt="WorldGuard concept hero showing contracts flowing through guard checks into model mesh closure" width="100%" />
-</p>
-
-<p align="center">
-  <strong>A model-first guard framework for auditable world-claim checks.</strong>
+  <img src="./assets/readme-hero/hero.png" alt="WorldGuard contracts and world-model checks" width="100%" />
 </p>
 <!-- README HERO END -->
 
-**Package:** `worldguard`<br>
-**Release type:** source-only Python package and Codex skill workflow
+WorldGuard checks a story, trip, plan or process against an explicit executable
+world model. Write the model and `claim.asserts`; the claim sentence is never read.
+A passing model supports the declared claim within its scope, without establishing
+factual truth. English instructions come first; 中文说明 follows below.
 
-The source version does not by itself assert a tag, hosted GitHub Release, or
-installed-consumer identity; those require separate current evidence.
-
-WorldGuard checks whether a claim about a modeled world is supported, contradicted, missing required inputs, or outside the declared model boundary. It is built for workflows where an AI assistant, developer, or reviewer needs structured evidence instead of a narrative-only answer.
-
-English comes first; a Chinese mirror follows below.
-
-## Development and installation checks
-
-WorldGuard uses ordinary native checks and pytest. No author-supervision tool or compiled author contract is needed. The living `.flowguard/map.json` binds source, tests, and the executable models; `python -m flowguard map models` runs them.
-Install FlowGuard only from the owner's GitHub (`git+https://github.com/liuyingxuvka/FlowGuard.git@<tag>`); the PyPI package named `flowguard` is a different project.
+## Start with a world or one model tree
 
 ```bash
-python -m pytest -q
-python -m worldguard.guard_model_contract
-```
-
-Portable consumers run `python /path/to/worldguard/scripts/run_worldguard.py check --help`; no Python distribution metadata is required.
-
-## What It Does
-
-The native CLI commands are `check`, `mesh-check`, `timeline` and `compare`. Start a new contract by copying a world from `skills/worldguard/assets/examples/` and editing its model and assertions.
-
-WorldGuard provides two core check shapes:
-
-- `GuardContract`: checks one claim against one explicit world model. The claim says what it claims as `claim.asserts` rows, which are evaluated on the model; the claim text is never read.
-- `ModelMeshContract`: checks multiple model nodes, authority boundaries, read-only handoffs, source freshness, dependency cycles, and child report preservation.
-
-The runtime returns four statuses without collapsing them:
-
-- `PASS`: the declared model supports the requested claim.
-- `FAIL`: the declared model contradicts the claim.
-- `GAP`: required model inputs are missing, or the claim is not bound to the model (no `claim.asserts`).
-- `BOUNDARY_EXCEEDED`: the claim asks the model to support semantics it does not own.
-
-Event times use one format per contract: YAML numbers, labels with a shared prefix (`t1`, `t2`),
-ISO dates/times with a consistent timezone convention, or quoted same-day clocks (`"9:40"`, `"17:12:30"`).
-Unknown or mixed times and duplicate event ids within one scenario are input errors (exit 2).
-Use ISO dates across midnight. YAML's unquoted `9:40` is a number, so quote clock values.
-Event assertions can select `scenario`; reused ids without a scenario and unknown scenarios are gaps.
-A missing event time prevents ordering its applicable scenarios; independent scenarios still report known failures.
-
-Causal scenario and holdout assignments replace the named variables' equations. A declared intervention
-runs even on an empty scenario; constraints and unscoped variable assertions check every scenario,
-holdout and intervention. Select a run with `scenario: <id>`. Interventions use a list of mappings with
-unique ids, a declared scenario id and numeric assignments; malformed or colliding run identities are input errors.
-
-A declared boundary of a Guard already derived from the claim yields `BOUNDARY_EXCEEDED`. A boundary
-belonging only to an unselected Guard remains an unmapped `GAP` with a hint naming its normal semantic.
-Real failures and gaps keep their priority: `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
-
-A single event clock drives the world: causal expressions can read `t_<event_id>` in hours, and resource transitions can link to `event: <id>` instead of repeating time/order. Declare `resources.unique`, event `actor`/`with`/`action` and optional `world_model.entities` explicitly. Active prohibitions check actual actions; declared intentions need matching events when actors are present. RCC8 checks use the full base-relation composition table on declared triples.
-
-User worlds can carry `variants:` with an id, expected non-pass status, optional code, and `set`/`remove`/`add` paths. Every check runs them on independent in-memory copies; an escaping variant produces `GAP` `VARIANT_NOT_CAUGHT`. `timeline --contract <file> [--scenario <id>]` reads initial state and event steps, token markings, native problem codes and scalar runs. Event/transition/assertion/node `source` strings point back to original material. Full event counterexamples contain their path prefix; summaries stay short.
-
-## Guard Families
-
-WorldGuard currently includes these guard families:
-
-- `EventGuard`: event and trace support.
-- `AgentGuard`: agent beliefs, capabilities, desires, and intentions.
-- `SpaceGuard`: spatial relation checks.
-- `ResourceGuard`: resource, place, token, transition, and capacity checks.
-- `CausalGuard`: structural causal support.
-- `ConflictGuard`: conflicting incentives or payoff-policy contradictions.
-- `NormGuard`: permission, obligation, and prohibition checks.
-
-## ModelMesh
-
-`ModelMeshContract` is the generic connection layer above unit guard checks. It is designed to prevent a locally valid model from being used as proof for a larger system when the connection is not justified.
-
-Every node runs its native contract once. Missing contracts are gaps. Prediction semantics select EventGuard and CausalGuard, with no separate prediction-license or timepoint-coverage gate.
-
-It checks:
-
-- model authority: each node can only support the semantics it owns;
-- handoffs: downstream nodes may read upstream evidence but cannot mutate it;
-- `allowed_use` and `forbidden_use`: outputs must stay inside declared use boundaries;
-- freshness: stale or unknown sources cannot support current downstream claims when current evidence is required;
-- cycles: dependency loops are reported as mesh failures;
-- evidence preservation: child reports, problems, and counterexamples survive aggregation.
-
-## Quick Start
-
-```powershell
+python skills/worldguard/scripts/run_worldguard.py check --example scene
 python skills/worldguard/scripts/run_worldguard.py check --example trip
-python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh examples/model_mesh/basic_mesh.yaml
+python skills/worldguard/scripts/run_worldguard.py mesh-check --example story
+python skills/worldguard/scripts/run_worldguard.py timeline --example trip
 ```
 
-If your Python scripts directory is on `PATH`, the console entry point is also available:
+Copy a world from `skills/worldguard/assets/examples/` and edit its inputs and
+assertions. The commands are `check`, `mesh-check`, `timeline` and `compare`.
 
-```powershell
-worldguard check --example trip
+- One contract contains `contract_id`, `claim`, `world_model`, `inputs` and optional
+  `variants`. Claim semantics and assertion kinds derive the seven native Guards:
+  Event, Agent, Space, Resource, Causal, Conflict and Norm. Prediction selects Event
+  and Causal. Unknown semantics remain `QUALIFICATION_SEMANTIC_UNMAPPED` GAP.
+- One mesh contains `mesh_id`, `nodes`, `edges` and optional `variants`. Each node
+  has `model_id`, `contract` and optional `source`. Contracts may be embedded or
+  paths relative to the mesh file. Edges use `from` / `to` and only `parent_child`
+  or `continues`. There is exactly one root and at most one parent per node;
+  otherwise `MESH_NOT_ONE_TREE` is GAP. A root may hold only descendant `node:`
+  assertions. A passing parent never hides a non-passing child.
+- `continues` checks final-to-initial fluent state, event time, shared unique token
+  locations and optional scenario variables. Gaps retain missing values; known
+  contradictions fail. Missing edge endpoints produce `MESH_EDGE_NODE_MISSING`.
+- Contract and mesh `variants:` apply declared edits to independent in-memory
+  copies. Each must reach its expected status and optional native code; otherwise
+  `VARIANT_NOT_CAUGHT` blocks PASS. Tree variants rerun the whole tree.
+- `source:` is an original-text pointer copied into related problems. Its contents
+  are not checked, and it does not give a model any extra qualification.
+
+Read [the contract guide](skills/worldguard/references/worldguard-contracts.md),
+[Guard input examples](skills/worldguard/references/guard-inputs.md), or
+[the small tree](skills/worldguard/references/model-mesh.md) for runnable formats.
+Retired fields are input errors with a named field and a one-line migration fix.
+
+## Events, resources and results
+
+A world with unscoped events and token transfers must link every transition using
+`event: <event_id>`. Some or all links missing give GAP
+`RESOURCE_TRANSITION_UNLINKED`, naming the transition ids. A supplied link to an
+absent or scoped event is an input error. Complete links replay by event time,
+keeping list order for multiple transfers fired by one event. Resource-only worlds
+keep list order. Same-named fluents and places must agree initially and after each
+event: the fluent holds exactly when the place has at least one token. The first
+mismatch per name gives FAIL `WORLD_EVENT_TOKEN_MISMATCH` with the step and trace.
+These checks apply regardless of which Guards the claim derives.
+
+Use one clock kind per contract: YAML numbers, labels with one prefix (`t1`, `t2`),
+ISO dates/times with consistent timezone convention, or quoted same-day clocks
+(`"9:40"`). Use ISO times across midnight. Unknown or mixed time kinds and duplicate
+event ids within one scenario are input errors, exit 2. Missing event times remain
+native GAP; independent known failures survive. Assertions select a scenario with
+`scenario`; ambiguous reused event ids and unknown scenarios are gaps.
+
+Causal scenario/holdout assignments replace those variables' equations; other
+variables recompute. Interventions use unique ids, an existing scenario id and
+finite numeric assignments. Constraints and unscoped variable assertions check
+all scenarios, holdouts and interventions, including empty declared scenarios.
+Norms check actual event actions; RCC8 uses native relation composition.
+
+Statuses remain distinct: `FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`.
+A claim without assertions is GAP `CLAIM_NOT_BOUND`; false assertions FAIL with
+`CLAIM_ASSERTION_FALSE`, and unresolved assertions GAP. Check and mesh exit 0 on
+PASS, 1 on non-PASS, 2 on invalid input. Their defaults are short JSON summaries;
+`--json` adds full child/Guard rows. Mesh reports include depth-first `tree` lines.
+Timeline defaults to readable text, with source and problem codes per step;
+`--json` preserves the complete view. It reads a model rather than proving closure.
+
+## Compare actual observations
+
+```bash
+python skills/worldguard/scripts/run_worldguard.py compare --contract world.yaml --observed log.yaml
+python skills/worldguard/scripts/run_worldguard.py compare --mesh mesh.yaml --observed log.yaml --write-observed actual.json
+python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh actual.json
+python skills/worldguard/scripts/run_worldguard.py timeline --mesh actual.json
 ```
 
-## Python API
+Supply event times and/or scenario variable values; mesh observations are keyed by
+`nodes: {model_id: observations}`. Comparison checks only supplied values and emits
+matches/mismatches with signed actual-minus-expected differences. ISO/clock time
+and tolerances use minutes; numeric/label clocks use their own scale. Unknown ids,
+ambiguous scenarios and invalid tolerances are input errors. Exit 0 means all
+matches; 1 means a mismatch. `--write-observed OUT` writes a new independent
+contract/tree, changing only selected observed event occurrences' `at` fields.
+Variables stay unchanged, original files are untouched and existing OUT is refused.
+Rerun native checks on the copy to see downstream consequences.
 
-```python
-from worldguard import GuardContract, ModelMeshContract, run_worldguard, run_model_mesh
+## Install and develop
 
-contract = GuardContract.from_dict({...})
-report = run_worldguard(contract)
-
-mesh = ModelMeshContract.from_dict({...})
-mesh_report = run_model_mesh(mesh)
-```
-
-## Codex Skill
-
-The repository includes the WorldGuard skill under `skills/worldguard/`. It explains how to write a world model and run it with the portable launcher `skills/worldguard/scripts/run_worldguard.py`, and how to report non-pass results without turning them into a weak pass.
-
-Install it into an agent's skills directory (Python 3.11 or newer; YAML world models also need PyYAML, JSON ones do not). The installer copies the `worldguard/` package into the installed skill's `runtime/`; inside this repository the launcher imports the repository package directly:
+Python 3.11 or newer is required. YAML files need PyYAML; JSON files do not.
+The portable skill installer copies `worldguard/` to the installed skill's
+`runtime/`; the repository launcher uses the repository package directly.
 
 ```bash
 python -m pip install PyYAML
-python scripts/install_skill.py --target "$CODEX_HOME/skills"          # or ~/.claude/skills
-python scripts/install_skill.py --target "$CODEX_HOME/skills" --check  # exit 1 if the copy differs
+python scripts/install_skill.py --target "$CODEX_HOME/skills"
+python scripts/install_skill.py --target "$CODEX_HOME/skills" --check
 ```
 
-## What This Is Not
+The `worldguard` console entry point is also available with the package installed.
+The Python API exports `GuardContract`, `ModelMeshContract`, `run_worldguard` and
+`run_model_mesh`. Development uses ordinary pytest and the living FlowGuard map:
 
-WorldGuard is not a physics solver, legal authority, safety certifier, market model, or deployment-readiness checker. The fuel-cell example is a toy fixture for guard behavior and regression testing. It does not validate real fuel-cell physics, legal compliance, safety certification, deployment readiness, market truth, or business strategy.
-
-WorldGuard also does not include a domain-specific novel, academic-paper, or game-design workflow in this core package. Those should be built as upper-layer skills that call the generic WorldGuard contracts.
-
-## Repository Layout
-
-```text
-worldguard/                  Python runtime and CLI
-worldguard/guards/           Guard implementations
-worldguard/examples/fuel_cell/  Toy unit-check fixture (packaged with the runtime)
-examples/model_mesh/         Generic mesh-check fixture
-tests/                       Runtime and regression tests
-skills/worldguard/           Codex skill copy
-openspec/                    Current OpenSpec specs and archived change proposals
-docs/                        Historical audit notes
-assets/readme-hero/          README visual assets
+```bash
+python -m pytest -q
+python -m flowguard map models
 ```
 
-## Release Notes
+Install FlowGuard from the owner's GitHub tag specified in `pyproject.toml`; the
+PyPI project named `flowguard` is a different package. Source version alone does
+not establish a hosted release or installed-consumer identity.
 
-See [CHANGELOG.md](./CHANGELOG.md) for the current version and the release history.
-
-## License
-
-No license file is included yet. Treat this repository as source-visible but not yet licensed for unrestricted third-party reuse until a license is added.
+`worldguard/` holds the runtime; `tests/` the regression tests;
+`skills/worldguard/` the skill, its three references and bundled examples;
+`openspec/specs/` the current specifications. See [CHANGELOG.md](CHANGELOG.md).
+WorldGuard is not a physics solver, legal judgment, safety certificate or market
+prediction. Upper-layer writing and research workflows may call its world models.
+No license file is included; source visibility alone grants no unrestricted reuse.
 
 ---
 
 # WorldGuard 中文说明
 
-**包名：** `worldguard`<br>
-**发布类型：** 源码版 Python 包 + Codex 技能工作流
+WorldGuard 把故事、行程、计划或过程写成可执行世界模型，用 `claim.asserts`
+逐行检查说法；不会读取说法句子来猜结论。PASS 只适用于已声明模型和边界，不证明现实真伪。
 
-WorldGuard 用来检查一个“世界声明”是否被显式模型支持、是否被模型反驳、是否缺少必要输入，或者是否超出了模型边界。它的目标不是给一个凭感觉的自然语言结论，而是保留结构化证据、缺口、反例和边界。
+从 `check --example scene|trip` 开始；`mesh-check --example story` 是技能自带的一棵树。
+节点只写 `model_id`、`contract` 和可选 `source`；合约可内嵌，也可用相对文件路径。
+边只用 `from` / `to`，关系只有 `parent_child` 和 `continues`。必须恰有一个根，
+每节点至多一个父节点，否则 GAP `MESH_NOT_ONE_TREE`。父节点可用 `node:` 读取后代；
+父节点通过不能掩盖子节点的问题。`continues` 检查结束到开始的状态、时间、唯一令牌和指定变量。
 
-FlowGuard 只从主人的 GitHub 安装（`git+https://github.com/liuyingxuvka/FlowGuard.git@<tag>`）；PyPI 上叫 `flowguard` 的是另一个项目。
+有事件又有资源转移时，每个转移用 `event:` 点名触发事件；全部或部分没连，都是
+GAP `RESOURCE_TRANSITION_UNLINKED`，会列出转移 ID。显式指错事件仍是输入错误。
+同名状态和地点在初始及每个事件后都要一致：状态成立当且仅当地点至少有一个令牌；
+否则 FAIL `WORLD_EVENT_TOKEN_MISMATCH` 给出第一次冲突的步骤。只有资源的模型仍按列表重放。
+缺时间仍是原生缺口；独立、已确定的失败不会被其他缺口遮住。
 
-## 它能做什么
+合约和树都可写 `variants:`：在独立副本上制造已知坏，必须达到声明状态和问题码；
+树的变体会重跑整棵树。`source:` 只是未经检查的原文位置，不校验来源内容，也不赋予结论资格。
+退役字段一经出现就是输入错误，按报错提示移除并改用当前格式。
 
-原生 CLI 命令为 `check`、`mesh-check`、`timeline` 和 `compare`。从 `skills/worldguard/assets/examples/` 复制一个世界，再修改模型和断言即可开始新合约。
+`timeline --contract world.yaml`、`timeline --mesh mesh.yaml` 默认输出可读文字；
+`--json` 保留完整结构。树摘要有逐行的 `tree`。`compare --contract|--mesh --observed`
+只比较提供的观测，树的观测按 `nodes` 分组。ISO/钟点容差用分钟，数值/标签钟用自己的尺度。
+加 `--write-observed OUT` 只把选中的事件发生时间写入新副本，不改变量或原文件，已有文件拒绝覆盖。
+对副本再跑 `check` 或 `mesh-check`，查看实际时间是否破坏后续计划。
 
-WorldGuard 有两种核心检查形态：
+四种状态按 `FAIL`、`GAP`、`BOUNDARY_EXCEEDED`、`PASS` 保留优先级。检查通过退出 0，
+非 PASS 退出 1，输入错误退出 2；比对全部匹配退出 0，超差退出 1。普通检查摘要仍为短 JSON，
+只在需要完整 Guard/子节点信息时加 `--json`。报告状态、问题码、反例或缺失输入和模型范围。
 
-- `GuardContract`：一个声明，对一个显式世界模型做单元检查。
-- `ModelMeshContract`：多个模型节点之间的连接检查，包括权限边界、只读 handoff、证据新鲜度、依赖循环和子报告保留。
-
-运行结果不会被压成模糊的“通过/不通过”，而是保留四种状态：
-
-- `PASS`：模型支持这个声明。
-- `FAIL`：模型反驳这个声明。
-- `GAP`：缺少必要输入。
-- `BOUNDARY_EXCEEDED`：声明要求模型支持它没有权限支持的语义。
-
-每份合约的事件和 `holds.at` 只用一种时间写法：YAML 数字、同前缀标签（`t1`、`t2`）、
-时区约定一致的 ISO 日期时间，或带引号的同日钟点（`"9:40"`、`"17:12:30"`）。
-未知或混写时间、同场景重复事件 ID 是输入错误（退出 2）。跨午夜请用 ISO 日期。
-YAML 把未加引号的 `9:40` 读成数字，所以钟点必须加引号。事件断言可用 `scenario`
-指定场景；复用 ID 未指定场景而有歧义或指定未知场景时返回缺口。
-事件缺少时间只阻止其适用场景的排序；独立场景中已经确定的失败仍会报告。
-
-因果场景和留出场景的赋值会替换对应变量的方程；其余变量重新计算。干预即使基于空场景
-也会执行。约束及未指定 `scenario` 的变量断言检查所有场景、留出和干预；可用
-`scenario: <id>` 选择一次运行。干预必须是包含唯一 ID、已声明场景 ID 和数字赋值的映射列表；
-错误形状和相互冲突的运行 ID 是输入错误。
-
-已由声明派生的 Guard 遇到自己声明的边界时，结果为 `BOUNDARY_EXCEEDED`。只属于未选 Guard
-的边界仍是未映射 `GAP`，并提示对应 Guard 的常规语义。真实失败和缺口的优先级保持为
-`FAIL` > `GAP` > `BOUNDARY_EXCEEDED` > `PASS`。
-
-## Guard 类型
-
-当前包含：
-
-- `EventGuard`：事件和轨迹。
-- `AgentGuard`：主体的信念、能力、愿望和意图。
-- `SpaceGuard`：空间关系。
-- `ResourceGuard`：资源、place、token、transition 和 capacity。
-- `CausalGuard`：结构因果支持。
-- `ConflictGuard`：激励冲突或收益策略矛盾。
-- `NormGuard`：许可、义务和禁止。
-
-## ModelMesh
-
-每个节点的原生合约都会运行一次；缺少合约是缺口。预测语义选择 EventGuard 和 CausalGuard，不另设预测许可或时间点覆盖门槛。
-
-`ModelMeshContract` 是单个 Guard 检查之上的通用连接层。它解决的问题是：一个局部模型通过了，不等于整个模型网格可以通过。
-
-它会检查：
-
-- 模型权限：每个节点只能支持自己拥有的语义；
-- handoff：下游只能读上游证据，不能修改上游结果；
-- `allowed_use` 和 `forbidden_use`：输出用途必须留在声明边界内；
-- freshness：需要当前证据时，陈旧或未知来源不能支撑下游当前声明；
-- 循环依赖：依赖环会导致 mesh 失败；
-- 证据保留：子报告、问题和反例不能在聚合时丢失。
-
-## 快速开始
-
-```powershell
-python skills/worldguard/scripts/run_worldguard.py check --example trip
-python skills/worldguard/scripts/run_worldguard.py mesh-check --mesh examples/model_mesh/basic_mesh.yaml
-```
-
-## 这个项目不是什么
-
-WorldGuard 不是物理求解器、法律判断器、安全认证器、市场模型或部署可行性判断器。fuel-cell 示例只是测试用的 toy fixture，不证明真实燃料电池物理、法律合规、安全认证、部署准备、市场真实性或商业策略。
-
-这个核心包也不直接包含小说写作、学术论文修改或游戏设计工作流。那些应该作为上层技能来使用 WorldGuard 的通用 contract。
-
-Mesh `continues` edges check final-to-initial fluent state, time, shared unique tokens
-and optional scenario variables. `parent_child` forms a tree without requiring ports;
-parent `node:` assertion rows can read descendants. Node contracts may be relative
-YAML/JSON paths. See [the complete small example](skills/worldguard/references/model-mesh.md).
-
-模型树的 `continues` 边检查前一节点结束状态与后一节点初始状态、时间、唯一令牌位置及指定变量。
-`parent_child` 不必声明端口；父节点可用 `node:` 断言读取后代，合约也可写成相对文件路径。
-
-Compare supplied observations with native planned event/scenario values:
-`python skills/worldguard/scripts/run_worldguard.py compare --contract world.yaml --observed observed.yaml`.
-The JSON lists matches and mismatches with declared tolerances; unknown ids are input errors.
-
-用 `compare --contract world.yaml --observed observed.yaml` 对比计划和实际观测：
-输出匹配与超差项，时间容差对 ISO/钟点写法按分钟计算；未观测项不算不匹配。
+技能安装命令和完整可运行格式见上方英文说明及三个参考页。技能名字、启动器路径和安装器入口保持稳定。

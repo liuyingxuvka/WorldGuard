@@ -1,0 +1,75 @@
+mesh_id: two_chapters
+nodes:
+- model_id: story
+  contract:
+    claim:
+      claim_id: the_door_opens
+      text: The key reaches Mara before she unlocks the door.
+      asserts:
+      - node: chapter2
+        holds: door_open
+        at: t2
+- model_id: chapter1
+  contract:
+    contract_id: key_handoff
+    claim:
+      claim_id: mara_has_key
+      asserts:
+      - holds: key_with_mara
+        at: t1
+    inputs:
+      event_model:
+        initial_states:
+        - key_with_iris
+        - door_locked
+      events:
+      - event_id: hand_over_key
+        at: t1
+        requires:
+        - key_with_iris
+        initiates:
+        - key_with_mara
+        terminates:
+        - key_with_iris
+- model_id: chapter2
+  contract:
+    contract_id: unlock_door
+    claim:
+      claim_id: door_is_open
+      asserts:
+      - holds: door_open
+        at: t2
+    inputs:
+      event_model:
+        initial_states:
+        - key_with_mara
+        - door_locked
+      events:
+      - event_id: unlock
+        at: t2
+        requires:
+        - key_with_mara
+        - door_locked
+        initiates:
+        - door_open
+        terminates:
+        - door_locked
+edges:
+- edge_id: story_chapter1
+  relation: parent_child
+  from: story
+  to: chapter1
+- edge_id: story_chapter2
+  relation: parent_child
+  from: story
+  to: chapter2
+- edge_id: next_chapter
+  relation: continues
+  from: chapter1
+  to: chapter2
+variants:
+- id: forgotten_key_handoff
+  expect: FAIL
+  code: MESH_HANDOFF_STATE_MISMATCH
+  remove:
+  - nodes[chapter1].contract.inputs.events[hand_over_key].initiates

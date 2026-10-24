@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.7.21 - 2026-10-24 - One world format and one model tree
+
+### New
+
+- Check a connected model tree with one root. `parent_child` scopes parent assertions to descendants; `continues` compares real end/start state, event times, unique tokens and requested variables. Tree summaries retain every node's own result; independent failures remain visible when other information is missing.
+- Declare `variants` on a whole tree. Contract files are embedded before applying finite in-memory edits; each bad tree must produce its declared status and code. Missing or ambiguous edit paths remain input errors.
+- `timeline` prints readable text by default and accepts a world, a mesh or a portable example; `--json` retains the full structure. `mesh-check` includes a text tree. The story tree is packaged once with the portable skill.
+- Compare a world or selected tree nodes with observations. Results name the compared `id` and, for a tree, its `node`. `--write-observed OUT` creates an independent embedded copy changing only the selected event times; it does not write variables, add scenarios or move later events, and never overwrites an existing file.
+- A token transition in an eventful world must name its firing event; missing links produce `GAP RESOURCE_TRANSITION_UNLINKED`. Known same-name event fluents and token places must agree initially and after each complete event step, otherwise `FAIL WORLD_EVENT_TOKEN_MISMATCH`. Simultaneous unknown writes stay unknown until an actual later write resolves them.
+
+### Changed
+
+- Worlds use one contract form. Guards derive from `claim.requested_semantics` and `claim.asserts`; dead contract and mesh metadata are rejected by key presence with a migration instruction. A mesh uses only `model_id`, `contract`, `source` nodes and `from`/`to` edges of the two supported kinds.
+- Native node, child and tree findings aggregate without hiding an independently known failure. Missing times remain gaps; malformed clock values remain typed input errors. Sources remain unchecked pointers to original text.
+- The skill uses the shared seven-line description of structure, counterexamples, bad variants, real bindings, observation tests, readback and current/edited models. Component names and five modeled flows follow the actual runtime jobs.
+- Maintenance checks of WorldGuard's own model tree now run on FlowGuard 0.70.11; pytest has an explicit minimum supported version.
+
+### Removed
+
+- The packaged fuel-cell toy example and its second world format. Start from `check --example scene|trip`, or `mesh-check --example story`.
+- Runtime Guard catalogs, authority/port/freshness bookkeeping and alternative mesh relation types. The original good/bad Guard regression cases live in tests; native domain rules and failure classes remain.
+- Three obsolete historical specifications and audit notes; active OpenSpec requirements and archived changes remain.
+
+### Upgrade
+
+- Remove retired contract and mesh keys, including null or empty declarations. Use `from` and `to` for node edges, add a true root for independent chapters, and place each resource transition under its real event. Keep resource-only worlds unchanged.
+- FlowGuard references use the official GitHub tag. Installation, launcher paths and the original LogicWriting provider interfaces stay portable; LogicWriting's three eventful fixtures need an explicit `give_spare` event link when its own migration is applied.
+
 ## v0.7.20 - 2026-10-23 - Preserve failures when other evidence is incomplete
 
 - Keep independently known event precondition failures when other event metadata is missing or simultaneous events have no declared order. Conflicting simultaneous fluent writes remain uncertain until a later definite write.

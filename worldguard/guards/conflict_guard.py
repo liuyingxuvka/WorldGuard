@@ -113,10 +113,10 @@ def _check(contract: GuardContract):
         source = str(
             transition.get("from", transition.get("source_state", transition.get("state", "")))
         )
-        target = str(transition.get("to", transition.get("target_state", "")))
-        if source not in state_ids or target not in state_ids:
+        destination = str(transition.get("to", transition.get("target_state", "")))
+        if source not in state_ids or destination not in state_ids:
             reference_errors.append(
-                {"kind": "transition_state", "index": index, "source": source, "target": target}
+                {"kind": "transition_state", "index": index, "source": source, "destination": destination}
             )
         referenced_actions = transition.get(
             "actions", transition.get("joint_action", transition.get("action", []))

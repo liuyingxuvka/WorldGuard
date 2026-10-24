@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "worldguard"
-version = "0.7.20"
+version = "0.7.21"
 description = "Model-first guard framework for auditable world-claim checks."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,8 +12,8 @@ dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 test = [
-    "pytest",
-    "flowguard @ git+https://github.com/liuyingxuvka/FlowGuard.git@v0.70.6",
+    "pytest>=8.0",
+    "flowguard @ git+https://github.com/liuyingxuvka/FlowGuard.git@v0.70.11",
 ]
 
 [project.urls]
@@ -26,9 +26,6 @@ worldguard = "worldguard.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["worldguard*"]
-
-[tool.setuptools.package-data]
-"worldguard.examples" = ["fuel_cell/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

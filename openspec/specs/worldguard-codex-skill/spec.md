@@ -19,18 +19,18 @@ The WorldGuard skill SHALL instruct Codex to build or inspect a structured `Guar
 
 #### Scenario: Multi-model pass is not inferred from child pass
 - **WHEN** a user asks whether several related models jointly support a claim
-- **THEN** the skill instructs Codex to inspect model nodes, authority, handoffs, freshness, and closure instead of reporting whole-mesh PASS from child-local PASS results alone.
+- **THEN** the skill instructs Codex to inspect the single-root tree, state/time continuation and every child result instead of reporting whole-mesh PASS from child-local PASS results alone.
 
 ### Requirement: Local Runtime Integration
 The WorldGuard skill SHALL provide guidance for calling the installed runtime for both single-contract checks and mesh checks.
 
 #### Scenario: Skill helper invokes package
-- **WHEN** the skill helper script runs against the fuel-cell example
+- **WHEN** the skill helper script runs against the scene example
 - **THEN** it imports `worldguard` and returns a JSON check result.
 
 #### Scenario: Skill references mesh helper path
 - **WHEN** the local skill is inspected
-- **THEN** it includes a `mesh-check` command example and references for ModelMesh, authority, handoff, and closure concepts.
+- **THEN** it includes a `mesh-check` command example and references for the model tree and continuation checks.
 
 ### Requirement: Codex entry is a short shape table
 The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher command and reference for each shape, a pointer to the Guard input reference and example worlds, and the result rules (four statuses, exit codes, what to report). Mesh rules SHALL stay in their references and SHALL be loaded only for that shape. New unit checks SHALL start from a copied shipped example world with explicit model fields and assertions.
@@ -45,8 +45,8 @@ The `worldguard` skill SHALL keep `SKILL.md` to a shape table with the launcher 
 
 ### Requirement: One model tree and three runnable references
 
-The skill SHALL introduce executable worlds with bound assertions, the model tree
-and its five abilities in at most six lines. It SHALL list check, mesh-check, compare
+The skill SHALL introduce executable worlds with bound assertions using the exact
+WorldGuard seven-line shared block from the cross-repository XR-202 plan. It SHALL list check, mesh-check, compare
 and timeline with references and native status/exit rules. Only guard-inputs.md,
 worldguard-contracts.md and model-mesh.md SHALL remain as references, together with
 the entry within 25,000 bytes (entry <= 6,000; each reference <= 12,000). References

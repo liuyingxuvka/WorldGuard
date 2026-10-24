@@ -1,20 +1,6 @@
 mesh_id: lighthouse
-schema_version: worldguard.model_mesh.v1
-run_id: lighthouse-run
 nodes:
 - model_id: ch1
-  model_version: v1
-  model_kind: event_model
-  freshness_status: current
-  authority:
-    owns:
-    - event
-    - agent
-    - spatial
-    - resource
-    excludes: []
-    scope_limits:
-    - ch1
   contract:
     claim:
       claim_id: c_ch1
@@ -137,6 +123,7 @@ nodes:
           - place: boat
             color: cora
             qty: 1
+          event: e_cora_arrives
         - id: cora_lands
           consumes:
           - place: boat
@@ -146,6 +133,7 @@ nodes:
           - place: island_dock
             color: cora
             qty: 1
+          event: e_cora_arrives
         - id: cora_climbs
           consumes:
           - place: island_dock
@@ -155,19 +143,8 @@ nodes:
           - place: lamp_room
             color: cora
             qty: 1
+          event: e_cora_arrives
 - model_id: ch2
-  model_version: v1
-  model_kind: event_model
-  freshness_status: current
-  authority:
-    owns:
-    - event
-    - agent
-    - spatial
-    - resource
-    excludes: []
-    scope_limits:
-    - ch2
   contract:
     claim:
       claim_id: c_ch2
@@ -208,7 +185,6 @@ nodes:
         terminates: cora_on_island
 edges:
 - edge_id: ch1_then_ch2
-  source_model_id: ch1
-  target_model_id: ch2
   relation: continues
-snapshots: []
+  from: ch1
+  to: ch2

@@ -1,26 +1,113 @@
-# Scene: Jonas gives Mara the key (t1), Mara unlocks the archive door (t2), Iris slips in behind her (t3).
 contract_id: scene-archive-001
 claim:
   claim_id: c_iris_enters
-  text: Iris slips into the archive at t3 behind Mara, who unlocked the door at t2 with the key Jonas gave her at t1.
-  requested_semantics: [event, resource, agent]
-  target_guards: [EventGuard, ResourceGuard, AgentGuard]
+  text: Iris slips into the archive at t3 behind Mara, who unlocked the door at t2
+    with the key Jonas gave her at t1.
+  requested_semantics:
+  - event
+  - resource
+  - agent
   asserts:
-    - {event: e_mara_unlock, before: e_iris_enter}
-    - {place: iris_inside, color: iris, qty: 1}
-world_model: {model_id: archive-scene, model_version: v1, scope_limits: [scene 3 only]}
+  - event: e_mara_unlock
+    before: e_iris_enter
+  - place: iris_in_archive
+    color: iris
+    qty: 1
+world_model:
+  model_id: archive-scene
+  model_version: v1
+  scope_limits:
+  - scene 3 only
 inputs:
   events:
-    - {event_id: e_give_key, at: t1, initiates: mara_has_key, terminates: jonas_has_key}
-    - {event_id: e_mara_unlock, at: t2, initiates: door_unlocked, terminates: door_locked}
-    - {event_id: e_iris_enter, at: t3, initiates: iris_in_archive}
+  - event_id: e_give_key
+    at: t1
+    initiates: mara_has_key
+    terminates: jonas_has_key
+  - event_id: e_mara_unlock
+    at: t2
+    initiates: door_unlocked
+    terminates: door_locked
+  - event_id: e_iris_enter
+    at: t3
+    initiates: iris_in_archive
   beliefs:
-    Mara:  {agent_id: Mara,  beliefs: [door_locked], desires: [read_map], intentions: [unlock_door]}
-    Jonas: {agent_id: Jonas, beliefs: [mara_trustworthy], desires: [protect_archive], intentions: [give_key]}
-    Iris:  {agent_id: Iris,  beliefs: [map_in_archive], desires: [steal_map], intentions: [enter_archive]}
+    Mara:
+      agent_id: Mara
+      beliefs:
+      - door_locked
+      desires:
+      - read_map
+      intentions:
+      - unlock_door
+    Jonas:
+      agent_id: Jonas
+      beliefs:
+      - mara_trustworthy
+      desires:
+      - protect_archive
+      intentions:
+      - give_key
+    Iris:
+      agent_id: Iris
+      beliefs:
+      - map_in_archive
+      desires:
+      - steal_map
+      intentions:
+      - enter_archive
   resources:
-    places: {jonas_key: [{color: key, qty: 1}], mara_key: [], door_locked: [{color: lock, qty: 1}], door_open: [], iris_inside: []}
+    places:
+      jonas_has_key:
+      - color: key
+        qty: 1
+      mara_has_key: []
+      door_locked:
+      - color: lock
+        qty: 1
+      door_unlocked: []
+      iris_in_archive: []
     transitions:
-      - {id: give_key, consumes: [{place: jonas_key, color: key, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}]}
-      - {id: mara_unlock, consumes: [{place: mara_key, color: key, qty: 1}, {place: door_locked, color: lock, qty: 1}], produces: [{place: mara_key, color: key, qty: 1}, {place: door_open, color: open, qty: 1}]}
-      - {id: iris_enter, consumes: [{place: door_open, color: open, qty: 1}], produces: [{place: iris_inside, color: iris, qty: 1}]}
+    - id: give_key
+      consumes:
+      - place: jonas_has_key
+        color: key
+        qty: 1
+      produces:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      event: e_give_key
+    - id: mara_unlock
+      consumes:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      - place: door_locked
+        color: lock
+        qty: 1
+      produces:
+      - place: mara_has_key
+        color: key
+        qty: 1
+      - place: door_unlocked
+        color: open
+        qty: 1
+      event: e_mara_unlock
+    - id: iris_enter
+      consumes:
+      - place: door_unlocked
+        color: open
+        qty: 1
+      produces:
+      - place: iris_in_archive
+        color: iris
+        qty: 1
+      - place: door_unlocked
+        color: open
+        qty: 1
+      event: e_iris_enter
+  event_model:
+    initial_states:
+    - jonas_has_key
+    - door_locked

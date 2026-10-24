@@ -1,6 +1,7 @@
 """Compare declared world values with supplied observations, without modifying either."""
 from __future__ import annotations
 
+from copy import deepcopy
 from collections.abc import Mapping
 from math import isfinite
 from typing import Any
@@ -22,12 +23,14 @@ def _number(value: Any, name: str, *, nonnegative: bool = False) -> float:
     return result
 
 
-def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
+def _compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
     """Derive expected times and scenario values from the world and compare only observed ids."""
     if not isinstance(contract, GuardContract):
         contract = GuardContract.from_dict(dict(contract))
     if not isinstance(observed, Mapping):
         raise ValueError("observed world must be a mapping")
+    if "nodes" in observed:
+        raise ValueError("node observations need --mesh, not --contract")
     time_tolerance = _number(observed.get("time_tolerance", 0), "time_tolerance", nonnegative=True)
     tolerance = _number(observed.get("tolerance", 0), "tolerance", nonnegative=True)
     events, variables = observed.get("events", {}), observed.get("variables", {})
@@ -47,8 +50,9 @@ def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping
     selected_events = [row for row in native_events if not row.get("scenario_id") or row["scenario_id"] == scenario]
     known_variables = set(causal.get("variables", [])) | set(causal.get("exogenous", []))
     matches, mismatches = [], []
-    def record(target_id, kind, expected, actual, difference, bound):
-        row = {"target_id": target_id, "kind": kind, "expected_value": expected,
+    selected_occurrences = {}
+    def record(identity, kind, expected, actual, difference, bound):
+        row = {"id": identity, "kind": kind, "expected_value": expected,
                "actual_value": actual, "difference": difference, "tolerance": bound}
         if abs(difference) <= bound:
             matches.append(row)
@@ -59,6 +63,7 @@ def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping
         candidates = [row for row in selected_events if row.get("event_id") == event_id]
         if len(candidates) != 1:
             raise ValueError(f"event {event_id!r} is unknown or ambiguous in the selected scenario")
+        selected_occurrences[event_id] = next(i for i, row in enumerate(native_events) if row is candidates[0])
         expected = candidates[0].get("at")
         validate_times([(f"expected event {event_id}", expected), (f"observed event {event_id}", actual)])
         divisor = 60 if time_kind(expected) in {"clock", "ISO date-time"} else 1
@@ -69,6 +74,22 @@ def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping
         actual_number = _number(actual, f"observed variable {variable_id}")
         expected = _number(values[scenario][variable_id], f"expected variable {variable_id}")
         record(variable_id, "variable", expected, actual, actual_number - expected, tolerance)
-    return {"status": "FAIL" if mismatches else "PASS", "contract_id": contract.contract_id,
+    result = {"status": "FAIL" if mismatches else "PASS", "contract_id": contract.contract_id,
             "matches": matches, "mismatches": mismatches,
             **({"source": observed["source"]} if "source" in observed else {})}
+
+    return result, contract, selected_occurrences
+
+
+def compare_world(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
+    """Compare through the one native world comparator without writing values."""
+    return _compare_world(contract, observed)[0]
+
+
+def compare_with_observed_copy(world, observed):
+    """Compare once, returning a deep copy changing only the selected event times."""
+    result, contract, selected = _compare_world(world, observed)
+    copied = deepcopy(dict(world) if isinstance(world, Mapping) else contract.to_dict())
+    for event_id, index in selected.items():
+        copied["inputs"]["events"][index]["at"] = deepcopy(observed["events"][event_id])
+    return result, copied

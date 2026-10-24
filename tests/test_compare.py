@@ -21,7 +21,7 @@ def test_trip_arrival_uses_minutes_and_declared_tolerance(tmp_path, capsys, at, 
     result = json.loads(capsys.readouterr().out)
     assert result['status'] == status and result['source'] == 'trip log'
     row = (result['matches'] or result['mismatches'])[0]
-    assert row['target_id'] == 'd1_train_arr' and row['kind'] == 'event'
+    assert row['id'] == 'd1_train_arr' and row['kind'] == 'event'
     assert row['difference'] == difference and row['tolerance'] == 5
     if status == 'FAIL':
         assert row['mismatch_code'] == 'value_outside_tolerance'
@@ -74,3 +74,37 @@ def test_compare_help_has_both_inputs(capsys):
     assert exc.value.code == 0
     text = capsys.readouterr().out
     assert '--contract' in text and '--observed' in text
+
+
+def test_mesh_compare_names_the_late_node(tmp_path,capsys):
+    from tests.test_model_mesh import continued_tree
+    world=tmp_path/'world.json';world.write_text(json.dumps(continued_tree()))
+    observed=tmp_path/'observed.json';observed.write_text(json.dumps({'nodes':{'a':{'events':{'a':'t3'}}}}))
+    assert main(['compare','--mesh',str(world),'--observed',str(observed)])==1
+    result=json.loads(capsys.readouterr().out)
+    assert result['mismatches'][0]['node']=='a' and result['mismatches'][0]['id']=='a'
+    assert result['mismatches'][0]['difference']==2
+
+
+def test_written_observed_copy_shows_the_downstream_break(tmp_path,capsys):
+    from tests.test_model_mesh import continued_tree
+    from worldguard.mesh import compare_mesh_with_observed_copy
+    original=continued_tree();before=deepcopy(original)
+    original['nodes'][1]['contract']['inputs']['causal_model']={'variables':['x'],'equations':{'x':'1'},'scenarios':{'plan':{}}}
+    before=deepcopy(original)
+    observations={'nodes':{'a':{'events':{'a':'t3'},'variables':{'x':2},'scenario':'plan'}}}
+    result,copied=compare_mesh_with_observed_copy(original,observations)
+    expected=deepcopy(original);expected['nodes'][1]['contract']['inputs']['events'][0]['at']='t3'
+    assert copied==expected and original==before
+    from worldguard.compare import compare_with_observed_copy
+    single_result,single_copy=compare_with_observed_copy(original["nodes"][1]["contract"],observations["nodes"]["a"])
+    assert single_copy==expected["nodes"][1]["contract"] and single_result["status"]==result["status"]
+    world=tmp_path/'world.json';world.write_text(json.dumps(original));obs=tmp_path/'observed.json';obs.write_text(json.dumps(observations));out=tmp_path/'out.json'
+    assert main(['compare','--mesh',str(world),'--observed',str(obs),'--write-observed',str(out)])==1
+    capsys.readouterr()
+    assert json.loads(out.read_text())==expected and json.loads(world.read_text())==before
+    assert main(['mesh-check','--mesh',str(out),'--json'])==1
+    report=json.loads(capsys.readouterr().out)
+    assert any(g['code']=='MESH_HANDOFF_TIME_BACKWARDS' for g in report['gaps'])
+    assert main(['compare','--mesh',str(world),'--observed',str(obs),'--write-observed',str(out)])==2
+    assert json.loads(out.read_text())==expected

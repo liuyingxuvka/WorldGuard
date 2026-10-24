@@ -1,15 +1,12 @@
+"""One tree of native world contracts and their ordered continuations."""
 from __future__ import annotations
-
 from dataclasses import dataclass, field, replace
+from copy import deepcopy
 from pathlib import Path
 from math import isfinite
 from collections.abc import Mapping
 from typing import Any
-
-from .contracts import (
-    GuardContract,
-    claim_semantics,
-)
+from .contracts import GuardContract
 from .kernel import run_worldguard
 from .io import load_mapping
 from .clock import event_time_values, time_key, validate_times
@@ -17,351 +14,104 @@ from .semantic import event_replay, token_replay, causal_scenario_values, _fluen
 from .qualification import QualificationContext
 from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses, coerce_status
+from .variants import validate_variants, apply_variant
+
+EDGE_RELATIONS = {"parent_child", "continues"}
+CYCLE_RELATIONS = EDGE_RELATIONS
 
 
-FRESHNESS_STATUSES = {"current", "stale", "unknown"}
-EDGE_RELATIONS = {
-    "continues",
-    "parent_child",
-    "depends_on",
-    "refines",
-    "replaces",
-    "conflicts_with",
-    "consumes_output_of",
-    "same_world_version",
-    "supersedes",
-}
-
-CYCLE_RELATIONS = {
-    "continues",
-    "parent_child",
-    "depends_on",
-    "refines",
-    "replaces",
-    "consumes_output_of",
-    "supersedes",
-}
-TRANSFER_RELATIONS = {"parent_child", "consumes_output_of"}
-PORT_CARDINALITIES = {"one", "optional", "many"}
-
-
-@dataclass(frozen=True)
-class ModelAuthority:
-    owns: list[str] = field(default_factory=list)
-    excludes: list[str] = field(default_factory=list)
-    scope_limits: list[str] = field(default_factory=list)
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any] | None) -> "ModelAuthority":
-        data = data or {}
-        return cls(
-            owns=list(data.get("owns", [])),
-            excludes=list(data.get("excludes", [])),
-            scope_limits=list(data.get("scope_limits", [])),
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "owns": self.owns,
-            "excludes": self.excludes,
-            "scope_limits": self.scope_limits,
-        }
-
-
-@dataclass(frozen=True)
-class ModelPort:
-    port_id: str
-    value_type: str
-    cardinality: str = "one"
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "ModelPort":
-        allowed = {"port_id", "value_type", "cardinality"}
-        unknown = sorted(set(data).difference(allowed))
-        if unknown:
-            raise ValueError("model port has unknown fields: " + ", ".join(unknown))
-        port_id = str(data.get("port_id", "")).strip()
-        value_type = str(data.get("value_type", "")).strip()
-        cardinality = str(data.get("cardinality", "one")).strip()
-        if not port_id or not value_type:
-            raise ValueError("model port requires port_id and value_type")
-        if cardinality not in PORT_CARDINALITIES:
-            raise ValueError(f"unknown model port cardinality: {cardinality}")
-        return cls(
-            port_id=port_id,
-            value_type=value_type,
-            cardinality=cardinality,
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "port_id": self.port_id,
-            "value_type": self.value_type,
-            "cardinality": self.cardinality,
-        }
+def _retired(data, fields, where):
+    for key in sorted(set(data) & set(fields)):
+        raise ValueError(f"{where}{key} is retired; use model_id/contract/source nodes and from/to parent_child or continues edges")
 
 
 @dataclass(frozen=True)
 class ModelNode:
     model_id: str
-    model_version: str = ""
-    model_kind: str = "world_model"
-    authority: ModelAuthority = field(default_factory=ModelAuthority)
-    freshness_status: str = "current"
-    input_ports: list[ModelPort] = field(default_factory=list)
-    output_ports: list[ModelPort] = field(default_factory=list)
     contract: GuardContract | None = None
     source: str = ""
+    raw_contract: dict | None = field(default=None, repr=False, compare=False)
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any], *, base_dir: str | Path | None = None) -> "ModelNode":
+    def from_dict(cls, data, *, base_dir=None):
         if not isinstance(data, Mapping):
             raise ValueError("model node must be a mapping")
+        _retired(data, {"model_version", "model_kind", "authority", "freshness_status", "input_ports", "output_ports"}, "node.")
+        if set(data) - {"model_id", "contract", "source"}:
+            raise ValueError("model node has unknown fields: " + ", ".join(sorted(set(data)-{"model_id", "contract", "source"})))
         if not isinstance(data.get("source", ""), str):
             raise ValueError("model node source must be a string")
-        contract_data = data.get("contract")
-        if isinstance(contract_data, str):
-            path = Path(base_dir or ".") / contract_data
+        contract = data.get("contract")
+        if isinstance(contract, str):
+            path = Path(base_dir or ".") / contract
             try:
-                contract_data = load_mapping(path)
+                contract = load_mapping(path)
             except (OSError, UnicodeError, ValueError) as exc:
                 raise ValueError(f"node {data.get('model_id', '')} contract {path}: {exc}") from exc
-        if contract_data is not None and not isinstance(contract_data, Mapping):
+        if contract is not None and not isinstance(contract, Mapping):
             raise ValueError("model node contract must be a mapping, file path or null")
-        freshness_status = str(data.get("freshness_status", "current"))
-        if freshness_status not in FRESHNESS_STATUSES:
-            raise ValueError(f"node {data.get('model_id', '')}: unknown freshness_status {freshness_status!r}")
-        input_ports = [ModelPort.from_dict(item) for item in data.get("input_ports", [])]
-        output_ports = [ModelPort.from_dict(item) for item in data.get("output_ports", [])]
-        all_port_ids = [port.port_id for port in [*input_ports, *output_ports]]
-        if len(all_port_ids) != len(set(all_port_ids)):
-            raise ValueError(
-                f"model node {data.get('model_id', '')} has duplicate port ids"
-            )
-        return cls(
-            model_id=str(data.get("model_id", "")),
-            model_version=str(data.get("model_version", "")),
-            model_kind=str(data.get("model_kind", "world_model")),
-            authority=ModelAuthority.from_dict(data.get("authority")),
-            freshness_status=freshness_status,
-            input_ports=input_ports,
-            output_ports=output_ports,
-            contract=GuardContract.from_dict(contract_data) if contract_data else None,
-            source=data.get("source", ""),
-        )
+        return cls(str(data.get("model_id", "")), GuardContract.from_dict(contract) if contract is not None else None, data.get("source", ""), deepcopy(dict(contract)) if contract is not None else None)
 
-    def to_dict(self) -> dict[str, Any]:
-        data: dict[str, Any] = {
-            "model_id": self.model_id,
-            "model_version": self.model_version,
-            "model_kind": self.model_kind,
-            "authority": self.authority.to_dict(),
-            "freshness_status": self.freshness_status,
-            "input_ports": [port.to_dict() for port in self.input_ports],
-            "output_ports": [port.to_dict() for port in self.output_ports],
-        }
-        if self.contract:
-            data["contract"] = self.contract.to_dict()
+    def to_dict(self):
+        result = {"model_id": self.model_id}
+        if self.contract is not None:
+            result["contract"] = deepcopy(self.raw_contract) if self.raw_contract is not None else self.contract.to_dict()
         if self.source:
-            data["source"] = self.source
-        return data
-
-
-@dataclass(frozen=True)
-class ModelPortMapping:
-    mapping_id: str
-    source_port_id: str
-    target_port_id: str
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "ModelPortMapping":
-        allowed = {"mapping_id", "source_port_id", "target_port_id"}
-        unknown = sorted(set(data).difference(allowed))
-        if unknown:
-            raise ValueError(
-                "model port mapping has unknown fields: " + ", ".join(unknown)
-            )
-        mapping_id = str(data.get("mapping_id", "")).strip()
-        source_port_id = str(data.get("source_port_id", "")).strip()
-        target_port_id = str(data.get("target_port_id", "")).strip()
-        if not mapping_id or not source_port_id or not target_port_id:
-            raise ValueError(
-                "model port mapping requires mapping_id, source_port_id, and target_port_id"
-            )
-        return cls(mapping_id, source_port_id, target_port_id)
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "mapping_id": self.mapping_id,
-            "source_port_id": self.source_port_id,
-            "target_port_id": self.target_port_id,
-        }
+            result["source"] = self.source
+        return result
 
 
 @dataclass(frozen=True)
 class ModelEdge:
     edge_id: str
-    source_model_id: str
-    target_model_id: str
+    from_id: str
+    to_id: str
     relation: str
-    port_mappings: list[ModelPortMapping] = field(default_factory=list)
-    allowed_use: list[str] = field(default_factory=list)
-    forbidden_use: list[str] = field(default_factory=list)
-    read_only: bool = True
-    requires_current_source: bool = True
     variables: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "ModelEdge":
-        if "output_refs" in data:
-            raise ValueError(
-                "model edge output_refs is retired; use exact port_mappings"
-            )
-        relation = str(data.get("relation", "")).strip()
+    def from_dict(cls, data):
+        if not isinstance(data, Mapping):
+            raise ValueError("model edge must be a mapping")
+        _retired(data, {"source_model_id", "target_model_id", "port_mappings", "output_refs", "allowed_use", "forbidden_use", "read_only", "requires_current_source"}, "edge.")
+        if set(data)-{"edge_id", "from", "to", "relation", "variables"}:
+            raise ValueError("model edge has unknown fields")
+        relation = data.get("relation")
         if relation not in EDGE_RELATIONS:
-            raise ValueError(
-                f"unknown model edge relation for {data.get('edge_id', '')}: {relation or '<missing>'}"
-            )
-        if relation == "continues" and "port_mappings" in data:
-            raise ValueError("continues edges do not accept port_mappings")
-        port_mappings = [
-            ModelPortMapping.from_dict(item) for item in data.get("port_mappings", [])
-        ]
-        mapping_ids = [mapping.mapping_id for mapping in port_mappings]
-        mapping_pairs = [
-            (mapping.source_port_id, mapping.target_port_id)
-            for mapping in port_mappings
-        ]
-        if len(mapping_ids) != len(set(mapping_ids)) or len(mapping_pairs) != len(
-            set(mapping_pairs)
-        ):
-            raise ValueError(
-                f"model edge {data.get('edge_id', '')} has duplicate port mappings"
-            )
+            raise ValueError(f"edge relation {relation!r} is retired or unknown; use parent_child or continues")
         variables = data.get("variables", [])
-        if not isinstance(variables, list) or any(not isinstance(name, str) or not name.strip() for name in variables):
-            raise ValueError("edge variables must be a list of nonempty names")
-        if len(variables) != len(set(variables)):
-            raise ValueError("edge variables must be unique")
+        if not isinstance(variables, list) or any(not isinstance(v, str) or not v.strip() for v in variables) or len(variables)!=len(set(variables)):
+            raise ValueError("edge variables must be unique nonempty names")
         if variables and relation != "continues":
             raise ValueError("edge variables are only valid on continues edges")
-        if relation == "consumes_output_of" and not port_mappings:
-            raise ValueError(
-                f"model edge {data.get('edge_id', '')} relation {relation} requires port_mappings"
-            )
-        if relation not in TRANSFER_RELATIONS and port_mappings:
-            raise ValueError(
-                f"model edge {data.get('edge_id', '')} relation {relation} does not transfer ports"
-            )
-        return cls(
-            edge_id=str(data.get("edge_id", "")),
-            source_model_id=str(data.get("source_model_id", "")),
-            target_model_id=str(data.get("target_model_id", "")),
-            relation=relation,
-            port_mappings=port_mappings,
-            allowed_use=list(data.get("allowed_use", [])),
-            forbidden_use=list(data.get("forbidden_use", [])),
-            read_only=bool(data.get("read_only", True)),
-            requires_current_source=bool(data.get("requires_current_source", True)),
-            variables=variables,
-        )
+        return cls(str(data.get("edge_id", "")), str(data.get("from", "")), str(data.get("to", "")), relation, variables)
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "edge_id": self.edge_id,
-            "source_model_id": self.source_model_id,
-            "target_model_id": self.target_model_id,
-            "relation": self.relation,
-            **({"port_mappings": [mapping.to_dict() for mapping in self.port_mappings]} if self.relation != "continues" else {}),
-            "allowed_use": self.allowed_use,
-            "forbidden_use": self.forbidden_use,
-            "read_only": self.read_only,
-            "requires_current_source": self.requires_current_source,
-            **({"variables": self.variables} if self.variables else {}),
-        }
-
-
-@dataclass(frozen=True)
-class WorldStateSnapshot:
-    snapshot_id: str
-    model_ids: list[str] = field(default_factory=list)
-    status: str = "current"
-    notes: list[str] = field(default_factory=list)
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> "WorldStateSnapshot":
-        return cls(
-            snapshot_id=str(data.get("snapshot_id", "")),
-            model_ids=list(data.get("model_ids", [])),
-            status=str(data.get("status", "current")),
-            notes=list(data.get("notes", [])),
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "snapshot_id": self.snapshot_id,
-            "model_ids": self.model_ids,
-            "status": self.status,
-            "notes": self.notes,
-        }
+    def to_dict(self):
+        return {"edge_id":self.edge_id,"from":self.from_id,"to":self.to_id,"relation":self.relation, **({"variables":self.variables} if self.variables else {})}
 
 
 @dataclass(frozen=True)
 class ModelMeshContract:
     mesh_id: str
-    schema_version: str = "worldguard.model_mesh.v1"
-    run_id: str = "worldguard-mesh-run"
     nodes: list[ModelNode] = field(default_factory=list)
     edges: list[ModelEdge] = field(default_factory=list)
-    snapshots: list[WorldStateSnapshot] = field(default_factory=list)
+    variants: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any], *, base_dir: str | Path | None = None) -> "ModelMeshContract":
+    def from_dict(cls, data, *, base_dir=None):
         if not isinstance(data, Mapping):
             raise ValueError("model mesh must be a mapping")
-        for name in ("nodes", "edges", "snapshots"):
-            rows = data.get(name, [])
-            if not isinstance(rows, (list, tuple)):
+        _retired(data, {"schema_version", "run_id", "snapshots", "provider_availability", "closure_profile", "semantic_coverage", "semantic_coverage_contract", "coverage_contract"}, "mesh.")
+        if set(data)-{"mesh_id", "nodes", "edges", "variants"}:
+            raise ValueError("model mesh has unknown fields")
+        for name in ("nodes", "edges"):
+            if not isinstance(data.get(name, []), (list, tuple)) or any(not isinstance(row, Mapping) for row in data.get(name, [])):
                 raise ValueError(f"{name} must be a list of mappings")
-            for index, row in enumerate(rows):
-                if not isinstance(row, Mapping):
-                    raise ValueError(f"{name}[{index}] must be a mapping")
-        if "provider_availability" in data:
-            raise ValueError("provider_availability is retired")
-        if "closure_profile" in data:
-            raise ValueError(
-                "closure_profile is retired; current WorldGuard always requires semantic execution"
-            )
-        retired = sorted(
-            {"semantic_coverage_contract", "coverage_contract"}.intersection(data)
-        )
-        if retired:
-            raise ValueError(
-                "model mesh uses retired fields: " + ", ".join(retired)
-            )
-        if "semantic_coverage" in data:
-            raise ValueError("semantic_coverage is retired; every node in the mesh is checked")
-        nodes = [ModelNode.from_dict(item, base_dir=base_dir) for item in data.get("nodes", [])]
-        return cls(
-            mesh_id=str(data.get("mesh_id", "")),
-            schema_version=str(data.get("schema_version", "worldguard.model_mesh.v1")),
-            run_id=str(data.get("run_id", "worldguard-mesh-run")),
-            nodes=nodes,
-            edges=[ModelEdge.from_dict(item) for item in data.get("edges", [])],
-            snapshots=[
-                WorldStateSnapshot.from_dict(item) for item in data.get("snapshots", [])
-            ],
-        )
+        variants=data.get("variants", []);validate_variants(variants)
+        return cls(str(data.get("mesh_id", "")), [ModelNode.from_dict(n,base_dir=base_dir) for n in data.get("nodes",[])], [ModelEdge.from_dict(e) for e in data.get("edges",[])], variants)
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "mesh_id": self.mesh_id,
-            "schema_version": self.schema_version,
-            "run_id": self.run_id,
-            "nodes": [node.to_dict() for node in self.nodes],
-            "edges": [edge.to_dict() for edge in self.edges],
-            "snapshots": [snapshot.to_dict() for snapshot in self.snapshots],
-        }
+    def to_dict(self):
+        return {"mesh_id":self.mesh_id,"nodes":[n.to_dict() for n in self.nodes],"edges":[e.to_dict() for e in self.edges], **({"variants":self.variants} if self.variants else {})}
 
 
 @dataclass(frozen=True)
@@ -373,20 +123,10 @@ class MeshFinding:
     node_id: str = ""
     edge_id: str = ""
     evidence: dict[str, Any] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "status", coerce_status(self.status))
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "finding_id": self.finding_id,
-            "status": self.status.value,
-            "code": self.code,
-            "message": self.message,
-            "node_id": self.node_id,
-            "edge_id": self.edge_id,
-            "evidence": self.evidence,
-        }
+    def __post_init__(self):
+        object.__setattr__(self,"status",coerce_status(self.status))
+    def to_dict(self):
+        return {"finding_id":self.finding_id,"status":self.status.value,"code":self.code,"message":self.message,"node_id":self.node_id,"edge_id":self.edge_id,"evidence":self.evidence}
 
 
 @dataclass(frozen=True)
@@ -397,154 +137,133 @@ class MeshReport:
     checked: dict[str, int] = field(default_factory=dict)
     scope_limits: list[str] = field(default_factory=list)
     sources: dict[str, str] = field(default_factory=dict)
-
+    tree: list[str] = field(default_factory=list)
+    variants: list[dict[str, Any]] = field(default_factory=list)
     def to_dict(self):
-        return {"status": self.status.value, "checked": self.checked,
-                "gaps": [*[{**({"source": self.sources[finding.node_id]} if self.sources.get(finding.node_id) else {}), **finding.to_dict()} for finding in self.findings],
-                         *[{**({"source": self.sources[node_id]} if self.sources.get(node_id) else {}), "node_id": node_id, **gap} for node_id, report in sorted(self.node_reports.items()) for gap in report.gaps]],
-                "nodes": {node_id: report.to_dict() for node_id, report in sorted(self.node_reports.items())},
-                "scope_limits": self.scope_limits}
+        return {"status":self.status.value,"checked":self.checked,
+                "gaps":[*[{**({"source":self.sources[f.node_id]} if self.sources.get(f.node_id) else {}),**f.to_dict()} for f in self.findings],
+                        *[{**({"source":self.sources[node_id]} if self.sources.get(node_id) else {}),"node_id":node_id,**gap} for node_id,report in sorted(self.node_reports.items()) for gap in report.gaps]],
+                "nodes":{key:r.to_dict() for key,r in sorted(self.node_reports.items())},"scope_limits":self.scope_limits,"tree":self.tree,
+                **({"variants":self.variants} if self.variants else {})}
 
 
-def qualification_context_for_node(
-    mesh: ModelMeshContract,
-    node: ModelNode,
-) -> QualificationContext:
-    if node.contract is None:
-        raise ValueError(f"model node {node.model_id} lacks a Guard contract")
-    return QualificationContext(
-        node_id=node.model_id,
-        target_id=node.contract.world_model.model_id or node.model_id,
-        target_revision=node.contract.world_model.model_version or node.model_version,
-    )
-
-
-def run_model_mesh(mesh: ModelMeshContract | Mapping[str, Any], *, base_dir: str | Path | None = None) -> MeshReport:
-    if not isinstance(mesh, ModelMeshContract):
-        mesh = ModelMeshContract.from_dict(dict(mesh), base_dir=base_dir)
-
-    node_reports: dict[str, GuardedReport] = {}
-    findings: list[MeshFinding] = []
-    node_ids: set[str] = set()
-    duplicate_ids: set[str] = set()
-
-    nodes_by_id = {node.model_id: node for node in mesh.nodes}
-    contracts = {node.model_id: node.contract for node in mesh.nodes if node.contract is not None}
-    for node in mesh.nodes:
-        if node.model_id in node_ids:
-            duplicate_ids.add(node.model_id)
-        node_ids.add(node.model_id)
-        findings.extend(_authority_findings(mesh, node))
-        if node.contract is not None:
-            report = run_worldguard(
-                node.contract,
-                context=replace(qualification_context_for_node(mesh, node), node_contracts=contracts,
-                                descendant_ids=_descendants(mesh, node.model_id)),
-            )
-            node_reports[node.model_id] = report
-        else:
-            findings.append(_finding(
-                mesh, GuardStatus.GAP, "MESH_EXPECTED_NODE_CONTRACT_MISSING",
-                "Every mesh node requires a Guard contract, embedded or loaded from a file.",
-                node_id=node.model_id,
-            ))
-
-    for model_id in sorted(duplicate_ids):
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.FAIL,
-                "MESH_DUPLICATE_MODEL_ID",
-                "Duplicate model ids make mesh topology ambiguous.",
-                node_id=model_id,
-                evidence={"model_id": model_id},
-            )
-        )
-
+def _descendants(mesh, model_id):
+    children={}
     for edge in mesh.edges:
-        findings.extend(_edge_findings(mesh, edge, node_ids, nodes_by_id))
-        if edge.relation == "continues" and edge.source_model_id in contracts and edge.target_model_id in contracts:
-            findings.extend(_continues_findings(mesh, edge, contracts[edge.source_model_id], contracts[edge.target_model_id]))
-
-    for cycle in _cycles(mesh.edges):
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.FAIL,
-                "MESH_DEPENDENCY_CYCLE",
-                "Mesh dependency edges contain a cycle.",
-                evidence={"cycle": cycle},
-            )
-        )
-
-    status = aggregate_statuses([*[r.status for r in node_reports.values()], *[f.status for f in findings]])
-    return MeshReport(status=status, node_reports=node_reports, findings=findings,
-        checked={"nodes": len(mesh.nodes), "edges": len(mesh.edges),
-                 "roots": len(node_ids - {edge.target_model_id for edge in mesh.edges if edge.relation == "parent_child"})},
-        sources={node.model_id: node.source for node in mesh.nodes if node.source},
-        scope_limits=sorted({limit for node in mesh.nodes for limit in node.authority.scope_limits}))
-
-
-def _descendants(mesh: ModelMeshContract, model_id: str) -> frozenset[str]:
-    children: dict[str, list[str]] = {}
-    for edge in mesh.edges:
-        if edge.relation == "parent_child":
-            children.setdefault(edge.source_model_id, []).append(edge.target_model_id)
-    seen, todo = {model_id}, list(children.get(model_id, []))
+        if edge.relation=="parent_child":children.setdefault(edge.from_id,[]).append(edge.to_id)
+    seen,todo={model_id},list(children.get(model_id,[]))
     while todo:
-        child = todo.pop()
-        if child not in seen:
-            seen.add(child)
-            todo.extend(children.get(child, []))
-    return frozenset(seen - {model_id})
+        child=todo.pop()
+        if child not in seen:seen.add(child);todo.extend(children.get(child,[]))
+    return frozenset(seen-{model_id})
 
 
-def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, source: GuardContract, target: GuardContract) -> list[MeshFinding]:
-    """Compare the actual source end state to the target's declared start."""
+def _tree_structure(mesh, reports):
+    ids={n.model_id for n in mesh.nodes};parents={};children={};continuations={}
+    for edge in mesh.edges:
+        if edge.from_id not in ids or edge.to_id not in ids:continue
+        if edge.relation=="parent_child":
+            parents.setdefault(edge.to_id,[]).append(edge.from_id);children.setdefault(edge.from_id,[]).append(edge.to_id)
+        elif edge.relation=="continues":continuations.setdefault(edge.from_id,[]).append(edge.to_id)
+    roots=sorted(ids-parents.keys());seen=set();lines=[]
+    def visit(node,depth):
+        if node in seen:return
+        seen.add(node);status=reports[node].status.value if node in reports else "GAP"
+        suffix=" -> continues "+", ".join(sorted(continuations[node])) if node in continuations else ""
+        lines.append("  "*depth+node+" "+status+suffix)
+        for child in sorted(children.get(node,[])):visit(child,depth+1)
+    for root in roots:visit(root,0)
+    reachable=set(seen)
+    for node in sorted(ids-seen):visit(node,0)
+    multiple=sorted(node for node, ps in parents.items() if len(ps)>1)
+    valid=len(roots)==1 and not multiple and reachable==ids
+    return lines, roots, multiple, valid
+
+
+def qualification_context_for_node(mesh, node):
+    return QualificationContext(node_contracts={n.model_id:n.contract for n in mesh.nodes if n.contract is not None}, descendant_ids=_descendants(mesh,node.model_id))
+
+
+def run_model_mesh(mesh, *, base_dir=None):
+    if not isinstance(mesh,ModelMeshContract):mesh=ModelMeshContract.from_dict(mesh,base_dir=base_dir)
+    findings=[];reports={};ids=set();duplicates=set();contracts={n.model_id:n.contract for n in mesh.nodes if n.contract is not None}
+    for node in mesh.nodes:
+        if node.model_id in ids:duplicates.add(node.model_id)
+        ids.add(node.model_id)
+        if node.contract is None:
+            findings.append(_finding(mesh,GuardStatus.GAP,"MESH_EXPECTED_NODE_CONTRACT_MISSING","Every node requires a world contract.",node_id=node.model_id))
+        else:
+            reports[node.model_id]=run_worldguard(node.contract,context=qualification_context_for_node(mesh,node))
+    for node in sorted(duplicates):findings.append(_finding(mesh,GuardStatus.FAIL,"MESH_DUPLICATE_MODEL_ID","Duplicate model ids make topology ambiguous.",node_id=node))
+    for edge in mesh.edges:
+        for side,node_id in (("from",edge.from_id),("to",edge.to_id)):
+            if node_id not in ids:findings.append(_finding(mesh,GuardStatus.GAP,"MESH_EDGE_NODE_MISSING","An edge names a missing node.",edge_id=edge.edge_id,evidence={"side":side,"model_id":node_id}))
+        if edge.relation=="continues" and edge.from_id in contracts and edge.to_id in contracts:
+            findings.extend(_continues_findings(mesh,edge,contracts[edge.from_id],contracts[edge.to_id]))
+    for cycle in _cycles(mesh.edges):findings.append(_finding(mesh,GuardStatus.FAIL,"MESH_DEPENDENCY_CYCLE","Tree or continuation edges contain a cycle.",evidence={"cycle":cycle}))
+    lines,roots,multiple,valid=_tree_structure(mesh,reports)
+    if not valid:findings.append(_finding(mesh,GuardStatus.GAP,"MESH_NOT_ONE_TREE","A model tree needs one root and at most one parent per node, connected through parent_child edges.",evidence={"roots":roots,"multiple_parents":multiple}))
+    variant_results=[]
+    for variant in mesh.variants:
+        changed=apply_variant(mesh.to_dict(),variant)
+        result=run_model_mesh(changed)
+        codes={str(g.get("code")) for g in result.to_dict()["gaps"]}
+        expected=variant.get("expect","FAIL");code=variant.get("code")
+        caught=result.status.value==expected and (not code or code in codes)
+        variant_results.append({"id":variant["id"],"status":result.status.value,"expected":expected,"code":code,"caught":caught})
+        if not caught:findings.append(_finding(mesh,GuardStatus.GAP,"VARIANT_NOT_CAUGHT","A tree variant did not fail with its declared status and code.",evidence={"variant":variant["id"],"expected":expected,"code":code,"actual":result.status.value,"codes":sorted(codes)}))
+    status=aggregate_statuses([*[r.status for r in reports.values()],*[f.status for f in findings]])
+    return MeshReport(status,reports,findings,{"nodes":len(mesh.nodes),"edges":len(mesh.edges),"roots":len(roots),"variants":len(variant_results)},
+                      sorted({v for n in mesh.nodes if n.contract for v in n.contract.world_model.scope_limits}),
+                      {n.model_id:n.source for n in mesh.nodes if n.source},lines,variant_results)
+
+
+def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract: GuardContract, to_contract: GuardContract) -> list[MeshFinding]:
+    """Compare the actual source end state to the next node's declared start."""
     findings = []
     def add(status, code, message, **evidence):
         findings.append(_finding(mesh, status, code, message, edge_id=edge.edge_id, evidence=evidence))
-    source_events = source.inputs.get("events", [])
-    target_events = target.inputs.get("events", [])
+    from_events = from_contract.inputs.get("events", [])
+    to_events = to_contract.inputs.get("events", [])
     missing_times = [{"side": side, "index": index}
-                     for side, events in (("source", source_events), ("target", target_events))
+                     for side, events in (("from", from_events), ("to", to_events))
                      for index, event in enumerate(events) if not isinstance(event, Mapping) or "at" not in event]
     named_times = [(f"edge {edge.edge_id} {side} event {event.get('event_id')}", event["at"])
-                   for side, events in (("source", source_events), ("target", target_events))
+                   for side, events in (("from", from_events), ("to", to_events))
                    for event in events if isinstance(event, Mapping) and "at" in event]
     validate_times(named_times)
-    source_missing_time = any(row["side"] == "source" for row in missing_times)
+    from_missing_time = any(row["side"] == "from" for row in missing_times)
     if missing_times:
         add(GuardStatus.GAP, "MESH_HANDOFF_TIME_MISSING", "Event times are needed to compare the handoff.", events=missing_times)
     else:
-        if source_events and target_events:
-            end = max((event["at"] for event in source_events), key=time_key)
-            start = min((event["at"] for event in target_events), key=time_key)
+        if from_events and to_events:
+            end = max((event["at"] for event in from_events), key=time_key)
+            start = min((event["at"] for event in to_events), key=time_key)
             if time_key(start) < time_key(end):
-                add(GuardStatus.FAIL, "MESH_HANDOFF_TIME_BACKWARDS", "Target begins before the source ends.", source_end=end, target_start=start)
-    if not source_missing_time and all(isinstance(event, Mapping) for event in target_events):
-        source_initial = source.inputs.get("event_model", {}).get("initial_states", [])
-        target_initial = target.inputs.get("event_model", {}).get("initial_states", [])
-        holding = frozenset(_fluent_values(source_initial))
-        for _event, _before, after in event_replay(source_events, source_initial):
+                add(GuardStatus.FAIL, "MESH_HANDOFF_TIME_BACKWARDS", "The next node begins before the previous node ends.", from_end=end, to_start=start)
+    if not from_missing_time and all(isinstance(event, Mapping) for event in to_events):
+        from_initial = from_contract.inputs.get("event_model", {}).get("initial_states", [])
+        to_initial = to_contract.inputs.get("event_model", {}).get("initial_states", [])
+        holding = frozenset(_fluent_values(from_initial))
+        for _event, _before, after in event_replay(from_events, from_initial):
             holding = after
-        target_start = set(_fluent_values(target_initial))
-        mentioned = set(target_start)
-        for event in target_events:
+        to_start = set(_fluent_values(to_initial))
+        mentioned = set(to_start)
+        for event in to_events:
             for key in ("requires", "initiates", "terminates", "releases"):
                 mentioned.update(_fluent_values(event.get(key)))
         for fluent in sorted(mentioned):
-            if (fluent in holding) != (fluent in target_start):
-                add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A target fluent differs from the source end state.",
-                    fluent=fluent, source_end=fluent in holding, target_initial=fluent in target_start)
-    source_resources = source.inputs.get("resources", {})
-    target_resources = target.inputs.get("resources", {})
-    shared = set(source_resources.get("unique", [])) & set(target_resources.get("unique", []))
-    replay_resources = source_resources
-    if shared and source_missing_time:
-        timed_events = {event.get("event_id") for event in source_events
+            if (fluent in holding) != (fluent in to_start):
+                add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A next-node fluent differs from the previous end state.",
+                    fluent=fluent, from_end=fluent in holding, to_initial=fluent in to_start)
+    from_resources = from_contract.inputs.get("resources", {})
+    to_resources = to_contract.inputs.get("resources", {})
+    shared = set(from_resources.get("unique", [])) & set(to_resources.get("unique", []))
+    replay_resources = from_resources
+    if shared and from_missing_time:
+        timed_events = {event.get("event_id") for event in from_events
                         if isinstance(event, Mapping) and "at" in event and not event.get("scenario_id")}
-        transfers = source_resources.get("transitions", [])
+        transfers = from_resources.get("transitions", [])
         def colors(transfer):
             return {str(arc.get("color")) for key in ("consumes", "produces")
                     for arc in transfer.get(key, []) if isinstance(arc, Mapping)}
@@ -557,212 +276,38 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, source: GuardC
                 break
             uncertain.update(coupled)
         shared -= uncertain
-        replay_resources = {**source_resources, "transitions": [row for row in transfers
+        replay_resources = {**from_resources, "transitions": [row for row in transfers
             if isinstance(row, Mapping) and not colors(row) & uncertain
             and ("event" not in row or row["event"] in timed_events)]}
     if shared:
-        final, source_error = token_replay(replay_resources, validate=not source_missing_time,
-            events=[event for event in source_events if isinstance(event, Mapping)])
-        initial, target_error = token_replay({**target_resources, "transitions": []})
-        if source_error is not None or target_error is not None:
+        final, from_error = token_replay(replay_resources, validate=not from_missing_time,
+            events=[event for event in from_events if isinstance(event, Mapping)])
+        initial, to_error = token_replay({**to_resources, "transitions": []})
+        if from_error is not None or to_error is not None:
             add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A unique token state cannot be replayed across this edge.",
-                source_error=source_error, target_error=target_error)
+                from_error=from_error, to_error=to_error)
         else:
             for color in sorted(shared):
                 left = {place: qty for (place, token), qty in final.items() if token == color and qty}
                 right = {place: qty for (place, token), qty in initial.items() if token == color and qty}
                 if left != right:
                     add(GuardStatus.FAIL, "MESH_HANDOFF_STATE_MISMATCH", "A unique token starts at a different location.",
-                        color=color, source_end=left, target_initial=right)
+                        color=color, from_end=left, to_initial=right)
     if edge.variables:
-        source_values = causal_scenario_values(source.inputs.get("causal_model", {}), event_time_values([event for event in source_events if isinstance(event, Mapping)]))
-        target_values = causal_scenario_values(target.inputs.get("causal_model", {}), event_time_values([event for event in target_events if isinstance(event, Mapping)]))
-        for scenario in sorted(target_values) or ["<none>"]:
-            left = next(iter(source_values.values())) if len(source_values) == 1 else source_values.get(scenario, {})
-            right = target_values.get(scenario, {})
+        from_values = causal_scenario_values(from_contract.inputs.get("causal_model", {}), event_time_values([event for event in from_events if isinstance(event, Mapping)]))
+        to_values = causal_scenario_values(to_contract.inputs.get("causal_model", {}), event_time_values([event for event in to_events if isinstance(event, Mapping)]))
+        for scenario in sorted(to_values) or ["<none>"]:
+            left = next(iter(from_values.values())) if len(from_values) == 1 else from_values.get(scenario, {})
+            right = to_values.get(scenario, {})
             for name in edge.variables:
                 if name not in left or name not in right:
                     add(GuardStatus.GAP, "MESH_HANDOFF_VALUE_MISSING", "A requested variable cannot be compared.",
-                        variable=name, scenario=scenario, source_value=left.get(name), target_value=right.get(name))
+                        variable=name, scenario=scenario, from_value=left.get(name), to_value=right.get(name))
                 elif not isfinite(left[name]) or not isfinite(right[name]):
                     raise ValueError(f"edge {edge.edge_id}: variable {name} in {scenario} must be finite")
                 elif abs(left[name] - right[name]) > 1e-9:
                     add(GuardStatus.FAIL, "MESH_HANDOFF_VALUE_MISMATCH", "A carried variable differs between nodes.",
-                        variable=name, scenario=scenario, source_value=left[name], target_value=right[name])
-    return findings
-
-
-def _authority_findings(mesh: ModelMeshContract, node: ModelNode) -> list[MeshFinding]:
-    if node.contract is None:
-        return []
-    requested = {
-        semantic
-        for semantic in claim_semantics(node.contract.claim)
-        if semantic not in {"prediction", "predictive", "forecast", "future_outcome"}
-    }
-    excluded = requested.intersection(node.authority.excludes)
-    if excluded:
-        return [
-            _finding(
-                mesh,
-                GuardStatus.BOUNDARY_EXCEEDED,
-                "MESH_AUTHORITY_EXCLUDED_SEMANTIC",
-                "Node contract requests semantics excluded by model authority.",
-                node_id=node.model_id,
-                evidence={"excluded_semantics": sorted(excluded)},
-            )
-        ]
-    missing = requested.difference(node.authority.owns)
-    if node.authority.owns and missing:
-        return [
-            _finding(
-                mesh,
-                GuardStatus.GAP,
-                "MESH_AUTHORITY_UNOWNED_SEMANTIC",
-                "Node contract requests semantics not owned by model authority.",
-                node_id=node.model_id,
-                evidence={"unowned_semantics": sorted(missing)},
-            )
-        ]
-    return []
-
-
-def _edge_findings(
-    mesh: ModelMeshContract,
-    edge: ModelEdge,
-    node_ids: set[str],
-    nodes_by_id: dict[str, ModelNode],
-) -> list[MeshFinding]:
-    findings: list[MeshFinding] = []
-    if edge.source_model_id not in node_ids:
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.GAP,
-                "MESH_MISSING_SOURCE_NODE",
-                "Handoff source model id is missing from mesh nodes.",
-                edge_id=edge.edge_id,
-                evidence=edge.to_dict(),
-            )
-        )
-    if edge.target_model_id not in node_ids:
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.GAP,
-                "MESH_MISSING_TARGET_NODE",
-                "Handoff target model id is missing from mesh nodes.",
-                edge_id=edge.edge_id,
-                evidence=edge.to_dict(),
-            )
-        )
-    if not edge.read_only:
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.FAIL,
-                "MESH_MUTABLE_HANDOFF",
-                "Mesh handoffs must be read-only.",
-                edge_id=edge.edge_id,
-                evidence=edge.to_dict(),
-            )
-        )
-    transferred_source_ports = {
-        mapping.source_port_id for mapping in edge.port_mappings
-    }
-    forbidden = sorted(transferred_source_ports.intersection(edge.forbidden_use))
-    if forbidden:
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.FAIL,
-                "MESH_FORBIDDEN_DOWNSTREAM_USE",
-                "Downstream handoff consumes output refs listed as forbidden.",
-                edge_id=edge.edge_id,
-                evidence={"forbidden_refs": forbidden, "edge": edge.to_dict()},
-            )
-        )
-    if edge.allowed_use:
-        unallowed = sorted(transferred_source_ports.difference(edge.allowed_use))
-        if unallowed:
-            findings.append(
-                _finding(
-                    mesh,
-                    GuardStatus.BOUNDARY_EXCEEDED,
-                    "MESH_UNALLOWED_DOWNSTREAM_USE",
-                    "Downstream handoff consumes output refs outside the allowed-use boundary.",
-                    edge_id=edge.edge_id,
-                    evidence={"unallowed_refs": unallowed, "edge": edge.to_dict()},
-                )
-            )
-    source = nodes_by_id.get(edge.source_model_id)
-    target = nodes_by_id.get(edge.target_model_id)
-    if source and target and edge.relation in TRANSFER_RELATIONS:
-        source_ports = {port.port_id: port for port in source.output_ports}
-        target_ports = {port.port_id: port for port in target.input_ports}
-        for mapping in edge.port_mappings:
-            source_port = source_ports.get(mapping.source_port_id)
-            target_port = target_ports.get(mapping.target_port_id)
-            if source_port is None:
-                findings.append(
-                    _finding(
-                        mesh,
-                        GuardStatus.FAIL,
-                        "MESH_UNKNOWN_SOURCE_PORT",
-                        "Port mapping names an undeclared producer output.",
-                        edge_id=edge.edge_id,
-                        evidence={
-                            "mapping": mapping.to_dict(),
-                            "declared_source_ports": sorted(source_ports),
-                        },
-                    )
-                )
-                continue
-            if target_port is None:
-                findings.append(
-                    _finding(
-                        mesh,
-                        GuardStatus.FAIL,
-                        "MESH_UNKNOWN_TARGET_PORT",
-                        "Port mapping names an undeclared consumer input.",
-                        edge_id=edge.edge_id,
-                        evidence={
-                            "mapping": mapping.to_dict(),
-                            "declared_target_ports": sorted(target_ports),
-                        },
-                    )
-                )
-                continue
-            if (
-                source_port.value_type != target_port.value_type
-                or source_port.cardinality != target_port.cardinality
-            ):
-                findings.append(
-                    _finding(
-                        mesh,
-                        GuardStatus.FAIL,
-                        "MESH_INCOMPATIBLE_PORT_MAPPING",
-                        "Producer and consumer ports have incompatible type or cardinality.",
-                        edge_id=edge.edge_id,
-                        evidence={
-                            "mapping": mapping.to_dict(),
-                            "source_port": source_port.to_dict(),
-                            "target_port": target_port.to_dict(),
-                        },
-                    )
-                )
-    if edge.requires_current_source and source and source.freshness_status != "current":
-        findings.append(
-            _finding(
-                mesh,
-                GuardStatus.GAP,
-                "MESH_STALE_SOURCE",
-                "Handoff requires current source evidence but source is not current.",
-                node_id=edge.source_model_id,
-                edge_id=edge.edge_id,
-                evidence={"freshness_status": source.freshness_status, "edge": edge.to_dict()},
-            )
-        )
+                        variable=name, scenario=scenario, from_value=left[name], to_value=right[name])
     return findings
 
 
@@ -770,7 +315,7 @@ def _cycles(edges: list[ModelEdge]) -> list[list[str]]:
     graph: dict[str, list[str]] = {}
     for edge in edges:
         if edge.relation in CYCLE_RELATIONS:
-            graph.setdefault(edge.source_model_id, []).append(edge.target_model_id)
+            graph.setdefault(edge.from_id, []).append(edge.to_id)
 
     visiting: list[str] = []
     visited: set[str] = set()
@@ -805,7 +350,7 @@ def _finding(
 ) -> MeshFinding:
     suffix = node_id or edge_id or str(len(code))
     return MeshFinding(
-        finding_id=f"{mesh.run_id}:{mesh.mesh_id}:{code}:{suffix}",
+        finding_id=f"{mesh.mesh_id}:{code}:{suffix}",
         status=status,
         code=code,
         message=message,
@@ -813,3 +358,37 @@ def _finding(
         edge_id=edge_id,
         evidence=evidence or {},
     )
+
+def compare_mesh_with_observed_copy(world, observed):
+    """Compare a tree once and copy only selected event times."""
+    from .compare import _compare_world, _number
+    if not isinstance(world, ModelMeshContract):
+        world = ModelMeshContract.from_dict(world)
+    if not isinstance(observed, Mapping) or not isinstance(observed.get("nodes"), Mapping):
+        raise ValueError("mesh observations require a nodes mapping")
+    if set(observed) - {"nodes", "time_tolerance", "tolerance", "source"}:
+        raise ValueError("mesh observations have unknown fields")
+    defaults = {k:observed[k] for k in ("time_tolerance", "tolerance", "source") if k in observed}
+    for key in ("time_tolerance", "tolerance"):
+        if key in defaults:_number(defaults[key], key, nonnegative=True)
+    by_id = {node.model_id:node for node in world.nodes}
+    if len(by_id)!=len(world.nodes):
+        raise ValueError("mesh observations require unique model ids")
+    copied = deepcopy(world.to_dict()); matches=[];mismatches=[]
+    for node_id, values in observed["nodes"].items():
+        if node_id not in by_id or by_id[node_id].contract is None:
+            raise ValueError(f"observed node {node_id!r} is unknown or lacks a contract")
+        if not isinstance(values, Mapping):
+            raise ValueError(f"observed node {node_id!r} must be a mapping")
+        result, contract, selected = _compare_world(by_id[node_id].contract, {**defaults, **values})
+        matches.extend({"node":node_id, **row} for row in result["matches"])
+        mismatches.extend({"node":node_id, **row} for row in result["mismatches"])
+        destination = next(row["contract"] for row in copied["nodes"] if row["model_id"]==node_id)
+        for event_id, index in selected.items():
+            destination["inputs"]["events"][index]["at"] = deepcopy(values["events"][event_id])
+    return {"mesh_id":world.mesh_id,"status":"FAIL" if mismatches else "PASS","matches":matches,"mismatches":mismatches,
+            **({"source":observed["source"]} if "source" in observed else {})}, copied
+
+
+def compare_mesh(world, observed):
+    return compare_mesh_with_observed_copy(world, observed)[0]

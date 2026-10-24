@@ -61,7 +61,7 @@ def test_every_guard_input_block_in_the_reference_passes() -> None:
 
 
 def test_repository_mesh_example_passes() -> None:
-    mesh = SKILL.parents[1] / "examples" / "model_mesh" / "basic_mesh.yaml"
+    mesh = SKILL / "assets" / "examples" / "story_mesh.yaml"
     done = subprocess.run(
         [sys.executable, str(SKILL / "scripts" / "run_worldguard.py"), "mesh-check", "--mesh", str(mesh)],
         text=True,
@@ -93,7 +93,7 @@ def test_contract_reference_world_variants_compare_and_timeline_are_runnable(tmp
     assert main(['check', '--contract', str(world)]) == 0
     report = json.loads(capsys.readouterr().out)
     assert report['status'] == 'PASS' and report['checked']['variants'] == 1
-    assert main(['timeline', '--contract', str(world)]) == 0
+    assert main(['timeline', '--contract', str(world), '--json']) == 0
     assert len(json.loads(capsys.readouterr().out)['steps']) == 4
     assert main(['compare', '--contract', str(world), '--observed', str(observation)]) == 1
     assert len(json.loads(capsys.readouterr().out)['mismatches']) == 2
@@ -108,3 +108,34 @@ def test_mesh_reference_with_contract_files_is_runnable(tmp_path, capsys):
         (tmp_path / name).write_text(body)
     assert main(['mesh-check', '--mesh', str(tmp_path / 'mesh.yaml')]) == 0
     assert json.loads(capsys.readouterr().out)['status'] == 'PASS'
+
+
+def test_skill_files_name_only_existing_commands(monkeypatch):
+    import argparse
+    from worldguard.cli import main
+
+    class ParserCaptured(Exception):
+        pass
+
+    parsers = []
+    def capture(parser, *args, **kwargs):
+        parsers.append(parser)
+        raise ParserCaptured
+    monkeypatch.setattr(argparse.ArgumentParser, "parse_args", capture)
+    try:
+        main([])
+    except ParserCaptured:
+        pass
+    commands = next(action.choices for action in parsers[0]._actions
+                    if isinstance(action, argparse._SubParsersAction))
+    paths = [SKILL / "SKILL.md", *sorted((SKILL / "references").glob("*.md")), SKILL.parents[1] / "README.md"]
+    seen = set()
+    for path in paths:
+        for match in re.finditer(r"run_worldguard\.py\s+([a-z][a-z-]*)([^\n]*)", path.read_text()):
+            name, tail = match.groups()
+            assert name in commands, (path, name)
+            valid = {option for action in commands[name]._actions for option in action.option_strings}
+            for option in re.findall(r"(?<![\w-])--[a-z][a-z-]*", tail):
+                assert option in valid, (path, name, option)
+            seen.add(name)
+    assert seen == {"check", "mesh-check", "compare", "timeline"}

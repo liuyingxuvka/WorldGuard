@@ -1,10 +1,4 @@
-"""WorldGuard family oracle catalog and per-task Guard purpose contracts.
-
-An author-side maintenance tool may supervise this module as one declared
-native check, but WorldGuard alone owns the purposes, failure classes, fixtures,
-and oracle semantics. The
-family inventory is baseline regression authority for declared native checks.
-"""
+"""Per-Guard regression cases: one good input and one bad input per native failure."""
 
 from __future__ import annotations
 
@@ -17,9 +11,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
-from .contracts import GuardContract
-from .guards import GUARD_RUNNERS
-from .status import GuardStatus
+from worldguard.contracts import GuardContract
+from worldguard.guards import GUARD_RUNNERS
+from worldguard.status import GuardStatus
 
 
 @dataclass(frozen=True)
@@ -280,17 +274,14 @@ PROTECTED_FAILURE_CLASSES = (
 
 
 def _contract(case_id: str, guard: str, text: str, inputs: Mapping[str, Any], semantics: tuple[str, ...] = ()) -> GuardContract:
-    task_contract_id = f"guard-model-contract:{case_id}"
-    run_id = f"guard-model-contract:{case_id}"
+    task_contract_id = f"guard-catalog:{case_id}"
     model_instance_id = f"model:{guard.lower()}"
     return GuardContract.from_dict(
         {
             "contract_id": task_contract_id,
-            "run_id": run_id,
             "claim": {
                 "claim_id": case_id,
                 "text": text,
-                "target_guards": [guard],
                 "requested_semantics": [guard.removesuffix("Guard").lower(), *semantics],
             },
             "world_model": {"model_id": model_instance_id, "model_version": "v1"},
@@ -328,7 +319,7 @@ def _failure_key(case: ProtectedFailureClass) -> tuple[str, str, str]:
     return case.guard, case.layer, case.code
 
 
-def run_guard_model_contract() -> dict[str, Any]:
+def run_guard_catalog() -> dict[str, Any]:
     """Run every catalog case once; never calibrate the checker inside a case."""
     failures: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
@@ -359,8 +350,8 @@ def run_guard_model_contract() -> dict[str, Any]:
                     "expected_code": case.code, "observed_codes": codes}
         observations.append(observed)
         if status != case.expected_status or codes != [case.code]:
-            failures.append({"code": "NATIVE_BAD_ORACLE_MISMATCH", **observed})
-    return {"schema_version": "worldguard.guard_model_contract_report.v1",
+            failures.append({"code": "NATIVE_BAD_RESULT_MISMATCH", **observed})
+    return {"schema_version": "guard_catalog",
             "status": "pass" if not failures else "fail", "ok": not failures,
             "purpose_count": len(guards), "native_good_count": len(NATIVE_GOOD_CASES),
             "protected_failure_count": len(expected), "known_bad_count": len(PROTECTED_FAILURE_CLASSES),
@@ -369,25 +360,3 @@ def run_guard_model_contract() -> dict[str, Any]:
             "protected_failures": [item.to_dict() for item in PROTECTED_FAILURE_CLASSES],
             "observations": observations, "failures": failures,
             "claim_boundary": "Finite author regression over native Guard-owned reactions only; no task understanding, factual truth, installation or release claim."}
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Verify the finite WorldGuard Guard-model contract.")
-    parser.add_argument("--json", action="store_true", help="Emit the complete JSON report.")
-    args = parser.parse_args(argv)
-    report = run_guard_model_contract()
-    if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
-    else:
-        print(
-            f"status={report['status']} purposes={report['purpose_count']} "
-            f"goods={report['native_good_count']} failures={report['protected_failure_count']} "
-            f"known_bads={report['known_bad_count']}"
-        )
-        for failure in report["failures"]:
-            print(json.dumps(failure, ensure_ascii=False, sort_keys=True))
-    return 0 if report["ok"] else 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

@@ -82,15 +82,15 @@ def _before(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
         return _gap("scenario is not declared by the event model")
     if not row.get("scenario"):
         all_events = [event for event in inputs.get("events", []) if isinstance(event, dict)]
-        if any(sum(str(event.get("event_id")) == target for event in all_events) > 1 for target in (first, second)):
+        if any(sum(str(event.get("event_id")) == destination for event in all_events) > 1 for destination in (first, second)):
             return _gap("event ids are ambiguous across scenarios; specify scenario")
         events = all_events
-    matches = {target: [event for event in events if str(event.get("event_id")) == target] for target in (first, second)}
+    matches = {destination: [event for event in events if str(event.get("event_id")) == destination] for destination in (first, second)}
     if any(len(rows) > 1 for rows in matches.values()):
         return _gap("event ids are ambiguous in this scenario")
     if any(rows and "at" not in rows[0] for rows in matches.values()):
         return _gap("event times are missing; before cannot be evaluated")
-    times = {target: rows[0]["at"] for target, rows in matches.items() if rows}
+    times = {destination: rows[0]["at"] for destination, rows in matches.items() if rows}
     unknown = [event_id for event_id in (first, second) if event_id not in times]
     if unknown:
         return _gap("events not in the world model: " + ", ".join(unknown))
@@ -122,10 +122,10 @@ def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
 def _value(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     """{variable: name, op: '>=', value: number, scenario: id}: the value in every (or the named) scenario."""
     causal = _mapping(inputs.get("causal_model"))
-    name, op, target = str(row["variable"]), str(row.get("op", "==")), row.get("value")
+    name, op, destination = str(row["variable"]), str(row.get("op", "==")), row.get("value")
     if name not in {str(item) for item in causal.get("variables", [])}:
         return _gap(f"variable {name!r} is not in the world model")
-    if op not in _COMPARE or isinstance(target, bool) or not isinstance(target, (int, float)):
+    if op not in _COMPARE or isinstance(destination, bool) or not isinstance(destination, (int, float)):
         return _gap("a variable assertion needs op (==, !=, <, <=, >, >=) and a numeric value")
     runs = causal_scenario_values(causal, event_time_values(inputs.get("events", [])))
     if row.get("scenario") is not None:
@@ -133,7 +133,7 @@ def _value(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     if not runs:
         return _gap("no evaluated scenario holds this variable")
     observed = {scenario_id: values.get(name) for scenario_id, values in sorted(runs.items())}
-    return _verdict(all(value is not None and _COMPARE[op](value, float(target)) for value in observed.values()), observed)
+    return _verdict(all(value is not None and _COMPARE[op](value, float(destination)) for value in observed.values()), observed)
 
 
 def _attitude(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
@@ -202,10 +202,10 @@ def _payoff(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     payoffs = [item for item in _mapping(inputs.get("game_model")).get("payoffs", []) if isinstance(item, dict)]
     rewards = [_mapping(item.get("reward")) for item in payoffs if str(item.get("state")) == str(row.get("state"))]
     values = [float(reward[str(row["player"])]) for reward in rewards if str(row["player"]) in reward]
-    target = row.get("reward")
-    if not values or isinstance(target, bool) or not isinstance(target, (int, float)):
+    destination = row.get("reward")
+    if not values or isinstance(destination, bool) or not isinstance(destination, (int, float)):
         return _gap("a payoff assertion needs a declared state and player and a numeric reward")
-    return _verdict(any(math.isclose(value, float(target)) for value in values), {"rewards": values})
+    return _verdict(any(math.isclose(value, float(destination)) for value in values), {"rewards": values})
 
 
 _EVALUATORS = {
@@ -231,15 +231,15 @@ def evaluate_claim_binding(contract: GuardContract, *, node_contracts=None, desc
         else:
             row["guard"] = SEMANTIC_GUARD_ROUTES[CLAIM_ASSERTION_KINDS[kind]][0]
             try:
-                target = assertion.get("node")
+                destination = assertion.get("node")
                 if "node" in assertion and node_contracts is None:
                     status, detail = _gap("node rows need mesh-check")
-                elif "node" in assertion and target not in descendant_ids:
-                    status, detail = _gap(f"node {target!r} is not a parent_child descendant of this node")
-                elif "node" in assertion and target not in node_contracts:
-                    status, detail = _gap(f"descendant node {target!r} has no readable contract")
+                elif "node" in assertion and destination not in descendant_ids:
+                    status, detail = _gap(f"node {destination!r} is not a parent_child descendant of this node")
+                elif "node" in assertion and destination not in node_contracts:
+                    status, detail = _gap(f"descendant node {destination!r} has no readable contract")
                 else:
-                    inputs = node_contracts[target].inputs if "node" in assertion else contract.inputs
+                    inputs = node_contracts[destination].inputs if "node" in assertion else contract.inputs
                     status, detail = _EVALUATORS[kind](inputs, assertion)
             except (TypeError, ValueError, KeyError, AttributeError) as exc:
                 status, detail = _gap(f"cannot evaluate: {exc}")
