@@ -1,6 +1,3 @@
-.flowpilot/
-evidence/
-tools/check_wg13_repair_*.py
 __pycache__/
 .pytest_cache/
 *.pyc
@@ -11,11 +8,4 @@ dist/
 venv/
 /work/
 openspec/**/run-artifacts/
-openspec/**/verification-receipts/
-openspec/**/verification-reports/
-openspec/**/provenance/
-docs/flowguard_adoption_log.md
-.flowguard/adoption_log.jsonl
 .flowguard/cache/
-
-SLIM_LOG.md

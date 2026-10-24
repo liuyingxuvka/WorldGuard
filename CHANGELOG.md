@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Maintenance checks of WorldGuard's own model tree run on FlowGuard 0.70.12.
+
 ## v0.7.21 - 2026-10-24 - One world format and one model tree
 
 ### New
