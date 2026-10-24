@@ -300,7 +300,27 @@ def test_mesh_summary_prints_the_tree(tmp_path,capsys):
     data=continued_tree();file=tmp_path/'tree.yaml';file.write_text(yaml.safe_dump(data))
     assert main(['mesh-check','--mesh',str(file)])==0
     result=json.loads(capsys.readouterr().out)
-    assert result['tree']==['root PASS','  a PASS -> continues b','  b PASS']
+    assert result['tree']==['root PASS','  a PASS -> continues b PASS','  b PASS']
+
+
+def test_tree_lines_show_subtree_and_edge_status():
+    data=continued_tree()
+    data['nodes'][2]['contract']['inputs']['events'][0]['at']='t0'
+    data['nodes'][2]['contract']['claim']['asserts'][0]['at']='t0'
+    data['nodes'][0]['contract']['claim']['asserts'][0]['at']='t0'
+    report=run_model_mesh(data)
+    assert report.status is GuardStatus.FAIL
+    assert report.tree==['root PASS (tree FAIL)','  a PASS -> continues b FAIL MESH_HANDOFF_TIME_BACKWARDS','  b PASS']
+    planned=continued_tree()
+    planned['nodes'].append({'model_id':'c'})
+    planned['edges'].append({'edge_id':'root-c','from':'root','to':'c','relation':'parent_child'})
+    report=run_model_mesh(planned)
+    assert report.status is GuardStatus.GAP
+    assert report.tree==['root PASS (tree GAP)','  a PASS -> continues b PASS','  b PASS','  c GAP planned']
+    child=continued_tree()
+    child['nodes'][2]['contract']['claim']['asserts'][0]['value']=False
+    report=run_model_mesh(child)
+    assert report.tree[0]=='root PASS (tree FAIL)' and report.tree[2]=='  b FAIL'
 
 
 def test_mesh_variant_must_fail_with_its_code():

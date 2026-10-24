@@ -210,7 +210,8 @@
       "responsibilities": [
         "Aggregate real child outcomes and descendant-only parent assertions",
         "Check one rooted parent tree and state/time/value continuity",
-        "Replay declared tree variants with exact failure codes and preserve native findings"
+        "Replay declared tree variants with exact failure codes and preserve native findings",
+        "Tree lines show each node's own status, its subtree status when different, and each continues edge's result; the root line's subtree status equals the report status"
       ],
       "files": [
         "worldguard/mesh.py"
@@ -236,7 +237,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:737db0863fe98c97f1a1a9ad8a3cd0c7c677299c1df86fa5b5afa25fa689f2a2"
+      "fingerprint": "sha256:af9b621146f8f8f91c121f4e4c9b3ab526995c7727e3c7ffc29ce9afc069a06d"
     },
     {
       "id": "installer",

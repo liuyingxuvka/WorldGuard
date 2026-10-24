@@ -28,6 +28,7 @@ TESTED_BY = {
     'dependency_cycle_fails': ['tests/test_model_mesh.py:test_continues_cycle_fails'],
     'one_root': ['tests/test_model_mesh.py:test_a_mesh_with_two_roots_is_not_one_tree'],
     'mesh_variants_must_fail': ['tests/test_model_mesh.py:test_mesh_variant_must_fail_with_its_code'],
+    'tree_lines_match_status': ['tests/test_model_mesh.py:test_tree_lines_show_subtree_and_edge_status'],
 }
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -43,6 +44,7 @@ class Request:
     one_root: bool = True
     has_variant: bool = False
     variant_caught: bool = True
+    planned_node: bool = False
 
 
 @dataclass(frozen=True)
@@ -52,12 +54,15 @@ class State:
     exit_code: int | None = None
     codes: tuple[str, ...] = ()
     variants_checked: bool = False
+    root_line: str = ''
+    edge_segments: tuple[str, ...] = ()
+    planned_shown: bool = False
 
 
 class RunMesh:
     name = 'RunMesh'
     reads = ()
-    writes = ('request', 'status', 'exit_code', 'codes', 'variants_checked')
+    writes = ('request', 'status', 'exit_code', 'codes', 'variants_checked', 'root_line', 'edge_segments', 'planned_shown')
     mutation = ''
 
     def apply(self, request, state):
@@ -73,6 +78,8 @@ class RunMesh:
                 boundaries.append('EVENT_BOUNDARY_NUMERIC_DYNAMICS')
             else:
                 (failures if request.child_status == 'FAIL' else gaps).append('CLAIM_ASSERTION_FALSE' if request.child_status == 'FAIL' else 'CLAIM_ASSERTION_UNRESOLVED')
+        if request.planned_node:
+            gaps.append('MESH_EXPECTED_NODE_CONTRACT_MISSING')
         if request.cycle and self.mutation != 'cycles_ignored':
             failures.append('MESH_DEPENDENCY_CYCLE')
         if not request.one_root and self.mutation != 'multiple_roots_allowed':
@@ -82,8 +89,20 @@ class RunMesh:
             gaps.append('VARIANT_NOT_CAUGHT')
         status = 'FAIL' if failures else 'GAP' if gaps else 'BOUNDARY_EXCEEDED' if boundaries else 'PASS'
         code = 0 if status == 'PASS' else 1
-        result = State(request, status, code, tuple(sorted(set(failures + gaps + boundaries))), variants_checked)
+        edge_failure = any(code in EDGE_FAILURES for code in failures)
+        if self.mutation == 'root_line_hides_edge_failure':
+            # Today's lines: every node prints only its own status and no edge result.
+            root_line = request.child_status if request.child_status != 'PASS' else 'PASS'
+            segments = ('',) if edge_failure else ()
+        else:
+            root_line = status
+            segments = ('FAIL',) if edge_failure else ()
+        result = State(request, status, code, tuple(sorted(set(failures + gaps + boundaries))), variants_checked,
+                       root_line, segments, request.planned_node and self.mutation != 'root_line_hides_edge_failure')
         yield FunctionResult((code, status), result, label=status.lower())
+
+
+EDGE_FAILURES = ('MESH_HANDOFF_STATE_MISMATCH', 'MESH_HANDOFF_TIME_BACKWARDS')
 
 
 def requires_state(state, trace):
@@ -132,6 +151,18 @@ def mesh_variants_must_fail(state, trace):
     return InvariantResult.pass_()
 
 
+def tree_lines_match_status(state, trace):
+    if not state.request:
+        return InvariantResult.pass_()
+    if state.request.one_root and state.root_line != state.status:
+        return InvariantResult.fail('the root line hides the tree status')
+    if any(code in EDGE_FAILURES for code in state.codes) and 'FAIL' not in state.edge_segments:
+        return InvariantResult.fail('a failing continues edge prints no FAIL on its segment')
+    if state.request.planned_node and not state.planned_shown:
+        return InvariantResult.fail('a node without a contract is not read as planned')
+    return InvariantResult.pass_()
+
+
 INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
     ('continues_requires_matching_state', 'preceding end state matches next node start', requires_state),
     ('continues_moves_time_forward', 'continuations do not move backwards', forward_time),
@@ -140,13 +171,16 @@ INVARIANTS = tuple(Invariant(name, description, check) for name, description, ch
     ('dependency_cycle_fails', 'dependency cycles fail', cycles_fail),
     ('one_root', 'only one connected parent-child root is a tree', one_root),
     ('mesh_variants_must_fail', 'every tree variant runs and must match its declared failure', mesh_variants_must_fail),
+    ('tree_lines_match_status', 'the root line shows the report status, failing continues edges print FAIL, contract-less nodes read planned',
+     tree_lines_match_status),
 ))
 CASES = (Request('chapters_ok_rooted.yaml'), Request('end_state_contradiction.yaml', state_matches=False, one_root=False),
          Request('ch2_resurrects.yaml', state_matches=False, one_root=False), Request('time_backwards.yaml', time_forward=False, one_root=False),
          Request('unrelated', descendant=False, one_root=False), Request('child_fail', child_status='FAIL'), Request('child_gap', child_status='GAP'),
          Request('child_boundary', child_status='BOUNDARY_EXCEEDED'), Request('cycle', cycle=True),
          Request('chapters_ok.yaml', one_root=False), Request('caught_variant', has_variant=True),
-         Request('uncaught_variant', has_variant=True, variant_caught=False))
+         Request('uncaught_variant', has_variant=True, variant_caught=False),
+         Request('planned', planned_node=True), Request('edge_time_backwards', time_forward=False))
 
 
 def explorer(step, names=None):
@@ -168,6 +202,7 @@ def broken_variants():
         ('cycles_ignored', 'dependency_cycle_fails'),
         ('multiple_roots_allowed', 'one_root'),
         ('variants_not_run', 'mesh_variants_must_fail'),
+        ('root_line_hides_edge_failure', 'tree_lines_match_status'),
     ):
         step = RunMesh()
         step.mutation = mutation
@@ -204,6 +239,12 @@ def conformance():
                     data['nodes'][2]['contract']['claim']['asserts'][0]['holds'] = 'unknown_fluent'
                 elif request.case == 'child_boundary':
                     data['nodes'][2]['contract']['claim']['requested_semantics'] = ['event', 'numeric_dynamics']
+                elif request.planned_node:
+                    data['nodes'].append({'model_id': 'c'})
+                    data['edges'].append({'edge_id': 'root-c', 'from': 'root', 'to': 'c', 'relation': 'parent_child'})
+                elif request.case == 'edge_time_backwards':
+                    data['nodes'][2]['contract']['inputs']['events'][0]['at'] = 't0'
+                    data['nodes'][2]['contract']['claim']['asserts'][0]['at'] = 't0'
                 elif request.has_variant:
                     change = ({'nodes[a].contract.inputs.events[a].initiates': []} if request.variant_caught
                               else {'nodes[a].contract.claim.claim_id': 'same-world-new-label'})
@@ -220,6 +261,17 @@ def conformance():
             codes = {row['code'] for row in result.get('gaps', [])}
             if (code, result['status']) != (expected.exit_code, expected.status) or not set(expected.codes) <= codes:
                 mismatches.append(f'{request.case}: expected {expected.status}/{expected.codes}, actual {code}/{result["status"]}/{sorted(codes)}')
+            lines = result.get('tree', [])
+            root_status = lines[0].split()[1] if lines else ''
+            if lines and '(tree ' in lines[0]:
+                root_status = lines[0].rsplit('(tree ', 1)[1].rstrip(')')
+            segments = tuple((part.split() + [''])[1] for line in lines for part in line.split(' -> continues ')[1:])
+            if request.one_root and root_status != result['status']:
+                mismatches.append(f'{request.case}: root line {lines[:1]} does not show {result["status"]}')
+            if set(expected.edge_segments) - set(segments):
+                mismatches.append(f'{request.case}: continues segments {segments} lack {expected.edge_segments}')
+            if request.planned_node and not any(line.split()[1:] == ['GAP', 'planned'] for line in lines):
+                mismatches.append(f'{request.case}: no planned node line in {lines}')
             if request.has_variant:
                 variants = result.get('variants', [])
                 if (result.get('checked', {}).get('variants') != 1 or len(variants) != 1

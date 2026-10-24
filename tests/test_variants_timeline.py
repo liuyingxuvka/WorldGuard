@@ -177,5 +177,5 @@ def test_timeline_prints_text_by_default_and_json_on_request(capsys):
 def test_timeline_reads_a_whole_mesh(capsys):
     assert main(['timeline','--example','story'])==0
     text=capsys.readouterr().out
-    assert 'story PASS' in text and 'chapter1 PASS -> continues chapter2' in text
+    assert 'story PASS' in text and 'chapter1 PASS -> continues chapter2 PASS' in text
     assert 'hand_over_key' in text and 'unlock' in text

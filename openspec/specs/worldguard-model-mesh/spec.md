@@ -38,7 +38,11 @@ block PASS. Invalid edit paths SHALL produce an input error naming the variant.
 
 ### Requirement: Readable portable tree
 Both summary and full mesh reports SHALL contain depth-first `tree` lines using
-two spaces per depth, each node's status and any outgoing `-> continues <id>`.
+two spaces per depth, each node's own status, ` (tree <status>)` when its subtree
+status (own, descendants and findings inside the subtree; a `continues` finding counts
+at the nearest common ancestor of its ends) differs, and each outgoing
+`-> continues <id> <status> [codes]`. A node without a contract SHALL read
+`GAP planned`. The root line's subtree status SHALL equal the report status.
 `mesh-check --example story` SHALL read the bundled three-node story. `timeline
 --mesh` SHALL print this tree and the event-bearing node timelines; `--json` SHALL
 retain their complete structures. Child problems and scope limits SHALL survive

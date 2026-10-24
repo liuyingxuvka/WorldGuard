@@ -68,7 +68,9 @@ def test_repository_mesh_example_passes() -> None:
         capture_output=True,
     )
     assert done.returncode == 0, done.stdout[-500:]
-    assert json.loads(done.stdout)["status"] == "PASS"
+    summary = json.loads(done.stdout)
+    assert summary["status"] == "PASS"
+    assert summary["tree"] == ["story PASS", "  chapter1 PASS -> continues chapter2 PASS", "  chapter2 PASS"]
 
 
 def test_installed_skill_runs_trip_example_without_repository_layout(tmp_path):

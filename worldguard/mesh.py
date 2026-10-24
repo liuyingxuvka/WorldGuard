@@ -158,26 +158,109 @@ def _descendants(mesh, model_id):
     return frozenset(seen-{model_id})
 
 
-def _tree_structure(mesh, reports):
-    ids={n.model_id for n in mesh.nodes};parents={};children={};continuations={}
+def _tree_shape(mesh):
+    """Parents, children and continuations among existing nodes; roots and whether they form one tree."""
+    ids = {n.model_id for n in mesh.nodes}
+    parents, children, continuations = {}, {}, {}
     for edge in mesh.edges:
-        if edge.from_id not in ids or edge.to_id not in ids:continue
-        if edge.relation=="parent_child":
-            parents.setdefault(edge.to_id,[]).append(edge.from_id);children.setdefault(edge.from_id,[]).append(edge.to_id)
-        elif edge.relation=="continues":continuations.setdefault(edge.from_id,[]).append(edge.to_id)
-    roots=sorted(ids-parents.keys());seen=set();lines=[]
-    def visit(node,depth):
-        if node in seen:return
-        seen.add(node);status=reports[node].status.value if node in reports else "GAP"
-        suffix=" -> continues "+", ".join(sorted(continuations[node])) if node in continuations else ""
-        lines.append("  "*depth+node+" "+status+suffix)
-        for child in sorted(children.get(node,[])):visit(child,depth+1)
-    for root in roots:visit(root,0)
-    reachable=set(seen)
-    for node in sorted(ids-seen):visit(node,0)
-    multiple=sorted(node for node, ps in parents.items() if len(ps)>1)
-    valid=len(roots)==1 and not multiple and reachable==ids
-    return lines, roots, multiple, valid
+        if edge.from_id not in ids or edge.to_id not in ids:
+            continue
+        if edge.relation == "parent_child":
+            parents.setdefault(edge.to_id, []).append(edge.from_id)
+            children.setdefault(edge.from_id, []).append(edge.to_id)
+        elif edge.relation == "continues":
+            continuations.setdefault(edge.from_id, []).append(edge)
+    roots = sorted(ids - parents.keys())
+    reachable = set()
+    todo = list(roots)
+    while todo:
+        node = todo.pop()
+        if node not in reachable:
+            reachable.add(node)
+            todo.extend(children.get(node, []))
+    multiple = sorted(node for node, ps in parents.items() if len(ps) > 1)
+    valid = len(roots) == 1 and not multiple and reachable == ids
+    return ids, parents, children, continuations, roots, multiple, valid
+
+
+def _common_ancestor(parents, left, right):
+    """The nearest node whose subtree holds both ends (first parent wins), or None."""
+    chain, node = [], left
+    while node is not None and node not in chain:
+        chain.append(node)
+        node = (parents.get(node) or [None])[0]
+    node, seen = right, set()
+    while node is not None and node not in seen:
+        if node in chain:
+            return node
+        seen.add(node)
+        node = (parents.get(node) or [None])[0]
+    return None
+
+
+def _tree_structure(mesh, reports, findings):
+    """Tree lines: own status, subtree status when it differs, and each continues edge's result."""
+    ids, parents, children, continuations, roots, _multiple, _valid = _tree_shape(mesh)
+    planned = {n.model_id for n in mesh.nodes if n.contract is None}
+    own = {node: (reports[node].status if node in reports else GuardStatus.GAP) for node in ids}
+    edges = {edge.edge_id: edge for edge in mesh.edges}
+    placed, edge_findings, tree_level = {}, {}, []
+    for finding in findings:
+        edge = edges.get(finding.edge_id) if finding.edge_id else None
+        if finding.node_id in ids:
+            placed.setdefault(finding.node_id, []).append(finding.status)
+        elif edge is not None and edge.from_id in ids and edge.to_id in ids:
+            edge_findings.setdefault(edge.edge_id, []).append(finding)
+            home = _common_ancestor(parents, edge.from_id, edge.to_id)
+            if home is None:
+                tree_level.append(finding.status)
+            else:
+                placed.setdefault(home, []).append(finding.status)
+        else:
+            tree_level.append(finding.status)
+    seen, lines = set(), []
+
+    def subtree(node, top):
+        statuses, todo, inside = [], [node], set()
+        while todo:
+            current = todo.pop()
+            if current in inside:
+                continue
+            inside.add(current)
+            statuses.append(own[current])
+            statuses.extend(placed.get(current, []))
+            todo.extend(children.get(current, []))
+        if top:
+            statuses.extend(tree_level)
+        return aggregate_statuses(statuses)
+
+    def segment(edge):
+        rows = edge_findings.get(edge.edge_id, [])
+        if not rows and (edge.from_id in planned or edge.to_id in planned):
+            return f" -> continues {edge.to_id} GAP planned"
+        status = aggregate_statuses([row.status for row in rows]) if rows else GuardStatus.PASS
+        codes = ",".join(sorted({row.code for row in rows}))
+        return f" -> continues {edge.to_id} {status.value}" + (f" {codes}" if codes else "")
+
+    def visit(node, depth, top):
+        if node in seen:
+            return
+        seen.add(node)
+        mine = "GAP planned" if node in planned else own[node].value
+        whole = subtree(node, top)
+        line = "  " * depth + node + " " + mine
+        if whole != own[node]:
+            line += f" (tree {whole.value})"
+        for edge in sorted(continuations.get(node, []), key=lambda e: (e.to_id, e.edge_id)):
+            line += segment(edge)
+        lines.append(line)
+        for child in sorted(children.get(node, [])):
+            visit(child, depth + 1, False)
+    for root in roots:
+        visit(root, 0, True)
+    for node in sorted(ids - seen):
+        visit(node, 0, True)
+    return lines
 
 
 def qualification_context_for_node(mesh, node):
@@ -201,7 +284,7 @@ def run_model_mesh(mesh, *, base_dir=None):
         if edge.relation=="continues" and edge.from_id in contracts and edge.to_id in contracts:
             findings.extend(_continues_findings(mesh,edge,contracts[edge.from_id],contracts[edge.to_id]))
     for cycle in _cycles(mesh.edges):findings.append(_finding(mesh,GuardStatus.FAIL,"MESH_DEPENDENCY_CYCLE","Tree or continuation edges contain a cycle.",evidence={"cycle":cycle}))
-    lines,roots,multiple,valid=_tree_structure(mesh,reports)
+    _ids,_parents,_children,_continuations,roots,multiple,valid=_tree_shape(mesh)
     if not valid:findings.append(_finding(mesh,GuardStatus.GAP,"MESH_NOT_ONE_TREE","A model tree needs one root and at most one parent per node, connected through parent_child edges.",evidence={"roots":roots,"multiple_parents":multiple}))
     variant_results=[]
     for variant in mesh.variants:
@@ -213,6 +296,7 @@ def run_model_mesh(mesh, *, base_dir=None):
         variant_results.append({"id":variant["id"],"status":result.status.value,"expected":expected,"code":code,"caught":caught})
         if not caught:findings.append(_finding(mesh,GuardStatus.GAP,"VARIANT_NOT_CAUGHT","A tree variant did not fail with its declared status and code.",evidence={"variant":variant["id"],"expected":expected,"code":code,"actual":result.status.value,"codes":sorted(codes)}))
     status=aggregate_statuses([*[r.status for r in reports.values()],*[f.status for f in findings]])
+    lines=_tree_structure(mesh,reports,findings)
     return MeshReport(status,reports,findings,{"nodes":len(mesh.nodes),"edges":len(mesh.edges),"roots":len(roots),"variants":len(variant_results)},
                       sorted({v for n in mesh.nodes if n.contract for v in n.contract.world_model.scope_limits}),
                       {n.model_id:n.source for n in mesh.nodes if n.source},lines,variant_results)

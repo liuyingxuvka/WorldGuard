@@ -51,8 +51,10 @@ inputs:
 
 Run `python <skill-root>/scripts/run_worldguard.py mesh-check --mesh mesh.yaml`.
 `mesh-check --example story` loads the same portable three-node shape from the skill.
-`--json` adds node reports; both forms include depth-first `tree` lines, e.g.
-`whole PASS`, `  part1 PASS -> continues part2`, `  part2 PASS`.
+`--json` adds node reports; both forms include depth-first `tree` lines: each node's
+own status, ` (tree <status>)` when its subtree differs, and each `continues` edge's
+result and codes; the root's subtree status equals `status`, e.g. `whole PASS (tree FAIL)`,
+`  part1 PASS -> continues part2 FAIL MESH_HANDOFF_TIME_BACKWARDS`, `  part2 PASS`.
 
 ## Containment and continuation
 
@@ -61,8 +63,8 @@ nodes connected. Otherwise GAP `MESH_NOT_ONE_TREE`: add a root with containment
 edges to every top-level node.
 A root may contain only claim rows. `node:` assertions read only descendants and
 require `mesh-check`; false rows FAIL, unresolved rows GAP. Every child still runs
-independently. Missing contracts GAP; absent edge endpoints GAP with
-`MESH_EDGE_NODE_MISSING`. Cycles FAIL.
+independently. A node without `contract` reads `GAP planned`; absent edge
+endpoints GAP with `MESH_EDGE_NODE_MISSING`. Cycles FAIL.
 
 `continues` checks earlier final unscoped fluents against next initial values for
 each next-mentioned fluent; earlier-only names need not be copied. Clocks must
