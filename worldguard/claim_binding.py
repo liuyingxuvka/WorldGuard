@@ -65,7 +65,7 @@ def _holds(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     if any("at" not in event for event in events):
         return _gap("event times are missing; fluent state cannot be ordered")
     holding = frozenset(fluent_values(initial))
-    for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
+    for event, _, after in event_replay(events, initial, str(row.get("scenario", "")), skip_illegal=True):
         if event_time_key(event.get("at", "")) > event_time_key(row["at"]):
             break
         holding = after
@@ -178,7 +178,7 @@ def _norm(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
             fluent for event in events for key in ("initiates", "terminates", "releases", "requires") for fluent in fluent_values(event.get(key))
         }
         fluents = frozenset(initial)
-        for event, _, after in event_replay(events, initial, str(row.get("scenario", ""))):
+        for event, _, after in event_replay(events, initial, str(row.get("scenario", "")), skip_illegal=True):
             if event_time_key(event["at"]) >= event_time_key(row["at"]):
                 break
             fluents = after

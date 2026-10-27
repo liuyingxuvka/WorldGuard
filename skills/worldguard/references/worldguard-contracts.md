@@ -1,6 +1,6 @@
 # WorldGuard Contracts
 
-`GuardContract` checks one claim against one explicit world model. `ModelMeshContract` joins contracts in one tree; read [model-mesh.md](model-mesh.md) for that shape.
+`GuardContract` checks one claim against one explicit world model. `ModelMeshContract` joins contracts in a tree; see [model-mesh.md](model-mesh.md).
 
 ## Unit input
 
@@ -20,10 +20,12 @@ Run `check --contract <file.yaml>`, or `run_worldguard(contract)` in Python.
 
 ## Results
 
+Failed preconditions block effects in assertions, timelines and handoffs.
+
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
-The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
+The summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
 
 ## Build a world from a story or trip
 
@@ -67,7 +69,7 @@ variants:
 
 Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY_EXCEEDED`. `code` is optional. `set` replaces existing values, `remove` lists existing fields/items, and `add` maps list paths to lists of appended items. Dot-separated keys, numeric list indices (`[0]`) and exact list ids (`[e_give_key]`, matching `id` or any `_id` field) are supported. Invalid or ambiguous paths are input errors naming the variant. Edits affect an independent in-memory copy with its variants removed. Each result must match status and optional code; otherwise `VARIANT_NOT_CAUGHT` blocks PASS. `checked.variants` gives the count, including for mesh-node contracts.
 
-`timeline --contract <file> [--scenario <id>]` prints text: `claim <id> row <n>: … <result>` per claim row, one `agents:`/`space:`/`conflict:`/`norms:` line per declared sub-model, one step per line (fluents, tokens, source, `!!` codes), `variables` (`!!` causal codes), then `problems:` for the rest; every check code appears. `--json` keeps the whole view. `--mesh <file>` labels each world by node id; `--example scene|trip|story` uses skill assets. Ordering needs every applicable event time. It adds no checks.
+`timeline --contract <file> [--scenario <id>]` prints text: `claim <id> row <n>: … <result>` per claim row, one `agents:`/`space:`/`conflict:`/`norms:` line per declared sub-model, one step per line (fluents, tokens, source, `!!` codes), `variables` (`!!` causal codes), then `problems:` for the rest; every check code appears. `--json` keeps the whole view. `--mesh <file>` labels each world by node id; `--example scene|trip|story` uses skill assets. Ordering needs every applicable event time.
 
 Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. They only point to original text; no source content or age is checked. Full event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.
 

@@ -451,7 +451,7 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract:
         from_initial = from_contract.inputs.get("event_model", {}).get("initial_states", [])
         to_initial = to_contract.inputs.get("event_model", {}).get("initial_states", [])
         holding = frozenset(fluent_values(from_initial))
-        for _event, _before, after in event_replay(from_events, from_initial):
+        for _event, _before, after in event_replay(from_events, from_initial, skip_illegal=True):
             holding = after
         to_start = set(fluent_values(to_initial))
         mentioned = set(to_start)

@@ -25,16 +25,19 @@ def missing_bdi_fields(record: Mapping[str, Any]) -> list[str]:
     return missing
 
 
-def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str = ""):
+def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str = "", *, skip_illegal: bool = False):
     """Yield (event, fluents holding before it, fluents holding after it) for one scenario, in time order."""
     holding = frozenset(fluent_values(initial_fluents))
     applicable = [
         event for event in events
         if isinstance(event, dict) and (not event.get("scenario_id") or str(event["scenario_id"]) == scenario_id)
     ]
+    illegal = {(row.get("event_id"), row.get("at"), str(row.get("scenario_id", scenario_id)))
+               for row in event_precondition_failures(applicable, initial_fluents)} if skip_illegal else set()
     for event in sorted(applicable, key=lambda item: event_time_key(item.get("at", ""))):
         ended = set(fluent_values(event.get("terminates"))) | set(fluent_values(event.get("releases")))
-        after = frozenset((holding - ended) | set(fluent_values(event.get("initiates"))))
+        after = (holding if (event.get("event_id"), event.get("at"), scenario_id) in illegal
+                 else frozenset((holding - ended) | set(fluent_values(event.get("initiates")))))
         yield event, holding, after
         holding = after
 

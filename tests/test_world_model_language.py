@@ -348,3 +348,29 @@ def test_unlinked_transition_is_a_gap_naming_it():
     assert report.status.value == "GAP"
     assert next(row for row in report.gaps if row["code"] == "RESOURCE_TRANSITION_UNLINKED")["missing_slots"] == [
         row["id"] for row in trip["inputs"]["resources"]["transitions"]]
+
+
+def test_illegal_event_has_no_effect():
+    from worldguard import run_worldguard
+    from worldguard.contracts import GuardContract
+    from worldguard.semantic import event_precondition_failures, event_replay
+    from worldguard.timeline import timeline
+    initial = ['keep', 'released']
+    events = [{'event_id': 'illegal', 'at': 't1', 'requires': 'missing', 'initiates': 'F',
+               'terminates': 'keep', 'releases': 'released'}]
+    roots = event_precondition_failures(events, initial)
+    assert len(roots) == 1 and roots[0]['missing_fluents'] == ['missing']
+    raw = list(event_replay(events, initial))
+    assert raw[0][2] == frozenset({'F'})
+    effective = list(event_replay(events, initial, skip_illegal=True))
+    assert effective[0][1] == effective[0][2] == frozenset(initial)
+    assert event_precondition_failures(events, initial) == roots
+    contract = GuardContract.from_dict({'claim': {'asserts': [{'holds': 'F', 'at': 't2'}]},
+        'inputs': {'event_model': {'initial_states': initial}, 'events': events}})
+    report = run_worldguard(contract)
+    assert report.status.value == 'FAIL'
+    assert report.claim_binding['assertions'][0]['status'] == 'FAIL'
+    assert any(row['code'] == 'CLAIM_ASSERTION_FALSE' and row['claim_row'] == 0 for row in report.gaps)
+    view = timeline(contract, report=report)
+    assert view['steps'][-1]['fluents'] == sorted(initial)
+    assert 'EVENT_PRECONDITION_UNMET' in view['steps'][-1]['problems']

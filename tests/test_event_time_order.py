@@ -60,7 +60,7 @@ def test_clock_orders_supported_time_kinds(earlier, later, kind):
     ("story_mut_out/dup_event_id.yaml", 2, "error", {"WORLDGUARD_INPUT_INVALID"}),
     ("trip_v1.yaml", 0, "PASS", set()),
     ("story_v1.yaml", 0, "PASS", set()),
-])
+], ids=lambda value: value.replace(".", "_") if isinstance(value, str) else None)
 def test_trial_time_contracts_are_checked_natively(file, exit_code, status, codes, capsys):
     path = Path(__file__).parent / "fixtures/trials" / file
     assert main(["check", "--contract", str(path)]) == exit_code

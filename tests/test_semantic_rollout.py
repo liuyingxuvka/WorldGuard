@@ -69,4 +69,5 @@ def test_missing_event_time_does_not_hide_independent_scenario_failures(missing_
     errors = [error['code'] for result in report.guard_results for error in result.errors]
     assert ('EVENT_PRECONDITION_UNMET' in errors) is (missing_scope is not None)
     if missing_scope:
-        assert report.claim_binding['status'] == 'PASS'
+        # The broken event cannot establish done in the otherwise ordered scenario.
+        assert report.claim_binding['status'] == 'FAIL'

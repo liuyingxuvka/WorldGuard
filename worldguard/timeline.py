@@ -120,7 +120,7 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
     if starting:
         steps[0]["problems"] = sorted({problems[index]["code"] for index in starting})
     linked = any("event" in row for row in transitions)
-    for event, _, after in event_replay(applicable, initial, scenario):
+    for event, _, after in event_replay(applicable, initial, scenario, skip_illegal=True):
         matches = [row for row in transitions if row.get("event") == event["event_id"]]
         if linked and matches:
             marking, _ = token_replay(resources, str(matches[-1]["id"]), validate=False, events=events)

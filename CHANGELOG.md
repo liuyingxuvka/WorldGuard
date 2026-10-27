@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The event model now requires failed-precondition events to have no fluent effects in assertions, timelines or handoff end states; root diagnostics and NormGuard remain unchanged.
+- `story_mut_out/oil_late.yaml` claim row 1 and LogicWriting `trialB/world-late.yaml` row 4 now fail with `CLAIM_ASSERTION_FALSE`; their world statuses stay FAIL. The copied consumer late-world fixture changes identically. The scoped missing-time rollout test now expects FAIL for its claim binding.
+
 - The input stage model requires checks to name every input file.
 - check reports input_digests: the sha256 of every file the verdict read.
 
