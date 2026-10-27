@@ -1,0 +1,7 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-406: rule timeline_shows_changes_after_start",
+  "components": [],
+  "flows": [],
+  "remove": []
+}
