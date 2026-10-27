@@ -1,0 +1,100 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-403: world_compare and world_timeline leave world_check; world_check is the staged parent of world_input, world_events, world_consistency and consumes guard_semantics",
+  "components": [
+    {
+      "id": "core",
+      "layer": "core",
+      "summary": "Shared contracts, compact reports, clock and finite replay helpers",
+      "responsibilities": [
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
+        "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
+        "Keep compact native reports and the conservative four-status aggregation",
+        "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine",
+        "Check declared event preconditions without assuming an order inside simultaneous groups; retain uncertainty after conflicting same-time writes until a definite later write.",
+        "The timeline shows every claim row with its result, every declared sub-model and every problem of the native report"
+      ],
+      "files": [
+        "worldguard/contracts.py",
+        "worldguard/io.py",
+        "worldguard/status.py",
+        "worldguard/reports.py",
+        "worldguard/semantic.py",
+        "worldguard/clock.py",
+        "worldguard/variants.py",
+        "worldguard/timeline.py"
+      ],
+      "entrypoints": [
+        "worldguard/contracts.py:derive_guard_requirements",
+        "worldguard/status.py:aggregate_statuses",
+        "worldguard/semantic.py:token_replay"
+      ],
+      "state": [
+        "Immutable contract and report values"
+      ],
+      "side_effects": [
+        "Read declared mapping files (YAML only when PyYAML is installed) and emit JSON only when requested"
+      ],
+      "depends_on": [],
+      "tests": [
+        "tests/test_contracts.py",
+        "tests/test_event_time_order.py",
+        "tests/test_variants_timeline.py"
+      ],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py",
+        ".flowguard/models/worldguard_world_input_model.py",
+        ".flowguard/models/worldguard_world_timeline_model.py",
+        ".flowguard/models/worldguard_world_events_model.py",
+        ".flowguard/models/worldguard_world_consistency_model.py"
+      ]
+    },
+    {
+      "id": "qualification",
+      "layer": "unit",
+      "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
+      "responsibilities": [
+        "Run each derived native Guard exactly once Resolve node rows only against parent_child descendants in a native mesh context; standalone references gap and summary-only nodes need no local Guard execution.",
+        "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
+        "Expose one row per problem and checked Guard/claim counts with a single final status; check optional entity registries across Guard inputs; expose the run_worldguard kernel through this one owner",
+        "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
+        "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts.",
+        "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result. Read entity uses only from mapping event records.",
+        "A single token's place agrees with the spatial relations declared at the same time: a contradiction fails, an unrelated place is a gap"
+      ],
+      "files": [
+        "worldguard/qualification.py",
+        "worldguard/kernel.py",
+        "worldguard/claim_binding.py",
+        "worldguard/compare.py"
+      ],
+      "entrypoints": [
+        "worldguard/kernel.py:run_worldguard",
+        "worldguard/qualification.py:qualify_guard_contract"
+      ],
+      "state": [],
+      "side_effects": [
+        "Execute selected native Guards and return a bounded report"
+      ],
+      "depends_on": [
+        "core",
+        "guards"
+      ],
+      "tests": [
+        "tests/test_kernel_handoff.py",
+        "tests/test_qualification.py",
+        "tests/test_world_model_language.py",
+        "tests/test_variants_timeline.py",
+        "tests/test_compare.py"
+      ],
+      "models": [
+        ".flowguard/models/worldguard_world_check_model.py",
+        ".flowguard/models/worldguard_world_events_model.py",
+        ".flowguard/models/worldguard_world_consistency_model.py",
+        ".flowguard/models/worldguard_world_compare_model.py"
+      ]
+    }
+  ],
+  "flows": [],
+  "remove": []
+}
