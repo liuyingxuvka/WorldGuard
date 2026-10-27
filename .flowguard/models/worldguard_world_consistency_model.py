@@ -11,7 +11,7 @@ READS_PARENT = ("request",)
 OUTPUTS = {"status": ('PASS', 'FAIL', 'GAP', 'BOUNDARY_EXCEEDED')}
 IMPLEMENTED_BY = {'EvaluateScenarios': 'worldguard/semantic.py:causal_scenario_values'}
 USES = {"Main": "worldguard/cli.py:main"}
-TESTED_BY = {'scenario_values_reach_constraints': ['tests/test_world_model_language.py:test_scenario_overrides_reach_constraints_and_claim_rows', 'tests/test_world_model_language.py:test_interventions_on_empty_scenarios_reach_constraints_and_claim_rows', 'tests/test_world_model_language.py:test_completed_causal_runs_survive_another_incomplete_run'], 'declared_boundary_is_boundary_exceeded': ['tests/test_qualification.py:test_declared_boundary_trials_keep_their_native_status', 'tests/test_qualification.py:test_each_derived_guard_boundary_is_a_final_boundary']}
+TESTED_BY = {'scenario_values_reach_constraints': ['tests/test_world_model_language.py:test_scenario_overrides_reach_constraints_and_claim_rows', 'tests/test_world_model_language.py:test_interventions_on_empty_scenarios_reach_constraints_and_claim_rows', 'tests/test_world_model_language.py:test_completed_causal_runs_survive_another_incomplete_run'], 'declared_boundary_is_boundary_exceeded': ['tests/test_qualification.py:test_declared_boundary_trials_keep_their_native_status', 'tests/test_qualification.py:test_each_derived_guard_boundary_is_a_final_boundary[CausalGuard]']}
 MUTATIONS = {'endogenous_seed_dropped': 'scenario_values_reach_constraints', 'interventions_ignored': 'scenario_values_reach_constraints', 'boundary_ranked_as_gap': 'declared_boundary_is_boundary_exceeded'}
 CASES = tuple(q for q in REQUESTS if q.case_id in ('label', 'scenario_late', 'intervention_late', 'partial_run_fail', 'partial_run_gap', 'owned_boundary'))
 

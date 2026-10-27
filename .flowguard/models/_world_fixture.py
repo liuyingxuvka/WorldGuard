@@ -185,7 +185,6 @@ class ReplayReport:
                           *["  mismatch: " + mismatch for mismatch in self.mismatches[:max_examples]]])
 
 
-
 def worst(values):
     return next((s for s in ('FAIL','GAP','BOUNDARY_EXCEEDED','PASS') if s in values), 'PASS')
 

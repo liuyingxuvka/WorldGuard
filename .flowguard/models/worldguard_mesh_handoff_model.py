@@ -12,6 +12,7 @@ from flowguard import FunctionResult, Invariant, InvariantResult, Workflow
 from flowguard.explorer import Explorer
 
 MODEL_ID = 'mesh_handoff'
+HANDOFF = {'world_check': {'status': ('status', {'PASS':'PASS','FAIL':'FAIL','GAP':'GAP','BOUNDARY_EXCEEDED':'BOUNDARY_EXCEEDED','error':None})}}
 PARENT = 'mesh'
 COMPONENTS = ['mesh']
 IMPLEMENTED_BY = {

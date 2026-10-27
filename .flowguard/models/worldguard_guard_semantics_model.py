@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 from tests.guard_catalog import NATIVE_GOOD_CASES, PROTECTED_FAILURE_CLASSES  # noqa: E402
 
 MODEL_ID = 'guard_semantics'
+OUTPUTS = {'status': ('PASS','FAIL','GAP','BOUNDARY_EXCEEDED')}
 PARENT = 'guards'
 COMPONENTS = ['guards']
 IMPLEMENTED_BY = {
