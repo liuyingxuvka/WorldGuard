@@ -1,0 +1,27 @@
+# Copied from LogicWriting@2ed7bbc: tests/fixtures/trials/trialB/world-late.yaml
+contract_id: scene-last-tide-001
+claim:
+  claim_id: c_papers_cleared
+  text: Tova gets the spare key from Ilse when the watch box opens at the 19:00 bell, unlocks the office, stamps the clearance and reaches the quay before the tide turns at 19:30; Brandt left on the 18:00 ferry with his key ring.
+  requested_semantics: [event, resource]
+  asserts:
+    - {event: e_brandt_leaves, before: e_watchbox_opens}
+    - {event: e_give_spare, before: e_unlock}
+    - {event: e_unlock, before: e_stamp}
+    - {event: e_deliver, before: e_tide_turns}
+    - {holds: papers_on_ship, at: t8}
+world_model: {model_id: last-tide-scene, model_version: v1, scope_limits: [one evening, harbor office and quay only]}
+inputs:
+  event_model: {initial_states: [brandt_has_ring_key, office_locked, watchbox_closed, tide_high]}
+  events:
+    - {event_id: e_brandt_leaves, at: t1, requires: [brandt_has_ring_key], initiates: brandt_on_island}
+    - {event_id: e_watchbox_opens, at: t2, requires: [watchbox_closed], initiates: spare_key_available, terminates: watchbox_closed}
+    - {event_id: e_give_spare, at: t3, requires: [spare_key_available], initiates: tova_has_spare, terminates: spare_key_available}
+    - {event_id: e_unlock, at: t4, requires: [tova_has_spare, office_locked], initiates: office_open, terminates: office_locked}
+    - {event_id: e_stamp, at: t5, requires: [office_open], initiates: papers_stamped}
+    - {event_id: e_deliver, at: t8, requires: [papers_stamped, tide_high], initiates: papers_on_ship}
+    - {event_id: e_tide_turns, at: t7, requires: [tide_high], terminates: tide_high}
+  resources:
+    places: {ilse_box: [{color: spare_key, qty: 1}], tova_hand: [], brandt_ring: [{color: ring_key, qty: 1}]}
+    transitions:
+      - {id: give_spare, event: e_give_spare, consumes: [{place: ilse_box, color: spare_key, qty: 1}], produces: [{place: tova_hand, color: spare_key, qty: 1}]}

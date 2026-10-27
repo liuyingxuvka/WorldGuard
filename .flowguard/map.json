@@ -65,7 +65,8 @@
       ],
       "tests": [
         "tests/test_cli_module.py",
-        "tests/test_version.py"
+        "tests/test_version.py",
+        "tests/test_consumer_contract.py"
       ],
       "models": [
         ".flowguard/models/worldguard_world_check_model.py"
