@@ -163,3 +163,12 @@ Mesh world blocks SHALL start with their node id. `--mesh` SHALL read the whole 
 `--example scene|trip|story` SHALL resolve bundled skill assets. `--scenario` SHALL
 apply only to a single contract. Source strings SHALL remain unchecked pointers to
 original text, without content qualification or age checks.
+
+### Requirement: Fresh input identity and effect-aware views
+CLI `check` summaries and full reports SHALL include sorted relative input paths and
+raw-byte SHA-256 in `input_digests`. Other commands and kernel report fields stay unchanged.
+Events whose native preconditions fail SHALL have no fluent effects in claim assertions,
+timelines and mesh continuation end states; native failure rules and NormGuard stay unchanged.
+Text timelines SHALL show full state at start, then signed fluent changes and changed token
+places (`=` when unchanged). `--full` SHALL preserve complete state lines; JSON stays unchanged.
+All four CLI commands SHALL have a help description.

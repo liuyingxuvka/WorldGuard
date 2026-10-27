@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The installer has a byte-difference model; obsolete OpenSpec change archives are removed while active specs stay available. Skill guidance names the Guard subset each world needs.
+
 - timeline prints the full state on the start line and only changes after it (--full keeps every line); every command has a help line.
 
 - The event model now requires failed-precondition events to have no fluent effects in assertions, timelines or handoff end states; root diagnostics and NormGuard remain unchanged.

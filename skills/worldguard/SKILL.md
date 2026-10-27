@@ -21,6 +21,8 @@ For a new story or trip, build the model in five steps:
 5. A chapter or day not written yet is a node without `contract` (`GAP planned`); add the contract once written.
 Read it back (`timeline` / `mesh-check`) after every edit.
 
+When one world gets too big, split it into a tree of contracts over time (a root that holds only claim rows, one node per chapter or day, joined in order by continues), and give each world only the inputs its rows need, so only the Guards the target needs run.
+
 ## The model tree
 
 - Node: one world contract (claim, world_model, inputs); a failing node shows its counterexample: the failed event or constraint with its timeline prefix.

@@ -27,14 +27,6 @@ Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexa
 
 The summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
 
-## Build a world from a story or trip
-
-1. Claim rows that must hold (`claim.asserts`).
-2. Only the inputs those rows need (`events`, `resources`, `spatial_relations`, `causal_model`).
-3. Per must-hold row one `variants:` edit that must fail with its `code`.
-4. Chapters or days: a tree ([model-mesh.md](model-mesh.md)); unwritten ones have no `contract`.
-5. `timeline` after each edit. Full trip: `assets/examples/trip_ferry.yaml`.
-
 ## Runnable world
 
 Save as `world.yaml`; `check --contract world.yaml` passes and checks its variant:

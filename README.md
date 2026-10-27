@@ -88,7 +88,11 @@ PASS, 1 on non-PASS, 2 on invalid input. Their defaults are short JSON summaries
 each node's own status, ` (tree <status>)` when its subtree differs, each
 `continues` edge's result and codes, and `GAP planned` for a node without a contract;
 the root line agrees with the overall status.
-Timeline defaults to readable text: each claim row with its result, one line per
+Failed event preconditions block fluent effects in assertions, timelines and handoffs.
+Check summaries and full JSON include sorted relative input paths with raw-byte SHA-256
+in `input_digests`. Each command has a help description.
+Timeline starts with full state, then fluent `+`/`-` changes and changed token places;
+`--full` repeats complete state lines. Its readable text shows: each claim row with its result, one line per
 declared agent, space, conflict and norm sub-model, the steps with source and
 problem codes, and a `problems:` section for every other problem of the check.
 `--json` preserves the complete view. It reads a model rather than proving closure.
@@ -171,14 +175,14 @@ GAP `RESOURCE_TRANSITION_UNLINKED`，会列出转移 ID。显式指错事件仍�
 
 `timeline --contract world.yaml`、`timeline --mesh mesh.yaml` 默认输出可读文字；
 文字先列每条说法行和结果、每个声明的子模型（`agents:`、`space:`、`conflict:`、`norms:`），
-再列事件步骤，最后 `problems:` 列出其余全部问题；`--json` 保留完整结构。树摘要有逐行的 `tree`：
+再列事件步骤（起始完整状态，之后只列 fluent 的 `+`/`-` 和变化的令牌位置，`--full` 保留完整行），最后 `problems:` 列出其余全部问题；`--json` 保留完整结构。树摘要有逐行的 `tree`：
 节点自己的状态、子树不同时的 `(tree …)`、每条 `continues` 边的结果和问题码，没有合约的节点写 `GAP planned`。`compare --contract|--mesh --observed`
 只比较提供的观测，树的观测按 `nodes` 分组。ISO/钟点容差用分钟，数值/标签钟用自己的尺度。
 加 `--write-observed OUT` 只把选中的事件发生时间写入新副本，不改变量或原文件，已有文件拒绝覆盖。
 对副本再跑 `check` 或 `mesh-check`，查看实际时间是否破坏后续计划。
 
 四种状态按 `FAIL`、`GAP`、`BOUNDARY_EXCEEDED`、`PASS` 保留优先级。检查通过退出 0，
-非 PASS 退出 1，输入错误退出 2；比对全部匹配退出 0，超差退出 1。普通检查摘要仍为短 JSON，
+非 PASS 退出 1，输入错误退出 2；比对全部匹配退出 0，超差退出 1。不满足前置条件的事件不产生 fluent 效果。检查的摘要和完整 JSON 都有 `input_digests`（相对路径和原字节 SHA-256）。四个命令都有帮助说明。普通检查摘要仍为短 JSON，
 只在需要完整 Guard/子节点信息时加 `--json`。报告状态、问题码、反例或缺失输入和模型范围。
 
 技能安装命令和完整可运行格式见上方英文说明及三个参考页。技能名字、启动器路径和安装器入口保持稳定。
