@@ -163,17 +163,16 @@ def tree_lines_match_status(state, trace):
     return InvariantResult.pass_()
 
 
-INVARIANTS = tuple(Invariant(name, description, check) for name, description, check in (
-    ('continues_requires_matching_state', 'preceding end state matches next node start', requires_state),
-    ('continues_moves_time_forward', 'continuations do not move backwards', forward_time),
-    ('node_rows_read_descendants_only', 'node rows read descendants only', descendants_only),
-    ('child_non_pass_reaches_root', 'children keep their non-pass status in the tree', children_preserved),
-    ('dependency_cycle_fails', 'dependency cycles fail', cycles_fail),
-    ('one_root', 'only one connected parent-child root is a tree', one_root),
-    ('mesh_variants_must_fail', 'every tree variant runs and must match its declared failure', mesh_variants_must_fail),
-    ('tree_lines_match_status', 'the root line shows the report status, failing continues edges print FAIL, contract-less nodes read planned',
-     tree_lines_match_status),
-))
+INVARIANTS = (
+    Invariant('continues_requires_matching_state', 'preceding end state matches next node start', requires_state),
+    Invariant('continues_moves_time_forward', 'continuations do not move backwards', forward_time),
+    Invariant('node_rows_read_descendants_only', 'node rows read descendants only', descendants_only),
+    Invariant('child_non_pass_reaches_root', 'children keep their non-pass status in the tree', children_preserved),
+    Invariant('dependency_cycle_fails', 'dependency cycles fail', cycles_fail),
+    Invariant('one_root', 'only one connected parent-child root is a tree', one_root),
+    Invariant('mesh_variants_must_fail', 'every tree variant runs and must match its declared failure', mesh_variants_must_fail),
+    Invariant('tree_lines_match_status', 'the root line shows the report status, failing continues edges print FAIL, contract-less nodes read planned', tree_lines_match_status),
+)
 CASES = (Request('chapters_ok_rooted.yaml'), Request('end_state_contradiction.yaml', state_matches=False, one_root=False),
          Request('ch2_resurrects.yaml', state_matches=False, one_root=False), Request('time_backwards.yaml', time_forward=False, one_root=False),
          Request('unrelated', descendant=False, one_root=False), Request('child_fail', child_status='FAIL'), Request('child_gap', child_status='GAP'),

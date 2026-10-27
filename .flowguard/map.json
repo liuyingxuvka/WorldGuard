@@ -71,7 +71,7 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:b1d95d764f98c87a5948d0b78b0954da8f482b1be10b20293d2db5d31f3d43bb"
+      "fingerprint": "sha256:9b8afee8390da037d9e8d7e51c8a9ebacc4779882293f92ca7b723199f775750"
     },
     {
       "id": "core",
@@ -354,5 +354,22 @@
       "model": ".flowguard/models/worldguard_mesh_handoff_model.py"
     }
   ],
-  "accepted_debts": []
+  "accepted_debts": [
+    {
+      "code": "unmodeled_owner",
+      "component": "launcher",
+      "reason": "Two statements choose the installed runtime or the repository package; LogicWriting's preflight pins them verbatim. Covered by tests/test_cli_module.py (test_repository_launcher_uses_the_repository_package, test_launcher_reads_json_without_pyyaml, test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode)."
+    },
+    {
+      "code": "unmodeled_owner",
+      "component": "release",
+      "reason": "Two workflow YAML files and no Python; the version files they publish are checked by tests/test_version.py, and CI runs the workflows themselves."
+    }
+  ],
+  "model_digests": {
+    ".flowguard/models/worldguard_guard_semantics_model.py": "82ee511bc9b4da6b106fec37d6a0cc8c5163ccb3b4cecd7ca740bc9545c79cca",
+    ".flowguard/models/worldguard_mesh_handoff_model.py": "18de276f1ed36aa3a141d155e6a168795bf4dd7e09f4deb885c8ac1353da08a3",
+    ".flowguard/models/worldguard_world_check_model.py": "eeebedce6846628813abeac056a4503647d03ddbe130e61aa59faca335abbd23"
+  },
+  "fingerprint_format": 2
 }
