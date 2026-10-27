@@ -41,7 +41,7 @@
     {
       "id": "cli",
       "layer": "interface",
-      "summary": "Commands for checking, comparing and reading world contracts and model trees. Check outputs include raw input file digests in compact and full JSON; kernel report fields and other commands remain stable.",
+      "summary": "Commands for checking, comparing and reading world contracts and model trees. Check outputs include raw input file digests in compact and full JSON; kernel report fields and other commands remain stable. Each command has help; timeline --full retains complete state lines.",
       "responsibilities": [
         "Expose check, mesh-check, timeline and observation comparison through the portable CLI",
         "Load scene/trip and story examples from portable skill assets"
@@ -72,12 +72,12 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:1b60bddc993a0076fe95e1d18b6df0d0468ab911c3ad81f3e86c35ed31b45f81"
+      "fingerprint": "sha256:49b4c4a17643a3e9ba740577d97b1124769ff8bd64a048348ac92c43f956e9c9"
     },
     {
       "id": "core",
       "layer": "core",
-      "summary": "Shared contracts, compact reports, clock and finite replay helpers Provide sorted relative paths and SHA-256 hashes of raw input bytes for the CLI.",
+      "summary": "Shared contracts, compact reports, clock and finite replay helpers Provide sorted relative paths and SHA-256 hashes of raw input bytes for the CLI. Timeline text starts with full state and then prints changes; full text and JSON stay available.",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
@@ -121,7 +121,7 @@
         ".flowguard/models/worldguard_world_consistency_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:f9a98486bbf49d671bac6b01d2486353ca2f81a0b6da8a679007c35802b7604a"
+      "fingerprint": "sha256:7e19e784af61da1d9a0177c14aaca877f12fcfb57b7ad7bc284c22f1065c8329"
     },
     {
       "id": "guards",
@@ -305,7 +305,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:082c65f42f2025577bc9c354aedff69608a2e5ee06f112da40f67ba4f8222139"
+      "fingerprint": "sha256:eb8a2f385c661d64c4df84d4c7413a79b0343221357b2de0561729ab8c45db51"
     }
   ],
   "flows": [
@@ -382,7 +382,7 @@
     ".flowguard/models/worldguard_world_consistency_model.py": "e180cc43d35e8e5c116849b4181bce8076ac06e68a40373ac93af078f0bb30e8",
     ".flowguard/models/worldguard_world_events_model.py": "76bbcd715d5c1825e3b9ea7923698a8b12e97bd2559042ff62824f3c6fec3cf3",
     ".flowguard/models/worldguard_world_input_model.py": "3c25a575f39db9e87141fb23873921862e665aac13dd213d2af66fbe76337feb",
-    ".flowguard/models/worldguard_world_timeline_model.py": "5b8193ccbeab0e9e000247969138e4e4766706bdcc733f50fb07efe997c7eeb0"
+    ".flowguard/models/worldguard_world_timeline_model.py": "21757a33d8503dca62b39a64b06f0a5f9f1b47613971b7c6307d55d66ad41676"
   },
   "fingerprint_format": 2
 }

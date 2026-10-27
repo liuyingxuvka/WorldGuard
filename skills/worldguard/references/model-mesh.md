@@ -84,7 +84,7 @@ A variant that escapes its expected status/code produces `VARIANT_NOT_CAUGHT`.
 Malformed paths or edits are input errors naming the variant.
 
 `timeline --mesh mesh.yaml` prints the tree, then each node's timeline as `<node>: world …`;
-`--json` gives the full structure. Use `compare --mesh mesh.yaml --observed log.yaml`
+`--full` repeats full states; otherwise each start is full and later rows show changes. `--json` gives the full structure. Use `compare --mesh mesh.yaml --observed log.yaml`
 with a `nodes: {model_id: observations}` mapping; each result names its node. Adding
 `--write-observed OUT` writes an independent embedded-contract tree changing only
 observed event times. Run `mesh-check --mesh OUT` to see effects on later nodes.

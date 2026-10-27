@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- timeline prints the full state on the start line and only changes after it (--full keeps every line); every command has a help line.
+
 - The event model now requires failed-precondition events to have no fluent effects in assertions, timelines or handoff end states; root diagnostics and NormGuard remain unchanged.
 - `story_mut_out/oil_late.yaml` claim row 1 and LogicWriting `trialB/world-late.yaml` row 4 now fail with `CLAIM_ASSERTION_FALSE`; their world statuses stay FAIL. The copied consumer late-world fixture changes identically. The scoped missing-time rollout test now expects FAIL for its claim binding.
 

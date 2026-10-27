@@ -20,6 +20,8 @@ def test_python_module_cli_help_runs():
     assert completed.returncode == 0, completed.stderr
     assert "mesh-check" in completed.stdout
     assert "check" in completed.stdout
+    for description in ("Check a world", "Check a tree", "Show event", "Compare supplied"):
+        assert description in completed.stdout
 
 
 def test_minimal_contract_runs_and_bad_input_is_a_json_error(tmp_path):
@@ -310,3 +312,16 @@ def test_check_reports_input_digests(tmp_path, capsys):
     other = tmp_path / 'a.yaml'
     other.write_bytes(b'{}\n')
     assert [row['path'] for row in input_digests([path, other], tmp_path)] == ['a.yaml', 'world.yaml']
+
+
+def test_timeline_full_retains_native_state_lines(capsys):
+    from worldguard.cli import main
+    from worldguard.timeline import render_timeline_text, timeline
+    path = Path(__file__).parent / "fixtures/consumers/logicwriting_fiction_world.yaml"
+    world = yaml.safe_load(path.read_text())
+    from worldguard.kernel import run_worldguard
+    view = timeline(world, report=run_worldguard(world))
+    assert main(["timeline", "--contract", str(path), "--full"]) == 0
+    assert capsys.readouterr().out == render_timeline_text(view, full=True) + "\n"
+    assert main(["timeline", "--contract", str(path), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out) == view

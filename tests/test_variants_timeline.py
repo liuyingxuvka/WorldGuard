@@ -213,3 +213,37 @@ def test_timeline_mesh_labels_world_blocks_by_node(capsys):
     lines=capsys.readouterr().out.splitlines()
     assert '  chapter1: world key_handoff (clock: label)' in lines
     assert any(line.startswith('  chapter2: world ') for line in lines)
+
+
+def test_timeline_prints_changes_after_the_start_line():
+    from worldguard.timeline import render_timeline_text
+    world = yaml.safe_load((Path(__file__).parent / "fixtures/consumers/logicwriting_fiction_world.yaml").read_text())
+    view = timeline(world)
+    original = deepcopy(view)
+    text = render_timeline_text(view)
+    rows = [line.split("fluents: ", 1)[1].split(" | tokens:", 1)[0] for line in text.splitlines() if "fluents: " in line]
+    assert len(rows) == len(view["steps"])
+    state = set() if rows[0] == "-" else set(rows[0].split(", "))
+    for index, (changes, step) in enumerate(zip(rows, view["steps"])):
+        if index and changes != "=":
+            for change in changes.split():
+                assert change[0] in "+-"
+                if change[0] == "+":
+                    state.add(change[1:])
+                else:
+                    state.remove(change[1:])
+        assert state == set(step["fluents"])
+    assert sum(map(len, rows)) <= 300
+    assert view == original
+    token_view = {"contract_id": "tokens", "clock": "label", "steps": [
+        {"at": None, "fluents": ["ready"], "tokens": {"a": {"t": 1}}},
+        {"at": "t1", "fluents": ["ready"], "tokens": {"a": {"t": 0}, "b": {"t": 1}}},
+        {"at": "t2", "fluents": [], "tokens": {"b": {"t": 1}}},
+        {"at": "t3", "fluents": [], "tokens": {"b": {"t": 1}}}]}
+    lines = render_timeline_text(token_view).splitlines()
+    assert "fluents: = | tokens: a=t×0, b=t×1" in lines[2]
+    assert "fluents: -ready | tokens: a=-" in lines[3]
+    assert "fluents: = | tokens: =" in lines[4]
+    full = render_timeline_text(token_view, full=True)
+    assert "fluents: ready | tokens: b=t×1" in full
+    assert render_timeline_text(token_view, label="node").startswith("node: world tokens")

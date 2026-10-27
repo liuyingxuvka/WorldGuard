@@ -56,22 +56,23 @@ def _example_path(name):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="worldguard")
     commands = parser.add_subparsers(dest="command", required=True)
-    check = commands.add_parser("check")
+    check = commands.add_parser("check", help="Check a world and its claim assertions.")
     choice = check.add_mutually_exclusive_group(required=True)
     choice.add_argument("--contract")
     choice.add_argument("--example", choices=["scene", "trip"])
     check.add_argument("--json", action="store_true", help="print the full report")
-    meshcheck = commands.add_parser("mesh-check")
+    meshcheck = commands.add_parser("mesh-check", help="Check a tree of worlds and their handoffs.")
     choice = meshcheck.add_mutually_exclusive_group(required=True)
     choice.add_argument("--mesh")
     choice.add_argument("--example", choices=["story"])
     meshcheck.add_argument("--json", action="store_true", help="print the full report")
-    timeline_parser = commands.add_parser("timeline")
+    timeline_parser = commands.add_parser("timeline", help="Show event and token changes with check results.")
     choice = timeline_parser.add_mutually_exclusive_group(required=True)
     choice.add_argument("--contract")
     choice.add_argument("--mesh")
     choice.add_argument("--example", choices=["scene", "trip", "story"])
     timeline_parser.add_argument("--scenario")
+    timeline_parser.add_argument("--full", action="store_true", help="print the full state on every timeline step")
     timeline_parser.add_argument("--json", action="store_true", help="print the complete timeline structure")
     comparison = commands.add_parser("compare", help="Compare supplied observations with a world or model tree.")
     choice = comparison.add_mutually_exclusive_group(required=True)
@@ -132,12 +133,12 @@ def main(argv=None):
                         identity = row.strip().split()[0]
                         if identity in views:
                             padding = row[: len(row) - len(row.lstrip())]
-                            print("\n".join(padding + line for line in render_timeline_text(views[identity], label=identity).splitlines()))
+                            print("\n".join(padding + line for line in render_timeline_text(views[identity], label=identity, full=args.full).splitlines()))
             else:
                 contract = GuardContract.from_dict(load_mapping(args.contract))
                 report = run_worldguard(contract)
                 view = timeline(contract, scenario=args.scenario, report=report)
-                print(dump_json(view) if args.json else render_timeline_text(view))
+                print(dump_json(view) if args.json else render_timeline_text(view, full=args.full))
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("timeline", args.mesh or args.contract or args.example, exc)
         return 0

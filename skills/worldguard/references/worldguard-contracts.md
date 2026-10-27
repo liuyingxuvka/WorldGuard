@@ -69,9 +69,9 @@ variants:
 
 Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY_EXCEEDED`. `code` is optional. `set` replaces existing values, `remove` lists existing fields/items, and `add` maps list paths to lists of appended items. Dot-separated keys, numeric list indices (`[0]`) and exact list ids (`[e_give_key]`, matching `id` or any `_id` field) are supported. Invalid or ambiguous paths are input errors naming the variant. Edits affect an independent in-memory copy with its variants removed. Each result must match status and optional code; otherwise `VARIANT_NOT_CAUGHT` blocks PASS. `checked.variants` gives the count, including for mesh-node contracts.
 
-`timeline --contract <file> [--scenario <id>]` prints text: `claim <id> row <n>: … <result>` per claim row, one `agents:`/`space:`/`conflict:`/`norms:` line per declared sub-model, one step per line (fluents, tokens, source, `!!` codes), `variables` (`!!` causal codes), then `problems:` for the rest; every check code appears. `--json` keeps the whole view. `--mesh <file>` labels each world by node id; `--example scene|trip|story` uses skill assets. Ordering needs every applicable event time.
+`timeline --contract <file> [--scenario <id>]` shows claims, sub-models and all codes. Start has all fluents/tokens; later steps show `fluents: +a -b` or `=` and changed token places. `--full` repeats full states; `--json` keeps the whole view. Sources, `!!` codes, variables and other problems remain. `--mesh <file>` labels worlds by node; `--example scene|trip|story` uses skill assets. All applicable events need times.
 
-Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. They only point to original text; no source content or age is checked. Full event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.
+Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. They point to original text; no content or age is checked. Event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.
 
 ## Compare the world with observations
 

@@ -155,7 +155,7 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
             "steps": steps, "variables": variables, "claims": claims, "submodels": _submodels(inputs), "problems": rest}
 
 
-def render_timeline_text(view, *, label=None):
+def render_timeline_text(view, *, label=None, full=False):
     """Render the native timeline without changing or recomputing its checks."""
     head = f"world {view['contract_id']} (clock: {view['clock']})"
     lines = [f"{label}: {head}" if label else head]
@@ -168,11 +168,26 @@ def render_timeline_text(view, *, label=None):
     for name in ("agents", "space", "conflict", "norms"):
         if name in view.get("submodels", {}):
             lines.append(f"{name}: {view['submodels'][name]}")
-    for step in view['steps']:
-        tokens = ', '.join(f"{place}=" + '+'.join(f"{color}×{quantity:g}" for color, quantity in colors.items())
-                           for place, colors in step.get('tokens', {}).items() if any(colors.values())) or '-'
+    previous_fluents = set()
+    previous_tokens = {}
+    for index, step in enumerate(view['steps']):
+        current_fluents = set(step['fluents'])
+        current_tokens = step.get('tokens', {})
+        if full or index == 0:
+            fluents = ', '.join(step['fluents']) or '-'
+            places = current_tokens
+        else:
+            fluents = ' '.join([f"+{name}" for name in sorted(current_fluents - previous_fluents)] +
+                               [f"-{name}" for name in sorted(previous_fluents - current_fluents)]) or '='
+            places = {place: current_tokens.get(place, {}) for place in sorted(set(current_tokens) | set(previous_tokens))
+                      if current_tokens.get(place, {}) != previous_tokens.get(place, {})}
+        tokens = ', '.join(f"{place}=" + ('+'.join(f"{color}×{quantity:g}" for color, quantity in colors.items()) or '-')
+                           for place, colors in places.items() if any(colors.values()) or (not full and index > 0))
+        tokens = tokens or ('-' if full or index == 0 else '=')
         line = (f"{step['at'] if step['at'] is not None else 'start'}  {step.get('event_id') or '-'}  "
-                f"fluents: {', '.join(step['fluents']) or '-'} | tokens: {tokens}")
+                f"fluents: {fluents} | tokens: {tokens}")
+        previous_fluents = current_fluents
+        previous_tokens = current_tokens
         if step.get('source'):
             line += f" (source: {step['source']})"
         if step.get('problems'):
