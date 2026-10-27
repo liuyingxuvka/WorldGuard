@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.7.23 - 2026-10-27 - Fresh reports and a child-model world check
 
 - The installer has a byte-difference model; obsolete OpenSpec change archives are removed while active specs stay available. Skill guidance names the Guard subset each world needs.
 
