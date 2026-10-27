@@ -1,0 +1,7 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-401: mesh_handoff lists its rules literally",
+  "components": [],
+  "flows": [],
+  "remove": []
+}
