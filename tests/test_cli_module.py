@@ -148,6 +148,8 @@ def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_
     installer = [sys.executable, str(root / "scripts" / "install_skill.py"), "--target", str(target)]
     done = subprocess.run(installer, text=True, capture_output=True)
     assert done.returncode == 0, done.stderr
+    from scripts import install_skill
+    assert install_skill.main(["--target", str(target), "--check"]) == 0
     launcher = target / "worldguard" / "scripts" / "run_worldguard.py"
     example = target / "worldguard" / "assets" / "examples" / "trip_ferry.yaml"
     env = {key: value for key, value in os.environ.items() if key != "PYTHONDONTWRITEBYTECODE"}

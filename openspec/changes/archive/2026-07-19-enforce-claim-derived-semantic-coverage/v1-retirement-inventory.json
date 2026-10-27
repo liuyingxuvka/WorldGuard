@@ -1,9 +1,0 @@
-{
-  "schema_version": "guard-family.v1-retirement-inventory.v1",
-  "scope": ["skills/worldguard"],
-  "delete_after_v2_closure": [".skillguard/check_manifest.json", ".skillguard/work-contract.json", ".skillguard/check.py", ".skillguard/checks/check_closure.py", ".skillguard/checks/check_evidence.py", ".skillguard/checks/check_phase_order.py", ".skillguard/checks/check_quality_floor.py", ".skillguard/checks/check_route.py", ".skillguard/skillguard_closure_policy.json", ".skillguard/skillguard_evidence_rules.json", ".skillguard/skillguard_manifest.json", ".skillguard/skillguard_profile.json", ".skillguard/skillguard_skill_contract.json", ".skillguard/ai_judgments/**", ".skillguard/evidence/**", ".skillguard/reports/**", ".skillguard/runs/**", ".skillguard/skillguard_progress_ledger.jsonl", ".skillguard/**/__pycache__/**"],
-  "required_current_authority": [".skillguard/contract-source.json", ".skillguard/compiled-contract.json", ".skillguard/check-manifest.json", ".skillguard/contract_model.py", ".skillguard/checks/emit_native_depth_evidence.py", ".skillguard/checks/emit_calibration_evidence.py", ".skillguard/fixtures/**", ".skillguard/retirement-completion-receipt.json"],
-  "retirement_gate": "current WorldGuard V2 closure + transactional install parity + installation currentness replay",
-  "prior_narrow_retirement_receipt": {"status": "invalidated", "reason": "The earlier receipt did not scan generic V1 checkers, mutable evidence, reports, ledgers, or policies."},
-  "fallback_allowed": false
-}

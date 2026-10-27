@@ -1,4 +1,0 @@
-schema: spec-driven
-created: 2026-07-31
-goal: Extend the existing WorldGuard task-local revision owner without creating
-  a new Guard.
