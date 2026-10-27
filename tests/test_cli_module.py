@@ -133,7 +133,7 @@ def test_default_output_is_a_summary_and_json_is_full():
     assert done.returncode==0,done.stdout+done.stderr
     assert len(done.stdout)<10000
     summary=json.loads(done.stdout)
-    assert set(summary)=={'contract_id','status','checked','gaps','scope_limits','output'}
+    assert set(summary)=={'contract_id','status','checked','gaps','scope_limits','output','input_digests'}
     assert summary['status']=='PASS' and 'guard_results' not in summary
     full=subprocess.run([*command,'--json'],text=True,capture_output=True)
     assert full.returncode==0
@@ -288,3 +288,25 @@ def test_missing_bundled_example_explains_skill_distribution(tmp_path, monkeypat
     assert cli.main(['check', '--example', 'trip']) == 2
     error = json.loads(capsys.readouterr().out)['error']
     assert 'distributed with' in error['message'] and 'skill' in error['message']
+
+
+def test_check_reports_input_digests(tmp_path, capsys):
+    import hashlib
+    from worldguard.cli import main
+    from worldguard.io import input_digests
+    source = Path(__file__).parent / 'fixtures/consumers/logicwriting_fiction_world.yaml'
+    path = tmp_path / 'world.yaml'
+    path.write_bytes(source.read_bytes())
+    expected = [{'path': 'world.yaml', 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}]
+    for flags in ([], ['--json']):
+        assert main(['check', '--contract', str(path), *flags]) == 0
+        report = json.loads(capsys.readouterr().out)
+        assert report['input_digests'] == expected
+    path.write_bytes(path.read_bytes() + b'\n')
+    assert main(['check', '--contract', str(path)]) == 0
+    changed = json.loads(capsys.readouterr().out)['input_digests']
+    assert changed == [{'path': 'world.yaml', 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}]
+    assert changed != expected
+    other = tmp_path / 'a.yaml'
+    other.write_bytes(b'{}\n')
+    assert [row['path'] for row in input_digests([path, other], tmp_path)] == ['a.yaml', 'world.yaml']

@@ -41,7 +41,7 @@
     {
       "id": "cli",
       "layer": "interface",
-      "summary": "Commands for checking, comparing and reading world contracts and model trees.",
+      "summary": "Commands for checking, comparing and reading world contracts and model trees. Check outputs include raw input file digests in compact and full JSON; kernel report fields and other commands remain stable.",
       "responsibilities": [
         "Expose check, mesh-check, timeline and observation comparison through the portable CLI",
         "Load scene/trip and story examples from portable skill assets"
@@ -72,12 +72,12 @@
         ".flowguard/models/worldguard_world_check_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:9b8afee8390da037d9e8d7e51c8a9ebacc4779882293f92ca7b723199f775750"
+      "fingerprint": "sha256:1b60bddc993a0076fe95e1d18b6df0d0468ab911c3ad81f3e86c35ed31b45f81"
     },
     {
       "id": "core",
       "layer": "core",
-      "summary": "Shared contracts, compact reports, clock and finite replay helpers",
+      "summary": "Shared contracts, compact reports, clock and finite replay helpers Provide sorted relative paths and SHA-256 hashes of raw input bytes for the CLI.",
       "responsibilities": [
         "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
@@ -121,7 +121,7 @@
         ".flowguard/models/worldguard_world_consistency_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:5c47b79cfab1e3e82f0216d171daf20e34bf9cdcefa27d2254e548df75015257"
+      "fingerprint": "sha256:4fb5b17e7cf90bf0a9f2faf478b4614846971c38c691e0fd6a68789fd20ad902"
     },
     {
       "id": "guards",
@@ -305,7 +305,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:eb338e6abf4a3bdd8f53f16f436309cb6a0fcc2ae4f41c0f6b09e7c1b32c7f00"
+      "fingerprint": "sha256:eea47355026cb6acb0c331700b2b80eb8ca197792223274a4ca04f2bc1d40b6b"
     }
   ],
   "flows": [
@@ -381,7 +381,7 @@
     ".flowguard/models/worldguard_world_compare_model.py": "7765c05c8f96454501d8c1e7805a5f77de1f851be33ff5ab6e3323a7b29e6036",
     ".flowguard/models/worldguard_world_consistency_model.py": "e180cc43d35e8e5c116849b4181bce8076ac06e68a40373ac93af078f0bb30e8",
     ".flowguard/models/worldguard_world_events_model.py": "73e49a43332047e7d090501c9b2541957ae6d7f896419c9585ce721599cd5003",
-    ".flowguard/models/worldguard_world_input_model.py": "95dc7ee1664fac54ce63b838e84f342caa60fb5be3739c2631378bd7a6051ddb",
+    ".flowguard/models/worldguard_world_input_model.py": "cc7d867fb9f2fc36ba0bab4237e0cec7aa9155a89ac1f3e96bf0004f1292b1ed",
     ".flowguard/models/worldguard_world_timeline_model.py": "5b8193ccbeab0e9e000247969138e4e4766706bdcc733f50fb07efe997c7eeb0"
   },
   "fingerprint_format": 2

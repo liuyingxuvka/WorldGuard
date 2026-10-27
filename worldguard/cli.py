@@ -5,7 +5,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Any
-from .io import dump_json, load_mapping
+from .io import dump_json, load_mapping, input_digests
 
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
 
@@ -148,9 +148,11 @@ def main(argv=None):
         try:
             path = str(_example_path(args.example)) if args.example else args.contract
             report = run_worldguard(GuardContract.from_dict(load_mapping(path)))
+            digests = input_digests([path], Path(path).parent)
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("check", args.example or args.contract, exc)
-        _emit(report.to_dict(), _unit_summary, args.json)
+        payload = {**report.to_dict(), 'input_digests': digests}
+        _emit(payload, lambda value: {**_unit_summary(value), 'input_digests': value['input_digests']}, args.json)
         return 0 if report.status.value == "PASS" else 1
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh

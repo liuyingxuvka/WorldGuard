@@ -56,7 +56,7 @@ def test_contract_summary_and_failures(installed):
     # LogicWriting scripts/_common.py:read_worldguard_report and worldguard_report_identity_problems.
     assert good.returncode == 0 and payload['status'] == 'PASS' and payload['contract_id'] == 'scene-last-tide-001'
     # LogicWriting scripts/_common.py reads the compact producer contract.
-    assert set(payload) == {'checked', 'contract_id', 'gaps', 'output', 'scope_limits', 'status'}
+    assert set(payload) == {'checked', 'contract_id', 'gaps', 'output', 'scope_limits', 'status', 'input_digests'}
     late = run(installed, 'check', '--contract', FIXTURES / 'logicwriting_world_late.yaml')
     # LogicWriting references/worldguard-contracts.md names these native codes.
     assert late.returncode == 1 and {row['code'] for row in json.loads(late.stdout)['gaps']} == {'EVENT_PRECONDITION_UNMET', 'CLAIM_ASSERTION_FALSE'}

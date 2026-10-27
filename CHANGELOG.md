@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The input stage model requires checks to name every input file.
+- check reports input_digests: the sha256 of every file the verdict read.
+
 - Maintenance checks run on FlowGuard 0.70.13.
 
 ## v0.7.22 - 2026-10-24 - The whole world on the readback

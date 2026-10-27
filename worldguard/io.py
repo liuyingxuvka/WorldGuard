@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import os
 from pathlib import Path
 from datetime import date, datetime
 from typing import Any
@@ -34,3 +36,10 @@ def json_default(value: Any) -> str:
 
 def dump_json(data: Any) -> str:
     return json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, default=json_default)
+
+
+def input_digests(paths, base_dir):
+    """Sorted content hashes of raw files, named relative to the contract folder."""
+    rows = {Path(os.path.relpath(path, base_dir)).as_posix(): hashlib.sha256(Path(path).read_bytes()).hexdigest()
+            for path in paths}
+    return [{'path': name, 'sha256': rows[name]} for name in sorted(rows)]

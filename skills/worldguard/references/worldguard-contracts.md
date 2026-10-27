@@ -23,7 +23,7 @@ Run `check --contract <file.yaml>`, or `run_worldguard(contract)` in Python.
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
-The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem) and `scope_limits`. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. Each problem carries its native code and its counterexample or missing slots. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
+The default summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
 
 ## Build a world from a story or trip
 
