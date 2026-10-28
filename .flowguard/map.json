@@ -303,7 +303,7 @@
       ],
       "tests": [
         "tests/test_cli_module.py",
-        "tests/test_prompt_size.py"
+        "tests/test_route_text.py"
       ],
       "models": [],
       "status": "confirmed",

@@ -167,11 +167,22 @@ def test_reused_event_ids_keep_their_own_scenario_source_and_trace():
 
 
 def test_timeline_prints_text_by_default_and_json_on_request(capsys):
-    assert main(['timeline','--example','trip'])==0
-    text=capsys.readouterr().out
-    assert 'world ' in text and 'd1_ferry_out' in text and len(text.encode('utf-8'))<=2000
-    assert main(['timeline','--example','trip','--json'])==0
-    assert set(json.loads(capsys.readouterr().out))=={'contract_id','clock','steps','variables','claims','submodels','problems'}
+    assert main(["timeline", "--example", "trip"]) == 0
+    text = capsys.readouterr().out
+    assert "world " in text and "d1_ferry_out" in text
+    assert main(["timeline", "--example", "trip", "--json"]) == 0
+    view = json.loads(capsys.readouterr().out)
+    assert set(view) == {
+        "contract_id",
+        "clock",
+        "steps",
+        "variables",
+        "claims",
+        "submodels",
+        "problems",
+    }
+    assert sum("fluents: " in line for line in text.splitlines()) == len(view["steps"])
+    assert sum(line.startswith("claim ") for line in text.splitlines()) == len(view["claims"])
 
 
 def test_timeline_reads_a_whole_mesh(capsys):
@@ -240,7 +251,6 @@ def test_timeline_prints_changes_after_the_start_line():
                 else:
                     state.remove(change[1:])
         assert state == set(step["fluents"])
-    assert sum(map(len, rows)) <= 300
     assert view == original
     token_view = {
         "contract_id": "tokens",

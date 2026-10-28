@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Size caps on skill text and command output are replaced by checks for repeated paragraphs, dead links, unknown names and complete output; totals are printed, not limited.
+
 - The timeline's token changes skip places whose count stays zero; an emptied place prints "<place>=-" (for example "boat=cora×0, island_dock=cora×0, lamp_room=cora×1, mainland=cora×0" becomes "lamp_room=cora×1, mainland=-").
 
 - The mesh handoff self-model declares the command-line entry it replays.

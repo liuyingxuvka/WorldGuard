@@ -130,16 +130,25 @@ def test_repository_launcher_uses_the_repository_package(tmp_path):
 
 
 def test_default_output_is_a_summary_and_json_is_full():
-    command=[sys.executable,'-m','worldguard','check','--example','scene']
-    done=subprocess.run(command,text=True,capture_output=True)
-    assert done.returncode==0,done.stdout+done.stderr
-    assert len(done.stdout)<10000
-    summary=json.loads(done.stdout)
-    assert set(summary)=={'contract_id','status','checked','gaps','scope_limits','output','input_digests'}
-    assert summary['status']=='PASS' and 'guard_results' not in summary
-    full=subprocess.run([*command,'--json'],text=True,capture_output=True)
-    assert full.returncode==0
-    assert 'guard_results' in json.loads(full.stdout)
+    command = [sys.executable, "-m", "worldguard", "check", "--example", "scene"]
+    done = subprocess.run(command, text=True, capture_output=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    summary = json.loads(done.stdout)
+    assert set(summary) == {
+        "contract_id",
+        "status",
+        "checked",
+        "gaps",
+        "scope_limits",
+        "output",
+        "input_digests",
+    }
+    assert summary["status"] == "PASS" and "guard_results" not in summary
+    full = subprocess.run([*command, "--json"], text=True, capture_output=True)
+    assert full.returncode == 0
+    assert "guard_results" in json.loads(full.stdout)
+    assert len(done.stdout) < len(full.stdout)
+    assert summary["gaps"] == json.loads(full.stdout)["gaps"]
 
 
 def test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode(tmp_path):
