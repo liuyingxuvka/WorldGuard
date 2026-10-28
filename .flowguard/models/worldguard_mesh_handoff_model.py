@@ -21,6 +21,7 @@ IMPLEMENTED_BY = {
     'Descendants': 'worldguard/mesh.py:_descendants',
     'TreeStructure': 'worldguard/mesh.py:_tree_structure',
 }
+USES = {"Main": "worldguard/cli.py:main"}
 TESTED_BY = {
     'continues_requires_matching_state': ['tests/test_model_mesh.py:test_continues_carries_state_and_time'],
     'continues_moves_time_forward': ['tests/test_model_mesh.py:test_continues_trip_cannot_depart_before_prior_arrival'],

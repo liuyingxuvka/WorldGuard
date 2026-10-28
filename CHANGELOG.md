@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The mesh handoff self-model declares the command-line entry it replays.
+
 - Maintenance checks run on FlowGuard 0.70.14.
 
 ## v0.7.23 - 2026-10-27 - Fresh reports and a child-model world check
