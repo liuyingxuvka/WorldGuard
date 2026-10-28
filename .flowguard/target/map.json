@@ -1,0 +1,7 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-502: mesh_handoff declares the CLI entry it replays (USES Main)",
+  "components": [],
+  "flows": [],
+  "remove": []
+}
