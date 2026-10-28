@@ -378,7 +378,7 @@
   ],
   "model_digests": {
     ".flowguard/models/worldguard_guard_semantics_model.py": "cc5aa28604f73e4dc6ff1bdd39924f6c8b546933bec10c09d93175f6c9ff3657",
-    ".flowguard/models/worldguard_mesh_handoff_model.py": "bc845d8f0efed823406a07b5eee61aa1d4596cf7bca6f2c3be5da846d5cbbe88",
+    ".flowguard/models/worldguard_mesh_handoff_model.py": "47349e1f0ff398d14e819cb7fd4f20792e03262bd94df44fe7577170ac69a9fb",
     ".flowguard/models/worldguard_skill_install_model.py": "3efd0b024243db912f92a44edefe636aa4d3e7de3889d293316b7fd4978dbfa6",
     ".flowguard/models/worldguard_world_check_model.py": "4e36caea6c8a21787fe05cf1148934988aea23d47584a0d3af9c398a15499783",
     ".flowguard/models/worldguard_world_compare_model.py": "7765c05c8f96454501d8c1e7805a5f77de1f851be33ff5ab6e3323a7b29e6036",
