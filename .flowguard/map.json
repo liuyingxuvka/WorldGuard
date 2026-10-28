@@ -121,7 +121,7 @@
         ".flowguard/models/worldguard_world_consistency_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:7e19e784af61da1d9a0177c14aaca877f12fcfb57b7ad7bc284c22f1065c8329"
+      "fingerprint": "sha256:7c177f6150ffe0cc9739e6f29680d664bbded55cd0e032b34e5c5d7701596b33"
     },
     {
       "id": "guards",

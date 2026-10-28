@@ -164,46 +164,72 @@ def render_timeline_text(view, *, label=None, full=False):
         if claim.get("row") is None:
             lines.append(f"claim {claim['claim_id']}: {result}")
         else:
-            lines.append(f"claim {claim['claim_id']} row {claim['row']}: {claim['assertion']} {result}")
+            lines.append(
+                f"claim {claim['claim_id']} row {claim['row']}: {claim['assertion']} {result}"
+            )
     for name in ("agents", "space", "conflict", "norms"):
         if name in view.get("submodels", {}):
             lines.append(f"{name}: {view['submodels'][name]}")
     previous_fluents = set()
     previous_tokens = {}
-    for index, step in enumerate(view['steps']):
-        current_fluents = set(step['fluents'])
-        current_tokens = step.get('tokens', {})
+    for index, step in enumerate(view["steps"]):
+        current_fluents = set(step["fluents"])
+        current_tokens = step.get("tokens", {})
         if full or index == 0:
-            fluents = ', '.join(step['fluents']) or '-'
+            fluents = ", ".join(step["fluents"]) or "-"
             places = current_tokens
         else:
-            fluents = ' '.join([f"+{name}" for name in sorted(current_fluents - previous_fluents)] +
-                               [f"-{name}" for name in sorted(previous_fluents - current_fluents)]) or '='
-            places = {place: current_tokens.get(place, {}) for place in sorted(set(current_tokens) | set(previous_tokens))
-                      if current_tokens.get(place, {}) != previous_tokens.get(place, {})}
-        tokens = ', '.join(f"{place}=" + ('+'.join(f"{color}×{quantity:g}" for color, quantity in colors.items()) or '-')
-                           for place, colors in places.items() if any(colors.values()) or (not full and index > 0))
-        tokens = tokens or ('-' if full or index == 0 else '=')
-        line = (f"{step['at'] if step['at'] is not None else 'start'}  {step.get('event_id') or '-'}  "
-                f"fluents: {fluents} | tokens: {tokens}")
+            fluents = (
+                " ".join(
+                    [f"+{name}" for name in sorted(current_fluents - previous_fluents)]
+                    + [f"-{name}" for name in sorted(previous_fluents - current_fluents)]
+                )
+                or "="
+            )
+            current_nonzero = {
+                place: {color: quantity for color, quantity in colors.items() if quantity != 0}
+                for place, colors in current_tokens.items()
+            }
+            previous_nonzero = {
+                place: {color: quantity for color, quantity in colors.items() if quantity != 0}
+                for place, colors in previous_tokens.items()
+            }
+            places = {
+                place: current_nonzero.get(place, {})
+                for place in sorted(set(current_nonzero) | set(previous_nonzero))
+                if current_nonzero.get(place, {}) != previous_nonzero.get(place, {})
+            }
+        tokens = ", ".join(
+            f"{place}="
+            + ("+".join(f"{color}×{quantity:g}" for color, quantity in colors.items()) or "-")
+            for place, colors in places.items()
+            if any(colors.values()) or (not full and index > 0)
+        )
+        tokens = tokens or ("-" if full or index == 0 else "=")
+        line = (
+            f"{step['at'] if step['at'] is not None else 'start'}  {step.get('event_id') or '-'}  "
+            f"fluents: {fluents} | tokens: {tokens}"
+        )
         previous_fluents = current_fluents
         previous_tokens = current_tokens
-        if step.get('source'):
+        if step.get("source"):
             line += f" (source: {step['source']})"
-        if step.get('problems'):
-            line += '  !! ' + ', '.join(step['problems'])
+        if step.get("problems"):
+            line += "  !! " + ", ".join(step["problems"])
         lines.append(line)
     problems = view.get("problems", [])
-    for scenario, values in view.get('variables', {}).items():
-        rendered = ', '.join(f"{name}={value:.3g}" if isinstance(value, (int, float)) else f"{name}={value}"
-                             for name, value in values.items())
+    for scenario, values in view.get("variables", {}).items():
+        rendered = ", ".join(
+            f"{name}={value:.3g}" if isinstance(value, (int, float)) else f"{name}={value}"
+            for name, value in values.items()
+        )
         line = f"variables [{scenario}]: {rendered}"
         codes = sorted({row["code"] for row in problems if row.get("scenario") == scenario})
         if codes:
-            line += '  !! ' + ', '.join(codes)
+            line += "  !! " + ", ".join(codes)
         lines.append(line)
     loose = [row for row in problems if "scenario" not in row]
     if loose:
         lines.append("problems:")
         lines.extend(f"  {row['code']} ({row['guard']}): {row['evidence']}" for row in loose)
-    return '\n'.join(lines)
+    return "\n".join(lines)
