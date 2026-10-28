@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Maintenance checks run on FlowGuard 0.70.14.
+
 ## v0.7.23 - 2026-10-27 - Fresh reports and a child-model world check
 
 - The installer has a byte-difference model; obsolete OpenSpec change archives are removed while active specs stay available. Skill guidance names the Guard subset each world needs.
