@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.7.24 - 2026-10-28 - Quieter timeline changes and a declared mesh replay
 
 - Size caps on skill text and command output are replaced by checks for repeated paragraphs, dead links, unknown names and complete output; totals are printed, not limited.
 
