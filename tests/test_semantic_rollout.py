@@ -25,7 +25,7 @@ def _valid_event_mesh() -> dict:
 def test_valid_bounded_semantic_rollout_reports_distinct_green_components():
     report = run_model_mesh(_valid_event_mesh())
     assert report.status == GuardStatus.PASS
-    assert report.to_dict()['checked'] == {'nodes': 1, 'edges': 0, 'roots': 1, 'variants': 0}
+    assert report.to_dict()['checked'] == {'nodes': 1, 'edges': 0, 'roots': 1, 'variants': 0, 'node_variants': 0}
     assert report.to_dict()['gaps'] == []
 
 def test_retired_closure_profile_is_rejected_instead_of_skipping_semantics():

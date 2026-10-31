@@ -82,7 +82,7 @@ def test_mesh_node_claims_must_be_bound_to_their_models():
 def test_expected_contractless_node_is_counted_and_blocks_aggregate_pass():
     report = run_model_mesh({'mesh_id': 'contractless', 'nodes': [{'model_id': 'missing-contract'}]})
     assert report.status == GuardStatus.GAP
-    assert report.to_dict()['checked'] == {'nodes': 1, 'edges': 0, 'roots': 1, 'variants': 0}
+    assert report.to_dict()['checked'] == {'nodes': 1, 'edges': 0, 'roots': 1, 'variants': 0, 'node_variants': 0}
     assert 'missing-contract' not in report.node_reports
     assert any((finding.code == 'MESH_EXPECTED_NODE_CONTRACT_MISSING' for finding in report.findings))
 
@@ -398,3 +398,14 @@ def test_lighthouse_slip_is_still_a_mismatch():
     assert report.status is GuardStatus.FAIL
     assert any(row['code'] == 'MESH_HANDOFF_STATE_MISMATCH' and row['evidence']['fluent'] == 'lena_on_island'
                for row in report.to_dict()['gaps'])
+
+
+def test_mesh_summary_totals_node_variants():
+    from pathlib import Path
+    fixed = _lighthouse_mesh('mesh_fixed.yaml')
+    assert fixed.status is GuardStatus.PASS
+    assert fixed.checked['node_variants'] == 3 and fixed.checked['variants'] == 0
+    story = Path(__file__).parents[1] / 'skills/worldguard/assets/examples/story_mesh.yaml'
+    report = run_model_mesh(yaml.safe_load(story.read_text()), base_dir=story.parent)
+    assert report.status is GuardStatus.PASS
+    assert report.checked['node_variants'] == 0 and report.checked['variants'] == 1

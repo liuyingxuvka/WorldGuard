@@ -145,8 +145,17 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
     for index, row in enumerate(problems):
         if index in placed:
             continue
+        evidence = row.get("message") or _short(row.get("counterexample", {}))
+        if 'variant_id' in row:
+            expected = row.get('expected', '')
+            actual = row.get('actual', '')
+            if row.get('expected_code'):
+                expected += ' ' + row['expected_code']
+            if row.get('codes'):
+                actual += ' ' + ', '.join(row['codes'])
+            evidence = f"variant {row['variant_id']}: expected {expected}, got {actual}"
         item = {"code": row.get("code"), "guard": row.get("guard") or "-",
-                "evidence": row.get("message") or _short(row.get("counterexample", {}))}
+                "evidence": evidence}
         on_scenario = row.get("counterexample", {}).get("scenario_id")
         if on_scenario is not None and str(on_scenario) in variables:
             item["scenario"] = str(on_scenario)

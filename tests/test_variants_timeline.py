@@ -290,3 +290,22 @@ def test_timeline_token_delta_skips_zero_counts():
     full = render_timeline_text(view, full=True).splitlines()
     assert full[2].endswith("tokens: b=t×1")
     assert full[3].endswith("tokens: c=t×1")
+
+
+def test_timeline_names_the_uncaught_variant(capsys):
+    mesh = Path(__file__).parent / 'fixtures/trials/lighthouse_key/mesh.yaml'
+    evidence = 'variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED'
+    assert main(['timeline', '--mesh', str(mesh)]) == 0
+    assert '    VARIANT_NOT_CAUGHT (-): ' + evidence in capsys.readouterr().out.splitlines()
+    assert main(['timeline', '--mesh', str(mesh), '--json']) == 0
+    view = json.loads(capsys.readouterr().out)
+    problem = next(row for row in view['nodes']['ch1']['problems'] if row['code'] == 'VARIANT_NOT_CAUGHT')
+    assert problem['evidence'] == evidence
+
+    world = {'claim': {'claim_id': 'plain', 'asserts': [{'holds': 'ready', 'at': 't1'}]},
+             'inputs': {'events': [{'event_id': 'ready', 'at': 't1', 'initiates': 'ready'}]},
+             'variants': [{'id': 'same', 'set': {'claim.claim_id': 'renamed'}}]}
+    report = run_worldguard(world)
+    assert report.status.value == 'GAP'
+    problem = next(row for row in timeline(world, report=report)['problems'] if row['code'] == 'VARIANT_NOT_CAUGHT')
+    assert problem['evidence'] == 'variant same: expected FAIL, got PASS'
