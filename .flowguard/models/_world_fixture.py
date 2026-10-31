@@ -28,9 +28,12 @@ class CheckRequest:
     observed_copy: bool = False
     timeline: bool = False
     space_token: str = "none"
+    actor_state: str = "none"
 
 
 EXTERNAL_INPUTS = (
+    CheckRequest("actor_state_unchecked", actor_state="unchecked"),
+    CheckRequest("actor_state_free", actor_state="free"),
     CheckRequest("compare_match", rows="comparison", compare=True),
     CheckRequest("compare_mismatch", rows="comparison", compare=True, compare_mismatch=True),
     CheckRequest("uncaught_variant", uncaught_variant=True, rows="variants"),
@@ -70,6 +73,14 @@ EXTERNAL_INPUTS = (
 
 
 def _real_contract(request):
+    if request.actor_state != "none":
+        event = {"event_id": "unlock", "at": "t1", "actor": "Lena", "source": "actor fixture",
+                 "requires": "door_locked", "initiates": "door_unlocked", "terminates": "door_locked"}
+        if request.actor_state == "free":
+            event["actor_state_free"] = "the door opens from either side"
+        return {"claim": {"asserts": [{"holds": "door_unlocked", "at": "t2"}]},
+                "inputs": {"event_model": {"initial_states": ["lena_on_mainland", "lena_has_key", "door_locked"]},
+                           "events": [event]}}
     if request.retired_key:
         contract = _real_contract(replace(request, retired_key=""))
         destination = contract["claim"] if request.retired_key in {"target_guard", "target_guards", "atoms"} else contract
@@ -235,7 +246,7 @@ def stage_values(request, code, report):
                  else 'GAP' if 'CAUSAL_SCENARIO_UNEVALUABLE' in codes
                  else 'BOUNDARY_EXCEEDED' if 'EVENT_BOUNDARY_NUMERIC_DYNAMICS' in codes else 'PASS')
     statuses=[row['status'] for row in report.get('guard_results',[])]
-    if 'QUALIFICATION_SEMANTIC_UNMAPPED' in codes: statuses.append('GAP')
+    if codes & {'QUALIFICATION_SEMANTIC_UNMAPPED', 'EVENT_ACTOR_STATE_UNCHECKED'}: statuses.append('GAP')
     return ('PASS',events,consistency,worst(statuses))
 
 

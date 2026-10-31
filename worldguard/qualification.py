@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from copy import deepcopy
+import re
 from typing import Any
 
 from .claim_binding import evaluate_claim_binding
@@ -280,6 +281,33 @@ def qualify_guard_contract(contract, *, context=None):
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
     gaps.extend(_event_token_consistency(contract))
     gaps.extend(_space_token_consistency(contract))
+    scope_limits = list(contract.world_model.scope_limits)
+    events = [event for event in contract.inputs.get('events', []) if isinstance(event, Mapping)]
+    event_model = contract.inputs.get('event_model', {})
+    initial = fluent_values(event_model.get('initial_states')) if isinstance(event_model, Mapping) else []
+    event_fluents = [set(fluent for field in ('requires', 'initiates', 'terminates')
+                         for fluent in fluent_values(event.get(field))) for event in events]
+    for index, event in enumerate(events):
+        actor = event.get('actor')
+        if 'actor_state_free' in event:
+            scope_limits.append(f"actor_state_free {event.get('event_id', '-')} ({actor or '-'}): {event['actor_state_free']}")
+            continue
+        if not actor:
+            continue
+        tracked = set(initial)
+        for other, fluents in enumerate(event_fluents):
+            if other != index:
+                tracked.update(fluents)
+        tracked = sorted(fluent for fluent in tracked if actor.casefold() in re.split(r'[\W_]+', fluent.casefold()))
+        requires_actor = any(actor.casefold() in re.split(r'[\W_]+', fluent.casefold())
+                             for fluent in fluent_values(event.get('requires')))
+        if tracked and not requires_actor:
+            row = {'code': 'EVENT_ACTOR_STATE_UNCHECKED', 'status': 'GAP',
+                   'event_id': event.get('event_id', ''), 'actor': actor, 'tracked_fluents': tracked,
+                   'message': "The event's actor has state in this world that the event does not require; require it or give actor_state_free: <reason>."}
+            if event.get('source'):
+                row['source'] = event['source']
+            gaps.append(row)
     if contract.world_model.entities:
         inputs = contract.inputs
         used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))
@@ -334,4 +362,4 @@ def qualify_guard_contract(contract, *, context=None):
     return GuardedReport(contract_id=contract.contract_id, status=status,
         checked={"guards": derived, "claim_rows": len(binding["assertions"]), "variants": len(contract.variants)}, gaps=gaps,
         guard_results=results, claim_binding=binding, derived_guards=derived,
-        unmapped_semantics=unmapped, scope_limits=list(contract.world_model.scope_limits))
+        unmapped_semantics=unmapped, scope_limits=scope_limits)

@@ -1,0 +1,18 @@
+contract_id: ch1
+claim:
+  claim_id: ch1_door_locked
+  text: Lena finds the key, locks the lighthouse, leaves for the mainland.
+  requested_semantics: [event]
+  asserts:
+    - {holds: door_locked, at: "14:00"}
+    - {holds: lena_on_mainland, at: "14:00"}
+world_model: {model_id: ch1, scope_limits: [chapter 1 only]}
+inputs:
+  event_model: {initial_states: [lena_on_island, tom_on_mainland]}
+  events:
+    - {event_id: e_find_key, at: "9:00", source: ch1 p1, actor: Lena, requires: [lena_on_island], initiates: [lena_has_key]}
+    - {event_id: e_lock, at: "12:00", source: ch1 p2, actor: Lena, requires: [lena_has_key, lena_on_island], initiates: [door_locked]}
+    - {event_id: e_ferry_out, at: "14:00", source: ch1 p3, actor: Lena, requires: [lena_on_island], initiates: [lena_on_mainland], terminates: [lena_on_island]}
+variants:
+  - {id: lock_before_find, code: EVENT_PRECONDITION_UNMET, set: {"inputs.events[e_lock].at": "8:00"}}
+  - {id: never_left, expect: GAP, code: CLAIM_ASSERTION_UNRESOLVED, remove: ["inputs.events[e_ferry_out]"]}

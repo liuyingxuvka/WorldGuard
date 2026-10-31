@@ -164,3 +164,80 @@ def test_space_rows_agree_with_token_places(tmp_path):
     path = tmp_path / 'apart.yaml'
     path.write_text(yaml.safe_dump(apart))
     assert main(['check', '--contract', str(path)]) == 1
+
+
+def _lighthouse_contract(name):
+    from pathlib import Path
+    import yaml
+    return yaml.safe_load((Path(__file__).parent / 'fixtures/trials/lighthouse_key' / name).read_text())
+
+
+def test_actor_state_unchecked_is_a_gap():
+    contract = _lighthouse_contract('ch2_naive_no_variant.yaml')
+    report = run_worldguard(contract)
+    assert report.status is GuardStatus.GAP
+    assert report.gaps == [{
+        'code': 'EVENT_ACTOR_STATE_UNCHECKED', 'status': 'GAP', 'event_id': 'e_unlock',
+        'actor': 'Lena', 'tracked_fluents': ['lena_has_key', 'lena_on_mainland'], 'source': 'ch2 p3',
+        'message': "The event's actor has state in this world that the event does not require; require it or give actor_state_free: <reason>.",
+    }]
+
+    pair = deepcopy(contract)
+    pair['inputs']['event_model']['initial_states'] += ['helena_x', 'éva_has_key']
+    second = {**pair['inputs']['events'][-1], 'event_id': 'e_unlock_again', 'actor': 'ÉVA',
+              'at': '21:01', 'requires': 'door_unlocked', 'terminates': [], 'source': 'ch2 p4'}
+    pair['inputs']['events'].append(second)
+    pair_report = run_worldguard(pair)
+    assert pair_report.status is GuardStatus.GAP
+    assert [(row['event_id'], row['actor'], row['tracked_fluents']) for row in pair_report.gaps] == [
+        ('e_unlock', 'Lena', ['lena_has_key', 'lena_on_mainland']),
+        ('e_unlock_again', 'ÉVA', ['éva_has_key']),
+    ]
+
+    independent = deepcopy(contract)
+    independent['claim'] = {'asserts': [{'variable': 'x', 'op': '>=', 'value': 0}]}
+    independent['inputs']['causal_model'] = {'variables': ['x'], 'equations': {'x': '1'}, 'scenarios': {'base': {}}}
+    report = run_worldguard(independent)
+    assert report.derived_guards == ['CausalGuard']
+    assert report.status is GuardStatus.GAP
+    assert [row['code'] for row in report.gaps] == ['EVENT_ACTOR_STATE_UNCHECKED']
+
+
+def test_actor_state_free_reason_is_printed():
+    import re
+    from worldguard import GuardContract
+    from worldguard.cli import _unit_summary
+
+    contract = _lighthouse_contract('ch2_naive_no_variant.yaml')
+    contract['inputs']['events'][-1]['actor_state_free'] = 'the door opens from either side'
+    reason = 'actor_state_free e_unlock (Lena): the door opens from either side'
+    report = run_worldguard(contract)
+    assert report.status is GuardStatus.PASS
+    assert report.gaps == []
+    assert reason in report.to_dict()['scope_limits']
+    assert reason in _unit_summary(report.to_dict())['scope_limits']
+    mesh = {'nodes': [{'model_id': 'root', 'contract': contract}, {'model_id': 'child', 'contract': contract}],
+            'edges': [{'edge_id': 'root-child', 'from': 'root', 'to': 'child', 'relation': 'parent_child'}]}
+    tree = run_model_mesh(mesh)
+    assert tree.status is GuardStatus.PASS
+    assert tree.scope_limits == sorted({reason, 'chapter 2 only'})
+    for invalid in ('', ' \t ', None):
+        contract['inputs']['events'][-1]['actor_state_free'] = invalid
+        with pytest.raises(ValueError, match=re.escape('inputs.events[2].actor_state_free must be a nonempty reason')):
+            GuardContract.from_dict(contract)
+
+
+def test_shipped_worlds_have_no_actor_state_gap():
+    from pathlib import Path
+    import yaml
+
+    examples = Path(__file__).parents[1] / 'skills/worldguard/assets/examples'
+    for name in ('scene_locked_door.yaml', 'trip_ferry.yaml', 'story_mesh.yaml'):
+        contract = yaml.safe_load((examples / name).read_text())
+        report = run_model_mesh(contract, base_dir=examples) if name == 'story_mesh.yaml' else run_worldguard(contract)
+        assert report.status is GuardStatus.PASS
+        assert not any(row['code'] == 'EVENT_ACTOR_STATE_UNCHECKED' for row in report.to_dict()['gaps'])
+    for name in ('ch1_fixed.yaml', 'ch2_fixed.yaml'):
+        report = run_worldguard(_lighthouse_contract(name))
+        assert report.status is GuardStatus.PASS
+        assert not any(row['code'] == 'EVENT_ACTOR_STATE_UNCHECKED' for row in report.gaps)

@@ -409,7 +409,7 @@ def run_model_mesh(mesh, *, base_dir=None):
         reports,
         findings,
         {"nodes": len(mesh.nodes), "edges": len(mesh.edges), "roots": len(roots), "variants": len(variant_results)},
-        sorted({v for n in mesh.nodes if n.contract for v in n.contract.world_model.scope_limits}),
+        sorted({value for report in reports.values() for value in report.scope_limits}),
         {n.model_id: n.source for n in mesh.nodes if n.source},
         lines,
         variant_results,

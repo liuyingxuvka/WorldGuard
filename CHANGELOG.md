@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- An event whose actor has state in the world but requires none of it is GAP EVENT_ACTOR_STATE_UNCHECKED (before: PASS); "actor_state_free: <reason>" opts out and the reason is printed in scope_limits.
+
 - Maintenance checks run on FlowGuard 0.71.0; the project rules name req add and changes lines, CLAUDE.md imports AGENTS.md, and every accepted debt has an expiry.
 
 ## v0.7.24 - 2026-10-28 - Quieter timeline changes and a declared mesh replay

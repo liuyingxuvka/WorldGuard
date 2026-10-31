@@ -1,0 +1,14 @@
+mesh_id: lighthouse
+nodes:
+  - model_id: story
+    contract:
+      claim:
+        claim_id: door_opened_after_handover
+        asserts:
+          - {node: ch2, holds: door_unlocked, at: "21:00"}
+  - {model_id: ch1, contract: ch1_fixed.yaml, source: chapter 1}
+  - {model_id: ch2, contract: ch2_fixed.yaml, source: chapter 2}
+edges:
+  - {edge_id: story_1, from: story, to: ch1, relation: parent_child}
+  - {edge_id: story_2, from: story, to: ch2, relation: parent_child}
+  - {edge_id: ch1_ch2, from: ch1, to: ch2, relation: continues}

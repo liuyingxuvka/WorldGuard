@@ -11,9 +11,12 @@ HANDOFF = {'world_input': {'status':'input_status'}, 'world_events': {'status':'
            'world_consistency': {'status':'consistency_status'}, 'guard_semantics': {'status':'guard_status'}}
 KEEPS = ('row_status','aggregate_status','rows','exit_code','status','terminal')
 IMPLEMENTED_BY = {'DeriveGuards': 'worldguard/contracts.py:derive_guard_requirements', 'RunGuards': 'worldguard/qualification.py:qualify_guard_contract', 'EvaluateClaimRows': 'worldguard/claim_binding.py:evaluate_claim_binding', 'Aggregate': 'worldguard/status.py:aggregate_statuses', 'ReportExit': 'worldguard/cli.py:main'}
-TESTED_BY = {'pass_needs_bound_true_rows': ['tests/test_world_model_language.py:test_a_claim_without_assertions_is_not_bound_to_the_world_model'], 'variants_must_fail': ['tests/test_variants_timeline.py:test_examples_check_their_known_bad_variants_and_catch_a_missing_rule'], 'one_row_per_problem': ['tests/test_qualification.py:test_one_row_per_problem_in_short_and_full_reports'], 'child_status_decides_exit': ['tests/test_cli_module.py:test_cli_runs_the_single_bundled_world_example', 'tests/test_cli_module.py:test_missing_bundled_example_explains_skill_distribution']}
+TESTED_BY = {'pass_needs_bound_true_rows': ['tests/test_world_model_language.py:test_a_claim_without_assertions_is_not_bound_to_the_world_model'], 'variants_must_fail': ['tests/test_variants_timeline.py:test_examples_check_their_known_bad_variants_and_catch_a_missing_rule'], 'one_row_per_problem': ['tests/test_qualification.py:test_one_row_per_problem_in_short_and_full_reports'], 'child_status_decides_exit': ['tests/test_cli_module.py:test_cli_runs_the_single_bundled_world_example', 'tests/test_cli_module.py:test_missing_bundled_example_explains_skill_distribution'], 'actor_state_checked': ['tests/test_qualification.py:test_actor_state_unchecked_is_a_gap', 'tests/test_qualification.py:test_actor_state_free_reason_is_printed']}
 CHILD_RESULTS = {'label': ('PASS', 'PASS', 'PASS', 'PASS'), 'word_time': ('error', '', '', ''), 'duplicate_ids': ('error', '', '', ''), 'tokens_cloned': ('PASS', 'FAIL', 'PASS', 'FAIL'), 'transition_unlinked': ('PASS', 'GAP', 'PASS', 'PASS'), 'scenario_late': ('PASS', 'PASS', 'FAIL', 'FAIL'), 'owned_boundary': ('PASS', 'PASS', 'BOUNDARY_EXCEEDED', 'BOUNDARY_EXCEEDED'), 'uncaught_variant': ('PASS', 'PASS', 'PASS', 'PASS'), 'unbound': ('PASS', 'PASS', 'PASS', 'PASS'), 'false_row': ('PASS', 'PASS', 'PASS', 'PASS'), 'missing_event_time': ('PASS', 'GAP', 'PASS', 'GAP'), 'partial_run_gap': ('PASS', 'PASS', 'GAP', 'GAP'), 'unknown_row': ('PASS', 'PASS', 'PASS', 'PASS'), 'foreign_boundary': ('PASS', 'PASS', 'PASS', 'GAP'), 'boundary_with_fail': ('PASS', 'FAIL', 'BOUNDARY_EXCEEDED', 'FAIL'), 'boundary_with_gap': ('PASS', 'GAP', 'BOUNDARY_EXCEEDED', 'GAP')}
 OWN_CASES = ('unbound', 'false_row', 'unknown_row', 'uncaught_variant', 'foreign_boundary', 'boundary_with_fail', 'boundary_with_gap')
+CHILD_RESULTS.update(actor_state_unchecked=('PASS', 'PASS', 'PASS', 'GAP'),
+                     actor_state_free=('PASS', 'PASS', 'PASS', 'PASS'))
+OWN_CASES += ('actor_state_unchecked', 'actor_state_free')
 CASES = tuple(q for q in REQUESTS if q.case_id in CHILD_RESULTS)
 
 @dataclass(frozen=True)
@@ -64,8 +67,10 @@ class RunGuards:
     name='RunGuards'
     reads=('request','input_status')
     writes=('guard_status',)
+    def __init__(self,defect=''):self.defect=defect
     def apply(self,request,state):
         value=CHILD_RESULTS[state.request.case_id][3] if state.input_status!='error' else ''
+        if self.defect=='actor_state_ignored' and state.request.actor_state=='unchecked':value='PASS'
         yield FunctionResult(value,replace(state,guard_status=value),label='received_guards')
 
 class EvaluateClaimRows:
@@ -131,6 +136,13 @@ def one_row_per_problem(state,trace):
         return InvariantResult.fail('A native problem was repeated as layered or pointer rows')
     return InvariantResult.pass_()
 
+def actor_state_checked(state,trace):
+    if state.terminal and state.request.actor_state!='none':
+        expected=('GAP',1,'GAP') if state.request.actor_state=='unchecked' else ('PASS',0,'PASS')
+        if (state.guard_status,state.exit_code,state.status)!=expected:
+            return InvariantResult.fail('Tracked actor state was ignored or its explicit free reason did not exempt it')
+    return InvariantResult.pass_()
+
 def child_status_decides_exit(state,trace):
     if not state.terminal:return InvariantResult.pass_()
     if state.input_status=='error':
@@ -145,16 +157,18 @@ def child_status_decides_exit(state,trace):
     return InvariantResult.pass_()
 
 INVARIANTS = (
+    Invariant('actor_state_checked','An event whose actor has tracked state requires some of it or names actor_state_free; otherwise the check is GAP EVENT_ACTOR_STATE_UNCHECKED.',actor_state_checked),
     Invariant('pass_needs_bound_true_rows','Only bound true rows in a passing world can pass',pass_needs_bound_true_rows),
     Invariant('variants_must_fail','A known-bad variant that escapes prevents PASS',variants_must_fail),
     Invariant('one_row_per_problem','Each native problem has one report row',one_row_per_problem),
     Invariant('child_status_decides_exit','The received stage and Guard statuses decide the exit; parse errors receive no later stages.',child_status_decides_exit),
 )
 MUTATIONS = {'unbound_claim_passes':'pass_needs_bound_true_rows','variants_ignored':'variants_must_fail',
-             'layered_duplicates':'one_row_per_problem','stages_run_after_parse_error':'child_status_decides_exit','ignores_gap':'child_status_decides_exit'}
+             'layered_duplicates':'one_row_per_problem','stages_run_after_parse_error':'child_status_decides_exit','ignores_gap':'child_status_decides_exit',
+             'actor_state_ignored':'actor_state_checked'}
 
 def workflow(defect=''):
-    return Workflow((TakeRequest(),ReceiveInput(),ReceiveStages(defect),RunGuards(),EvaluateClaimRows(defect),Aggregate(defect),ReportExit()))
+    return Workflow((TakeRequest(),ReceiveInput(),ReceiveStages(defect),RunGuards(defect),EvaluateClaimRows(defect),Aggregate(defect),ReportExit()))
 def make(defect='',names=None):
     return Explorer(workflow(defect),(State(),),CASES,tuple(rule for rule in INVARIANTS if names is None or rule.name in names),
                     max_sequence_length=1,terminal_predicate=lambda value,state,trace:state.terminal,progress_steps=0)
@@ -169,14 +183,23 @@ def outcome(request):
 
 def conformance():
     mismatches=[];checked=0;requests={q.case_id:q for q in CASES}
-    for case in (*OWN_CASES,*CHILD_RESULTS):
+    for case in dict.fromkeys((*OWN_CASES,*CHILD_RESULTS)):
         request=requests[case]
         try:
             code,report=replay(request);state=outcome(request)
             if (code,report['status'])!=(state.exit_code,state.status):mismatches.append(f'{case}: exit/status differs')
             if case in CHILD_RESULTS and stage_values(request,code,report)!=CHILD_RESULTS[case]:mismatches.append(f'{case}: coarse received values differ from native contributions')
             gaps=report.get('gaps',[])
-            identities=[(row['code'],row.get('guard'),row.get('claim_row'),row.get('variant_id')) for row in gaps]
+            if request.actor_state=='unchecked':
+                actor_rows=[row for row in gaps if row['code']=='EVENT_ACTOR_STATE_UNCHECKED']
+                if (len(actor_rows)!=1 or any(actor_rows[0].get(key)!=value for key,value in
+                        {'status':'GAP','event_id':'unlock','actor':'Lena','source':'actor fixture',
+                         'tracked_fluents':['lena_has_key','lena_on_mainland']}.items())):
+                    mismatches.append('actor_state_checked: native gap does not name the event, actor and tracked fluents')
+            if request.actor_state=='free':
+                if gaps or 'actor_state_free unlock (Lena): the door opens from either side' not in report['scope_limits']:
+                    mismatches.append('actor_state_checked: native free exemption omitted its reason or did not pass')
+            identities=[(row['code'],row.get('guard'),row.get('claim_row'),row.get('variant_id'),row.get('event_id')) for row in gaps]
             if len(identities)!=len(set(identities)):mismatches.append(f'{case}: one_row_per_problem failed')
         except Exception as exc:mismatches.append(f'{case}: native replay raised {type(exc).__name__}: {exc}')
         checked+=1

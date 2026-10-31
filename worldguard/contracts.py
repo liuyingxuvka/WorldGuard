@@ -185,6 +185,8 @@ def _validate_event_links(inputs: Mapping[str, Any]) -> None:
             continue
         if 'actor' in event and (not isinstance(event['actor'], str) or not event['actor']):
             raise ValueError(f'inputs.events[{index}].actor must be a nonempty id')
+        if 'actor_state_free' in event and (not isinstance(event['actor_state_free'], str) or not event['actor_state_free'].strip()):
+            raise ValueError(f'inputs.events[{index}].actor_state_free must be a nonempty reason')
         if 'action' in event and (not isinstance(event['action'], str) or not event['action']):
             raise ValueError(f'inputs.events[{index}].action must be a nonempty id')
         if 'with' in event and (not isinstance(event['with'], list) or any(not isinstance(item, str) or not item for item in event['with'])):

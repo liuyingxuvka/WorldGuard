@@ -15,7 +15,7 @@ Run `python <skill-root>/scripts/run_worldguard.py ...`. With a world or tree, r
 name the claim rows, events and nodes the request concerns and work on them.
 For a new story or trip, build the model in five steps:
 1. Write the claim rows that must hold (`claim.asserts`).
-2. Add only the inputs each row needs: `holds`/`before` -> `events`, `place` -> `resources`, spatial rows -> `spatial_relations`, `variable` -> `causal_model`.
+2. Add only the inputs each row needs: `holds`/`before` -> `events`, `place` -> `resources`, spatial rows -> `spatial_relations`, `variable` -> `causal_model`. An event with an `actor` requires what that actor holds and where the actor is (otherwise GAP `EVENT_ACTOR_STATE_UNCHECKED`; write `actor_state_free: <reason>` when it truly depends on neither).
 3. Give each must-hold row a `variants:` edit that must fail with its `code`.
 4. Several chapters or days: a tree whose root holds only claim rows (`node:` reads descendants), one node each, joined in reading order by `continues`.
 5. A chapter or day not written yet is a node without `contract` (`GAP planned`); add the contract once written.
@@ -28,7 +28,7 @@ When one world gets too big, split it into a tree of contracts over time (a root
 - Node: one world contract (claim, world_model, inputs); a failing node shows its counterexample: the failed event or constraint with its timeline prefix.
 - Parent: a mesh edge `relation: parent_child` (root rows read descendants with `node:`); `continues` hands state and time to the next node.
 - Known-bad: `variants:` in a contract or a mesh; each one must fail with its `code`.
-- Real binding: `claim.asserts` rows checked against the model; `source:` only points at the original text and is not checked.
+- Real binding: `claim.asserts` rows checked against the model; an event whose actor's state the world tracks must require it (`EVENT_ACTOR_STATE_UNCHECKED`, or `actor_state_free: <reason>`); `source:` only points at the original text and is not checked.
 - Test binding: `compare --contract|--mesh --observed` checks the plan against what really happened.
 - Readback: `timeline` (text; `--json`) and the `tree` lines of `mesh-check`.
 - Current vs target: the contract or mesh file is the current model; an edited copy is the target and replaces the file when the same checks pass; a mesh node without `contract` is a planned part (`GAP planned`); `compare --write-observed` writes an as-happened copy whose checks show what reality broke.

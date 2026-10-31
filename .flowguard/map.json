@@ -79,7 +79,7 @@
       "layer": "core",
       "summary": "Shared contracts, compact reports, clock and finite replay helpers Provide sorted relative paths and SHA-256 hashes of raw input bytes for the CLI. Timeline text starts with full state and then prints changes; full text and JSON stay available.",
       "responsibilities": [
-        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs.",
+        "Derive required Guards from claim semantics and claim assertion kinds and validate shared contract shapes; validate event clocks, homogeneous time kinds and scenario-local event identities; own the shared per-Guard boundary semantics table and derive unmapped semantics only outside selected Guard boundaries; validate event-linked transitions, participant fields and reserved event-time names Keep node-scoped assertion semantics and clocks out of holder-local Guard derivation and time validation; reuse the canonical clock and native replay across mesh handoffs. Validate actor_state_free as a nonblank reason.",
         "Provide pure event and token replay, norm activation and safe scalar scenario evaluation shared by Guards and claim assertions; expose unscoped event times in hours and replay linked token transitions in event order; activate norms from event-time fluents as well as static facts",
         "Keep compact native reports and the conservative four-status aggregation",
         "Apply finite in-memory variant patches by exact paths and ids; read the native event/token/scalar timeline without a separate simulation engine",
@@ -121,7 +121,7 @@
         ".flowguard/models/worldguard_world_consistency_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:7c177f6150ffe0cc9739e6f29680d664bbded55cd0e032b34e5c5d7701596b33"
+      "fingerprint": "sha256:c3720c4d57eaaebd7f3d18527e2588a4d6c0a1c984be5e85928d3003f237a098"
     },
     {
       "id": "guards",
@@ -166,12 +166,12 @@
         ".flowguard/models/worldguard_guard_semantics_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:b16debfb1d81c91df7c06665463c1a223c5b1036489d09a7e4b5bf8be7801a85"
+      "fingerprint": "sha256:dbd64528a90d596175daacb3f212bf0bbe94a0d374a6d80c482b0021b44eb17d"
     },
     {
       "id": "qualification",
       "layer": "unit",
-      "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model",
+      "summary": "Unit qualification that runs the derived Guards and checks the claim assertions against the model; tracked actor state is required by its events or explicitly exempted with a reported reason",
       "responsibilities": [
         "Run each derived native Guard exactly once Resolve node rows only against parent_child descendants in a native mesh context; standalone references gap and summary-only nodes need no local Guard execution.",
         "Evaluate each claim.asserts row against the world model; a false row fails the claim, an unresolved row is a gap, and a claim without assertions is not bound (gap)",
@@ -179,7 +179,8 @@
         "Require each known-bad variant to produce its expected non-pass status/code; retain source references and event prefixes on full counterexamples",
         "Compare only supplied observations with native world event times and causal scenario values, using declared time/variable tolerances and no writes or frozen artifacts.",
         "Decorate only mapping event and transition records so malformed native records keep their original typed Guard result. Read entity uses only from mapping event records.",
-        "A single token's place agrees with the spatial relations declared at the same time: a contradiction fails, an unrelated place is a gap"
+        "A single token's place agrees with the spatial relations declared at the same time: a contradiction fails, an unrelated place is a gap",
+        "Independently of selected Guards, report a GAP when an event requires none of its actor's tracked fluents; preserve explicit actor_state_free reasons in scope_limits."
       ],
       "files": [
         "worldguard/qualification.py",
@@ -213,14 +214,14 @@
         ".flowguard/models/worldguard_world_compare_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:a381b93ba2ba41d223a56da93a81f63793fae2ad547796fdf31bc64b9ce9545e"
+      "fingerprint": "sha256:935305beb8ac04e91d780189e8359e3d9fb037edcfbd54fc4c88a0227073f54e"
     },
     {
       "id": "mesh",
       "layer": "mesh",
       "summary": "One tree of contracts joined by parent_child and continues, with mesh-level variants.",
       "responsibilities": [
-        "Aggregate real child outcomes and descendant-only parent assertions",
+        "Aggregate real child outcomes and descendant-only parent assertions; merge, deduplicate and sort scope_limits from actual qualified node reports",
         "Check one rooted parent tree and state/time/value continuity",
         "Replay declared tree variants with exact failure codes and preserve native findings",
         "Tree lines show each node's own status, its subtree status when different, and each continues edge's result; the root line's subtree status equals the report status"
@@ -249,7 +250,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:0694b883bc0be1938aaa056bc3afa3f2f4760cf93d0292c86c83567483c72135"
+      "fingerprint": "sha256:93ed686da0c06f73f22b2b46e4612de8f268ce325accafcc14209c3e79e4f8a3"
     },
     {
       "id": "installer",
@@ -307,7 +308,7 @@
       ],
       "models": [],
       "status": "confirmed",
-      "fingerprint": "sha256:329aeed91933bb9858a3560a0188bc208da3154d66bab1efd3268ebd3a582c5b"
+      "fingerprint": "sha256:f08d89c4459ab1ae1131c6f5c010df2ac250516430dc22523baddd9449dbffd1"
     }
   ],
   "flows": [
@@ -382,7 +383,7 @@
     ".flowguard/models/worldguard_guard_semantics_model.py": "cc5aa28604f73e4dc6ff1bdd39924f6c8b546933bec10c09d93175f6c9ff3657",
     ".flowguard/models/worldguard_mesh_handoff_model.py": "bc845d8f0efed823406a07b5eee61aa1d4596cf7bca6f2c3be5da846d5cbbe88",
     ".flowguard/models/worldguard_skill_install_model.py": "3efd0b024243db912f92a44edefe636aa4d3e7de3889d293316b7fd4978dbfa6",
-    ".flowguard/models/worldguard_world_check_model.py": "4e36caea6c8a21787fe05cf1148934988aea23d47584a0d3af9c398a15499783",
+    ".flowguard/models/worldguard_world_check_model.py": "17b838fe7afd38d54fa1927116d9c2cce43760ab29ac95bb861185623b8387a4",
     ".flowguard/models/worldguard_world_compare_model.py": "7765c05c8f96454501d8c1e7805a5f77de1f851be33ff5ab6e3323a7b29e6036",
     ".flowguard/models/worldguard_world_consistency_model.py": "e180cc43d35e8e5c116849b4181bce8076ac06e68a40373ac93af078f0bb30e8",
     ".flowguard/models/worldguard_world_events_model.py": "76bbcd715d5c1825e3b9ea7923698a8b12e97bd2559042ff62824f3c6fec3cf3",
