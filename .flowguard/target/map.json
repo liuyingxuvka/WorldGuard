@@ -1,0 +1,13 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-602: an event whose actor has tracked state it does not require is a GAP",
+  "components": [],
+  "flows": [],
+  "remove": [],
+  "requests": [
+    {
+      "id": "R1",
+      "part": true
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# changes: model.rule by ID "quote" | changes: model.rule because "reason" | touch: path:qualified_name [because "reason"]
+touch: worldguard/qualification.py:qualify_guard_contract because "Check actor-state requirements independently of derived Guards and report explicit free reasons."
+touch: worldguard/contracts.py:_validate_event_links because "actor_state_free must be a nonempty reason."
+touch: worldguard/mesh.py:run_model_mesh because "Merge actual node report scope_limits so actor_state_free reasons reach the tree."
