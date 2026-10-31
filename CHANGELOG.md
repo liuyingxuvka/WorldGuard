@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.8.0 - 2026-10-31 - Actor state, bindable trees and open-world handoffs
 
 - An event whose actor has tracked state but whose `requires` names none of it is GAP `EVENT_ACTOR_STATE_UNCHECKED` (before: PASS). A nonblank `actor_state_free: <reason>` exempts the event and prints the reason in `scope_limits`.
 
