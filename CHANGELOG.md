@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- README rewritten: the problem it solves for an AI user, a before/after example, a quick start and honest limits.
+
 - The skill spec no longer caps the entry and references by bytes; development uses affected checks and final CI runs the complete suite.
 
 - The timeline names an uncaught variant ("VARIANT_NOT_CAUGHT (-): variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED"; before, the evidence was empty); a tree's checked counts its node contracts' variants as node_variants.
