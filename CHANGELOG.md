@@ -2,19 +2,21 @@
 
 ## Unreleased
 
-- README rewritten: the problem it solves for an AI user, a before/after example, a quick start and honest limits.
+- An event whose actor has tracked state but whose `requires` names none of it is GAP `EVENT_ACTOR_STATE_UNCHECKED` (before: PASS). A nonblank `actor_state_free: <reason>` exempts the event and prints the reason in `scope_limits`.
 
-- The skill spec no longer caps the entry and references by bytes; development uses affected checks and final CI runs the complete suite.
+- `continues` compares only fluents both chapters name. A new initial fact the earlier chapter never names is listed in `scope_limits` instead of failing the handoff; shared disagreements still fail. The story example's and mesh reference's known-bad edits now change the next chapter's start.
 
-- The timeline names an uncaught variant ("VARIANT_NOT_CAUGHT (-): variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED"; before, the evidence was empty); a tree's checked counts its node contracts' variants as node_variants.
+- `mesh-check` reports `mesh_id` and sorted relative `input_digests` of the raw mesh and file-backed node contracts, so compatible consumers can bind a tree of worlds.
 
-- continues compares only fluents both chapters name; a fluent the earlier chapter never names is listed in scope_limits instead of failing the handoff (before: a new character's "tom_on_mainland" was MESH_HANDOFF_STATE_MISMATCH). The story example's and the mesh reference's known-bad edits now change the next chapter's start.
+- The timeline names uncaught variants in text and JSON: "VARIANT_NOT_CAUGHT (-): variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED". Previously the evidence was empty.
 
-- mesh-check prints mesh_id and input_digests (the mesh file and every node contract file), so LogicWriting can bind a tree of worlds like one contract.
+- `checked.node_variants` sums the actual node reports' variant counts; `checked.variants` still counts the contract's or tree's own variants.
 
-- An event whose actor has state in the world but requires none of it is GAP EVENT_ACTOR_STATE_UNCHECKED (before: PASS); "actor_state_free: <reason>" opts out and the reason is printed in scope_limits.
+- The skill spec no longer caps the entry and references by bytes. Development uses affected tests and models; final CI runs the complete suite on the frozen source.
 
-- Maintenance checks run on FlowGuard 0.71.0; the project rules name req add and changes lines, CLAUDE.md imports AGENTS.md, and every accepted debt has an expiry.
+- The English and Chinese READMEs explain the AI user's problem, give a before/after example and quick start, and state the tool's limits.
+
+- Maintenance checks run on FlowGuard 0.71.0; the rules name `req add` and PLAN changes, `CLAUDE.md` imports `AGENTS.md`, and every accepted debt has an expiry.
 
 ## v0.7.24 - 2026-10-28 - Quieter timeline changes and a declared mesh replay
 
