@@ -1,4 +1,5 @@
 import json
+from itertools import product
 import pytest
 import yaml
 from worldguard import GuardContract, ModelMeshContract, MeshReport, derive_required_guards, run_model_mesh
@@ -331,7 +332,7 @@ def test_tree_lines_show_subtree_and_edge_status():
 def test_mesh_variant_must_fail_with_its_code():
     from copy import deepcopy
     data=continued_tree()
-    data['variants']=[{'id':'lost-light','expect':'FAIL','code':'MESH_HANDOFF_STATE_MISMATCH','remove':['nodes[a].contract.inputs.events[a].initiates']}]
+    data['variants']=[{'id':'lost-light','expect':'FAIL','code':'MESH_HANDOFF_STATE_MISMATCH','set':{'nodes[b].contract.inputs.event_model.initial_states':['dark']}}]
     before=deepcopy(data);report=run_model_mesh(data)
     assert report.status is GuardStatus.PASS
     assert report.checked['variants']==1 and report.variants[0]['caught']
@@ -341,3 +342,59 @@ def test_mesh_variant_must_fail_with_its_code():
     assert report.status is GuardStatus.GAP
     assert not report.variants[0]['caught']
     assert any(row['code']=='VARIANT_NOT_CAUGHT' for row in report.to_dict()['gaps'])
+
+
+@pytest.mark.parametrize('first,second', tuple(product(
+    product(('unnamed', 'true', 'false'), (False, True)), repeat=2)))
+def test_continues_compares_exactly_the_fluents_both_chapters_name(first, second):
+    states = dict(zip(('f0', 'f1'), (first, second)))
+    start = ['ready'] + [name for name, (before, _) in states.items() if before != 'unnamed']
+    ended = [name for name, (before, _) in states.items() if before == 'false']
+    next_start = ['ready'] + [name for name, (_, active) in states.items() if active]
+
+    def contract(initial, at, terminates):
+        return {'claim': {'asserts': [{'holds': 'ready', 'at': at}]},
+                'inputs': {'event_model': {'initial_states': initial},
+                           'events': [{'event_id': 'step', 'at': at, 'requires': 'ready',
+                                       'initiates': 'ready', 'terminates': terminates}]}}
+
+    tree = {'mesh_id': 'shared-facts', 'nodes': [
+        {'model_id': 'a', 'contract': contract(start, '10:00', ended)},
+        {'model_id': 'b', 'contract': contract(next_start, '11:00', ['f0', 'f1'])}],
+        'edges': [{'edge_id': 'parent', 'from': 'a', 'to': 'b', 'relation': 'parent_child'},
+                  {'edge_id': 'next', 'from': 'a', 'to': 'b', 'relation': 'continues'}]}
+    report = run_model_mesh(tree)
+    expected = {name for name, (before, active) in states.items()
+                if before != 'unnamed' and (before == 'true') != active}
+    mismatches = [row for row in report.to_dict()['gaps'] if row['code'] == 'MESH_HANDOFF_STATE_MISMATCH']
+    assert {row['evidence']['fluent'] for row in mismatches} == expected
+    assert report.status is (GuardStatus.FAIL if expected else GuardStatus.PASS)
+    for row in mismatches:
+        name = row['evidence']['fluent']
+        assert row['evidence'] == {'fluent': name, 'from_end': states[name][0] == 'true',
+                                   'to_initial': states[name][1]}
+    assert report.scope_limits == sorted(
+        f'continues next: b starts with {name}, which a never names'
+        for name, (before, active) in states.items() if before == 'unnamed' and active)
+
+
+def _lighthouse_mesh(name):
+    from pathlib import Path
+    folder = Path(__file__).parent / 'fixtures/trials/lighthouse_key'
+    return run_model_mesh(yaml.safe_load((folder / name).read_text()), base_dir=folder)
+
+
+def test_continues_lists_a_fluent_the_earlier_chapter_never_names():
+    report = _lighthouse_mesh('mesh.yaml')
+    assert report.status is GuardStatus.FAIL
+    codes = {row['code'] for row in report.to_dict()['gaps']}
+    assert 'MESH_HANDOFF_STATE_MISMATCH' not in codes
+    assert 'EVENT_PRECONDITION_UNMET' in codes
+    assert 'continues ch1_ch2: ch2 starts with tom_on_mainland, which ch1 never names' in report.scope_limits
+
+
+def test_lighthouse_slip_is_still_a_mismatch():
+    report = _lighthouse_mesh('mesh_slip.yaml')
+    assert report.status is GuardStatus.FAIL
+    assert any(row['code'] == 'MESH_HANDOFF_STATE_MISMATCH' and row['evidence']['fluent'] == 'lena_on_island'
+               for row in report.to_dict()['gaps'])

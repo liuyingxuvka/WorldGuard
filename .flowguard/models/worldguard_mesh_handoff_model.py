@@ -23,7 +23,8 @@ IMPLEMENTED_BY = {
 }
 USES = {"Main": "worldguard/cli.py:main"}
 TESTED_BY = {
-    'continues_requires_matching_state': ['tests/test_model_mesh.py:test_continues_carries_state_and_time'],
+    'continues_requires_matching_state': ['tests/test_model_mesh.py:test_continues_carries_state_and_time',
+                                        'tests/test_model_mesh.py:test_continues_compares_exactly_the_fluents_both_chapters_name'],
     'continues_moves_time_forward': ['tests/test_model_mesh.py:test_continues_trip_cannot_depart_before_prior_arrival'],
     'node_rows_read_descendants_only': ['tests/test_model_mesh.py:test_node_rows_read_descendants_only'],
     'child_non_pass_reaches_root': ['tests/test_model_mesh.py:test_child_failure_reaches_root_even_when_parent_assertion_is_true'],
@@ -47,6 +48,7 @@ class Request:
     has_variant: bool = False
     variant_caught: bool = True
     planned_node: bool = False
+    named_before: bool = True
 
 
 @dataclass(frozen=True)
@@ -69,7 +71,8 @@ class RunMesh:
 
     def apply(self, request, state):
         failures, gaps, boundaries = [], [], []
-        if not request.state_matches and self.mutation != 'label_only_handoff':
+        if (not request.state_matches and (request.named_before or self.mutation == 'continues_closed_world')
+                and self.mutation != 'label_only_handoff'):
             failures.append('MESH_HANDOFF_STATE_MISMATCH')
         if not request.time_forward and self.mutation != 'time_not_checked':
             failures.append('MESH_HANDOFF_TIME_BACKWARDS')
@@ -108,8 +111,10 @@ EDGE_FAILURES = ('MESH_HANDOFF_STATE_MISMATCH', 'MESH_HANDOFF_TIME_BACKWARDS')
 
 
 def requires_state(state, trace):
-    if state.request and not state.request.state_matches and 'MESH_HANDOFF_STATE_MISMATCH' not in state.codes:
-        return InvariantResult.fail('continuation ignored different fluent/token state')
+    if state.request:
+        expected = not state.request.state_matches and state.request.named_before
+        if ('MESH_HANDOFF_STATE_MISMATCH' in state.codes) != expected:
+            return InvariantResult.fail('continuation ignored shared state or compared a fluent the earlier node never names')
     return InvariantResult.pass_()
 
 
@@ -166,7 +171,7 @@ def tree_lines_match_status(state, trace):
 
 
 INVARIANTS = (
-    Invariant('continues_requires_matching_state', 'preceding end state matches next node start', requires_state),
+    Invariant('continues_requires_matching_state', 'A continuation compares each fluent both nodes name: a different end and start value is MESH_HANDOFF_STATE_MISMATCH, and a fluent the earlier node never names is not compared.', requires_state),
     Invariant('continues_moves_time_forward', 'continuations do not move backwards', forward_time),
     Invariant('node_rows_read_descendants_only', 'node rows read descendants only', descendants_only),
     Invariant('child_non_pass_reaches_root', 'children keep their non-pass status in the tree', children_preserved),
@@ -181,7 +186,8 @@ CASES = (Request('chapters_ok_rooted.yaml'), Request('end_state_contradiction.ya
          Request('child_boundary', child_status='BOUNDARY_EXCEEDED'), Request('cycle', cycle=True),
          Request('chapters_ok.yaml', one_root=False), Request('caught_variant', has_variant=True),
          Request('uncaught_variant', has_variant=True, variant_caught=False),
-         Request('planned', planned_node=True), Request('edge_time_backwards', time_forward=False))
+         Request('planned', planned_node=True), Request('edge_time_backwards', time_forward=False),
+         Request('unnamed_fluent', state_matches=False, named_before=False))
 
 
 def explorer(step, names=None):
@@ -197,6 +203,7 @@ def broken_variants():
     result = {}
     for mutation, invariant in (
         ('label_only_handoff', 'continues_requires_matching_state'),
+        ('continues_closed_world', 'continues_requires_matching_state'),
         ('time_not_checked', 'continues_moves_time_forward'),
         ('node_rows_read_any_node', 'node_rows_read_descendants_only'),
         ('root_hides_child', 'child_non_pass_reaches_root'),
@@ -246,8 +253,10 @@ def conformance():
                 elif request.case == 'edge_time_backwards':
                     data['nodes'][2]['contract']['inputs']['events'][0]['at'] = 't0'
                     data['nodes'][2]['contract']['claim']['asserts'][0]['at'] = 't0'
+                elif request.case == 'unnamed_fluent':
+                    data['nodes'][2]['contract']['inputs']['event_model']['initial_states'] = ['lit', 'tom_on_mainland']
                 elif request.has_variant:
-                    change = ({'nodes[a].contract.inputs.events[a].initiates': []} if request.variant_caught
+                    change = ({'nodes[b].contract.inputs.event_model.initial_states': ['dark']} if request.variant_caught
                               else {'nodes[a].contract.claim.claim_id': 'same-world-new-label'})
                     data['variants'] = [{'id': request.case, 'code': 'MESH_HANDOFF_STATE_MISMATCH', 'set': change}]
                 else:
@@ -259,6 +268,10 @@ def conformance():
             with redirect_stdout(output):
                 code = main(['mesh-check', '--mesh', str(path), '--json'])
             result = json.loads(output.getvalue())
+            if request.case == 'unnamed_fluent':
+                note = 'continues a-b: b starts with tom_on_mainland, which a never names'
+                if note not in result['scope_limits']:
+                    mismatches.append('unnamed_fluent: the new initial-state assumption is absent from scope_limits')
             codes = {row['code'] for row in result.get('gaps', [])}
             if (code, result['status']) != (expected.exit_code, expected.status) or not set(expected.codes) <= codes:
                 mismatches.append(f'{request.case}: expected {expected.status}/{expected.codes}, actual {code}/{result["status"]}/{sorted(codes)}')

@@ -223,7 +223,7 @@
       "summary": "One tree of contracts joined by parent_child and continues, with mesh-level variants.",
       "responsibilities": [
         "Aggregate real child outcomes and descendant-only parent assertions; merge, deduplicate and sort scope_limits from actual qualified node reports",
-        "Check one rooted parent tree and state/time/value continuity",
+        "Check one rooted parent tree and state/time/value continuity; fluent handoffs compare names shared by both chapters and list new initial facts in scope_limits, while time, token and variable checks retain their native meaning",
         "Replay declared tree variants with exact failure codes and preserve native findings",
         "Tree lines show each node's own status, its subtree status when different, and each continues edge's result; the root line's subtree status equals the report status",
         "Expose the declared mesh_id in native tree reports while retaining the positional construction of existing MeshReport fields."
@@ -252,7 +252,7 @@
         ".flowguard/models/worldguard_mesh_handoff_model.py"
       ],
       "status": "confirmed",
-      "fingerprint": "sha256:f08fdd7e5b67052f6c3c838bc9a3c3809e095f34610bae7af332997db0560e35"
+      "fingerprint": "sha256:0e0b4f2f373e566e31d9e3ca30c8c1fd7f909ae77fb71dac1f228a8ae0a06ed7"
     },
     {
       "id": "installer",
@@ -383,7 +383,7 @@
   ],
   "model_digests": {
     ".flowguard/models/worldguard_guard_semantics_model.py": "cc5aa28604f73e4dc6ff1bdd39924f6c8b546933bec10c09d93175f6c9ff3657",
-    ".flowguard/models/worldguard_mesh_handoff_model.py": "bc845d8f0efed823406a07b5eee61aa1d4596cf7bca6f2c3be5da846d5cbbe88",
+    ".flowguard/models/worldguard_mesh_handoff_model.py": "badcc1725c33f95da831ab67f89a8aad9956480fc26f010fb0cb1cc50763710e",
     ".flowguard/models/worldguard_skill_install_model.py": "3efd0b024243db912f92a44edefe636aa4d3e7de3889d293316b7fd4978dbfa6",
     ".flowguard/models/worldguard_world_check_model.py": "17b838fe7afd38d54fa1927116d9c2cce43760ab29ac95bb861185623b8387a4",
     ".flowguard/models/worldguard_world_compare_model.py": "7765c05c8f96454501d8c1e7805a5f77de1f851be33ff5ab6e3323a7b29e6036",

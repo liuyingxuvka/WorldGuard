@@ -357,6 +357,7 @@ def run_model_mesh(mesh, *, base_dir=None):
             reports[node.model_id] = run_worldguard(node.contract, context=qualification_context_for_node(mesh, node))
     for node in sorted(duplicates):
         findings.append(_finding(mesh, GuardStatus.FAIL, "MESH_DUPLICATE_MODEL_ID", "Duplicate model ids make topology ambiguous.", node_id=node))
+    scope_limits = {value for report in reports.values() for value in report.scope_limits}
     for edge in mesh.edges:
         for side, node_id in (("from", edge.from_id), ("to", edge.to_id)):
             if node_id not in ids:
@@ -372,6 +373,11 @@ def run_model_mesh(mesh, *, base_dir=None):
                 )
         if edge.relation == "continues" and edge.from_id in contracts and edge.to_id in contracts:
             findings.extend(_continues_findings(mesh, edge, contracts[edge.from_id], contracts[edge.to_id]))
+            next_model = contracts[edge.to_id].inputs.get('event_model', {})
+            next_initial = next_model.get('initial_states', []) if isinstance(next_model, Mapping) else []
+            scope_limits.update(
+                f'continues {edge.edge_id}: {edge.to_id} starts with {fluent}, which {edge.from_id} never names'
+                for fluent in set(fluent_values(next_initial)) - _named_fluents(contracts[edge.from_id]))
     for cycle in _cycles(mesh.edges):
         findings.append(_finding(mesh, GuardStatus.FAIL, "MESH_DEPENDENCY_CYCLE", "Tree or continuation edges contain a cycle.", evidence={"cycle": cycle}))
     _ids, _parents, _children, _continuations, roots, multiple, valid = _tree_shape(mesh)
@@ -411,12 +417,22 @@ def run_model_mesh(mesh, *, base_dir=None):
         reports,
         findings,
         {"nodes": len(mesh.nodes), "edges": len(mesh.edges), "roots": len(roots), "variants": len(variant_results)},
-        sorted({value for report in reports.values() for value in report.scope_limits}),
+        sorted(scope_limits),
         {n.model_id: n.source for n in mesh.nodes if n.source},
         lines,
         variant_results,
         mesh_id=mesh.mesh_id,
     )
+
+
+def _named_fluents(contract):
+    model = contract.inputs.get('event_model', {})
+    named = set(fluent_values(model.get('initial_states'))) if isinstance(model, Mapping) else set()
+    for event in contract.inputs.get('events', []):
+        if isinstance(event, Mapping):
+            for key in ('requires', 'initiates', 'terminates', 'releases'):
+                named.update(fluent_values(event.get(key)))
+    return named
 
 
 def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract: GuardContract, to_contract: GuardContract) -> list[MeshFinding]:
@@ -457,11 +473,7 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract:
         for _event, _before, after in event_replay(from_events, from_initial, skip_illegal=True):
             holding = after
         to_start = set(fluent_values(to_initial))
-        mentioned = set(to_start)
-        for event in to_events:
-            for key in ("requires", "initiates", "terminates", "releases"):
-                mentioned.update(fluent_values(event.get(key)))
-        for fluent in sorted(mentioned):
+        for fluent in sorted(_named_fluents(from_contract) & _named_fluents(to_contract)):
             if (fluent in holding) != (fluent in to_start):
                 add(
                     GuardStatus.FAIL,

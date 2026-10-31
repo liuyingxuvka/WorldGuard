@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- continues compares only fluents both chapters name; a fluent the earlier chapter never names is listed in scope_limits instead of failing the handoff (before: a new character's "tom_on_mainland" was MESH_HANDOFF_STATE_MISMATCH). The story example's and the mesh reference's known-bad edits now change the next chapter's start.
+
 - mesh-check prints mesh_id and input_digests (the mesh file and every node contract file), so LogicWriting can bind a tree of worlds like one contract.
 
 - An event whose actor has state in the world but requires none of it is GAP EVENT_ACTOR_STATE_UNCHECKED (before: PASS); "actor_state_free: <reason>" opts out and the reason is printed in scope_limits.

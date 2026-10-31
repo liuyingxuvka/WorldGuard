@@ -1,3 +1,0 @@
-# changes: model.rule by ID "quote" | changes: model.rule because "reason" | touch: path:qualified_name [because "reason"]
-touch: worldguard/mesh.py:_continues_findings because "Compare fluent values only when both contracts name the fluent, while preserving shared conflicts, event time, tokens and variables."
-touch: worldguard/mesh.py:run_model_mesh because "List each next-initial fluent the earlier chapter never names in sorted scope_limits alongside actual node report reasons."

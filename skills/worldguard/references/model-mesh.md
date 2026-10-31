@@ -22,9 +22,9 @@ edges:
   - {edge_id: whole_2, from: whole, to: part2, relation: parent_child}
   - {edge_id: next, from: part1, to: part2, relation: continues}
 variants:
-  - id: lost_departure
+  - id: still_at_home
     code: MESH_HANDOFF_STATE_MISMATCH
-    remove: ["nodes[part1].contract.inputs.events[depart].initiates"]
+    set: {"nodes[part2].contract.inputs.event_model.initial_states": [at_home]}
 ```
 
 `part1.yaml`:
@@ -68,7 +68,9 @@ independently. A node without `contract` reads `GAP planned`; absent edge
 endpoints GAP with `MESH_EDGE_NODE_MISSING`. Cycles FAIL.
 
 `continues` checks earlier final unscoped fluents against next initial values for
-each next-mentioned fluent; earlier-only names need not be copied. Clocks must
+each fluent both nodes name; a fluent only the next node names is new there: it is
+not compared and is listed in `scope_limits` (`continues <edge>: <node> starts with
+<fluent>, which <node> never names`). Earlier-only names need not be copied. Clocks must
 agree and time cannot run backwards. Shared unique colors retain location. Optional
 `variables: [name]` compares native causal scenario values: matching scenario names,
 or one earlier scenario against every next scenario, at absolute tolerance 1e-9.

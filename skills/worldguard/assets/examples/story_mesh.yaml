@@ -71,5 +71,5 @@ variants:
 - id: forgotten_key_handoff
   expect: FAIL
   code: MESH_HANDOFF_STATE_MISMATCH
-  remove:
-  - nodes[chapter1].contract.inputs.events[hand_over_key].initiates
+  set:
+    nodes[chapter2].contract.inputs.event_model.initial_states: [key_with_iris, door_locked]
