@@ -1,0 +1,13 @@
+{
+  "schema": "flowguard.target.v1",
+  "goal": "WG-604: continues compares only fluents both chapters name",
+  "components": [],
+  "flows": [],
+  "remove": [],
+  "requests": [
+    {
+      "id": "R1",
+      "part": true
+    }
+  ]
+}
