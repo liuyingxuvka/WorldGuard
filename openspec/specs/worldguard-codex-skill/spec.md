@@ -49,7 +49,7 @@ The skill SHALL introduce executable worlds with bound assertions using the exac
 WorldGuard seven-line shared block from the cross-repository plan (XR-302), under `## The model tree`. It SHALL list check, mesh-check, compare
 and timeline with references and native status/exit rules. Only guard-inputs.md,
 worldguard-contracts.md and model-mesh.md SHALL remain as references, together with
-the entry within 25,000 bytes (entry <= 6,000; each reference <= 12,000). References
+the entry. References
 SHALL contain runnable inputs for their commands, including variants, observation
 comparison and relative mesh contracts. Stable entry name and launcher runtime
 resolution SHALL remain unchanged.

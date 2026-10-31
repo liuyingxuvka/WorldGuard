@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The skill spec no longer caps the entry and references by bytes; development uses affected checks and final CI runs the complete suite.
+
 - The timeline names an uncaught variant ("VARIANT_NOT_CAUGHT (-): variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED"; before, the evidence was empty); a tree's checked counts its node contracts' variants as node_variants.
 
 - continues compares only fluents both chapters name; a fluent the earlier chapter never names is listed in scope_limits instead of failing the handoff (before: a new character's "tom_on_mainland" was MESH_HANDOFF_STATE_MISMATCH). The story example's and the mesh reference's known-bad edits now change the next chapter's start.
