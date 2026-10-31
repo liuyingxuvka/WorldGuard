@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Maintenance checks run on FlowGuard 0.71.0; the project rules name req add and changes lines, CLAUDE.md imports AGENTS.md, and every accepted debt has an expiry.
+
 ## v0.7.24 - 2026-10-28 - Quieter timeline changes and a declared mesh replay
 
 - Size caps on skill text and command output are replaced by checks for repeated paragraphs, dead links, unknown names and complete output; totals are printed, not limited.

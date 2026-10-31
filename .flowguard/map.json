@@ -368,12 +368,14 @@
     {
       "code": "unmodeled_owner",
       "component": "launcher",
-      "reason": "Two statements choose the installed runtime or the repository package; LogicWriting's preflight pins them verbatim. Covered by tests/test_cli_module.py (test_repository_launcher_uses_the_repository_package, test_launcher_reads_json_without_pyyaml, test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode)."
+      "reason": "Two statements choose the installed runtime or the repository package; LogicWriting's preflight pins them verbatim. Covered by tests/test_cli_module.py (test_repository_launcher_uses_the_repository_package, test_launcher_reads_json_without_pyyaml, test_install_skill_copies_the_skill_and_the_launcher_writes_no_bytecode).",
+      "expires": "v0.9.0"
     },
     {
       "code": "unmodeled_owner",
       "component": "release",
-      "reason": "Two workflow YAML files and no Python; the version files they publish are checked by tests/test_version.py, and CI runs the workflows themselves."
+      "reason": "Two workflow YAML files and no Python; the version files they publish are checked by tests/test_version.py, and CI runs the workflows themselves.",
+      "expires": "v0.9.0"
     }
   ],
   "model_digests": {
