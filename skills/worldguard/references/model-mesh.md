@@ -50,6 +50,7 @@ inputs:
 ```
 
 Run `mesh-check --mesh mesh.yaml`.
+The summary also carries `mesh_id` and `input_digests` (the mesh file and every node contract file, relative to the mesh file, sha256 of raw bytes), so a consumer can bind a tree like one contract.
 `mesh-check --example story` loads the same portable three-node shape from the skill.
 `--json` adds node reports; both forms include depth-first `tree` lines: each node's
 own status, ` (tree <status>)` when its subtree differs, and each `continues` edge's

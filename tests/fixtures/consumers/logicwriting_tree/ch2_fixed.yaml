@@ -1,0 +1,17 @@
+contract_id: ch2
+claim:
+  claim_id: ch2_door_opened
+  text: Lena hands the key to Tom; the lighthouse door is opened at 21:00.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_give_key, before: e_unlock}
+    - {holds: door_unlocked, at: "21:00"}
+world_model: {model_id: ch2, scope_limits: [chapter 2 only]}
+inputs:
+  event_model: {initial_states: [lena_on_mainland, lena_has_key, door_locked, tom_on_mainland]}
+  events:
+    - {event_id: e_give_key, at: "18:00", source: ch2 p1, actor: Lena, with: [Tom], requires: [lena_has_key, lena_on_mainland, tom_on_mainland], initiates: [tom_has_key], terminates: [lena_has_key]}
+    - {event_id: e_tom_ferry, at: "20:00", source: ch2 p2, actor: Tom, requires: [tom_on_mainland], initiates: [tom_on_island], terminates: [tom_on_mainland]}
+    - {event_id: e_unlock, at: "21:00", source: ch2 p3, actor: Tom, requires: [tom_has_key, tom_on_island, door_locked], initiates: [door_unlocked], terminates: [door_locked]}
+variants:
+  - {id: unlock_before_handover, code: EVENT_PRECONDITION_UNMET, set: {"inputs.events[e_unlock].at": "17:00"}}

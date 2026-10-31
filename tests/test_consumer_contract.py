@@ -92,3 +92,18 @@ def test_duplicate_event_identity_and_unreadable_file(installed, tmp_path):
 def test_consumer_reference_pages(installed):
     # LogicWriting references/worldguard-contracts.md links both native references.
     assert all((installed / 'references' / name).is_file() for name in ('worldguard-contracts.md', 'guard-inputs.md'))
+
+
+def test_mesh_summary_binds_like_a_contract(installed):
+    import hashlib
+
+    folder = FIXTURES / 'logicwriting_tree'
+    result = run(installed, 'mesh-check', '--mesh', folder / 'mesh_fixed.yaml')
+    payload = json.loads(result.stdout)
+    # LogicWriting scripts/_common.py binds a tree report by mesh_id and input_digests (LW6).
+    assert result.returncode == 0 and payload['status'] == 'PASS' and payload['mesh_id'] == 'lighthouse'
+    assert set(payload) == {'checked', 'gaps', 'input_digests', 'mesh_id', 'output', 'scope_limits', 'status', 'tree'}
+    assert payload['input_digests'] == [
+        {'path': name, 'sha256': hashlib.sha256((folder / name).read_bytes()).hexdigest()}
+        for name in ('ch1_fixed.yaml', 'ch2_fixed.yaml', 'mesh_fixed.yaml')
+    ]

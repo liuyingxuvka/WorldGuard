@@ -23,7 +23,7 @@ def _unit_summary(report):
 
 
 def _mesh_summary(report):
-    return _without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits", "tree")})
+    return _without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits", "tree", "mesh_id", "input_digests")})
 
 
 def _emit(full, summarize, as_json):
@@ -160,11 +160,15 @@ def main(argv=None):
 
         try:
             path = str(_example_path(args.example)) if args.example else args.mesh
-            mesh = ModelMeshContract.from_dict(load_mapping(path), base_dir=Path(path).resolve().parent)
+            base_dir = Path(path).resolve().parent
+            data = load_mapping(path)
+            mesh = ModelMeshContract.from_dict(data, base_dir=base_dir)
             report = run_model_mesh(mesh)
+            paths = [path, *[base_dir / node['contract'] for node in data.get('nodes', []) if isinstance(node.get('contract'), str)]]
+            digests = input_digests(paths, base_dir)
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("mesh-check", args.example or args.mesh, exc)
-        _emit(report.to_dict(), _mesh_summary, args.json)
+        _emit({**report.to_dict(), 'input_digests': digests}, _mesh_summary, args.json)
         return 0 if report.status.value == "PASS" else 1
     return 2
 

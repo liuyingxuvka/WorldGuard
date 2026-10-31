@@ -154,6 +154,7 @@ def test_continues_cycle_fails(tmp_path, capsys):
     assert code == 1 and any((row['code'] == 'MESH_DEPENDENCY_CYCLE' for row in report['gaps']))
 
 def test_contract_paths_resolve_beside_mesh_and_missing_file_names_node(tmp_path, capsys):
+    import hashlib
     tree = continued_tree()
     baseline = run_model_mesh(tree).to_dict()
     for node in tree['nodes']:
@@ -161,6 +162,10 @@ def test_contract_paths_resolve_beside_mesh_and_missing_file_names_node(tmp_path
         path.write_text(yaml.safe_dump(node['contract']))
         node['contract'] = path.name
     code, report = _mesh_cli(tmp_path, capsys, tree)
+    assert report.pop('input_digests') == [
+        {'path': path.name, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+        for path in sorted(tmp_path.glob('*.yaml'))
+    ]
     assert code == 0 and report == baseline
     tree['nodes'][1]['contract'] = 'missing.yaml'
     code, report = _mesh_cli(tmp_path, capsys, tree)

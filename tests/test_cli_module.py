@@ -336,3 +336,38 @@ def test_timeline_full_retains_native_state_lines(capsys):
     assert capsys.readouterr().out == render_timeline_text(view, full=True) + "\n"
     assert main(["timeline", "--contract", str(path), "--json"]) == 0
     assert json.loads(capsys.readouterr().out) == view
+
+
+def test_mesh_check_reports_mesh_id_and_input_digests(tmp_path, capsys):
+    import hashlib
+    import shutil
+    from worldguard.cli import main
+
+    source = Path(__file__).parent / 'fixtures/consumers/logicwriting_tree'
+    for path in source.iterdir():
+        shutil.copyfile(path, tmp_path / path.name)
+    mesh = tmp_path / 'mesh_fixed.yaml'
+    expected = [
+        {'path': name, 'sha256': hashlib.sha256((tmp_path / name).read_bytes()).hexdigest()}
+        for name in ('ch1_fixed.yaml', 'ch2_fixed.yaml', 'mesh_fixed.yaml')
+    ]
+    for options in ([], ['--json']):
+        assert main(['mesh-check', '--mesh', str(mesh), *options]) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload['mesh_id'] == 'lighthouse'
+        assert payload['input_digests'] == expected
+        assert 'contract_id' not in payload
+
+    node = tmp_path / 'ch1_fixed.yaml'
+    node.write_bytes(node.read_bytes() + b'\n')
+    assert main(['mesh-check', '--mesh', str(mesh)]) == 0
+    changed = json.loads(capsys.readouterr().out)['input_digests']
+    assert changed[0] == {'path': 'ch1_fixed.yaml', 'sha256': hashlib.sha256(node.read_bytes()).hexdigest()}
+    assert changed[0]['sha256'] != expected[0]['sha256']
+    assert changed[1:] == expected[1:]
+
+    assert main(['mesh-check', '--example', 'story']) == 0
+    payload = json.loads(capsys.readouterr().out)
+    example = Path(__file__).parents[1] / 'skills/worldguard/assets/examples/story_mesh.yaml'
+    assert payload['mesh_id'] == 'two_chapters'
+    assert payload['input_digests'] == [{'path': example.name, 'sha256': hashlib.sha256(example.read_bytes()).hexdigest()}]

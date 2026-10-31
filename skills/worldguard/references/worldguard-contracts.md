@@ -26,7 +26,7 @@ An event whose actor's tracked state it does not require is `GAP` `EVENT_ACTOR_S
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
-The summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
+A unit summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. A mesh summary is identified by `mesh_id`; its `input_digests` cover the raw mesh file and every file-backed node contract. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
 
 ## Runnable world
 

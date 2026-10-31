@@ -189,10 +189,12 @@ class MeshReport:
     sources: dict[str, str] = field(default_factory=dict)
     tree: list[str] = field(default_factory=list)
     variants: list[dict[str, Any]] = field(default_factory=list)
+    mesh_id: str = ""
 
     def to_dict(self):
         return {
             "status": self.status.value,
+            "mesh_id": self.mesh_id,
             "checked": self.checked,
             "gaps": [
                 *[{**({"source": self.sources[f.node_id]} if self.sources.get(f.node_id) else {}), **f.to_dict()} for f in self.findings],
@@ -413,6 +415,7 @@ def run_model_mesh(mesh, *, base_dir=None):
         {n.model_id: n.source for n in mesh.nodes if n.source},
         lines,
         variant_results,
+        mesh_id=mesh.mesh_id,
     )
 
 
