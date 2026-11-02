@@ -16,12 +16,18 @@ def _tokens(marking):
     return result
 
 
+# Fields of a problem row that name the events leading up to it (the replay so far, the events that set up the facts
+# holding instead, the event that ended the needed fact), not the events the problem is found at.
+_HISTORY = frozenset({"trace", "established_by", "ended_by"})
+
+
 def _event_ids(value):
+    """The events a problem row is found at."""
     if isinstance(value, dict):
         own = {str(value["event_id"])} if value.get("event_id") else set()
         own.update(map(str, value.get("event_ids", [])))
         for key, child in value.items():
-            if key != "trace":
+            if key not in _HISTORY:
                 own.update(_event_ids(child))
         return own
     if isinstance(value, list):
