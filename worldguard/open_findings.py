@@ -17,12 +17,12 @@ or event is gone from its file, or when the check still runs there but the world
 event no longer uses the thing, the chapters no longer both name the fact).
 
 A file that is renamed, moved or deleted closes nothing. Its entries stay open and say the file is gone, naming the
-path it was last seen at. A run that finds the same contradiction in a file of the same world (the file's
-`contract_id`, or the tree's `mesh_id`) under the same record moves the entry there with its history. A pass in such a
-file closes nothing, since it may be another draft of the world: the entry says the world passed there and names the
-command that settles it, `check --contract NEW --takes-over OLD` (`mesh-check --mesh` for a tree file), with which the
-person says NEW is OLD under a new path; that run gives OLD's entries to NEW and judges them there like any entry of
-NEW. A record that cannot be read or written stops the command (RecordError); nothing falls back to a run without it.
+path it was last seen at. A run that finds the same contradiction in exactly one file of the same world (the file's
+`contract_id`, or the tree's `mesh_id`) under the same record moves the entry there with its history; found in two or
+more, the entry follows none of them and names them. A pass in such a file closes nothing, since it may be another
+draft of the world: the entry says the world passed there and names the command that settles it, `check --contract NEW
+--takes-over OLD` (`mesh-check --mesh` for a tree file), with which the person says NEW is OLD under a new path; that
+run gives OLD's entries to NEW and judges them there like any entry of NEW. A record that cannot be read or written stops the command (RecordError); nothing falls back to a run without it.
 """
 
 from __future__ import annotations
@@ -523,16 +523,17 @@ def _takes_over(unit: Unit, path: str, last: str) -> str:
 
 def _follow(folder, item, units, found, seen, run, now, moved, dropped, changed) -> None:
     """An entry whose file is gone stays open, saying so with the path it was last seen at. A run that finds the same
-    contradiction in a file of its world (the file's contract_id, or the tree's mesh_id) under the same record moves
-    the entry there. A pass in such a file closes nothing (it may be another draft of the world): the entry says so and
-    names the `--takes-over` command with which the person makes that file the new path."""
+    contradiction in exactly one file of its world (the file's contract_id, or the tree's mesh_id) under the same
+    record moves the entry there; found in two or more, it follows none and names them. A pass in such a file closes
+    nothing (it may be another draft of the world): the entry says so and names the `--takes-over` command with which
+    the person makes that file the new path."""
     last, world = _file_of(item), item.get("world")
     node = item["unit"].partition("#")[2]
     candidates = sorted((unit for unit in units if world is not None and unit.world == world and unit.node == node
                          and unit.path.is_relative_to(folder)), key=_unit_key)
     hits = [(unit, key) for unit in candidates for key in [_item_key(folder, item, _unit_key(unit))] if key in found]
-    if hits:
-        unit, key = hits[0]
+    if len(hits) == 1:  # found in exactly one file of its world: that file is the new path
+        (unit, key), = hits
         new = unit.name(folder)
         history = [*item.get("moved_from", []), item["unit"]]
         if key in seen:  # the new path already has this contradiction on record: one entry keeps both histories
@@ -550,7 +551,11 @@ def _follow(folder, item, units, found, seen, run, now, moved, dropped, changed)
         moved.append({**keeper, "from": last})
         changed.add(folder)
         return
-    if len(candidates) == 1:
+    if hits:
+        held = (f"file gone: {last} no longer exists; the same contradiction is found in more than one file of {world} "
+                f"this run checked ({', '.join(unit.name(folder) for unit, _key in hits)}), so it is not followed to any of "
+                f"them; if one of them is {last} under a new path, run {_takes_over(hits[0][0], '<that file>', last)}")
+    elif len(candidates) == 1:
         unit = candidates[0]
         new = unit.name(folder)
         passed, how = _judge(item, unit, new, run)

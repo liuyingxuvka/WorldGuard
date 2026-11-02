@@ -561,3 +561,32 @@ def test_takes_over_refuses_what_it_cannot_do(tmp_path, capsys):
     assert "no open contradiction" in refused(story / "ch2_fixed.yaml", "--takes-over", story / "nothing.yaml")
     assert "world ch1" in refused(story / "ch1_fixed.yaml", "--takes-over", story / "ch2_declared.yaml")
     assert len(_record(story)["open"]) == 2  # a refused command changes nothing
+
+
+def test_a_gone_file_whose_contradiction_is_in_two_checked_files_is_not_followed(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    (before,) = _record(story)["open"]
+    shutil.copyfile(story / "ch2_slip.yaml", story / "a.yaml")  # a copy of the chapter ...
+    (story / "ch2_slip.yaml").rename(story / "b.yaml")          # ... and the chapter itself, renamed
+    tree = yaml.safe_load((story / "mesh_slip.yaml").read_text())
+    tree["nodes"][1:] = [{"model_id": "a", "contract": "a.yaml"}, {"model_id": "b", "contract": "b.yaml"}]
+    tree["nodes"][0]["contract"]["claim"]["asserts"] = [{"node": "a", "holds": "door_unlocked", "at": "21:00"}]
+    tree["edges"] = [{"edge_id": "s1", "from": "story", "to": "a", "relation": "parent_child"},
+                     {"edge_id": "s2", "from": "story", "to": "b", "relation": "parent_child"}]
+    (story / "two.yaml").write_text(yaml.safe_dump(tree, sort_keys=False))
+    # Both files have the same contradiction: neither is taken for the new path, and the entry names both.
+    _code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "two.yaml")
+    assert "moved:" not in err and "closed:" not in err
+    (gone,) = [item for item in _record(story)["open"] if item["unit"] == "ch2_slip.yaml"]
+    assert gone["held"] == ("file gone: ch2_slip.yaml no longer exists; the same contradiction is found in more than one "
+                            "file of world ch2 this run checked (a.yaml, b.yaml), so it is not followed to any of them; if "
+                            "one of them is ch2_slip.yaml under a new path, run `worldguard check --contract <that file> "
+                            "--takes-over ch2_slip.yaml` in the record's folder")
+    assert sorted(item["unit"] for item in _record(story)["open"]) == ["a.yaml", "b.yaml", "ch2_slip.yaml"]
+    # The person names the real rename: its entry keeps the gone file's history, and the copy keeps its own.
+    _code, _out, err = _run(capsys, "check", "--contract", story / "b.yaml", "--takes-over", story / "ch2_slip.yaml")
+    entries = {item["unit"]: item for item in _record(story)["open"]}
+    assert sorted(entries) == ["a.yaml", "b.yaml"]
+    assert (entries["b.yaml"]["first_seen"], entries["b.yaml"]["moved_from"]) == (before["first_seen"], ["ch2_slip.yaml"])
+    assert "moved_from" not in entries["a.yaml"]

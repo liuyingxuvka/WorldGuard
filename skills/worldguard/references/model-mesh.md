@@ -124,10 +124,11 @@ is at mainland (it now needs: Lena holds key, Lena is at island)`, `e_unlock no 
 of hand-over ch1_ch2 no longer both name lena_on_island`, `claim row 2 (...) is no longer in the claim`). It also
 closes, saying so, when its hand-over, chapter or event is no longer in its file. A renamed, moved or deleted file
 closes nothing: its entries stay open with `held: file gone: ch2.yaml no longer exists; it stays open until world ch2
-is checked again under its new path` (`tree <mesh_id>` for a tree file). When a run finds the same contradiction in a
-file of the same world (the file's `contract_id`, or the tree's `mesh_id`) under the same record, the entry moves there
-(`moved: ... -- ch2.yaml is gone; the same contradiction is in ch2_new.yaml`, with `moved_from` and the first-seen time
-kept). A pass there closes nothing, because several files often declare the same world (drafts of one chapter): the
+is checked again under its new path` (`tree <mesh_id>` for a tree file). When a run finds the same contradiction in
+exactly one file of the same world (the file's `contract_id`, or the tree's `mesh_id`) under the same record, the entry
+moves there (`moved: ... -- ch2.yaml is gone; the same contradiction is in ch2_new.yaml`, with `moved_from` and the
+first-seen time kept); found in two or more files (a copy next to the renamed chapter), it moves to none of them and
+names them. A pass there closes nothing, because several files often declare the same world (drafts of one chapter): the
 entry stays open and says so, for example `file gone: ch2.yaml no longer exists; world ch2 passed in ch2_fixed.yaml
 (re-checked by ...), but a pass in another file does not close it; if ch2_fixed.yaml is ch2.yaml under a new path, run
 `worldguard check --contract ch2_fixed.yaml --takes-over ch2.yaml` in the record's folder`; a file of the world where
