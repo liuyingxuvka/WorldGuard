@@ -191,10 +191,14 @@ closes only when the check that found it asks the same question of its own file 
 mainland just before event e_give_key now"). While that check does not reach it (no relation or actor declared, an event
 without a time, an exemption, a gap there, a Guard that no longer runs) it stays open and says why; if the story changes
 so the question is no longer asked there, it closes and says what the event needs now. Renaming, moving or deleting the
-chapter's file closes nothing: the entry says the file is gone, naming the path it was last seen at, until the
-chapter's world (`contract_id`) is checked under its new path; there it moves along with the same contradiction, or
-closes when the same question passes. To talk it through with a person,
-draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
+chapter's file closes nothing: the entry says the file is gone, naming the path it was last seen at. When a later
+check finds the same contradiction in exactly one of the files it checks under the record's folder that declare the
+chapter's world (`contract_id`), the entry moves to that file with its history; found in two or more, it moves to none
+and names them. A pass in such a file closes nothing, because another draft of the chapter may declare the same world:
+the entry names the file where the world passed (or the files, when the world is in more than one) and the command,
+`check --contract NEW.yaml --takes-over OLD.yaml`, with which you say that NEW.yaml is the gone OLD.yaml under a new
+path; that check then judges the entry in NEW.yaml exactly as it judges the file's own entries. To talk it through with
+a person, draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
 
 ```console
 $ python skills/worldguard/scripts/run_worldguard.py lifeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml --of Lena

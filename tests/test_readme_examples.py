@@ -85,3 +85,30 @@ def test_a_record_left_in_the_fixture_folder_does_not_change_what_the_examples_p
     shown, _rest = _console("README.md", LEAD)
     out, err = _run(tmp_path / "run", LEAD, fixtures=checkout)
     assert out == shown and err[0].startswith("open contradictions (2; kept in ")
+
+
+SETTLE = "`check --contract NEW.yaml --takes-over OLD.yaml`"
+
+
+@pytest.mark.parametrize("readme", ["README.md", "README.zh-CN.md"])
+def test_the_rename_sentences_say_what_a_rename_does(tmp_path, readme):
+    # The README says: a rename closes nothing; a pass in another file of the world closes nothing either; the command
+    # it names settles it. Each part is run here on the lead example's chapter.
+    assert SETTLE in (ROOT / readme).read_text(encoding="utf-8")
+    folder = tmp_path / "story"
+    folder.mkdir()
+    for name in ("ch2_declared.yaml", "ch2_fixed.yaml"):
+        shutil.copyfile(ROOT / FIXTURES / name, folder / name)
+
+    def run(*args):
+        return subprocess.run([sys.executable, str(ROOT / LAUNCHER), *args], cwd=folder, capture_output=True, text=True,
+                              encoding="utf-8").stderr
+
+    run("check", "--contract", "ch2_declared.yaml")
+    (folder / "ch2_declared.yaml").rename(folder / "chapter2.yaml")
+    err = run("check", "--contract", "ch2_fixed.yaml")  # another draft of world ch2 passes
+    assert "closed:" not in err and err.count("world ch2 passed in ch2_fixed.yaml") == 2
+    command = SETTLE.strip("`").replace("NEW.yaml", "ch2_fixed.yaml").replace("OLD.yaml", "ch2_declared.yaml")
+    assert err.count(f"run `worldguard {command}` in the record's folder") == 2
+    err = run(*command.split())
+    assert err.count("closed: EVENT_RELATION_UNMET [ch2_fixed.yaml]") == 2

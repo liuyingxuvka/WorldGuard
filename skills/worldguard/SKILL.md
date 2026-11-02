@@ -58,8 +58,8 @@ above it that has one); every later command on a file under that folder prints t
 only when the check that found it asks the same question of its file again and gets a pass; while that check does not
 reach it (no declared relation or actor, an untimed event, a GAP, an `actor_state_free`, a Guard that no longer runs)
 it stays open as "not re-checked", so never exempt, strip or delete facts to make one go away. Renaming, moving or
-deleting the file closes nothing either: the entry says the file is gone until the same contradiction is found under
-the new path, and a pass in another file of the same world closes nothing. Run the `--takes-over` command the entry
+deleting the file closes nothing either: the entry says the file is gone until the same contradiction is found in
+exactly one checked file of its world, and a pass in another file of the same world closes nothing. Run the `--takes-over` command the entry
 names only when the owner confirms that file is the gone one under a new path.
 End a reply that leaves one open with it under "still open".
 
