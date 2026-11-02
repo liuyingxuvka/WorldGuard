@@ -1,5 +1,6 @@
 """One route per check: an error is reported where it happens, never swallowed into a quieter result."""
 from copy import deepcopy
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -107,14 +108,101 @@ def test_an_injected_evaluator_bug_fails_instead_of_becoming_a_gap(monkeypatch):
         run_worldguard(_token_world())
 
 
-def test_a_bad_value_in_a_claim_row_is_still_a_visible_gap():
-    world = {"claim": {"asserts": [{"player": "a", "state": "s", "reward": 1}]},
-             "inputs": {"game_model": {"players": ["a"], "actions": {"a": ["hold"]}, "states": ["s"],
-                                       "transitions": [{"from": "s", "to": "s", "probabilities": [1.0]}],
-                                       "payoffs": [{"state": "s", "reward": {"a": "lots"}}]}}}
-    report = run_worldguard(world)
-    (row,) = [row for row in report.gaps if row["code"] == "CLAIM_ASSERTION_UNRESOLVED"]
-    assert row["reason"].startswith("cannot evaluate: could not convert")
+@pytest.mark.parametrize("row,inputs,reason", [
+    ({"player": "a", "state": "s", "reward": 1},
+     {"game_model": {"players": ["a"], "actions": {"a": ["hold"]}, "states": ["s"],
+                     "transitions": [{"from": "s", "to": "s", "probabilities": [1.0]}],
+                     "payoffs": [{"state": "s", "reward": {"a": "lots"}}]}},
+     "the declared payoff of 'a' in state 's' is not a number: 'lots'"),
+    ({"place": "p", "qty": "two"}, {"resources": {"places": {"p": [{"color": "c", "qty": 1}]}}},
+     "a place assertion needs a numeric qty, not 'two'"),
+    ({"agent": "a", "believes": "x"}, {"beliefs": {"a": {"beliefs": 3, "desires": ["d"], "intentions": []}}},
+     "agent 'a' beliefs must be a list"),
+])
+def test_a_bad_value_in_a_claim_row_or_model_is_a_named_gap(row, inputs, reason):
+    """The evaluators check the values they read; the reason names the value, not a Python error."""
+    report = run_worldguard({"claim": {"asserts": [row]}, "inputs": inputs})
+    (gap,) = [gap for gap in report.gaps if gap["code"] == "CLAIM_ASSERTION_UNRESOLVED"]
+    assert gap["reason"] == reason
+
+
+ASSERTION_ROWS = {
+    "holds": {"holds": "out", "at": "t2"}, "before": {"event": "move", "before": "move"},
+    "place": {"place": "start", "qty": 1}, "variable": {"variable": "x", "op": ">=", "value": 0},
+    "agent": {"agent": "a", "believes": "b"}, "relation": {"relation": "NTPP", "x": "a", "y": "b", "at": "t1"},
+    "modality": {"actor": "a", "action": "b", "modality": "permitted"}, "player": {"player": "a", "state": "s", "reward": 1},
+}
+FAULTS = [KeyError, TypeError, ValueError, AttributeError, IndexError, RuntimeError, ZeroDivisionError]
+
+
+@pytest.mark.parametrize("kind", sorted(ASSERTION_ROWS))
+@pytest.mark.parametrize("fault", FAULTS, ids=lambda fault: fault.__name__)
+def test_an_injected_evaluator_error_of_any_type_is_raised(monkeypatch, kind, fault):
+    """No error inside an evaluator becomes a GAP, a PASS or a skip: it reaches the caller."""
+    from worldguard import claim_binding
+
+    def broken(inputs, row):
+        raise fault("injected")
+
+    monkeypatch.setitem(claim_binding._EVALUATORS, kind, broken)
+    world = _token_world()
+    world["claim"]["asserts"] = [ASSERTION_ROWS[kind]]
+    with pytest.raises(fault, match="injected"):
+        run_worldguard(world)
+
+
+def _write(tmp_path, world, name="world.yaml"):
+    path = tmp_path / name
+    path.write_text(yaml.safe_dump(world))
+    return path
+
+
+@pytest.mark.parametrize("command", ["check", "timeline", "lifeline", "mesh-check"])
+@pytest.mark.parametrize("fault", [ValueError, TypeError, KeyError], ids=lambda fault: fault.__name__)
+def test_an_internal_error_in_a_check_is_raised_not_called_an_input_error(monkeypatch, tmp_path, capsys, command, fault):
+    from worldguard import qualification
+
+    def broken(*args, **kwargs):
+        raise fault("injected internal failure")
+
+    monkeypatch.setattr(qualification, "actor_relation_rows", broken)
+    world = deepcopy(_token_world())
+    world["inputs"]["events"][0]["actor"] = "traveler"
+    path = _write(tmp_path, world)
+    if command == "mesh-check":
+        args = ["mesh-check", "--mesh", str(_write(tmp_path, {"mesh_id": "m", "nodes": [{"model_id": "n", "contract": "world.yaml"}]},
+                                                    "tree.yaml"))]
+    else:
+        args = [command, "--contract", str(path)] + (["--of", "traveler"] if command == "lifeline" else [])
+    with pytest.raises(fault, match="injected internal failure"):
+        main(args)
+    assert "WORLDGUARD_INPUT_INVALID" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("module,name", [("worldguard.lifeline", "lifeline"), ("worldguard.timeline", "timeline"),
+                                         ("worldguard.compare", "compare_world")])
+def test_an_internal_value_error_in_a_view_is_raised(monkeypatch, tmp_path, module, name):
+    import importlib
+
+    def broken(*args, **kwargs):
+        raise ValueError("injected view failure")
+
+    monkeypatch.setattr(importlib.import_module(module), name, broken)
+    path = _write(tmp_path, _token_world())
+    args = {"lifeline": ["lifeline", "--contract", str(path), "--of", "traveler"],
+            "timeline": ["timeline", "--contract", str(path)],
+            "compare_world": ["compare", "--contract", str(path), "--observed", str(_write(tmp_path, {"events": {}}, "seen.yaml"))]}[name]
+    with pytest.raises(ValueError, match="injected view failure"):
+        main(args)
+
+
+@pytest.mark.parametrize("text,needle", [("{not json", "is not valid JSON"), ("[1, 2]", "did not contain a mapping")])
+def test_an_unreadable_world_is_still_an_input_error(tmp_path, capsys, text, needle):
+    path = tmp_path / "world.json"
+    path.write_text(text)
+    assert main(["check", "--contract", str(path)]) == 2
+    error = json.loads(capsys.readouterr().out)["error"]
+    assert error["code"] == "WORLDGUARD_INPUT_INVALID" and needle in error["message"]
 
 
 def _trace_only_world():

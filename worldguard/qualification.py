@@ -15,9 +15,10 @@ from .clock import time_key
 from .semantic import fluent_values, token_replay
 from .relations import actor_relation_rows, event_things, parse_relations, relation_conflicts, relation_scope_limits
 from .variants import apply_variant
+from .errors import WorldInputError
 
 
-class QualificationError(ValueError):
+class QualificationError(WorldInputError):
     """A qualification request has invalid current inputs."""
 
 
@@ -345,8 +346,8 @@ def qualify_guard_contract(contract, *, context=None):
     for variant in contract.variants:
         try:
             revised = qualify_guard_contract(apply_variant(contract.to_dict(), variant), context=context)
-        except ValueError as exc:
-            raise ValueError(f"variant {variant['id']}: {exc}") from exc
+        except WorldInputError as exc:
+            raise WorldInputError(f"variant {variant['id']}: {exc}") from exc
         codes = sorted({row["code"] for row in revised.gaps})
         if revised.status.value != variant.get("expect", "FAIL") or (variant.get("code") and variant["code"] not in codes):
             gaps.append({"code": "VARIANT_NOT_CAUGHT", "status": "GAP", "variant_id": variant["id"],

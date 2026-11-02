@@ -5,6 +5,7 @@ import math
 import re
 from datetime import date, datetime, time, timezone
 from typing import Any, Iterable
+from .errors import WorldInputError
 
 _LABEL = re.compile(r"^([A-Za-z_]+)(-?\d+(?:\.\d+)?)$")
 _CLOCK = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$")
@@ -34,7 +35,7 @@ def _parts(value: Any) -> tuple[str, str, float]:
         else:
             aware = stamp.utcoffset() is not None
             return "ISO date-time", "aware" if aware else "naive", (stamp if aware else stamp.replace(tzinfo=timezone.utc)).timestamp()
-    raise ValueError(f"{value!r} is not a time; {_FORMATS}")
+    raise WorldInputError(f"{value!r} is not a time; {_FORMATS}")
 
 
 def time_key(value: Any) -> float:
@@ -71,14 +72,14 @@ def validate_times(values: Iterable[tuple[str, Any]]) -> None:
     for location, value in values:
         try:
             kind, qualifier, _ = _parts(value)
-        except ValueError as exc:
-            raise ValueError(f"{location}: at {exc}") from exc
+        except WorldInputError as exc:
+            raise WorldInputError(f"{location}: at {exc}") from exc
         if first is None:
             first = (location, value, kind, qualifier)
         elif (kind, qualifier) != first[2:]:
             hint = ('; unquoted H:MM in YAML is read as a number; quote clock times, e.g. at: "9:40"'
                     if {kind, first[2]} == {"number", "clock"} else "")
-            raise ValueError(
+            raise WorldInputError(
                 f"event times mix kinds, label prefixes, or ISO timezone conventions: "
                 f"{first[0]} {first[1]!r} ({first[2]} {first[3]}) and "
                 f"{location} {value!r} ({kind} {qualifier}); {_FORMATS}{hint}"

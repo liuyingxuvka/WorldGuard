@@ -19,6 +19,7 @@ from typing import Any
 
 from .clock import time_key
 from .semantic import event_precondition_failures, event_replay, fluent_values
+from .errors import WorldInputError
 
 RELATION_KINDS = ("holds", "at")
 NOTHING_DECLARED = ("who holds what and who is where are not checked: no event names an actor and "
@@ -29,21 +30,21 @@ _SHAPE = "{holds: [holder, thing]} or {at: [who, place]}"
 def parse_relations(raw: Any) -> dict[str, tuple[str, str, str]]:
     """{fluent: (kind, subject, object)} from world_model.relations; anything else is an input error."""
     if not isinstance(raw, Mapping):
-        raise ValueError(f"world_model.relations must map fluent ids to {_SHAPE}")
+        raise WorldInputError(f"world_model.relations must map fluent ids to {_SHAPE}")
     parsed: dict[str, tuple[str, str, str]] = {}
     declared_by: dict[tuple[str, str, str], str] = {}
     for fluent, spec in raw.items():
         where = f"world_model.relations.{fluent}"
         if not isinstance(fluent, str) or not fluent.strip():
-            raise ValueError("world_model.relations keys must be fluent ids")
+            raise WorldInputError("world_model.relations keys must be fluent ids")
         if not isinstance(spec, Mapping) or len(spec) != 1 or next(iter(spec)) not in RELATION_KINDS:
-            raise ValueError(f"{where} must be {_SHAPE}")
+            raise WorldInputError(f"{where} must be {_SHAPE}")
         kind, pair = next(iter(spec.items()))
         if not isinstance(pair, (list, tuple)) or len(pair) != 2 or any(not isinstance(item, str) or not item.strip() for item in pair):
-            raise ValueError(f"{where}.{kind} must name two ids, for example [Lena, key] or [Lena, island]")
+            raise WorldInputError(f"{where}.{kind} must name two ids, for example [Lena, key] or [Lena, island]")
         key = (kind, pair[0], pair[1])
         if key in declared_by:
-            raise ValueError(f"{where} repeats {kind} {pair[0]} {pair[1]}, which {declared_by[key]} already declares")
+            raise WorldInputError(f"{where} repeats {kind} {pair[0]} {pair[1]}, which {declared_by[key]} already declares")
         declared_by[key] = fluent
         parsed[fluent] = key
     return parsed

@@ -13,6 +13,7 @@ from typing import Any
 
 from .relations import event_things, parse_relations
 from .semantic import event_replay, fluent_values
+from .errors import WorldInputError
 
 DEFAULT_LIMIT = 12  # boxes a person can read at a glance; more are folded, never dropped silently
 
@@ -107,7 +108,7 @@ def lifeline(entity: str, *, contract=None, mesh=None, report=None, limit: int |
         if any_untimed:
             left_out["events"].extend(f"{chapter + ' ' if chapter else ''}{event.get('event_id')} (no time)" for event in involved)
     if entity not in known:
-        raise ValueError(f"{entity!r} takes part in no event and no declared relation; known: {', '.join(sorted(known)) or 'none'}")
+        raise WorldInputError(f"{entity!r} takes part in no event and no declared relation; known: {', '.join(sorted(known)) or 'none'}")
     folded = 0
     if limit is not None and len(boxes) > limit:
         keep_head, keep_tail = limit // 2, limit - limit // 2 - 1

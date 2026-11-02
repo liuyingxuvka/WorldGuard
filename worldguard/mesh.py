@@ -16,6 +16,7 @@ from .qualification import QualificationContext
 from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses, coerce_status
 from .variants import validate_variants, apply_variant
+from .errors import WorldInputError
 
 EDGE_RELATIONS = {"parent_child", "continues"}
 CYCLE_RELATIONS = EDGE_RELATIONS
@@ -23,7 +24,7 @@ CYCLE_RELATIONS = EDGE_RELATIONS
 
 def _retired(data, fields, where):
     for key in sorted(set(data) & set(fields)):
-        raise ValueError(f"{where}{key} is retired; use model_id/contract/source nodes and from/to parent_child or continues edges")
+        raise WorldInputError(f"{where}{key} is retired; use model_id/contract/source nodes and from/to parent_child or continues edges")
 
 
 @dataclass(frozen=True)
@@ -36,21 +37,21 @@ class ModelNode:
     @classmethod
     def from_dict(cls, data, *, base_dir=None):
         if not isinstance(data, Mapping):
-            raise ValueError("model node must be a mapping")
+            raise WorldInputError("model node must be a mapping")
         _retired(data, {"model_version", "model_kind", "authority", "freshness_status", "input_ports", "output_ports"}, "node.")
         if set(data) - {"model_id", "contract", "source"}:
-            raise ValueError("model node has unknown fields: " + ", ".join(sorted(set(data) - {"model_id", "contract", "source"})))
+            raise WorldInputError("model node has unknown fields: " + ", ".join(sorted(set(data) - {"model_id", "contract", "source"})))
         if not isinstance(data.get("source", ""), str):
-            raise ValueError("model node source must be a string")
+            raise WorldInputError("model node source must be a string")
         contract = data.get("contract")
         if isinstance(contract, str):
             path = Path(base_dir or ".") / contract
             try:
                 contract = load_mapping(path)
-            except (OSError, UnicodeError, ValueError) as exc:
-                raise ValueError(f"node {data.get('model_id', '')} contract {path}: {exc}") from exc
+            except (OSError, UnicodeError, WorldInputError) as exc:
+                raise WorldInputError(f"node {data.get('model_id', '')} contract {path}: {exc}") from exc
         if contract is not None and not isinstance(contract, Mapping):
-            raise ValueError("model node contract must be a mapping, file path or null")
+            raise WorldInputError("model node contract must be a mapping, file path or null")
         return cls(
             str(data.get("model_id", "")),
             GuardContract.from_dict(contract) if contract is not None else None,
@@ -78,22 +79,22 @@ class ModelEdge:
     @classmethod
     def from_dict(cls, data):
         if not isinstance(data, Mapping):
-            raise ValueError("model edge must be a mapping")
+            raise WorldInputError("model edge must be a mapping")
         _retired(
             data,
             {"source_model_id", "target_model_id", "port_mappings", "output_refs", "allowed_use", "forbidden_use", "read_only", "requires_current_source"},
             "edge.",
         )
         if set(data) - {"edge_id", "from", "to", "relation", "variables"}:
-            raise ValueError("model edge has unknown fields")
+            raise WorldInputError("model edge has unknown fields")
         relation = data.get("relation")
         if relation not in EDGE_RELATIONS:
-            raise ValueError(f"edge relation {relation!r} is retired or unknown; use parent_child or continues")
+            raise WorldInputError(f"edge relation {relation!r} is retired or unknown; use parent_child or continues")
         variables = data.get("variables", [])
         if not isinstance(variables, list) or any(not isinstance(v, str) or not v.strip() for v in variables) or len(variables) != len(set(variables)):
-            raise ValueError("edge variables must be unique nonempty names")
+            raise WorldInputError("edge variables must be unique nonempty names")
         if variables and relation != "continues":
-            raise ValueError("edge variables are only valid on continues edges")
+            raise WorldInputError("edge variables are only valid on continues edges")
         return cls(str(data.get("edge_id", "")), str(data.get("from", "")), str(data.get("to", "")), relation, variables)
 
     def to_dict(self):
@@ -116,7 +117,7 @@ class ModelMeshContract:
     @classmethod
     def from_dict(cls, data, *, base_dir=None):
         if not isinstance(data, Mapping):
-            raise ValueError("model mesh must be a mapping")
+            raise WorldInputError("model mesh must be a mapping")
         _retired(
             data,
             {
@@ -132,10 +133,10 @@ class ModelMeshContract:
             "mesh.",
         )
         if set(data) - {"mesh_id", "nodes", "edges", "variants"}:
-            raise ValueError("model mesh has unknown fields")
+            raise WorldInputError("model mesh has unknown fields")
         for name in ("nodes", "edges"):
             if not isinstance(data.get(name, []), (list, tuple)) or any(not isinstance(row, Mapping) for row in data.get(name, [])):
-                raise ValueError(f"{name} must be a list of mappings")
+                raise WorldInputError(f"{name} must be a list of mappings")
         variants = data.get("variants", [])
         validate_variants(variants)
         return cls(
@@ -557,7 +558,7 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract:
                         to_value=right.get(name),
                     )
                 elif not isfinite(left[name]) or not isfinite(right[name]):
-                    raise ValueError(f"edge {edge.edge_id}: variable {name} in {scenario} must be finite")
+                    raise WorldInputError(f"edge {edge.edge_id}: variable {name} in {scenario} must be finite")
                 elif abs(left[name] - right[name]) > 1e-9:
                     add(
                         GuardStatus.FAIL,
@@ -627,24 +628,24 @@ def compare_mesh_with_observed_copy(world, observed):
     if not isinstance(world, ModelMeshContract):
         world = ModelMeshContract.from_dict(world)
     if not isinstance(observed, Mapping) or not isinstance(observed.get("nodes"), Mapping):
-        raise ValueError("mesh observations require a nodes mapping")
+        raise WorldInputError("mesh observations require a nodes mapping")
     if set(observed) - {"nodes", "time_tolerance", "tolerance", "source"}:
-        raise ValueError("mesh observations have unknown fields")
+        raise WorldInputError("mesh observations have unknown fields")
     defaults = {k: observed[k] for k in ("time_tolerance", "tolerance", "source") if k in observed}
     for key in ("time_tolerance", "tolerance"):
         if key in defaults:
             finite_number(defaults[key], key, nonnegative=True)
     by_id = {node.model_id: node for node in world.nodes}
     if len(by_id) != len(world.nodes):
-        raise ValueError("mesh observations require unique model ids")
+        raise WorldInputError("mesh observations require unique model ids")
     copied = deepcopy(world.to_dict())
     matches = []
     mismatches = []
     for node_id, values in observed["nodes"].items():
         if node_id not in by_id or by_id[node_id].contract is None:
-            raise ValueError(f"observed node {node_id!r} is unknown or lacks a contract")
+            raise WorldInputError(f"observed node {node_id!r} is unknown or lacks a contract")
         if not isinstance(values, Mapping):
-            raise ValueError(f"observed node {node_id!r} must be a mapping")
+            raise WorldInputError(f"observed node {node_id!r} must be a mapping")
         result, contract, selected = compare_world_values(by_id[node_id].contract, {**defaults, **values})
         matches.extend({"node": node_id, **row} for row in result["matches"])
         mismatches.extend({"node": node_id, **row} for row in result["mismatches"])

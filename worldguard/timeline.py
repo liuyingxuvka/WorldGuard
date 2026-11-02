@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from .clock import event_time_values, time_kind
 from .contracts import GuardContract
 from .semantic import fluent_values, causal_scenario_values, event_replay, token_replay
+from .errors import WorldInputError
 
 
 def _tokens(marking):
@@ -52,8 +53,10 @@ def _submodels(inputs):
         parts = []
         for agent, record in beliefs.items():
             record = record if isinstance(record, Mapping) else {}
-            intends = ",".join(map(str, record.get("intentions") or [])) or "-"
-            believes = ",".join(map(str, record.get("beliefs") or [])) or "-"
+            # A view of what is declared: a value that is not a list is shown as written (AgentGuard reports it).
+            intends, believes = (",".join(map(str, value)) if isinstance(value, list) else repr(value) if value else "-"
+                                 for value in (record.get("intentions"), record.get("beliefs")))
+            intends, believes = intends or "-", believes or "-"
             parts.append(f"{agent} intends {intends}; believes {believes}")
         result["agents"] = _limited(parts)
     relations = [row for row in inputs.get("spatial_relations") or [] if isinstance(row, Mapping)]
@@ -104,11 +107,11 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
     events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
     declared = {str(event.get("scenario_id")) for event in events if event.get("scenario_id")}
     if scenario is not None and scenario not in declared:
-        raise ValueError(f"timeline scenario {scenario!r} is not declared")
+        raise WorldInputError(f"timeline scenario {scenario!r} is not declared")
     scenario = scenario or ""
     applicable = [event for event in events if not event.get("scenario_id") or str(event["scenario_id"]) == scenario]
     if any("at" not in event for event in applicable):
-        raise ValueError("timeline needs an at time for each applicable event")
+        raise WorldInputError("timeline needs an at time for each applicable event")
     initial = fluent_values(inputs.get("event_model", {}).get("initial_states", []))
     resources = inputs.get("resources", {})
     transitions = [row for row in resources.get("transitions", []) if isinstance(row, Mapping)]

@@ -6,24 +6,28 @@ import os
 from pathlib import Path
 from datetime import date, datetime
 from typing import Any
+from .errors import WorldInputError
 
 
 def load_mapping(path: str | Path) -> dict[str, Any]:
     path = Path(path)
     text = path.read_text(encoding="utf-8")
     if path.suffix.lower() == ".json":
-        data = json.loads(text)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise WorldInputError(f"{path} is not valid JSON: {exc}") from exc
     else:
         try:
             import yaml
         except ImportError as exc:
-            raise ValueError(f"{path}: reading YAML needs PyYAML (python -m pip install PyYAML); JSON input does not") from exc
+            raise WorldInputError(f"{path}: reading YAML needs PyYAML (python -m pip install PyYAML); JSON input does not") from exc
         try:
             data = yaml.safe_load(text)
         except yaml.YAMLError as exc:
-            raise ValueError(f"{path} is not valid YAML: {exc}") from exc
+            raise WorldInputError(f"{path} is not valid YAML: {exc}") from exc
     if not isinstance(data, dict):
-        raise ValueError(f"{path} did not contain a mapping")
+        raise WorldInputError(f"{path} did not contain a mapping")
     return data
 
 

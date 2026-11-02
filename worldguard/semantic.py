@@ -370,8 +370,12 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
     for index, transition in enumerate(transitions):
         if not isinstance(transition, dict) or not transition.get("id"):
             return marking, {"kind": "bad_transition", "transition": transition}
-        for arc in transition.get("consumes", []):
-            if not isinstance(arc, dict) or arc.get("place") not in places or not arc.get("color") or not _quantity(arc.get("qty")):
+        arcs = {key: transition.get(key, []) for key in ("consumes", "produces")}
+        if any(not isinstance(value, list) for value in arcs.values()):
+            return marking, {"kind": "bad_transition", "transition": transition["id"], "arcs": "consumes and produces must be lists"}
+        for arc in arcs["consumes"]:
+            if (not isinstance(arc, dict) or not _name(arc.get("place")) or arc.get("place") not in places
+                    or not _name(arc.get("color")) or not _quantity(arc.get("qty"))):
                 return marking, {"kind": "bad_transition", "transition": transition["id"], "arc": arc}
             key = str(arc["place"]), str(arc["color"])
             available = marking.get(key, 0.0)
@@ -381,8 +385,8 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
                     "required_qty": arc["qty"], "available_qty": available,
                     "marking": {str(key): value for key, value in marking.items()}}
             marking[key] = available - float(arc["qty"])
-        for arc in transition.get("produces", []):
-            if not isinstance(arc, dict) or not arc.get("place") or not arc.get("color") or not _quantity(arc.get("qty")):
+        for arc in arcs["produces"]:
+            if not isinstance(arc, dict) or not _name(arc.get("place")) or not _name(arc.get("color")) or not _quantity(arc.get("qty")):
                 return marking, {"kind": "bad_transition", "transition": transition["id"], "arc": arc}
             key = str(arc["place"]), str(arc["color"])
             marking[key] = marking.get(key, 0.0) + float(arc["qty"])
@@ -411,6 +415,11 @@ def token_replay(resources: Mapping[str, Any], stop_after: str | None = None, *,
         if stop_after is not None and str(transition["id"]) == str(stop_after):
             break
     return marking, None
+
+
+def _name(value: Any) -> bool:
+    """A place or token colour is a nonempty id (text or a number), never a list or mapping."""
+    return not isinstance(value, bool) and isinstance(value, (str, int, float)) and value != ""
 
 
 def _quantity(value: Any) -> bool:

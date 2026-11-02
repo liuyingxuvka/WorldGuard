@@ -94,7 +94,7 @@ def test_mesh_check_rejects_bad_container_and_node_shapes_but_keeps_contractless
         assert completed.returncode == 2, completed.stdout + completed.stderr
         assert payload["operation"] == "mesh-check"
         assert payload["error"]["code"] == "WORLDGUARD_INPUT_INVALID"
-        assert payload["error"]["details"]["error_type"] == "ValueError"
+        assert payload["error"]["details"]["error_type"] == "WorldInputError"
     path = tmp_path / "contractless.json"
     path.write_text(json.dumps({"mesh_id": "contractless", "nodes": [{"model_id": "node", "contract": None}]}))
     completed = subprocess.run(

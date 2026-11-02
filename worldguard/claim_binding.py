@@ -32,6 +32,10 @@ def _mapping(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _number(value: Any) -> bool:
+    return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
+
+
 def _gap(reason: str) -> tuple[str, Any]:
     return "GAP", reason
 
@@ -102,13 +106,17 @@ def _tokens(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     places = _mapping(resources.get("places"))
     transitions = [item for item in resources.get("transitions", []) if isinstance(item, dict)]
     place, color, after = str(row["place"]), row.get("color"), row.get("after")
-    known = set(map(str, places)) | {str(arc.get("place")) for item in transitions for key in ("consumes", "produces") for arc in item.get(key, [])}
+    arcs = [arc for item in transitions for key in ("consumes", "produces")
+            for arc in (item.get(key) if isinstance(item.get(key), list) else []) if isinstance(arc, dict)]
+    known = set(map(str, places)) | {str(arc.get("place")) for arc in arcs}  # malformed arcs: token_replay names them
     if place not in known:
         return _gap(f"place {place!r} is not in the world model")
     if after is not None and str(after) not in {str(item.get("id")) for item in transitions}:
         return _gap(f"transition {after!r} is not in the world model")
     if "qty" not in row:
         return _gap("a place assertion needs qty")
+    if not _number(row["qty"]):
+        return _gap(f"a place assertion needs a numeric qty, not {row['qty']!r}")
     marking, problem = token_replay(resources, str(after) if after is not None else None, validate=False, events=inputs.get("events", []))
     if problem:
         return _gap("token replay cannot reach the requested marking: " + str(problem))
@@ -141,7 +149,11 @@ def _attitude(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     field = next((key for key in ("believes", "desires", "intends") if key in row), "")
     if not field:
         return _gap("an agent assertion needs believes, desires or intends")
-    values = [str(item) for item in record.get({"believes": "beliefs", "desires": "desires", "intends": "intentions"}[field]) or []]
+    name = {"believes": "beliefs", "desires": "desires", "intends": "intentions"}[field]
+    declared = record.get(name) or []
+    if not isinstance(declared, list):
+        return _gap(f"agent {row['agent']!r} {name} must be a list")
+    values = [str(item) for item in declared]
     return _verdict(str(row[field]) in values, {field: values})
 
 
@@ -200,7 +212,11 @@ def _payoff(inputs: dict[str, Any], row: dict[str, Any]) -> tuple[str, Any]:
     """{player: player, state: state, reward: number}: a declared payoff of that player in that state."""
     payoffs = [item for item in _mapping(inputs.get("game_model")).get("payoffs", []) if isinstance(item, dict)]
     rewards = [_mapping(item.get("reward")) for item in payoffs if str(item.get("state")) == str(row.get("state"))]
-    values = [float(reward[str(row["player"])]) for reward in rewards if str(row["player"]) in reward]
+    declared = [reward[str(row["player"])] for reward in rewards if str(row["player"]) in reward]
+    for value in declared:
+        if not _number(value):
+            return _gap(f"the declared payoff of {row['player']!r} in state {row.get('state')!r} is not a number: {value!r}")
+    values = [float(value) for value in declared]
     destination = row.get("reward")
     if not values or isinstance(destination, bool) or not isinstance(destination, (int, float)):
         return _gap("a payoff assertion needs a declared state and player and a numeric reward")
@@ -229,21 +245,18 @@ def evaluate_claim_binding(contract: GuardContract, *, node_contracts=None, desc
             status, detail = _gap("an assertion needs exactly one of: " + ", ".join(CLAIM_ASSERTION_KINDS))
         else:
             row["guard"] = SEMANTIC_GUARD_ROUTES[CLAIM_ASSERTION_KINDS[kind]][0]
-            try:
-                destination = assertion.get("node")
-                if "node" in assertion and node_contracts is None:
-                    status, detail = _gap("node rows need mesh-check")
-                elif "node" in assertion and destination not in descendant_ids:
-                    status, detail = _gap(f"node {destination!r} is not a parent_child descendant of this node")
-                elif "node" in assertion and destination not in node_contracts:
-                    status, detail = _gap(f"descendant node {destination!r} has no readable contract")
-                else:
-                    inputs = node_contracts[destination].inputs if "node" in assertion else contract.inputs
-                    status, detail = _EVALUATORS[kind](inputs, assertion)
-            except (TypeError, ValueError) as exc:
-                # A value of the wrong kind in the claim row or model (for example a text reward) is the
-                # user's input: the row stays visible as GAP with the reason. Any other error is a bug and is raised.
-                status, detail = _gap(f"cannot evaluate: {exc}")
+            # Each evaluator checks the values it reads and returns a GAP naming a wrong one; any exception it
+            # raises is a fault of the evaluator and reaches the caller.
+            destination = assertion.get("node")
+            if "node" in assertion and node_contracts is None:
+                status, detail = _gap("node rows need mesh-check")
+            elif "node" in assertion and destination not in descendant_ids:
+                status, detail = _gap(f"node {destination!r} is not a parent_child descendant of this node")
+            elif "node" in assertion and destination not in node_contracts:
+                status, detail = _gap(f"descendant node {destination!r} has no readable contract")
+            else:
+                inputs = node_contracts[destination].inputs if "node" in assertion else contract.inputs
+                status, detail = _EVALUATORS[kind](inputs, assertion)
         row["status"] = status
         row["reason" if status == "GAP" else "observed"] = detail
         rows.append(row)
