@@ -22,7 +22,8 @@ path it was last seen at. A run that finds the same contradiction in exactly one
 more, the entry follows none of them and names them. A pass in such a file closes nothing, since it may be another
 draft of the world: the entry says the world passed there and names the command that settles it, `check --contract NEW
 --takes-over OLD` (`mesh-check --mesh` for a tree file), with which the person says NEW is OLD under a new path; that
-run gives OLD's entries to NEW and judges them there like any entry of NEW. A record that cannot be read or written stops the command (RecordError); nothing falls back to a run without it.
+run gives OLD's entries to NEW and judges them there like any entry of NEW. A record that cannot be read or written
+stops the command (RecordError); nothing falls back to a run without it.
 """
 
 from __future__ import annotations
