@@ -60,11 +60,20 @@ def _record_error(operation, exc, check_status):
     return 2
 
 
-def _keep(units, checked, run):
+TAKES_OVER_HELP = ("a file that is gone, whose open contradictions this file takes over: say so when this file is that "
+                   "file under a new path (renamed, moved, or the draft that replaces it)")
+
+
+def _keep(units, checked, run, takes_over=None):
     """Record this run's contradictions and re-check the open ones; the lines to print on stderr."""
     from .open_findings import render, update
 
-    return render(update(units, checked=Path(checked), run=run))
+    return render(update(units, checked=Path(checked), run=run, takes_over=None if takes_over is None else Path(takes_over)))
+
+
+def _no_example(args):
+    if args.example and args.takes_over:
+        raise WorldInputError("--takes-over needs a file of your own (--contract or --mesh); an example keeps no record")
 
 
 def _show_on_stderr(text):
@@ -107,11 +116,13 @@ def _run(argv):
     choice.add_argument("--contract")
     choice.add_argument("--example", choices=["scene", "trip"])
     check.add_argument("--json", action="store_true", help="print the full report")
+    check.add_argument("--takes-over", metavar="GONE_FILE", help=TAKES_OVER_HELP)
     meshcheck = commands.add_parser("mesh-check", help="Check a tree of worlds and their handoffs.")
     choice = meshcheck.add_mutually_exclusive_group(required=True)
     choice.add_argument("--mesh")
     choice.add_argument("--example", choices=["story"])
     meshcheck.add_argument("--json", action="store_true", help="print the full report")
+    meshcheck.add_argument("--takes-over", metavar="GONE_FILE", help=TAKES_OVER_HELP)
     timeline_parser = commands.add_parser("timeline", help="Show event and token changes with check results.")
     choice = timeline_parser.add_mutually_exclusive_group(required=True)
     choice.add_argument("--contract")
@@ -249,18 +260,18 @@ def _run(argv):
         from .open_findings import RecordError, contract_units
 
         try:
+            _no_example(args)
             path = str(_example_path(args.example)) if args.example else args.contract
             contract = GuardContract.from_dict(load_mapping(path))
             report = run_worldguard(contract)
             digests = input_digests([path], Path(path).parent)
+            # The record comes last: a --takes-over the record cannot follow is an input error like any other.
+            notice = "" if args.example else _keep(contract_units(path, contract, report), path, f"check {Path(path).name}",
+                                                   args.takes_over)
         except WorldInputError as exc:
             return _input_error("check", args.example or args.contract, exc)
-        notice = ""
-        if not args.example:
-            try:
-                notice = _keep(contract_units(path, contract, report), path, f"check {Path(path).name}")
-            except RecordError as exc:
-                return _record_error("check", exc, report.status.value)
+        except RecordError as exc:
+            return _record_error("check", exc, report.status.value)
         payload = {**report.to_dict(), 'input_digests': digests}
         _emit(payload, lambda value: {**_unit_summary(value), 'input_digests': value['input_digests']}, args.json)
         _show_on_stderr(notice)
@@ -270,6 +281,7 @@ def _run(argv):
         from .open_findings import RecordError, mesh_units
 
         try:
+            _no_example(args)
             path = str(_example_path(args.example)) if args.example else args.mesh
             base_dir = Path(path).resolve().parent
             data = load_mapping(path)
@@ -277,14 +289,12 @@ def _run(argv):
             report = run_model_mesh(mesh)
             paths = [path, *[base_dir / node['contract'] for node in data.get('nodes', []) if isinstance(node.get('contract'), str)]]
             digests = input_digests(paths, base_dir)
+            notice = "" if args.example else _keep(mesh_units(path, data, mesh, report), path,
+                                                   f"mesh-check {Path(path).name}", args.takes_over)
         except WorldInputError as exc:
             return _input_error("mesh-check", args.example or args.mesh, exc)
-        notice = ""
-        if not args.example:
-            try:
-                notice = _keep(mesh_units(path, data, mesh, report), path, f"mesh-check {Path(path).name}")
-            except RecordError as exc:
-                return _record_error("mesh-check", exc, report.status.value)
+        except RecordError as exc:
+            return _record_error("mesh-check", exc, report.status.value)
         full = {**report.to_dict(), 'input_digests': digests}
         _emit(full, _mesh_summary, args.json)
         _show_on_stderr(notice)

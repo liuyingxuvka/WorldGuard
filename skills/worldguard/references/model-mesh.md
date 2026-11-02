@@ -124,12 +124,21 @@ is at mainland (it now needs: Lena holds key, Lena is at island)`, `e_unlock no 
 of hand-over ch1_ch2 no longer both name lena_on_island`, `claim row 2 (...) is no longer in the claim`). It also
 closes, saying so, when its hand-over, chapter or event is no longer in its file. A renamed, moved or deleted file
 closes nothing: its entries stay open with `held: file gone: ch2.yaml no longer exists; it stays open until world ch2
-is checked again under its new path` (`tree <mesh_id>` for a tree file) until a run checks the same world (the
-file's `contract_id`, or the tree's `mesh_id`) in a file under the same record. The same contradiction found there
-moves the entry to the new path (`moved: ... -- ch2.yaml is gone; the same contradiction is in ch2_new.yaml`, with
-`moved_from` and the first-seen time kept); a pass of the same question there closes it and names both paths; a check
-there that does not reach the question keeps it open and says why. A file moved out of the record's folder is not
-followed: its entries stay open in the old record, and the new folder gets entries of its own. Other
+is checked again under its new path` (`tree <mesh_id>` for a tree file). When a run finds the same contradiction in a
+file of the same world (the file's `contract_id`, or the tree's `mesh_id`) under the same record, the entry moves there
+(`moved: ... -- ch2.yaml is gone; the same contradiction is in ch2_new.yaml`, with `moved_from` and the first-seen time
+kept). A pass there closes nothing, because several files often declare the same world (drafts of one chapter): the
+entry stays open and says so, for example `file gone: ch2.yaml no longer exists; world ch2 passed in ch2_fixed.yaml
+(re-checked by ...), but a pass in another file does not close it; if ch2_fixed.yaml is ch2.yaml under a new path, run
+`worldguard check --contract ch2_fixed.yaml --takes-over ch2.yaml` in the record's folder`; a file of the world where
+the check does not reach the question is named with the reason. `check --contract NEW --takes-over OLD` (`mesh-check
+--mesh NEW --takes-over OLD` for a tree file and its inline chapters) is how the person says NEW is the gone file OLD
+under a new path: every open entry of OLD moves to NEW (`taken over: ...`, `moved_from` and the first-seen time kept;
+one NEW already holds for the same contradiction keeps both histories) and is judged there like any entry of NEW, so
+the same pass now closes it. It is an input error (exit 2, nothing changed) when OLD still exists, when no open entry
+under NEW's folder belongs to OLD, or when OLD's entries were recorded for another world than NEW declares. A file
+moved out of the record's folder is not followed: its entries stay open in the old record, and the new folder gets
+entries of its own. Other
 FAIL rows (token, space, norm, agent, causal and conflict Guards) close when the Guard that found them runs on the file
 and finds nothing at that place; the closing line says exactly that. A run that does not check the entry's file leaves it alone. A passing run with no record writes
 nothing. A record that cannot be read or written stops the command with `WORLDGUARD_RECORD_ERROR` (exit 2, the check

@@ -233,27 +233,42 @@ def test_a_renamed_chapter_keeps_its_contradiction_open_and_takes_it_along(tmp_p
     assert [item["code"] for item in _record(story)["open"]] == ["MESH_HANDOFF_STATE_MISMATCH"]
 
 
-def test_a_moved_chapter_closes_only_when_its_new_path_answers_the_question(tmp_path, capsys):
+def test_a_moved_chapter_that_passes_under_its_new_path_closes_only_when_the_person_says_it_moved(tmp_path, capsys,
+                                                                                                   monkeypatch):
     story = _story(tmp_path)
     _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
     (story / "chapters").mkdir()
     (story / "ch2_slip.yaml").rename(story / "chapters/ch2.yaml")
+    settle = ("if chapters/ch2.yaml is ch2_slip.yaml under a new path, run `worldguard check --contract chapters/ch2.yaml "
+              "--takes-over ch2_slip.yaml` in the record's folder")
     # Under its new path the check stops reaching the event: the entry stays open and says both things.
     _edit(story / "chapters/ch2.yaml", lambda world: _event(world, "e_give_key").pop("place"))
     _code, _out, err = _run(capsys, "check", "--contract", story / "chapters/ch2.yaml")
     assert "closed:" not in err and "moved:" not in err
     (item,) = _record(story)["open"]
-    assert (item["unit"], item["held"]) == ("ch2_slip.yaml", "file gone: ch2_slip.yaml no longer exists; world ch2 is now "
-                                            "in chapters/ch2.yaml, not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event e_give_key")
+    assert (item["unit"], item["held"]) == ("ch2_slip.yaml", "file gone: ch2_slip.yaml no longer exists; world ch2 is in "
+                                            "chapters/ch2.yaml, not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event "
+                                            f"e_give_key; {settle}")
 
     def place_and_fix(world):
         _event(world, "e_give_key")["place"] = "mainland"
         _fix_the_start(world)
     _edit(story / "chapters/ch2.yaml", place_and_fix)
+    # The file passes: that alone does not say it is the moved chapter and not another draft of world ch2.
     _code, _out, err = _run(capsys, "check", "--contract", story / "chapters/ch2.yaml")
-    assert ("closed: EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- ch2_slip.yaml is "
-            "gone and world ch2 is now in chapters/ch2.yaml: re-checked by check ch2.yaml: Lena is at mainland just before "
-            "event e_give_key now") in err.splitlines()
+    assert "closed:" not in err
+    (item,) = _record(story)["open"]
+    assert item["held"] == ("file gone: ch2_slip.yaml no longer exists; world ch2 passed in chapters/ch2.yaml (re-checked by "
+                            "check ch2.yaml: Lena is at mainland just before event e_give_key now), but a pass in another "
+                            f"file does not close it; {settle}")
+    # The named command, run in the record's folder, settles it.
+    monkeypatch.chdir(story)
+    _code, _out, err = _run(capsys, "check", "--contract", "chapters/ch2.yaml", "--takes-over", "ch2_slip.yaml")
+    assert err.splitlines() == [
+        "taken over: EVENT_RELATION_UNMET [chapters/ch2.yaml] Lena is not at mainland at 18:00 (at island). -- ch2_slip.yaml "
+        "is gone; chapters/ch2.yaml takes over its entries, as --takes-over asked",
+        "closed: EVENT_RELATION_UNMET [chapters/ch2.yaml] Lena is not at mainland at 18:00 (at island). -- re-checked by "
+        "check ch2.yaml: Lena is at mainland just before event e_give_key now"]
     assert _record(story)["open"] == []
 
 
@@ -461,7 +476,9 @@ def test_a_gone_file_whose_world_is_in_two_checked_files_is_not_followed(tmp_pat
     assert code == 0 and "closed:" not in err
     (item,) = _record(story)["open"]
     assert item["held"] == ("file gone: ch2_slip.yaml no longer exists; world ch2 is in more than one file this run "
-                            "checked (ch2_a.yaml, ch2_fixed.yaml), so it is not followed to any of them")
+                            "checked (ch2_a.yaml, ch2_fixed.yaml), so it is not followed to any of them; if one of them is "
+                            "ch2_slip.yaml under a new path, run `worldguard check --contract <that file> --takes-over "
+                            "ch2_slip.yaml` in the record's folder")
 
 
 def test_a_file_back_under_its_last_path_no_longer_says_it_is_gone(tmp_path, capsys):
@@ -474,3 +491,73 @@ def test_a_file_back_under_its_last_path_no_longer_says_it_is_gone(tmp_path, cap
     _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
     (item,) = _record(story)["open"]
     assert "held" not in item and "gone_since" not in item and "file gone" not in err
+
+
+def _declared(tmp_path):
+    """Chapter 2 as first drafted (Lena still unlocks the door she gave away) next to the fixed draft of the same world."""
+    for name in ("ch2_declared.yaml", "ch2_fixed.yaml"):
+        shutil.copyfile(LIGHTHOUSE / name, tmp_path / name)
+    return tmp_path
+
+
+def test_a_pass_in_another_draft_of_the_world_does_not_close_a_gone_files_entries(tmp_path, capsys):
+    story = _declared(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_declared.yaml")
+    before = {item["summary"]: item for item in _record(story)["open"]}
+    assert len(before) == 2
+    (story / "ch2_declared.yaml").rename(story / "chapter2.yaml")
+    # ch2_fixed.yaml also declares contract_id ch2 and passes: that is no fix of the renamed file.
+    code, _out, err = _run(capsys, "check", "--contract", story / "ch2_fixed.yaml")
+    assert code == 0 and "closed:" not in err and "moved:" not in err
+    held = {item["held"] for item in _record(story)["open"]}
+    assert len(held) == 2 and all(
+        text.startswith("file gone: ch2_declared.yaml no longer exists; world ch2 passed in ch2_fixed.yaml (re-checked by "
+                        "check ch2_fixed.yaml: event e_unlock no longer needs ")
+        and text.endswith("), but a pass in another file does not close it; if ch2_fixed.yaml is ch2_declared.yaml under a "
+                          "new path, run `worldguard check --contract ch2_fixed.yaml --takes-over ch2_declared.yaml` in "
+                          "the record's folder") for text in held), held
+    # The renamed file still has the same contradictions: the entries move there with their history.
+    _code, _out, err = _run(capsys, "check", "--contract", story / "chapter2.yaml")
+    assert "closed:" not in err and sum(line.startswith("moved: EVENT_RELATION_UNMET [chapter2.yaml]")
+                                        for line in err.splitlines()) == 2
+    after = _record(story)["open"]
+    assert len(after) == 2 and all(
+        (item["moved_from"], item["first_seen"], item["runs"]) == (["ch2_declared.yaml"], before[item["summary"]]["first_seen"], 2)
+        for item in after)
+
+
+def test_the_person_says_which_file_takes_over_a_gone_files_entries(tmp_path, capsys):
+    story = _declared(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_declared.yaml")
+    first_seen = sorted(item["first_seen"] for item in _record(story)["open"])
+    (story / "ch2_declared.yaml").unlink()  # the first draft is dropped; ch2_fixed.yaml is chapter 2 now
+    _run(capsys, "check", "--contract", story / "ch2_fixed.yaml")
+    assert len(_record(story)["open"]) == 2
+    code, _out, err = _run(capsys, "check", "--contract", story / "ch2_fixed.yaml", "--takes-over", story / "ch2_declared.yaml")
+    assert code == 0
+    lines = err.splitlines()
+    assert sum(line.startswith("taken over: EVENT_RELATION_UNMET [ch2_fixed.yaml] ") and line.endswith(
+        " -- ch2_declared.yaml is gone; ch2_fixed.yaml takes over its entries, as --takes-over asked") for line in lines) == 2
+    assert sum(line.startswith("closed: EVENT_RELATION_UNMET [ch2_fixed.yaml] ") and " -- re-checked by check ch2_fixed.yaml: "
+               "event e_unlock no longer needs " in line for line in lines) == 2
+    record = _record(story)
+    assert record["open"] == [] and sorted(item["first_seen"] for item in record["resolved"]) == first_seen
+    assert all(item["moved_from"] == ["ch2_declared.yaml"] for item in record["resolved"])
+
+
+def test_takes_over_refuses_what_it_cannot_do(tmp_path, capsys):
+    story = _declared(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_declared.yaml")
+    shutil.copyfile(LIGHTHOUSE / "ch1_fixed.yaml", story / "ch1_fixed.yaml")
+
+    def refused(*args):
+        code, out, _err = _run(capsys, "check", "--contract", *args)
+        assert code == 2
+        error = json.loads(out)["error"]
+        assert error["code"] == "WORLDGUARD_INPUT_INVALID"
+        return error["message"]
+    assert "that file still exists" in refused(story / "ch2_fixed.yaml", "--takes-over", story / "ch2_declared.yaml")
+    (story / "ch2_declared.yaml").unlink()
+    assert "no open contradiction" in refused(story / "ch2_fixed.yaml", "--takes-over", story / "nothing.yaml")
+    assert "world ch1" in refused(story / "ch1_fixed.yaml", "--takes-over", story / "ch2_declared.yaml")
+    assert len(_record(story)["open"]) == 2  # a refused command changes nothing

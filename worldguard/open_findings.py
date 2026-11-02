@@ -17,10 +17,12 @@ or event is gone from its file, or when the check still runs there but the world
 event no longer uses the thing, the chapters no longer both name the fact).
 
 A file that is renamed, moved or deleted closes nothing. Its entries stay open and say the file is gone, naming the
-path it was last seen at, until a run checks the same world (the file's `contract_id`, or the tree's `mesh_id`) in a
-file under the same record: the same contradiction found there moves the entry to the new path with its history, and
-the check's own pass of the same question there closes it. A record that cannot be read or written stops the command
-(RecordError); nothing falls back to a run without it.
+path it was last seen at. A run that finds the same contradiction in a file of the same world (the file's
+`contract_id`, or the tree's `mesh_id`) under the same record moves the entry there with its history. A pass in such a
+file closes nothing, since it may be another draft of the world: the entry says the world passed there and names the
+command that settles it, `check --contract NEW --takes-over OLD` (`mesh-check --mesh` for a tree file), with which the
+person says NEW is OLD under a new path; that run gives OLD's entries to NEW and judges them there like any entry of
+NEW. A record that cannot be read or written stops the command (RecordError); nothing falls back to a run without it.
 """
 
 from __future__ import annotations
@@ -33,6 +35,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from .errors import WorldInputError
 from .relations import conflict_coverage, parse_relations, relation_coverage
 from .semantic import event_replay, precondition_coverage
 
@@ -385,15 +388,17 @@ def _write(folder: Path, data: Mapping[str, Any]) -> None:
         raise RecordError(path, f"could not write: {exc}") from exc
 
 
-def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
+def update(units: list[Unit], *, checked: Path, run: str, takes_over: Path | None = None) -> dict[str, Any]:
     """Keep this run's contradictions and re-check the open ones of the files it covered; return what to print.
 
-    `checked` is the file the command was given; `run` names the command for the closing lines."""
+    `checked` is the file the command was given; `run` names the command for the closing lines; `takes_over` is a gone
+    file whose entries the person gives to `checked` (`--takes-over`)."""
     folders: list[Path] = []
     for start in [checked.resolve().parent, *[unit.path.parent for unit in units]]:
         folders.extend(folder for folder in records_above(start) if folder not in folders)
     records = {folder: _load(folder) for folder in folders}
     covered = {_unit_key(unit): unit for unit in units}
+    taken = _take_over(records, takes_over, checked, covered) if takes_over is not None else []
     found: dict[tuple[str, ...], tuple[Unit, dict[str, Any]]] = {}
     for unit in units:
         for row in unit.rows:
@@ -431,7 +436,7 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
                 item.pop("held", None)
                 changed.add(folder)
     for folder, item in gone:
-        _follow(folder, item, units, found, seen, run, now, closed, moved, dropped, changed)
+        _follow(folder, item, units, found, seen, run, now, moved, dropped, changed)
     for folder, data in records.items():
         data["open"] = [item for item in data["open"] if id(item) not in dropped]
         data["resolved"] = (data["resolved"] + [{k: v for k, v in item.items() if k != "folder"}
@@ -460,13 +465,67 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
         if folder in changed:
             _write(folder, records[folder])
     still_open = [{**item, "folder": str(folder)} for folder, data in records.items() for item in data["open"]]
-    return {"opened": opened, "closed": closed, "moved": moved, "open": still_open}
+    return {"opened": opened, "closed": closed, "moved": moved, "taken": taken, "open": still_open}
 
 
-def _follow(folder, item, units, found, seen, run, now, closed, moved, dropped, changed) -> None:
-    """An entry whose file is gone stays open, saying so with the path it was last seen at, until a run checks its
-    world (the file's contract_id, or the tree's mesh_id) in a file under the same record. There the same
-    contradiction moves the entry to the new path; the check's own pass of the same question closes it."""
+def _take_over(records, old: Path, checked: Path, covered: Mapping[str, Unit]) -> list[dict[str, Any]]:
+    """`--takes-over OLD`: the person says the checked file is the gone file OLD under a new path. Every open entry of
+    OLD (and of its inline chapters) moves to the checked file, keeping its history, before this run judges it like any
+    entry of that file; one that file already holds for the same contradiction keeps both histories. Anything that
+    cannot be done so is an input error, raised before the record changes."""
+    old, new = old.resolve(), checked.resolve()
+    if old.exists():
+        raise WorldInputError(f"--takes-over {old}: that file still exists; only the entries of a file that is gone can "
+                              "be taken over")
+    planned = []
+    for folder, data in records.items():
+        if not new.is_relative_to(folder):
+            continue
+        for item in data["open"]:
+            unit, _, node = item["unit"].partition("#")
+            if (folder / unit).resolve() != old:
+                continue
+            target = covered.get(str(new) + (f"#{node}" if node else ""))
+            if target is None:
+                raise WorldInputError(f"--takes-over {old}: its entry {item['unit']} is about inline chapter {node}, "
+                                      f"which {new.name} does not have")
+            if "world" in item and item["world"] != target.world:
+                raise WorldInputError(f"--takes-over {old}: its entries were recorded for "
+                                      f"{item['world'] or 'a world without an id'}, but {target.name(folder)} checks "
+                                      f"{target.world or 'a world without an id'}")
+            planned.append((folder, item, target))
+    if not planned:
+        raise WorldInputError(f"--takes-over {old}: no open contradiction recorded for {new.name}'s folder or a folder "
+                              "above it belongs to that file")
+    taken = []
+    for folder, item, target in planned:
+        last = item["unit"]
+        item.update(unit=target.name(folder), moved_from=[*item.get("moved_from", []), last])
+        item.pop("held", None)
+        item.pop("gone_since", None)
+        data = records[folder]
+        key = _item_key(folder, item)
+        keeper = next((other for other in data["open"] if other is not item and _item_key(folder, other) == key), None)
+        if keeper is not None:  # the checked file already has this contradiction on record: one entry keeps both
+            keeper.update(first_seen=min(keeper["first_seen"], item["first_seen"]), runs=keeper["runs"] + item["runs"],
+                          moved_from=[*item["moved_from"], *keeper.get("moved_from", [])])
+            data["open"].remove(item)
+        taken.append({**(keeper or item), "from": _file_of({"unit": last})})
+    return taken
+
+
+def _takes_over(unit: Unit, path: str, last: str) -> str:
+    """The command with which the person says the file at `path` (`unit`'s file, or one like it) is the gone file
+    `last` under a new path."""
+    check = f"mesh-check --mesh {path}" if unit.tree or unit.node else f"check --contract {path}"
+    return f"`worldguard {check} --takes-over {last}` in the record's folder"
+
+
+def _follow(folder, item, units, found, seen, run, now, moved, dropped, changed) -> None:
+    """An entry whose file is gone stays open, saying so with the path it was last seen at. A run that finds the same
+    contradiction in a file of its world (the file's contract_id, or the tree's mesh_id) under the same record moves
+    the entry there. A pass in such a file closes nothing (it may be another draft of the world): the entry says so and
+    names the `--takes-over` command with which the person makes that file the new path."""
     last, world = _file_of(item), item.get("world")
     node = item["unit"].partition("#")[2]
     candidates = sorted((unit for unit in units if world is not None and unit.world == world and unit.node == node
@@ -494,17 +553,14 @@ def _follow(folder, item, units, found, seen, run, now, closed, moved, dropped, 
     if len(candidates) == 1:
         unit = candidates[0]
         new = unit.name(folder)
-        is_closed, how = _judge(item, unit, new, run)
-        if is_closed:
-            closed.append({**item, "closed": now, "how": f"{last} is gone and {world} is now in {new}: {how}",
-                           "folder": str(folder)})
-            dropped.add(id(item))
-            changed.add(folder)
-            return
-        held = f"file gone: {last} no longer exists; {world} is now in {new}, {how}"
+        passed, how = _judge(item, unit, new, run)
+        found_there = f"passed in {new} ({how}), but a pass in another file does not close it" if passed else f"is in {new}, {how}"
+        held = (f"file gone: {last} no longer exists; {world} {found_there}; if {new} is {last} under a new path, run "
+                + _takes_over(unit, Path(os.path.relpath(unit.path, folder)).as_posix(), last))
     elif candidates:
         held = (f"file gone: {last} no longer exists; {world} is in more than one file this run checked "
-                f"({', '.join(unit.name(folder) for unit in candidates)}), so it is not followed to any of them")
+                f"({', '.join(unit.name(folder) for unit in candidates)}), so it is not followed to any of them; if one "
+                f"of them is {last} under a new path, run {_takes_over(candidates[0], '<that file>', last)}")
     elif world is not None:
         held = f"file gone: {last} no longer exists; it stays open until {world} is checked again under its new path"
     else:
@@ -536,6 +592,9 @@ def render(change: Mapping[str, Any]) -> str:
     for item in change["moved"]:
         lines.append(f"moved: {item['code']} [{item['unit']}] {item['summary']} -- {item['from']} is gone; the same "
                      f"contradiction is in {item['unit']}")
+    for item in change["taken"]:
+        lines.append(f"taken over: {item['code']} [{item['unit']}] {item['summary']} -- {item['from']} is gone; "
+                     f"{_file_of(item)} takes over its entries, as --takes-over asked")
     for item in change["closed"]:
         lines.append(f"closed: {item['code']} [{item['unit']}] {item['summary']} -- {item['how']}")
     return "\n".join(lines)
