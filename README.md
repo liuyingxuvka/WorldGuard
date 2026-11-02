@@ -10,7 +10,7 @@
 
 | Version | Runtime | Package |
 | --- | --- | --- |
-| `v0.9.0` | Python 3.11+, PyYAML | `worldguard` |
+| `v0.8.0` | Python 3.11+, PyYAML | `worldguard` |
 
 [中文说明](./README.zh-CN.md)
 
@@ -96,7 +96,7 @@ they mean.
 **1. Install the skill for your AI, from the release tag.**
 
 ```bash
-git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -110,11 +110,11 @@ PyYAML is needed (JSON worlds need nothing).
 **2. Optional: the `worldguard` command**, from the same tag:
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
 ```
 
-It installs the console command `worldguard` with the four subcommands `check`, `mesh-check`, `timeline` and
-`compare`, and the Python API (`GuardContract`,
+It installs the console command `worldguard` with the five subcommands `check`, `mesh-check`, `timeline`, `lifeline`
+and `compare`, and the Python API (`GuardContract`,
 `ModelMeshContract`, `run_worldguard`, `run_model_mesh`).
 
 **3. The first commands**, in the cloned folder:
@@ -177,10 +177,14 @@ story PASS (tree FAIL)
   ch2 FAIL
 ```
 
-`mesh-check` keeps that contradiction on record in `.worldguard/open.json` beside the tree, with the chapters that set it
-up (chapter 1's ferry at `ch1 p3`, chapter 2's start). Every later command on that folder, even a check of another
-chapter in a new session, prints it again until a `mesh-check` of the tree no longer finds it. To talk it through with a
-person, draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
+Every `check`, `mesh-check`, `timeline` and `lifeline` keeps the contradictions it finds on record in
+`.worldguard/open.json` (in the checked file's folder, or the nearest folder above it that already has one), with the
+chapters that set them up: chapter 1's ferry at `ch1 p3` and chapter 2's start for the hand-over, `ch2 p1` for chapter
+2's own slip. Every later command on a file under that folder, even a check of another chapter in a new session,
+prints them on stderr. One closes only when a check of its own file finds the place it was found (the event, the
+hand-over) free of problems; if that place now has a gap, an exemption or no longer runs the check that found it, it
+stays open and says it was not re-checked. To talk it through with a person, draw Lena's life from the model; only Lena
+is drawn, and the lines below the picture say what was left out:
 
 ```console
 $ python skills/worldguard/scripts/run_worldguard.py lifeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml --of Lena

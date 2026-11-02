@@ -9,3 +9,4 @@ venv/
 /work/
 openspec/**/run-artifacts/
 .flowguard/cache/
+.worldguard/

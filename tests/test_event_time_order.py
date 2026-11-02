@@ -61,8 +61,10 @@ def test_clock_orders_supported_time_kinds(earlier, later, kind):
     ("trip_v1.yaml", 0, "PASS", set()),
     ("story_v1.yaml", 0, "PASS", set()),
 ], ids=lambda value: value.replace(".", "_") if isinstance(value, str) else None)
-def test_trial_time_contracts_are_checked_natively(file, exit_code, status, codes, capsys):
-    path = Path(__file__).parent / "fixtures/trials" / file
+def test_trial_time_contracts_are_checked_natively(file, exit_code, status, codes, capsys, tmp_path):
+    path = tmp_path / file  # a copy: a failing check keeps its contradictions next to the world
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes((Path(__file__).parent / "fixtures/trials" / file).read_bytes())
     assert main(["check", "--contract", str(path)]) == exit_code
     result = json.loads(capsys.readouterr().out)
     assert result["status"] == status

@@ -115,16 +115,18 @@ def lifeline(entity: str, *, contract=None, mesh=None, report=None, limit: int |
         kept = list(range(keep_head)) + list(range(len(boxes) - keep_tail, len(boxes)))
         index = {old: new for new, old in enumerate(kept[:keep_head])}
         index.update({old: keep_head + 1 + position for position, old in enumerate(kept[keep_head:])})
-        middle = {"chapter": None, "label": f"{folded} more steps", "state": [], "problem": any(
-            box["problem"] for position, box in enumerate(boxes) if keep_head <= position < len(boxes) - keep_tail)}
-        new_boxes = [boxes[i] for i in kept[:keep_head]] + [middle] + [boxes[i] for i in kept[keep_head:]]
-        new_arrows = []
+        new_arrows, hidden = [], set()
         for arrow in arrows:
             start = index.get(arrow["from"], keep_head)
             end = index.get(arrow["to"], keep_head)
             if start == end == keep_head:
+                hidden.update(arrow["problems"])  # a problem inside the fold is named on the folded box
                 continue
             new_arrows.append({**arrow, "from": start, "to": end})
+        middle = {"chapter": None, "label": f"{folded} more step{'s' if folded != 1 else ''}", "state": [], "folded": True,
+                  "hidden_problems": sorted(hidden), "problem": bool(hidden) or any(
+                      box["problem"] for position, box in enumerate(boxes) if keep_head <= position < len(boxes) - keep_tail)}
+        new_boxes = [boxes[i] for i in kept[:keep_head]] + [middle] + [boxes[i] for i in kept[keep_head:]]
         boxes, arrows = new_boxes, new_arrows
     return {"entity": entity, "boxes": boxes, "arrows": arrows, "left_out": left_out, "folded": folded}
 
@@ -138,7 +140,10 @@ def render_mermaid(view: Mapping[str, Any]) -> str:
     lines = ["```mermaid", "flowchart LR"]
     for number, box in enumerate(view["boxes"]):
         head = " ".join(part for part in (box["chapter"], box["label"]) if part)
-        body = "<br/>".join(box["state"]) or "(no declared fact)"
+        if box.get("folded"):
+            body = "folded" + "".join(f" !! {code}" for code in box.get("hidden_problems", [])) + "; add --all to draw them"
+        else:
+            body = "<br/>".join(box["state"]) or "(no declared fact)"
         lines.append(f'  n{number}["{_quote(head)}<br/>{_quote(body)}"]')
     red = []
     for number, arrow in enumerate(view["arrows"]):
@@ -155,7 +160,9 @@ def render_mermaid(view: Mapping[str, Any]) -> str:
         lines.append(f"  linkStyle {','.join(red)} stroke:#c00,stroke-width:2px")
     lines.append("```")
     events = sum(1 for arrow in view["arrows"] if not arrow.get("handoff"))
-    lines.append(f"Shown: {view['entity']}, {len(view['boxes'])} boxes, {events} event{'s' if events != 1 else ''}; each box lists only "
+    count = len(view["boxes"])
+    boxes = f"{count} box{'es' if count != 1 else ''}" + (" (one of them folded)" if view["folded"] else "")
+    lines.append(f"Shown: {view['entity']}, {boxes}, {events} event{'s' if events != 1 else ''}; each box lists only "
                  f"the declared facts about {view['entity']}.")
     left = view["left_out"]
     parts = []

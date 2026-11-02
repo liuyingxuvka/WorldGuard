@@ -1,6 +1,7 @@
 from copy import deepcopy
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 import yaml
@@ -292,8 +293,10 @@ def test_timeline_token_delta_skips_zero_counts():
     assert full[3].endswith("tokens: c=t×1")
 
 
-def test_timeline_names_the_uncaught_variant(capsys):
-    mesh = Path(__file__).parent / 'fixtures/trials/lighthouse_key/mesh.yaml'
+def test_timeline_names_the_uncaught_variant(capsys, tmp_path):
+    # A copy: a timeline of a failing tree keeps its contradictions next to it.
+    folder = Path(shutil.copytree(Path(__file__).parent / 'fixtures/trials/lighthouse_key', tmp_path / 'lighthouse_key'))
+    mesh = folder / 'mesh.yaml'
     evidence = ('variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, '
                 'got GAP CLAIM_ASSERTION_UNRESOLVED, EVENT_ACTOR_STATE_UNCHECKED')
     assert main(['timeline', '--mesh', str(mesh)]) == 0

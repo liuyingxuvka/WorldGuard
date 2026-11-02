@@ -10,7 +10,7 @@
 
 | 版本 | 运行环境 | 包名 |
 | --- | --- | --- |
-| `v0.9.0` | Python 3.11+，PyYAML | `worldguard` |
+| `v0.8.0` | Python 3.11+，PyYAML | `worldguard` |
 
 [English](./README.md)
 
@@ -91,7 +91,7 @@ $ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixt
 **1. 从发布的 tag 安装技能。**
 
 ```bash
-git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -104,10 +104,10 @@ python WorldGuard/scripts/install_skill.py --target ~/.claude/skills --check  # 
 **2. 可选：`worldguard` 命令**，同一个 tag：
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
 ```
 
-装好后有 `worldguard` 命令（四个子命令：`check`、`mesh-check`、`timeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、
+装好后有 `worldguard` 命令（五个子命令：`check`、`mesh-check`、`timeline`、`lifeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、
 `run_worldguard`、`run_model_mesh`）。
 
 **3. 先跑这三条**，在克隆下来的目录里：
@@ -165,8 +165,11 @@ story PASS (tree FAIL)
   ch2 FAIL
 ```
 
-`mesh-check` 会把这个矛盾记在树旁边的 `.worldguard/open.json` 里，连同确立它的章节（第 1 章 `ch1 p3` 的渡船、第 2 章的开头）。
-之后在这个目录里跑任何命令，哪怕是新的会话里只检查另一章，都会再把它列出来，直到对这棵树的 `mesh-check` 不再发现它为止。
+`check`、`mesh-check`、`timeline` 和 `lifeline` 都会把发现的矛盾记在 `.worldguard/open.json` 里（被检查文件所在的目录，
+或者它上面最近一个已经有记录的目录），连同确立它的章节：交接处的矛盾是第 1 章 `ch1 p3` 的渡船和第 2 章的开头，第 2 章自己的矛盾是 `ch2 p1`。
+之后对这个目录下任何文件跑命令，哪怕是新的会话里只检查另一章，都会在 stderr 上再把它们列出来。只有对它所在文件的检查发现
+它出现的地方（那个事件、那次交接）已经没有任何问题时，它才会关闭；如果那个地方现在是 GAP、写了豁免，或者发现它的检查不再运行，
+它就保持打开，并写明这次没有重新检查。
 要和人讨论时，从模型画出 Lena 的一生：图里只有 Lena，图下面的两行写明省略了什么：
 
 ```console

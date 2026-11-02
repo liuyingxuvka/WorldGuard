@@ -52,9 +52,12 @@ are input errors. A mesh has one root and only `parent_child` / `continues` edge
 When you discuss the plot with the owner (a contradiction to decide, how someone gets somewhere, an alternative), run
 `lifeline --mesh FILE --of <who or what>` and put its Mermaid picture and its "Shown" and "Left out" lines in your reply.
 The tool draws it from the declared relations and the replayed events, only for that entity, from its first to its last
-appearance; do not draw one by hand. `mesh-check` records each FAIL of the tree, with the chapters and sources that
-established it, in `.worldguard/open.json` next to the tree; every later command on that folder prints the open ones
-until a `mesh-check` of the same tree no longer finds them. End a reply that leaves one open with it under "still open".
+appearance; do not draw one by hand. `check`, `mesh-check`, `timeline` and `lifeline` record each FAIL, with the
+chapters and sources that established it, in `.worldguard/open.json` (the checked file's folder, or the nearest folder
+above it that has one); every later command on a file under that folder prints the open ones on stderr. One closes
+only when a check of its own file finds that place free of problems; a GAP, an `actor_state_free` or a Guard that no
+longer runs there leaves it open as "not re-checked", so never exempt or delete facts to make one go away. End a reply
+that leaves one open with it under "still open".
 
 ## Read the result
 

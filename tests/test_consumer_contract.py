@@ -50,14 +50,16 @@ def test_cli_help_is_the_consumer_interface(installed):
     assert timeline.returncode == 0 and all(flag in timeline.stdout for flag in ('--contract', '--mesh'))
 
 
-def test_contract_summary_and_failures(installed):
+def test_contract_summary_and_failures(installed, tmp_path):
     good = run(installed, 'check', '--contract', FIXTURES / 'logicwriting_fiction_world.yaml')
     payload = json.loads(good.stdout)
     # LogicWriting scripts/_common.py:read_worldguard_report and worldguard_report_identity_problems.
     assert good.returncode == 0 and payload['status'] == 'PASS' and payload['contract_id'] == 'scene-last-tide-001'
     # LogicWriting scripts/_common.py reads the compact producer contract.
     assert set(payload) == {'checked', 'contract_id', 'gaps', 'output', 'scope_limits', 'status', 'input_digests'}
-    late = run(installed, 'check', '--contract', FIXTURES / 'logicwriting_world_late.yaml')
+    late_world = tmp_path / 'logicwriting_world_late.yaml'  # a failing check keeps its contradictions next to the world
+    late_world.write_bytes((FIXTURES / 'logicwriting_world_late.yaml').read_bytes())
+    late = run(installed, 'check', '--contract', late_world)
     # LogicWriting references/worldguard-contracts.md names these native codes.
     assert late.returncode == 1 and {row['code'] for row in json.loads(late.stdout)['gaps']} == {'EVENT_PRECONDITION_UNMET', 'CLAIM_ASSERTION_FALSE'}
 

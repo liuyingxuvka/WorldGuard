@@ -61,11 +61,12 @@ def test_trial_native_problems_are_reported_once(name, expected, status):
     assert sorted(row['code'] for row in report.gaps) == expected.split()
 
 @pytest.mark.parametrize('file,expected', [('sb_metric_distance.yaml', 'BOUNDARY_EXCEEDED'), ('sb_numeric_dynamics.yaml', 'BOUNDARY_EXCEEDED'), ('sb_payoff.yaml', 'BOUNDARY_EXCEEDED'), ('sb_permission.yaml', 'BOUNDARY_EXCEEDED'), ('trip_boundary.yaml', 'BOUNDARY_EXCEEDED'), ('trip_boundary_neg.yaml', 'FAIL')])
-def test_declared_boundary_trials_keep_their_native_status(file, expected, capsys):
+def test_declared_boundary_trials_keep_their_native_status(file, expected, capsys, tmp_path):
     import json
     from pathlib import Path
     from worldguard.cli import main
-    path = Path(__file__).parent / 'fixtures/trials' / file
+    path = tmp_path / file  # a copy: a failing check keeps its contradictions next to the world
+    path.write_bytes((Path(__file__).parent / 'fixtures/trials' / file).read_bytes())
     assert main(['check', '--contract', str(path), '--json']) == 1
     result = json.loads(capsys.readouterr().out)
     assert result['status'] == expected

@@ -1,7 +1,9 @@
 """The discussion picture is computed from the model: one entity, only its declared facts, and a note of what was left out."""
 import json
 from pathlib import Path
+import shutil
 
+import pytest
 import yaml
 
 from worldguard.cli import main
@@ -11,13 +13,19 @@ from worldguard.mesh import ModelMeshContract, run_model_mesh
 LIGHTHOUSE = Path(__file__).parent / "fixtures/trials/lighthouse_key"
 
 
+@pytest.fixture
+def story(tmp_path):
+    """A copy of the lighthouse files: a command on a failing world keeps its contradictions next to it."""
+    return Path(shutil.copytree(LIGHTHOUSE, tmp_path / "lighthouse_key"))
+
+
 def _picture(capsys, *args):
     code = main(["lifeline", *map(str, args)])
     return code, capsys.readouterr().out
 
 
-def test_discussing_the_slip_draws_lenas_life_with_the_contradiction_marked(capsys):
-    code, out = _picture(capsys, "--mesh", LIGHTHOUSE / "mesh_slip.yaml", "--of", "Lena")
+def test_discussing_the_slip_draws_lenas_life_with_the_contradiction_marked(capsys, story):
+    code, out = _picture(capsys, "--mesh", story / "mesh_slip.yaml", "--of", "Lena")
     assert code == 0
     assert out.splitlines() == [
         "```mermaid",
@@ -41,8 +49,8 @@ def test_discussing_the_slip_draws_lenas_life_with_the_contradiction_marked(caps
     ]
 
 
-def test_the_picture_follows_declarations_not_names(capsys):
-    _code, plain = _picture(capsys, "--contract", LIGHTHOUSE / "ch2_declared.yaml", "--of", "key")
+def test_the_picture_follows_declarations_not_names(capsys, story):
+    _code, plain = _picture(capsys, "--contract", story / "ch2_declared.yaml", "--of", "key")
     text = (LIGHTHOUSE / "ch2_declared.yaml").read_text()
     for old, new in (("lena_has_key", "key_held_by_L"), ("tom_has_key", "key_held_by_T"),
                      ("lena_on_mainland", "L_on_mainland"), ("tom_on_mainland", "T_on_mainland")):
@@ -60,23 +68,37 @@ def test_long_lives_are_folded_and_the_fold_is_named():
     mesh = ModelMeshContract.from_dict(yaml.safe_load((LIGHTHOUSE / "mesh_slip.yaml").read_text()), base_dir=LIGHTHOUSE)
     view = lifeline("Lena", mesh=mesh, report=run_model_mesh(mesh), limit=4)
     assert len(view["boxes"]) == 4 and view["folded"] == 2
-    assert view["boxes"][2]["label"] == "2 more steps" and view["boxes"][2]["problem"] is False
+    # The fold hides the hand-over into chapter 2, so the folded box is marked and names the problem it hides.
+    assert view["boxes"][2]["label"] == "2 more steps" and view["boxes"][2]["problem"] is True
     text = render_mermaid(view)
     assert "2 middle steps folded into one box (add --all to draw them)" in text
+    # The folded box says what it is, not that it holds no fact.
+    assert '  n2["2 more steps<br/>folded !! MESH_HANDOFF_STATE_MISMATCH; add --all to draw them"]' in text.splitlines()
+    assert "  class n2,n3 problem" in text.splitlines()
+    assert "Shown: Lena, 4 boxes (one of them folded), 4 events;" in text
     full = lifeline("Lena", mesh=mesh, report=run_model_mesh(mesh), limit=None)
     assert len(full["boxes"]) == 5 and full["folded"] == 0
 
 
-def test_an_undeclared_world_says_what_the_picture_cannot_show(capsys):
-    code, out = _picture(capsys, "--contract", LIGHTHOUSE / "ch2.yaml", "--of", "Lena")
+def test_an_undeclared_world_says_what_the_picture_cannot_show(capsys, story):
+    code, out = _picture(capsys, "--contract", story / "ch2.yaml", "--of", "Lena")
     assert code == 0
     assert '(no declared fact)' in out
     assert out.splitlines()[-1] == ("No world_model.relations name Lena in ch2; declare them to see what it holds and "
                                     "where it is.")
 
 
-def test_an_unknown_entity_is_an_input_error(capsys):
-    code, out = _picture(capsys, "--contract", LIGHTHOUSE / "ch2_declared.yaml", "--of", "Iris")
+def test_an_unknown_entity_is_an_input_error(capsys, story):
+    code, out = _picture(capsys, "--contract", story / "ch2_declared.yaml", "--of", "Iris")
     assert code == 2
     message = json.loads(out)["error"]["message"]
     assert message == "'Iris' takes part in no event and no declared relation; known: Lena, Tom, island, key, mainland"
+
+
+def test_one_box_is_not_called_boxes():
+    from worldguard import GuardContract
+    from worldguard.kernel import run_worldguard
+    contract = GuardContract.from_dict(yaml.safe_load((LIGHTHOUSE / "ch2_declared.yaml").read_text()))
+    view = lifeline("island", contract=contract, report=run_worldguard(contract))
+    view = {**view, "boxes": view["boxes"][:1], "arrows": []}
+    assert "Shown: island, 1 box, 0 events;" in render_mermaid(view)

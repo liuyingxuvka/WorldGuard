@@ -98,14 +98,24 @@ Full JSON preserves every child result.
 
 ## Open contradictions and the lifeline picture
 
-`mesh-check --mesh FILE` keeps a record in `.worldguard/open.json` beside FILE: one entry per FAIL row of the tree,
-identified by its code, node, edge, event and subject (never by time or wording), with `established_by` naming each
-chapter, its `source` and the event or start state that set up the disagreeing facts. `check`, `mesh-check`,
-`timeline` and `lifeline` on any file in that folder print the open entries (on stderr, or first in the timeline text).
-An entry closes only when a `mesh-check` of the same tree file no longer finds it; that run prints `closed: ...` once,
-with `no longer found` or `its chapter or event is no longer in the tree`. A run of another tree never closes it. A
-passing tree with no record writes nothing. An unreadable record is an input error; a folder that cannot be written is
-reported on stderr and the check result stands.
+`check`, `mesh-check`, `timeline` and `lifeline` (not on `--example`) keep a record in `.worldguard/open.json`: the
+nearest one in the checked file's folder or a folder above it, or a new one in the checked file's folder. Each FAIL row
+becomes one entry that belongs to the file the contradiction lives in (`unit`: the chapter's world file, or the tree
+file for a hand-over and the tree's own findings, `tree.yaml#node` for an inline chapter), identified by its code and
+place (edge, event, chapter, subject; never by time or wording), with `established_by` naming each chapter, its
+`source` and the event or start state that set up the disagreeing facts, and `found_by` naming the first command.
+Every later command prints, on stderr, the open entries of every record on the paths of the files it checks; JSON and
+text output on stdout are unchanged.
+
+An entry closes only when a later run re-checks its file, the same contradiction is not found, the place it was found
+(the event, the hand-over, the claim row) has no other problem row, the event is not `actor_state_free`, and the Guard
+that found it still runs there; that run prints `closed: ... -- re-checked by <command>: <place> passes now` once.
+Otherwise the entry stays open with `held`, for example `not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event
+e_give_key`, `still failing on event e_give_key: EVENT_PRECONDITION_UNMET` or `not re-checked: EventGuard does not run
+on ch2.yaml now`. It also closes, saying so, when its hand-over, chapter or event is no longer in its file, or the file
+no longer exists. A run that does not check the entry's file leaves it alone. A passing run with no record writes
+nothing. A record that cannot be read or written stops the command with `WORLDGUARD_RECORD_ERROR` (exit 2, the check
+status in `details`).
 
 `lifeline --mesh FILE --of ENTITY` (or `--contract`) prints a Mermaid flowchart of one entity in reading order: each box
 lists only the declared `world_model.relations` facts about it (`at island`, `holds key`, `held by Tom`), each arrow is
