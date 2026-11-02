@@ -78,10 +78,6 @@ def _scenarios(events):
     return result
 
 
-def _event_scenarios(event, scenarios):
-    return [str(event["scenario_id"])] if event.get("scenario_id") else list(scenarios)
-
-
 def _plan(inputs, relations, requires_checked):
     """The one derivation behind the relation check and its coverage.
 
@@ -92,6 +88,7 @@ def _plan(inputs, relations, requires_checked):
     actors_named = any(event.get("actor") for event in events)
     fluent_of = {key: fluent for fluent, key in relations.items()}
     scenarios = _scenarios(events)
+    everywhere = sorted({name for _applicable, names in scenarios.values() for name in names})
     rows: list[dict[str, Any]] = []
     needed: dict[tuple[str, str], dict[str, tuple[str, str, str]]] = {}
     coverage: dict[tuple[str, str], tuple[frozenset, tuple[str, ...]]] = {}
@@ -99,7 +96,7 @@ def _plan(inputs, relations, requires_checked):
         key = (str(event.get("scenario_id") or ""), str(event.get("event_id")))
         unchecked: list[str] = []
         questions: set[tuple[str, str, str]] = set()
-        untimed = sorted({name for scenario in _event_scenarios(event, scenarios) for name in scenarios[scenario][1]})
+        untimed = sorted(scenarios[str(event["scenario_id"])][1]) if event.get("scenario_id") else everywhere
         if untimed:
             unchecked.append(f"{', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time, so the world "
                              "was not replayed")
