@@ -222,11 +222,11 @@ Lena 在哪里），而这个事件的 `requires` 一条都没要求，就是 `G
 
 ## 开发 WorldGuard
 
-日常运行 FlowGuard 选中的受影响测试和模型；最终冻结的源码由 CI 运行全套测试（`python -m pytest -q`），无需只为重复同一源码的 CI 再本地全跑一次。
+每次提交前跑一遍全套测试，几秒钟就跑完；CI 会在 Python 3.11 和 3.13 上再跑一遍。
 
 ```bash
 python -m pip install -e ".[test]"
-python -m flowguard change --run
+python -m pytest -q
 ```
 
 `test` 这一组会装上 pytest 和 FlowGuard：WorldGuard 用 FlowGuard 维护自己，这一组里钉着本版本开发时用的 FlowGuard 版本。

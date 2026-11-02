@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Maintenance checks run on FlowGuard 0.72.0. The project rules are the four plain FlowGuard steps (status first, store only the owner's own words, find code and run the tests, one commit in your own words); the stored round-11 action list is recorded as not the owner's words, so `status` no longer shows it as an open request.
+
 ## v0.8.0 - 2026-10-31 - Actor state, bindable trees and open-world handoffs
 
 - An event whose actor has tracked state but whose `requires` names none of it is GAP `EVENT_ACTOR_STATE_UNCHECKED` (before: PASS). A nonblank `actor_state_free: <reason>` exempts the event and prints the reason in `scope_limits`.

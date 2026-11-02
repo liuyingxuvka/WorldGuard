@@ -246,12 +246,11 @@ requirement suffices; other necessary conditions and facts omitted from the worl
 
 ## Developing WorldGuard
 
-During development, run the affected tests and models selected by FlowGuard. The final frozen source receives the
-whole test suite in CI (`python -m pytest -q`); a local full run is unnecessary solely to repeat that same-source CI.
+Run the whole test suite before each commit; it takes seconds. CI runs it again on Python 3.11 and 3.13.
 
 ```bash
 python -m pip install -e ".[test]"
-python -m flowguard change --run
+python -m pytest -q
 ```
 
 The `test` extra adds pytest and FlowGuard, which WorldGuard uses to maintain itself; the extra pins the FlowGuard
