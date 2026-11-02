@@ -57,8 +57,9 @@ chapters and sources that established it, in `.worldguard/open.json` (the checke
 above it that has one); every later command on a file under that folder prints the open ones on stderr. One closes
 only when the check that found it asks the same question of its file again and gets a pass; while that check does not
 reach it (no declared relation or actor, an untimed event, a GAP, an `actor_state_free`, a Guard that no longer runs)
-it stays open as "not re-checked", so never exempt, strip or delete facts to make one go away. End a reply
-that leaves one open with it under "still open".
+it stays open as "not re-checked", so never exempt, strip or delete facts to make one go away. Renaming, moving or
+deleting the file closes nothing either: the entry says the file is gone until its world is checked under the new path.
+End a reply that leaves one open with it under "still open".
 
 ## Read the result
 

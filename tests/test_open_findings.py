@@ -174,6 +174,15 @@ def test_a_real_fix_closes_it_once_and_says_how(tmp_path, capsys):
     assert record["open"] == [] and len(record["resolved"]) == 2
 
 
+GONE = "file gone: ch2_slip.yaml no longer exists; it stays open until world ch2 is checked again under its new path"
+
+
+def _fix_the_start(world):
+    """Chapter 2's own slip fixed: Lena starts the chapter on the mainland, where she hands over the key."""
+    initial = world["inputs"]["event_model"]["initial_states"]
+    initial[initial.index("lena_on_island")] = "lena_on_mainland"
+
+
 def test_removing_the_chapter_closes_the_handover_but_not_the_chapters_own_slip(tmp_path, capsys):
     story = _story(tmp_path)
     _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
@@ -187,11 +196,80 @@ def test_removing_the_chapter_closes_the_handover_but_not_the_chapters_own_slip(
         "closed: MESH_HANDOFF_STATE_MISMATCH [mesh_slip.yaml] lena_on_island is false at the end of the earlier chapter "
         "but true at the start of the next -- hand-over ch1_ch2 is no longer in mesh_slip.yaml"]
     assert [item["code"] for item in _record(story)["open"]] == ["EVENT_RELATION_UNMET"]
+    # Deleting the chapter's file is not a fix: the entry stays open and names the path it was last seen at.
     (story / "ch2_slip.yaml").unlink()
     _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
-    assert err.splitlines() == [
-        "closed: EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- "
-        "ch2_slip.yaml no longer exists"]
+    assert "closed:" not in err
+    (item,) = _record(story)["open"]
+    assert (item["unit"], item["held"]) == ("ch2_slip.yaml", GONE)
+    assert err.splitlines()[1].startswith(f"  {UNMET}") and err.splitlines()[1].endswith(f"; {GONE})")
+
+
+def test_a_renamed_chapter_keeps_its_contradiction_open_and_takes_it_along(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
+    (before,) = [item for item in _record(story)["open"] if item["code"] == "EVENT_RELATION_UNMET"]
+    (story / "ch2_slip.yaml").rename(story / "ch2_renamed.yaml")
+    # The next command on another chapter of the folder (world ch1) neither closes it nor takes it over.
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
+    assert "closed:" not in err
+    (gone,) = [item for item in _record(story)["open"] if item["code"] == "EVENT_RELATION_UNMET"]
+    assert (gone["unit"], gone["held"]) == ("ch2_slip.yaml", GONE)
+
+    # The same contradiction checked under the new name: the entry moves there and keeps its history.
+    code, _out, err = _run(capsys, "check", "--contract", story / "ch2_renamed.yaml")
+    assert code == 1 and "closed:" not in err
+    assert ("moved: EVENT_RELATION_UNMET [ch2_renamed.yaml] Lena is not at mainland at 18:00 (at island). -- "
+            "ch2_slip.yaml is gone; the same contradiction is in ch2_renamed.yaml") in err.splitlines()
+    (moved,) = [item for item in _record(story)["open"] if item["code"] == "EVENT_RELATION_UNMET"]
+    assert (moved["unit"], moved["moved_from"], moved["first_seen"], moved["runs"]) == (
+        "ch2_renamed.yaml", ["ch2_slip.yaml"], before["first_seen"], 2)
+    assert "held" not in moved and moved["established_by"][0]["chapter"] == "ch2_renamed.yaml"
+
+    _edit(story / "ch2_renamed.yaml", _fix_the_start)
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_renamed.yaml")
+    assert ("closed: EVENT_RELATION_UNMET [ch2_renamed.yaml] Lena is not at mainland at 18:00 (at island). -- "
+            "re-checked by check ch2_renamed.yaml: Lena is at mainland just before event e_give_key now") in err.splitlines()
+    assert [item["code"] for item in _record(story)["open"]] == ["MESH_HANDOFF_STATE_MISMATCH"]
+
+
+def test_a_moved_chapter_closes_only_when_its_new_path_answers_the_question(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    (story / "chapters").mkdir()
+    (story / "ch2_slip.yaml").rename(story / "chapters/ch2.yaml")
+    # Under its new path the check stops reaching the event: the entry stays open and says both things.
+    _edit(story / "chapters/ch2.yaml", lambda world: _event(world, "e_give_key").pop("place"))
+    _code, _out, err = _run(capsys, "check", "--contract", story / "chapters/ch2.yaml")
+    assert "closed:" not in err and "moved:" not in err
+    (item,) = _record(story)["open"]
+    assert (item["unit"], item["held"]) == ("ch2_slip.yaml", "file gone: ch2_slip.yaml no longer exists; world ch2 is now "
+                                            "in chapters/ch2.yaml, not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event e_give_key")
+
+    def place_and_fix(world):
+        _event(world, "e_give_key")["place"] = "mainland"
+        _fix_the_start(world)
+    _edit(story / "chapters/ch2.yaml", place_and_fix)
+    _code, _out, err = _run(capsys, "check", "--contract", story / "chapters/ch2.yaml")
+    assert ("closed: EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- ch2_slip.yaml is "
+            "gone and world ch2 is now in chapters/ch2.yaml: re-checked by check ch2.yaml: Lena is at mainland just before "
+            "event e_give_key now") in err.splitlines()
+    assert _record(story)["open"] == []
+
+
+def test_a_renamed_tree_keeps_its_handover_open_until_the_tree_is_checked_again(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
+    (story / "mesh_slip.yaml").rename(story / "lighthouse.yaml")
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
+    assert "closed:" not in err
+    (handoff,) = [item for item in _record(story)["open"] if item["code"] == "MESH_HANDOFF_STATE_MISMATCH"]
+    assert handoff["held"] == ("file gone: mesh_slip.yaml no longer exists; it stays open until tree lighthouse is "
+                               "checked again under its new path")
+    _code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "lighthouse.yaml")
+    assert "closed:" not in err
+    assert sorted((item["code"], item["unit"]) for item in _record(story)["open"]) == [
+        ("EVENT_RELATION_UNMET", "ch2_slip.yaml"), ("MESH_HANDOFF_STATE_MISMATCH", "lighthouse.yaml")]
 
 
 def test_a_record_that_cannot_be_read_or_written_stops_the_command(tmp_path, capsys):
@@ -365,3 +443,34 @@ def test_a_false_claim_row_closes_when_it_holds_or_is_gone_and_says_which(tmp_pa
         "re-checked by check ch2_lamp.yaml: claim row 1 (at: 21:00, holds: door_unlocked) holds now",
         "closed: CLAIM_ASSERTION_FALSE [ch2_lamp.yaml] claim row 2 is false: at: 21:00, holds: lamp_lit -- "
         "claim row 2 (at: 21:00, holds: lamp_lit) is no longer in the claim"]
+
+
+def test_a_gone_file_whose_world_is_in_two_checked_files_is_not_followed(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    (story / "ch2_slip.yaml").rename(story / "ch2_a.yaml")
+    _edit(story / "ch2_a.yaml", _fix_the_start)
+    tree = yaml.safe_load((story / "mesh_slip.yaml").read_text())
+    tree["nodes"][1:] = [{"model_id": "a", "contract": "ch2_a.yaml"}, {"model_id": "b", "contract": "ch2_fixed.yaml"}]
+    tree["nodes"][0]["contract"]["claim"]["asserts"] = [{"node": "a", "holds": "door_unlocked", "at": "21:00"}]
+    tree["edges"] = [{"edge_id": "s1", "from": "story", "to": "a", "relation": "parent_child"},
+                     {"edge_id": "s2", "from": "story", "to": "b", "relation": "parent_child"}]
+    (story / "two.yaml").write_text(yaml.safe_dump(tree, sort_keys=False))
+    # Both chapters of this tree declare world ch2 and both pass: neither is taken for the new path.
+    code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "two.yaml")
+    assert code == 0 and "closed:" not in err
+    (item,) = _record(story)["open"]
+    assert item["held"] == ("file gone: ch2_slip.yaml no longer exists; world ch2 is in more than one file this run "
+                            "checked (ch2_a.yaml, ch2_fixed.yaml), so it is not followed to any of them")
+
+
+def test_a_file_back_under_its_last_path_no_longer_says_it_is_gone(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    (story / "ch2_slip.yaml").rename(story / "ch2_away.yaml")
+    _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
+    assert _record(story)["open"][0]["held"] == GONE
+    (story / "ch2_away.yaml").rename(story / "ch2_slip.yaml")
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
+    (item,) = _record(story)["open"]
+    assert "held" not in item and "gone_since" not in item and "file gone" not in err

@@ -190,7 +190,9 @@ later command on a file under that folder, even a check of another chapter in a 
 closes only when the check that found it asks the same question of its own file again and gets a pass ("Lena is at
 mainland just before event e_give_key now"). While that check does not reach it (no relation or actor declared, an event
 without a time, an exemption, a gap there, a Guard that no longer runs) it stays open and says why; if the story changes
-so the question is no longer asked there, it closes and says what the event needs now. To talk it through with a person,
+so the question is no longer asked there, it closes and says what the event needs now. Renaming, moving or deleting the
+chapter's file closes nothing: the entry says the file is gone, naming the path it was last seen at, and moves with the
+chapter's world (`contract_id`) when that is checked under its new path. To talk it through with a person,
 draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
 
 ```console

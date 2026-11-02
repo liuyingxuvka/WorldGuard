@@ -122,7 +122,14 @@ EVENT_RELATION_UNMET` or `not re-checked: EventGuard does not run on ch2.yaml no
 the world no longer asks that question, the entry closes and says what changed (`event e_give_key no longer needs Lena
 is at mainland (it now needs: Lena holds key, Lena is at island)`, `e_unlock no longer requires lamp_lit`, `the chapters
 of hand-over ch1_ch2 no longer both name lena_on_island`, `claim row 2 (...) is no longer in the claim`). It also
-closes, saying so, when its hand-over, chapter or event is no longer in its file, or the file no longer exists. Other
+closes, saying so, when its hand-over, chapter or event is no longer in its file. A renamed, moved or deleted file
+closes nothing: its entries stay open with `held: file gone: ch2.yaml no longer exists; it stays open until world ch2
+is checked again under its new path` (`tree <mesh_id>` for a tree file) until a run checks the same world (the
+file's `contract_id`, or the tree's `mesh_id`) in a file under the same record. The same contradiction found there
+moves the entry to the new path (`moved: ... -- ch2.yaml is gone; the same contradiction is in ch2_new.yaml`, with
+`moved_from` and the first-seen time kept); a pass of the same question there closes it and names both paths; a check
+there that does not reach the question keeps it open and says why. A file moved out of the record's folder is not
+followed: its entries stay open in the old record, and the new folder gets entries of its own. Other
 FAIL rows (token, space, norm, agent, causal and conflict Guards) close when the Guard that found them runs on the file
 and finds nothing at that place; the closing line says exactly that. A run that does not check the entry's file leaves it alone. A passing run with no record writes
 nothing. A record that cannot be read or written stops the command with `WORLDGUARD_RECORD_ERROR` (exit 2, the check

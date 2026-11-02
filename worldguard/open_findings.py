@@ -12,10 +12,15 @@ e_unlock"), for the conflict check one person's places or one thing's holders, f
 the same derivation the check runs says which questions this run asked and why it asked nothing at a place
 (`relations.relation_coverage`, `relations.conflict_coverage`, `mesh.handoff_fluents`). An entry stays open while that
 check does not reach its place (no relation declared, no actor, no time, `actor_state_free`, a Guard that no longer
-runs, any other problem row there) and says why. It closes, saying exactly what changed, when its file, chapter,
-hand-over or event is gone, or when the check still runs there but the world no longer asks that question (the event
-no longer uses the thing, the chapters no longer both name the fact). A record that cannot be read or written stops
-the command (RecordError); nothing falls back to a run without it.
+runs, any other problem row there) and says why. It closes, saying exactly what changed, when its chapter, hand-over
+or event is gone from its file, or when the check still runs there but the world no longer asks that question (the
+event no longer uses the thing, the chapters no longer both name the fact).
+
+A file that is renamed, moved or deleted closes nothing. Its entries stay open and say the file is gone, naming the
+path it was last seen at, until a run checks the same world (the file's `contract_id`, or the tree's `mesh_id`) in a
+file under the same record: the same contradiction found there moves the entry to the new path with its history, and
+the check's own pass of the same question there closes it. A record that cannot be read or written stops the command
+(RecordError); nothing falls back to a run without it.
 """
 
 from __future__ import annotations
@@ -63,6 +68,7 @@ class Unit:
     handoff_questions: dict[str, tuple[frozenset, str]] = field(default_factory=dict)   # tree file only
     precondition_questions: dict[tuple[str, str], tuple[frozenset, str]] = field(default_factory=dict)
     claim_rows: dict[str, tuple[str, str]] = field(default_factory=dict)  # index -> (assertion, status)
+    world: str | None = None   # "world <contract_id>" or "tree <mesh_id>"; None when the file declares no id
 
     def name(self, folder: Path) -> str:
         relative = Path(os.path.relpath(self.path, folder)).as_posix()
@@ -157,10 +163,21 @@ def _key(unit_path: str, code: Any, place: Mapping[str, str]) -> tuple[str, ...]
     return (unit_path, str(code), place["edge_id"], place["event_id"], place["node_id"], place["subject"])
 
 
-def _item_key(folder: Path, item: Mapping[str, Any]) -> tuple[str, ...]:
-    unit, _, node = item["unit"].partition("#")
-    absolute = str((folder / unit).resolve()) + (f"#{node}" if node else "")
-    return _key(absolute, item["code"], {name: str(item.get(name) or "") for name in ("edge_id", "event_id", "node_id", "subject")})
+def _item_key(folder: Path, item: Mapping[str, Any], unit_key: str | None = None) -> tuple[str, ...]:
+    """The entry's key in its own file, or, with `unit_key`, the key the same contradiction has in that file."""
+    if unit_key is None:
+        unit, _, node = item["unit"].partition("#")
+        unit_key = str((folder / unit).resolve()) + (f"#{node}" if node else "")
+    return _key(unit_key, item["code"], {name: str(item.get(name) or "") for name in ("edge_id", "event_id", "node_id", "subject")})
+
+
+def _file_of(item: Mapping[str, Any]) -> str:
+    """The entry's file as the record names it, relative to the record's folder (without an inline chapter)."""
+    return item["unit"].partition("#")[0]
+
+
+def _world(kind: str, identity: str) -> str | None:
+    return f"{kind} {identity}" if identity.strip() else None
 
 
 def _unit_key(unit: Unit) -> str:
@@ -383,36 +400,40 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
             if row.get("status") == "FAIL":
                 found.setdefault(_key(_unit_key(unit), row.get("code"), _place(row, unit.tree)), (unit, row))
     now = _now()
-    seen: set[tuple[str, ...]] = set()
+    seen: dict[tuple[str, ...], dict[str, Any]] = {}   # a key this run found -> the open entry that holds it
     changed: set[Path] = set()
     closed: list[dict[str, Any]] = []
+    moved: list[dict[str, Any]] = []
+    gone: list[tuple[Path, dict[str, Any]]] = []
+    dropped: set[int] = set()
     for folder, data in records.items():
-        kept = []
         for item in data["open"]:
             key = _item_key(folder, item)
-            unit_file = folder / item["unit"].partition("#")[0]
             if key[0] in covered:
                 unit = covered[key[0]]
+                item.pop("gone_since", None)  # the file is back under its last path
+                changed.add(folder)
                 if key in found:
-                    seen.add(key)
+                    seen[key] = item
                     item.update(last_seen=now, runs=item.get("runs", 1) + 1)
                     item.pop("held", None)
-                    kept.append(item)
-                    changed.add(folder)
                     continue
                 is_closed, how = _judge(item, unit, unit.name(folder), run)
-            elif not unit_file.is_file():
-                is_closed, how = True, f"{item['unit'].partition('#')[0]} no longer exists"
-            else:
-                kept.append(item)  # this run did not check that file
-                continue
-            changed.add(folder)
-            if is_closed:
-                closed.append({**item, "closed": now, "how": how, "folder": str(folder)})
-            else:
-                item.update(held=how, last_checked=now)
-                kept.append(item)
-        data["open"] = kept
+                if is_closed:
+                    closed.append({**item, "closed": now, "how": how, "folder": str(folder)})
+                    dropped.add(id(item))
+                else:
+                    item.update(held=how, last_checked=now)
+            elif not (folder / _file_of(item)).is_file():
+                gone.append((folder, item))  # judged below, once every entry still in its own file is matched
+            elif "gone_since" in item:  # back under its last path, but this run did not check it
+                item.pop("gone_since")
+                item.pop("held", None)
+                changed.add(folder)
+    for folder, item in gone:
+        _follow(folder, item, units, found, seen, run, now, closed, moved, dropped, changed)
+    for folder, data in records.items():
+        data["open"] = [item for item in data["open"] if id(item) not in dropped]
         data["resolved"] = (data["resolved"] + [{k: v for k, v in item.items() if k != "folder"}
                                                 for item in closed if item["folder"] == str(folder)])[-50:]
     opened = []
@@ -430,6 +451,8 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
                 item["guard"] = row["guard"]
             if _question(row):
                 item["question"] = _question(row)
+            if unit.world is not None:
+                item["world"] = unit.world
             data["open"].append(item)
             opened.append(item)
         changed.add(target)
@@ -437,7 +460,60 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
         if folder in changed:
             _write(folder, records[folder])
     still_open = [{**item, "folder": str(folder)} for folder, data in records.items() for item in data["open"]]
-    return {"opened": opened, "closed": closed, "open": still_open}
+    return {"opened": opened, "closed": closed, "moved": moved, "open": still_open}
+
+
+def _follow(folder, item, units, found, seen, run, now, closed, moved, dropped, changed) -> None:
+    """An entry whose file is gone stays open, saying so with the path it was last seen at, until a run checks its
+    world (the file's contract_id, or the tree's mesh_id) in a file under the same record. There the same
+    contradiction moves the entry to the new path; the check's own pass of the same question closes it."""
+    last, world = _file_of(item), item.get("world")
+    node = item["unit"].partition("#")[2]
+    candidates = sorted((unit for unit in units if world is not None and unit.world == world and unit.node == node
+                         and unit.path.is_relative_to(folder)), key=_unit_key)
+    hits = [(unit, key) for unit in candidates for key in [_item_key(folder, item, _unit_key(unit))] if key in found]
+    if hits:
+        unit, key = hits[0]
+        new = unit.name(folder)
+        history = [*item.get("moved_from", []), item["unit"]]
+        if key in seen:  # the new path already has this contradiction on record: one entry keeps both histories
+            keeper = seen[key]
+            keeper.update(first_seen=min(keeper["first_seen"], item["first_seen"]), runs=keeper["runs"] + item["runs"],
+                          moved_from=[*history, *keeper.get("moved_from", [])])
+            dropped.add(id(item))
+        else:
+            keeper = item
+            item.update(unit=new, moved_from=history, last_seen=now, runs=item["runs"] + 1,
+                        established_by=established_by(found[key][1], unit))
+            item.pop("held", None)
+            item.pop("gone_since", None)
+            seen[key] = item
+        moved.append({**keeper, "from": last})
+        changed.add(folder)
+        return
+    if len(candidates) == 1:
+        unit = candidates[0]
+        new = unit.name(folder)
+        is_closed, how = _judge(item, unit, new, run)
+        if is_closed:
+            closed.append({**item, "closed": now, "how": f"{last} is gone and {world} is now in {new}: {how}",
+                           "folder": str(folder)})
+            dropped.add(id(item))
+            changed.add(folder)
+            return
+        held = f"file gone: {last} no longer exists; {world} is now in {new}, {how}"
+    elif candidates:
+        held = (f"file gone: {last} no longer exists; {world} is in more than one file this run checked "
+                f"({', '.join(unit.name(folder) for unit in candidates)}), so it is not followed to any of them")
+    elif world is not None:
+        held = f"file gone: {last} no longer exists; it stays open until {world} is checked again under its new path"
+    else:
+        held = (f"file gone: {last} no longer exists; its world declared no contract_id or mesh_id, so it cannot be "
+                "followed to a new path")
+    if item.get("held") != held or "gone_since" not in item:
+        item["held"] = held
+        item.setdefault("gone_since", now)
+        changed.add(folder)
 
 
 def render(change: Mapping[str, Any]) -> str:
@@ -457,6 +533,9 @@ def render(change: Mapping[str, Any]) -> str:
             note = f"; {item['held']}" if item.get("held") else ""
             lines.append(f"  {item['code']} [{item['unit']}] {item['summary']}" + (f" -- established by {origin}" if origin else "")
                          + f" (open since {item['first_seen']}{note})")
+    for item in change["moved"]:
+        lines.append(f"moved: {item['code']} [{item['unit']}] {item['summary']} -- {item['from']} is gone; the same "
+                     f"contradiction is in {item['unit']}")
     for item in change["closed"]:
         lines.append(f"closed: {item['code']} [{item['unit']}] {item['summary']} -- {item['how']}")
     return "\n".join(lines)
@@ -468,7 +547,7 @@ def contract_units(path: str | Path, contract, report) -> list[Unit]:
     events = {str(event.get("event_id")): event for event in contract.inputs.get("events", [])
               if isinstance(event, Mapping) and event.get("event_id")}
     return [Unit(path=path, rows=list(report.gaps), guards=frozenset(report.checked.get("guards", [])), events=events,
-                 chapter={"chapter": path.name}, **_questions(contract, report))]
+                 chapter={"chapter": path.name}, world=_world("world", contract.contract_id), **_questions(contract, report))]
 
 
 def _questions(contract, report) -> dict[str, Any]:
@@ -494,7 +573,8 @@ def mesh_units(path: str | Path, data: Mapping[str, Any], mesh, report) -> list[
     handoffs = {edge.edge_id: handoff_fluents(contracts[edge.from_id], contracts[edge.to_id]) for edge in mesh.edges
                 if edge.relation == "continues" and edge.from_id in contracts and edge.to_id in contracts}
     units = [Unit(path=path, rows=[finding.to_dict() for finding in report.findings], edges=frozenset(e.edge_id for e in mesh.edges),
-                  nodes=frozenset(n.model_id for n in mesh.nodes), mesh=mesh, tree=True, handoff_questions=handoffs)]
+                  nodes=frozenset(n.model_id for n in mesh.nodes), mesh=mesh, tree=True, handoff_questions=handoffs,
+                  world=_world("tree", mesh.mesh_id))]
     for node in mesh.nodes:
         node_report = report.node_reports.get(node.model_id)
         if node.contract is None or node_report is None:
@@ -505,14 +585,14 @@ def mesh_units(path: str | Path, data: Mapping[str, Any], mesh, report) -> list[
         units.append(Unit(path=file or path, node="" if file else node.model_id, rows=list(node_report.gaps),
                           guards=frozenset(node_report.checked.get("guards", [])), events=events,
                           chapter={"chapter": node.model_id, **({"source": node.source} if node.source else {})},
-                          **_questions(node.contract, node_report)))
+                          world=_world("world", node.contract.contract_id), **_questions(node.contract, node_report)))
     merged: dict[str, Unit] = {}
     for unit in units:
         key = _unit_key(unit)
         if key in merged:  # one chapter file used by two nodes: every row of both runs counts, and only what both asked
             first = merged[key]
             merged[key] = Unit(path=first.path, node=first.node, rows=first.rows + unit.rows, guards=first.guards & unit.guards,
-                               events=first.events, chapter=first.chapter,
+                               events=first.events, chapter=first.chapter, world=first.world,
                                relation_questions=_both(first.relation_questions, unit.relation_questions),
                                conflict_questions=_both(first.conflict_questions, unit.conflict_questions),
                                precondition_questions=_both(first.precondition_questions, unit.precondition_questions),
