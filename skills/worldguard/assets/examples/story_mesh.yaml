@@ -16,6 +16,8 @@ nodes:
       relations:
         key_with_iris: {holds: [Iris, key]}
         key_with_mara: {holds: [Mara, key]}
+        iris_in_hall: {at: [Iris, hall]}
+        mara_in_hall: {at: [Mara, hall]}
     claim:
       claim_id: mara_has_key
       asserts:
@@ -26,9 +28,15 @@ nodes:
         initial_states:
         - key_with_iris
         - door_locked
+        - iris_in_hall
+        - mara_in_hall
       events:
       - event_id: hand_over_key
         at: t1
+        actor: Iris
+        with: [Mara]
+        place: hall
+        uses: [key]
         requires:
         - key_with_iris
         initiates:
@@ -42,6 +50,7 @@ nodes:
       relations:
         key_with_iris: {holds: [Iris, key]}
         key_with_mara: {holds: [Mara, key]}
+        mara_in_hall: {at: [Mara, hall]}
     claim:
       claim_id: door_is_open
       asserts:
@@ -52,9 +61,13 @@ nodes:
         initial_states:
         - key_with_mara
         - door_locked
+        - mara_in_hall
       events:
       - event_id: unlock
         at: t2
+        actor: Mara
+        place: hall
+        uses: [key]
         requires:
         - key_with_mara
         - door_locked

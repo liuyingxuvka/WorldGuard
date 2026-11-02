@@ -182,3 +182,71 @@ def test_event_place_and_uses_are_validated(field, value, message):
     del _event(contract, "e_unlock")["actor"]
     with pytest.raises(ValueError, match="names place or uses but no actor"):
         GuardContract.from_dict(contract)
+
+
+def _without_actors(contract):
+    for event in contract["inputs"]["events"]:
+        for field in ("actor", "with", "place", "uses"):
+            event.pop(field, None)
+    return contract
+
+
+def test_a_world_with_relations_needs_every_event_to_name_its_actor():
+    # The round-12 review's escape: the declared world, with no event naming anyone, used to pass.
+    report = run_worldguard(_without_actors(_load("ch2_declared.yaml")))
+    rows = _rows(report, "EVENT_ACTOR_STATE_UNCHECKED")
+    assert [(row["event_id"], row["missing"]) for row in rows] == [
+        ("e_give_key", ["actor"]), ("e_tom_ferry", ["actor"]), ("e_unlock", ["actor"])]
+    assert all("declares who holds what or who is where" in row["message"] for row in rows)
+    assert report.status.value == "GAP"
+
+
+def test_a_world_that_names_no_actor_and_declares_no_relation_says_what_is_not_checked(capsys):
+    # w3a with every actor field removed: nothing ties a fact to a person, so nothing can be checked; the report says so.
+    contract = _without_actors(_load("w3/w3a_naive.yaml"))
+    report = run_worldguard(contract)
+    assert ("who holds what and who is where are not checked: no event names an actor and "
+            "world_model.relations declares nothing") in report.scope_limits
+    assert report.status.value == "PASS"
+
+
+def test_an_event_whose_changed_facts_no_relation_ties_to_anything_is_listed():
+    # The review's second escape: Lena turns the key on the mainland, using nothing. The door has no declared place,
+    # so only Lena's own place can be checked; the report names the event and the facts.
+    contract = _load("ch2_declared.yaml")
+    unlock = _event(contract, "e_unlock")
+    unlock["uses"], unlock["place"] = [], "mainland"
+    report = run_worldguard(contract)
+    assert report.status.value == "PASS"
+    (line,) = [line for line in report.scope_limits if line.startswith("place checked only")]
+    assert line == ("place checked only for the people and things an event names: e_unlock (Lena at mainland) changes "
+                    "door_locked, door_unlocked, which world_model.relations ties to no one and nothing; declare where "
+                    "a thing is ({at: [thing, place]}) and name it in with to check it")
+    # Declaring where the door is and naming it catches the wrong place.
+    contract["world_model"]["relations"]["door_on_island"] = {"at": ["door", "island"]}
+    contract["inputs"]["event_model"]["initial_states"].append("door_on_island")
+    unlock["with"] = ["door"]
+    report = run_worldguard(contract)
+    (row,) = _rows(report, "EVENT_RELATION_UNDECLARED")
+    assert (row["event_id"], row["subject"], row["object"]) == ("e_unlock", "door", "mainland")
+    assert report.status.value == "GAP"
+
+
+def test_untimed_events_say_the_relation_replay_did_not_run():
+    # A causal-only world (EventGuard not requested) used to drop the relation replay without a word.
+    contract = _declared_slip()
+    del _event(contract, "e_give_key")["at"]
+    contract["claim"] = {"asserts": [{"variable": "x", "op": ">=", "value": 0}]}
+    contract["inputs"]["causal_model"] = {"variables": ["x"], "equations": {"x": "1"}, "scenarios": {"base": {}}}
+    contract.pop("variants", None)
+    report = run_worldguard(contract)
+    (row,) = _rows(report, "WORLD_RELATION_CHECK_NOT_RUN")
+    assert row["status"] == "GAP" and row["untimed_events"] == ["e_give_key"]
+    assert report.status.value != "PASS"
+
+
+def test_a_null_relations_block_is_an_input_error():
+    contract = _load("ch2_fixed.yaml")
+    contract["world_model"]["relations"] = None
+    with pytest.raises(ValueError, match="must map fluent ids"):
+        GuardContract.from_dict(contract)

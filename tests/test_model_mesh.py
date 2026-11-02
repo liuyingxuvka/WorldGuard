@@ -5,6 +5,7 @@ import yaml
 from worldguard import GuardContract, ModelMeshContract, MeshReport, derive_required_guards, run_model_mesh
 from worldguard.cli import main
 from worldguard.status import GuardStatus
+from worldguard.relations import NOTHING_DECLARED
 
 @pytest.mark.parametrize('payload', [{'mesh_id': 'm', 'semantic_coverage_contract': {}}, {'mesh_id': 'm', 'coverage_contract': {}}, {'mesh_id': 'm', 'semantic_coverage': {'expected_node_ids': []}}, {'mesh_id': 'm', 'semantic_coverage': {'excluded_nodes': []}}, {'mesh_id': 'm', 'semantic_coverage': {'per_object_coverage': {}}}, {'mesh_id': 'm', 'semantic_coverage': {'expected_child_ids': []}}, {'mesh_id': 'm', 'semantic_coverage': {'horizon': {'timepoint_ids': ['t0']}}}])
 def test_retired_mesh_fields_fail_instead_of_falling_back(payload):
@@ -376,9 +377,9 @@ def test_continues_compares_exactly_the_fluents_both_chapters_name(first, second
         name = row['evidence']['fluent']
         assert row['evidence'] == {'fluent': name, 'from_end': states[name][0] == 'true',
                                    'to_initial': states[name][1]}
-    assert report.scope_limits == sorted(
+    assert report.scope_limits == sorted([NOTHING_DECLARED, *(
         f'continues next: b starts with {name}, which a never names'
-        for name, (before, active) in states.items() if before == 'unnamed' and active)
+        for name, (before, active) in states.items() if before == 'unnamed' and active)])
 
 
 def _lighthouse_mesh(name):

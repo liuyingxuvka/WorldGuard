@@ -154,15 +154,15 @@ python skills/worldguard/scripts/run_worldguard.py check --contract actual.json
 ### 多章：一棵树
 
 一章自己可以前后一致，却和上一章对不上。比如 AI 写第 2 章时，让 Lena 一开始就在岛上（忘了她坐渡船走了）。
-第 2 章单独检查是通过的；树把第 1 章的结尾接到第 2 章的开头，就抓住了：
-
-
+树把第 1 章的结尾接到第 2 章的开头，就抓住了（`MESH_HANDOFF_STATE_MISMATCH`）。现在第 2 章单独检查也会失败：交钥匙的事件写着
+发生在大陆，而这一章开头让 Lena 在岛上（`EVENT_RELATION_UNMET`，`Lena is not at mainland at 18:00 (at island)`）。
+这棵树的时间线开头几行：
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py timeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml | head -3
+$ python skills/worldguard/scripts/run_worldguard.py timeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml
 story PASS (tree FAIL)
   ch1 PASS -> continues ch2 FAIL MESH_HANDOFF_STATE_MISMATCH
-  ch2 PASS
+  ch2 FAIL
 ```
 
 `mesh-check` 会把这个矛盾记在树旁边的 `.worldguard/open.json` 里，连同确立它的章节（第 1 章 `ch1 p3` 的渡船、第 2 章的开头）。
@@ -234,9 +234,11 @@ WorldGuard 管故事、行程、计划和流程。软件代码和它的行为，
 **它仍可能漏掉的。** 如果 AI 把故事里的错误原样写进了世界，世界本身是自洽的，什么也不会失败。第十一轮的试验里，开门事件
 只要求“门是锁着的”，这一章就通过了；v0.8.0 改为在事实名里找执行者的名字，六种省事的写法里还有五种照样通过（换一条执行者的事实、
 驼峰命名、首字母缩写、不写执行者）。从 v0.9.0 起，既不从名字猜，也不信 `requires`：有执行者的事件必须写 `place` 和 `uses`，
-WorldGuard 按 `world_model.relations` 重放整个世界来核对（否则是 `GAP EVENT_ACTOR_STATE_UNCHECKED`）。确实和这些都无关的事件
-写 `actor_state_free: <理由>`，报告和时间线都会印出理由。仍由建模者负责的：写对地点和用到的东西（写错的 `place` 按写的去查），
-以及把这些关系声明出来。
+WorldGuard 按 `world_model.relations` 重放整个世界来核对（否则是 `GAP EVENT_ACTOR_STATE_UNCHECKED`）。世界只要声明了任何一条关系，
+每个事件都必须写出执行者。确实和谁的状态都无关的事件写 `actor_state_free: <理由>`，报告和时间线都会印出理由。声明够不到的两种情况
+会写进 `scope_limits`，而不是悄悄通过：一个世界既没有执行者也没有声明任何关系（“谁拿着什么、谁在哪里都没有检查”）；一个事件改变的
+事实没有任何关系把它和人或东西连起来（Lena 在大陆“开”灯塔的门：只能查她自己在哪儿，因为门在哪儿没有声明；声明
+`{at: [door, island]}` 并把门写进 `with`，写错的地点就是 GAP）。仍由建模者负责的：写对地点和用到的东西，以及把这些关系声明出来。
 
 **测过什么，没测过什么。**
 - 设计包报告：本版本设计期间做过一次小试验，就是上面两章灯塔故事，埋了一个错误。WorldGuard 点出了那件不可能的事，以及它缺的
@@ -244,7 +246,8 @@ WorldGuard 按 `world_model.relations` 重放整个世界来核对（否则是 `
   执行者状态检查的原因。同一次试验还发现，第 2 章才出场的人物会被误报为交接不一致，本版本已修正。
 - 设计包报告：把两章写成世界，用的 YAML 字符数大约是故事本身的三倍；读和写加起来大约 9,000 个 token。
 - v0.9.0 重新跑过：第十二轮那六种灯塔错误的写法（`tests/fixtures/trials/lighthouse_key/w3/`）现在都是 GAP，每种都有一行落在
-  开门事件上；写了 `actor_state_free` 的那一种会印出理由。声明过关系的这一章按上面两条关系失败。
+  开门事件上；写了 `actor_state_free` 的那一种会印出理由。声明过关系的这一章按上面两条关系失败。同一章去掉所有事件的执行者是 GAP；
+  把开门挪到大陆、什么也不用，这一章通过，但这个事件会列在 `scope_limits` 里。
 - 没测过：这些检查在没有错误的故事上会误报多少。目前只在试验的几章和仓库自带的世界上试过；在那里声明关系每条事实一行。
 
 

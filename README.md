@@ -165,16 +165,16 @@ python skills/worldguard/scripts/run_worldguard.py check --contract actual.json
 ### Chapters: a tree
 
 A chapter can be consistent on its own and still contradict the chapter before it. Suppose the AI starts chapter 2 with
-Lena on the island (it forgot that she took the ferry). Chapter 2 alone passes; the tree joins the end of chapter 1 to
-the start of chapter 2 and catches it:
-
-
+Lena on the island (it forgot that she took the ferry). The tree joins the end of chapter 1 to the start of chapter 2
+and catches it (`MESH_HANDOFF_STATE_MISMATCH`). Chapter 2 also fails on its own now: its hand-over says it happens on the
+mainland, and the chapter starts Lena on the island (`EVENT_RELATION_UNMET`, `Lena is not at mainland at 18:00 (at
+island)`). The first lines of the tree's timeline:
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py timeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml | head -3
+$ python skills/worldguard/scripts/run_worldguard.py timeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml
 story PASS (tree FAIL)
   ch1 PASS -> continues ch2 FAIL MESH_HANDOFF_STATE_MISMATCH
-  ch2 PASS
+  ch2 FAIL
 ```
 
 `mesh-check` keeps that contradiction on record in `.worldguard/open.json` beside the tree, with the chapters that set it
@@ -254,10 +254,14 @@ consistent and nothing fails. In the round-11 trial the unlock event required on
 chapter passed; v0.8.0 then matched actor names inside fact names, which five of six cheap rewrites still slipped past
 (another actor fact, camel case, initials, no actor). From v0.9.0 nothing is guessed from names or taken from
 `requires`: an event with an actor must say `place` and `uses`, and WorldGuard checks them against the declared
-`world_model.relations` by replaying the world (otherwise `GAP EVENT_ACTOR_STATE_UNCHECKED`). An event that truly
-depends on neither says so with `actor_state_free: <reason>`, which the report and the timeline print. What remains the
-modeller's job: naming the right place and the things an event uses (a wrong `place` is checked as written), and
-declaring the relations at all.
+`world_model.relations` by replaying the world (otherwise `GAP EVENT_ACTOR_STATE_UNCHECKED`). Once a world declares any
+relation, every event must name its actor. An event that truly depends on no one's state says so with
+`actor_state_free: <reason>`, which the report and the timeline print. Two things the declarations cannot reach are
+written into `scope_limits` instead of passing silently: a world that names no actor and declares no relation ("who
+holds what and who is where are not checked"), and an event that changes facts no relation ties to anyone or anything
+(Lena "unlocks" the door on the mainland: only her own place is checked, because the door has no declared place;
+declare `{at: [door, island]}` and name the door in `with`, and the wrong place is a GAP). What remains the modeller's
+job: naming the right place and the things an event uses, and declaring the relations at all.
 
 **What has been measured, and what has not.**
 - Reported in the design packet: one small trial during the design of this release, on the two lighthouse chapters above, with one planted
@@ -269,7 +273,9 @@ declaring the relations at all.
   about 9,000 tokens of reading and output in total.
 - Re-run for v0.9.0: the six round-12 variants of the lighthouse mistake (`tests/fixtures/trials/lighthouse_key/w3/`)
   are all GAP now, each with a row on the unlock event, except the one that states `actor_state_free`, whose reason is
-  printed; the declared chapter fails with the two relations above.
+  printed; the declared chapter fails with the two relations above. The declared chapter with no actor on any event is
+  GAP; the same chapter with the unlock moved to the mainland and using nothing passes, with that event listed in
+  `scope_limits`.
 - Not measured: how often these checks fire on stories that are fine. They were tried on the trial chapters and the
   repository's own worlds only; declaring the relations there took one line per fact.
 

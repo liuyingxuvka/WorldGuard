@@ -5,7 +5,10 @@ An event with an `actor` says where it happens (`place`) and what the actor uses
 declarations the tool derives what must hold just before the event (the actor holds each used thing; the
 actor and every `with` participant are at the place) and replays the world to check it. The event's own
 `requires` and the spelling of fluent names play no part. The same replay finds two declared facts that
-cannot both hold: one person at two places, or one thing with two holders.
+cannot both hold: one person at two places, or one thing with two holders. Once a world declares any relation,
+every event names its actor (or says `actor_state_free: <reason>`). What the declarations cannot reach is said
+in `scope_limits`: a world that names no actor and declares nothing, and an event that changes facts no
+relation ties to anyone or anything.
 """
 
 from __future__ import annotations
@@ -18,13 +21,13 @@ from .clock import time_key
 from .semantic import event_precondition_failures, event_replay, fluent_values
 
 RELATION_KINDS = ("holds", "at")
+NOTHING_DECLARED = ("who holds what and who is where are not checked: no event names an actor and "
+                    "world_model.relations declares nothing")
 _SHAPE = "{holds: [holder, thing]} or {at: [who, place]}"
 
 
 def parse_relations(raw: Any) -> dict[str, tuple[str, str, str]]:
     """{fluent: (kind, subject, object)} from world_model.relations; anything else is an input error."""
-    if raw is None:
-        return {}
     if not isinstance(raw, Mapping):
         raise ValueError(f"world_model.relations must map fluent ids to {_SHAPE}")
     parsed: dict[str, tuple[str, str, str]] = {}
@@ -80,9 +83,11 @@ def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple
             continue
         actor = event.get("actor")
         if not actor:
-            if actors_named:
+            if relations or actors_named:
+                why = ("This world declares who holds what or who is where" if relations
+                       else "Events in this world name their actors")
                 rows.append(_row("EVENT_ACTOR_STATE_UNCHECKED", "GAP", event,
-                                 "Events in this world name their actors, but this one names none; name its actor, "
+                                 f"{why}, but this event names no actor; name its actor, "
                                  "or give actor_state_free: <reason> when nobody acts.", actor=None, missing=["actor"]))
             continue
         missing = [name for name in ("place", "uses") if name not in event]
@@ -107,6 +112,7 @@ def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple
                 needed.setdefault((str(event.get("scenario_id") or ""), str(event.get("event_id"))), {})[fluent] = key
     if not needed:
         return rows
+    # A scenario with an untimed event is not replayed here; relation_conflicts reports it once.
     derived = [{**event, "requires": sorted(needed.get((str(event.get("scenario_id") or ""), str(event.get("event_id"))), {}))}
                for event in events]
     initial = inputs.get("event_model", {}).get("initial_states", []) if isinstance(inputs.get("event_model"), Mapping) else []
@@ -133,7 +139,10 @@ def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple
 
 
 def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]]) -> list[dict[str, Any]]:
-    """FAIL when, after all events of one instant, a person is at two places or a thing has two holders."""
+    """FAIL when, after all events of one instant, a person is at two places or a thing has two holders.
+
+    Untimed events cannot be ordered, so that scenario is not replayed: GAP WORLD_RELATION_CHECK_NOT_RUN says so
+    (the derived event preconditions are not replayed either), whatever Guards the claim requests."""
     if not relations:
         return []
     events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
@@ -142,8 +151,15 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
     rows: list[dict[str, Any]] = []
     for scenario in scenarios:
         applicable = [event for event in events if not event.get("scenario_id") or str(event["scenario_id"]) == scenario]
-        if any("at" not in event for event in applicable):
-            continue  # untimed events cannot be ordered; EventGuard reports the missing time
+        untimed = [str(event.get("event_id", "")) for event in applicable if "at" not in event]
+        if untimed:
+            row = {"code": "WORLD_RELATION_CHECK_NOT_RUN", "status": "GAP", "untimed_events": untimed,
+                   "message": f"{', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time, so who holds "
+                              "what and who is where were not replayed" + (f" in scenario {scenario}" if scenario else "")}
+            if scenario:
+                row["scenario_id"] = scenario
+            rows.append(row)
+            continue
         established = {fluent: {"event_id": None, "at": None} for fluent in fluent_values(initial)}
         states = [(None, None, frozenset(fluent_values(initial)))]
         for instant, group in groupby(event_replay(applicable, initial, scenario, skip_illegal=True),
@@ -179,4 +195,30 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
     return rows
 
 
-__all__ = ["RELATION_KINDS", "parse_relations", "event_things", "actor_relation_rows", "relation_conflicts"]
+def relation_scope_limits(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]]) -> list[str]:
+    """What the declarations cannot check, computed from the world itself; empty when nothing is out of reach."""
+    events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
+    if not events:
+        return []
+    if not relations:
+        if any(event.get("actor") for event in events):
+            return []  # actor events without relations are GAP EVENT_RELATION_UNDECLARED
+        return [NOTHING_DECLARED]
+    loose = []
+    for event in events:
+        if not event.get("actor") or "actor_state_free" in event:
+            continue
+        changed = [name for key in ("initiates", "terminates") for name in fluent_values(event.get(key))]
+        untied = sorted(dict.fromkeys(name for name in changed if name not in relations))
+        if untied:
+            where = f" at {event['place']}" if event.get("place") else ""
+            loose.append(f"{event.get('event_id')} ({event['actor']}{where}) changes {', '.join(untied)}")
+    if not loose:
+        return []
+    return ["place checked only for the people and things an event names: " + "; ".join(loose)
+            + ", which world_model.relations ties to no one and nothing; declare where a thing is "
+            "({at: [thing, place]}) and name it in with to check it"]
+
+
+__all__ = ["RELATION_KINDS", "NOTHING_DECLARED", "parse_relations", "event_things", "actor_relation_rows", "relation_conflicts",
+           "relation_scope_limits"]

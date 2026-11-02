@@ -328,12 +328,12 @@ class WorldModel:
     def from_dict(cls, data: dict[str, Any]) -> 'WorldModel':
         if 'artifact_version' in data:
             raise ValueError('world_model.artifact_version is retired; migrate the input to world_model.model_version')
-        parse_relations(data.get('relations'))
+        parse_relations(data.get('relations', {}))
         return cls(
             model_id=str(data.get('model_id', '')),
             model_version=str(data.get('model_version', '')),
             entities=dict(data.get('entities', {})),
-            relations=dict(data.get('relations') or {}),
+            relations=dict(data.get('relations', {})),
             assumptions=list(data.get('assumptions', [])),
             scope_limits=list(data.get('scope_limits', [])),
             data=dict(data),

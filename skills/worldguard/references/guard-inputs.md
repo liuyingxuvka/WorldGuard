@@ -184,9 +184,16 @@ the actor must hold; `[]` when nothing). WorldGuard derives these preconditions 
 world, whatever the fluents are called and whatever `requires` lists: an unmet one is FAIL `EVENT_RELATION_UNMET`, which
 names the relation and what holds instead (`Lena does not hold key at 21:00 (held by Tom)`). A fact the event already
 lists in `requires` is reported once, by EventGuard. A missing `place` or `uses` is GAP `EVENT_ACTOR_STATE_UNCHECKED`
-(`missing` lists them); a place or thing no relation covers is GAP `EVENT_RELATION_UNDECLARED`. When events name actors,
-an event without one is also GAP `EVENT_ACTOR_STATE_UNCHECKED` (`missing: [actor]`). A nonempty `actor_state_free:
-<reason>` exempts an event; the reason is printed in unit and tree `scope_limits` and on the event's timeline line.
+(`missing` lists them); a place or thing no relation covers is GAP `EVENT_RELATION_UNDECLARED`. When the world declares
+any relation, or other events name actors, an event without one is also GAP `EVENT_ACTOR_STATE_UNCHECKED` (`missing:
+[actor]`). A nonempty `actor_state_free: <reason>` exempts an event; the reason is printed in unit and tree
+`scope_limits` and on the event's timeline line. `relations` present but empty-valued (`relations:` with nothing, or
+`null`) is an input error. What the declarations cannot reach goes into `scope_limits`, computed from the world: a
+world with events, no actor and no relation gets `who holds what and who is where are not checked: ...`; an actor event
+that initiates or terminates a fact no relation declares is listed under `place checked only for the people and things
+an event names: ...` with the place it claims. To check where a thing is acted on, declare its place (`door_on_island:
+{at: [door, island]}`) and name it in `with`; then a wrong place is GAP `EVENT_RELATION_UNDECLARED`. An event without
+`at` stops the replay of its scenario: GAP `WORLD_RELATION_CHECK_NOT_RUN` lists the untimed events, whatever Guards run.
 After each instant, a person at two declared places or a thing with two holders is FAIL `WORLD_RELATION_CONFLICT`, with
 the event (and source) that established each fact. These checks run regardless of requested Guards. Like a token
 mismatch, an `EVENT_RELATION_UNMET` event still changes the replayed state; only failed `requires` block effects.

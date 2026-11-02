@@ -13,7 +13,7 @@ from .status import GuardStatus, aggregate_statuses
 from .timeline import timeline
 from .clock import time_key
 from .semantic import fluent_values, token_replay
-from .relations import actor_relation_rows, event_things, parse_relations, relation_conflicts
+from .relations import actor_relation_rows, event_things, parse_relations, relation_conflicts, relation_scope_limits
 from .variants import apply_variant
 
 
@@ -296,6 +296,7 @@ def qualify_guard_contract(contract, *, context=None):
     relations = parse_relations(contract.world_model.relations)
     gaps.extend(actor_relation_rows(contract.inputs, relations, requires_checked='EventGuard' in derived))
     gaps.extend(relation_conflicts(contract.inputs, relations))
+    scope_limits.extend(relation_scope_limits(contract.inputs, relations))
     if contract.world_model.entities:
         inputs = contract.inputs
         used = set(inputs.get("beliefs", {})) | set(inputs.get("resources", {}).get("unique", []))
