@@ -12,6 +12,10 @@ nodes:
 - model_id: chapter1
   contract:
     contract_id: key_handoff
+    world_model:
+      relations:
+        key_with_iris: {holds: [Iris, key]}
+        key_with_mara: {holds: [Mara, key]}
     claim:
       claim_id: mara_has_key
       asserts:
@@ -34,6 +38,10 @@ nodes:
 - model_id: chapter2
   contract:
     contract_id: unlock_door
+    world_model:
+      relations:
+        key_with_iris: {holds: [Iris, key]}
+        key_with_mara: {holds: [Mara, key]}
     claim:
       claim_id: door_is_open
       asserts:

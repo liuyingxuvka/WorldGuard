@@ -140,4 +140,4 @@ def test_skill_files_name_only_existing_commands(monkeypatch):
             for option in re.findall(r"(?<![\w-])--[a-z][a-z-]*", tail):
                 assert option in valid, (path, name, option)
             seen.add(name)
-    assert seen == {"check", "mesh-check", "compare", "timeline"}
+    assert seen == {"check", "mesh-check", "compare", "timeline", "lifeline"}

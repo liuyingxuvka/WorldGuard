@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import runpy
+import shutil
 import sys
 import tempfile
 
@@ -234,9 +235,11 @@ def conformance():
     small_tree = runpy.run_path(str(ROOT / 'tests/test_model_mesh.py'))['continued_tree']
     mismatches = []
     with tempfile.TemporaryDirectory(prefix='mesh-handoff-replay-') as folder:
+        # mesh-check records a failing tree's contradictions next to it, so replay copies of the fixtures.
+        fixtures = shutil.copytree(ROOT / 'tests/fixtures/trials/mesh_continues', Path(folder) / 'mesh_continues')
         for request in CASES:
             if request.case.endswith('.yaml'):
-                path = ROOT / 'tests/fixtures/trials/mesh_continues' / request.case
+                path = fixtures / request.case
             else:
                 data = small_tree()
                 if request.case == 'unrelated':

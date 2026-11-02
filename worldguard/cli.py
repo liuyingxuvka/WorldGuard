@@ -44,6 +44,37 @@ def _input_error(operation, input_path, exc):
     return 2
 
 
+def _open_lines(folder):
+    """The folder's still-open contradictions as text; empty when none are recorded."""
+    from .open_findings import load, render
+
+    return render(load(folder)["open"], where=str(folder))
+
+
+def _show_on_stderr(text):
+    if text:
+        print(text, file=sys.stderr)
+
+
+def _still_there(mesh):
+    """Whether a recorded contradiction's chapter, edge and event are still in the tree."""
+    nodes = {node.model_id: node for node in mesh.nodes}
+    edges = {edge.edge_id for edge in mesh.edges}
+
+    def exists(item):
+        if item.get("edge_id") and item["edge_id"] not in edges:
+            return False
+        node = nodes.get(item.get("node_id")) if item.get("node_id") else None
+        if item.get("node_id") and node is None:
+            return False
+        if item.get("event_id") and node is not None and node.contract is not None:
+            return any(isinstance(event, dict) and event.get("event_id") == item["event_id"]
+                       for event in node.contract.inputs.get("events", []))
+        return True
+
+    return exists
+
+
 def _example_path(name):
     filename = {"scene": "scene_locked_door.yaml", "trip": "trip_ferry.yaml", "story": "story_mesh.yaml"}[name]
     package = Path(__file__).resolve().parent
@@ -92,6 +123,13 @@ def _run(argv):
     timeline_parser.add_argument("--scenario")
     timeline_parser.add_argument("--full", action="store_true", help="print the full state on every timeline step")
     timeline_parser.add_argument("--json", action="store_true", help="print the complete timeline structure")
+    life = commands.add_parser("lifeline", help="Draw one character's or thing's life from the world model (Mermaid).")
+    choice = life.add_mutually_exclusive_group(required=True)
+    choice.add_argument("--contract")
+    choice.add_argument("--mesh")
+    choice.add_argument("--example", choices=["scene", "trip", "story"])
+    life.add_argument("--of", required=True, metavar="ENTITY", help="the character, thing or place to follow")
+    life.add_argument("--all", action="store_true", help="draw every step instead of folding long middles")
     comparison = commands.add_parser("compare", help="Compare supplied observations with a world or model tree.")
     choice = comparison.add_mutually_exclusive_group(required=True)
     choice.add_argument("--contract")
@@ -120,6 +158,29 @@ def _run(argv):
             return _input_error("compare", f"{path} / {args.observed}", exc)
         print(dump_json(result))
         return 0 if result["status"] == "PASS" else 1
+    if args.command == "lifeline":
+        from .contracts import GuardContract
+        from .kernel import run_worldguard
+        from .lifeline import DEFAULT_LIMIT, lifeline, render_mermaid
+        from .mesh import ModelMeshContract, run_model_mesh
+
+        try:
+            if args.example:
+                key = "mesh" if args.example == "story" else "contract"
+                setattr(args, key, str(_example_path(args.example)))
+            if args.mesh:
+                mesh = ModelMeshContract.from_dict(load_mapping(args.mesh), base_dir=Path(args.mesh).resolve().parent)
+                view = lifeline(args.of, mesh=mesh, report=run_model_mesh(mesh), limit=None if args.all else DEFAULT_LIMIT)
+            else:
+                contract = GuardContract.from_dict(load_mapping(args.contract))
+                view = lifeline(args.of, contract=contract, report=run_worldguard(contract), limit=None if args.all else DEFAULT_LIMIT)
+            text = render_mermaid(view)
+            notice = "" if args.example else _open_lines(Path(args.mesh or args.contract).resolve().parent)
+        except (OSError, UnicodeError, ValueError) as exc:
+            return _input_error("lifeline", args.mesh or args.contract or args.example, exc)
+        print(text)
+        _show_on_stderr(notice)
+        return 0
     if args.command == "timeline":
         from .contracts import GuardContract
         from .kernel import run_worldguard
@@ -158,8 +219,13 @@ def _run(argv):
                 report = run_worldguard(contract)
                 view = timeline(contract, scenario=args.scenario, report=report)
                 text = dump_json(view) if args.json else render_timeline_text(view, full=args.full)
+            notice = "" if args.example else _open_lines(Path(args.mesh or args.contract).resolve().parent)
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("timeline", args.mesh or args.contract or args.example, exc)
+        if args.json:
+            _show_on_stderr(notice)
+        elif notice:
+            text = notice + "\n" + text
         print(text)
         return 0
     if args.command == "check":
@@ -170,10 +236,12 @@ def _run(argv):
             path = str(_example_path(args.example)) if args.example else args.contract
             report = run_worldguard(GuardContract.from_dict(load_mapping(path)))
             digests = input_digests([path], Path(path).parent)
+            notice = "" if args.example else _open_lines(Path(path).resolve().parent)
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("check", args.example or args.contract, exc)
         payload = {**report.to_dict(), 'input_digests': digests}
         _emit(payload, lambda value: {**_unit_summary(value), 'input_digests': value['input_digests']}, args.json)
+        _show_on_stderr(notice)
         return 0 if report.status.value == "PASS" else 1
     if args.command == "mesh-check":
         from .mesh import ModelMeshContract, run_model_mesh
@@ -186,9 +254,21 @@ def _run(argv):
             report = run_model_mesh(mesh)
             paths = [path, *[base_dir / node['contract'] for node in data.get('nodes', []) if isinstance(node.get('contract'), str)]]
             digests = input_digests(paths, base_dir)
+            if not args.example:
+                from .open_findings import load
+                load(base_dir)  # an unreadable record is an input error before anything is written
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("mesh-check", args.example or args.mesh, exc)
-        _emit({**report.to_dict(), 'input_digests': digests}, _mesh_summary, args.json)
+        full = {**report.to_dict(), 'input_digests': digests}
+        _emit(full, _mesh_summary, args.json)
+        if not args.example:
+            from .open_findings import record, render, store_path
+            try:
+                change = record(base_dir, Path(path).name, full["gaps"], mesh=mesh, exists=_still_there(mesh))
+            except OSError as exc:
+                print(f"worldguard: could not record open contradictions in {store_path(base_dir)}: {exc}", file=sys.stderr)
+            else:
+                _show_on_stderr(render(change["open"], change["closed"], where=str(base_dir)))
         return 0 if report.status.value == "PASS" else 1
     return 2
 

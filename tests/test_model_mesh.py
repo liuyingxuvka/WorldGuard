@@ -95,9 +95,12 @@ def test_retired_semantic_coverage_cli_is_a_typed_input_error(tmp_path, capsys):
     assert 'semantic_coverage' in error['message'] and 'retired' in error['message']
 
 @pytest.mark.parametrize('filename,status,code,detail', [('chapters_ok_rooted.yaml', 'PASS', None, None), ('end_state_contradiction.yaml', 'FAIL', 'MESH_HANDOFF_STATE_MISMATCH', 'lamp_dark'), ('ch2_resurrects.yaml', 'FAIL', 'MESH_HANDOFF_STATE_MISMATCH', 'cora_at_mainland'), ('time_backwards.yaml', 'FAIL', 'MESH_HANDOFF_TIME_BACKWARDS', None)])
-def test_continues_carries_state_and_time(filename, status, code, detail, capsys):
+def test_continues_carries_state_and_time(filename, status, code, detail, capsys, tmp_path):
     from pathlib import Path
-    path = Path(__file__).parent / 'fixtures/trials/mesh_continues' / filename
+    import shutil
+    # mesh-check records a failing tree's contradictions next to it, so check a copy of the fixture folder.
+    folder = shutil.copytree(Path(__file__).parent / 'fixtures/trials/mesh_continues', tmp_path / 'mesh_continues')
+    path = folder / filename
     assert main(['mesh-check', '--mesh', str(path), '--json']) == (0 if status == 'PASS' else 1)
     report = json.loads(capsys.readouterr().out)
     assert report['status'] == status

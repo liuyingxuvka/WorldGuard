@@ -117,6 +117,7 @@ cd WorldGuard
 python skills/worldguard/scripts/run_worldguard.py timeline --example trip
 python skills/worldguard/scripts/run_worldguard.py check --example scene
 python skills/worldguard/scripts/run_worldguard.py mesh-check --example story
+python skills/worldguard/scripts/run_worldguard.py lifeline --example story --of key
 ```
 
 `timeline` 把一个世界一步一步读回来；`check` 检查一个世界和它的说法；`mesh-check` 检查一棵由章节或天数组成的树。
@@ -163,6 +164,34 @@ story PASS (tree FAIL)
   ch1 PASS -> continues ch2 FAIL MESH_HANDOFF_STATE_MISMATCH
   ch2 PASS
 ```
+
+`mesh-check` 会把这个矛盾记在树旁边的 `.worldguard/open.json` 里，连同确立它的章节（第 1 章 `ch1 p3` 的渡船、第 2 章的开头）。
+之后在这个目录里跑任何命令，哪怕是新的会话里只检查另一章，都会再把它列出来，直到对这棵树的 `mesh-check` 不再发现它为止。
+要和人讨论时，从模型画出 Lena 的一生：图里只有 Lena，图下面的两行写明省略了什么：
+
+```console
+$ python skills/worldguard/scripts/run_worldguard.py lifeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml --of Lena
+```
+
+```mermaid
+flowchart LR
+  n0["ch1 start<br/>at island"]
+  n1["ch1 e_find_key<br/>at island<br/>holds key"]
+  n2["ch1 e_ferry_out<br/>at mainland<br/>holds key"]
+  n3["ch2 start<br/>at island<br/>holds key"]
+  n4["ch2 e_give_key<br/>at island"]
+  n0 -->|"9:00 e_find_key (ch1 p1)"| n1
+  n1 -->|"12:00 e_lock (ch1 p2)"| n1
+  n1 -->|"14:00 e_ferry_out (ch1 p3)"| n2
+  n2 -.->|"continues into ch2 !! MESH_HANDOFF_STATE_MISMATCH"| n3
+  n3 -->|"18:00 e_give_key (ch2 p1) !! EVENT_RELATION_UNMET"| n4
+  classDef problem stroke:#c00,stroke-width:2px
+  class n4 problem
+  linkStyle 3,4 stroke:#c00,stroke-width:2px
+```
+
+Shown: Lena, 5 boxes, 4 events; each box lists only the declared facts about Lena.
+Left out: 2 events without Lena (ch2 e_tom_ferry, ch2 e_unlock); nodes without Lena: story; every fact not about Lena.
 
 从 `v0.8.0` 起，两章之间的交接只比较两章都提到的事实。第 2 章才出场的人物（Tom）不再被当成“第 1 章结束时不在大陆”；
 树的 `scope_limits` 会写一行，说第 2 章开头有一个第 1 章从没提过的事实，这个假设仍然看得见。

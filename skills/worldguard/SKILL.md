@@ -41,10 +41,20 @@ When one world gets too big, split it into a tree of contracts over time (a root
 | Check one tree | `mesh-check --mesh mesh.yaml`; example: story | [model-mesh.md](references/model-mesh.md) |
 | Compare observations | `compare --contract world.yaml --observed log.yaml`; use `--mesh` for a tree | [worldguard-contracts.md](references/worldguard-contracts.md) |
 | Read a world or tree | `timeline --contract world.yaml` or `--mesh mesh.yaml`; examples: scene, trip, story | [worldguard-contracts.md](references/worldguard-contracts.md) |
+| Discuss one character, thing or place | `lifeline --mesh mesh.yaml --of Lena` (or `--contract`); example: story `--of key` | [model-mesh.md](references/model-mesh.md) |
 
 Copy `assets/examples/` worlds; [guard-inputs.md](references/guard-inputs.md) covers the
 seven Guards and the clock, token and space rules. Unknown semantics GAP; retired fields
 are input errors. A mesh has one root and only `parent_child` / `continues` edges (`from` / `to`).
+
+## Discuss with a picture; keep contradictions open
+
+When you discuss the plot with the owner (a contradiction to decide, how someone gets somewhere, an alternative), run
+`lifeline --mesh FILE --of <who or what>` and put its Mermaid picture and its "Shown" and "Left out" lines in your reply.
+The tool draws it from the declared relations and the replayed events, only for that entity, from its first to its last
+appearance; do not draw one by hand. `mesh-check` records each FAIL of the tree, with the chapters and sources that
+established it, in `.worldguard/open.json` next to the tree; every later command on that folder prints the open ones
+until a `mesh-check` of the same tree no longer finds them. End a reply that leaves one open with it under "still open".
 
 ## Read the result
 

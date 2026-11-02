@@ -124,6 +124,7 @@ cd WorldGuard
 python skills/worldguard/scripts/run_worldguard.py timeline --example trip
 python skills/worldguard/scripts/run_worldguard.py check --example scene
 python skills/worldguard/scripts/run_worldguard.py mesh-check --example story
+python skills/worldguard/scripts/run_worldguard.py lifeline --example story --of key
 ```
 
 `timeline` reads a world back step by step; `check` checks one world and its claims; `mesh-check` checks a tree of
@@ -175,6 +176,35 @@ story PASS (tree FAIL)
   ch1 PASS -> continues ch2 FAIL MESH_HANDOFF_STATE_MISMATCH
   ch2 PASS
 ```
+
+`mesh-check` keeps that contradiction on record in `.worldguard/open.json` beside the tree, with the chapters that set it
+up (chapter 1's ferry at `ch1 p3`, chapter 2's start). Every later command on that folder, even a check of another
+chapter in a new session, prints it again until a `mesh-check` of the tree no longer finds it. To talk it through with a
+person, draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
+
+```console
+$ python skills/worldguard/scripts/run_worldguard.py lifeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml --of Lena
+```
+
+```mermaid
+flowchart LR
+  n0["ch1 start<br/>at island"]
+  n1["ch1 e_find_key<br/>at island<br/>holds key"]
+  n2["ch1 e_ferry_out<br/>at mainland<br/>holds key"]
+  n3["ch2 start<br/>at island<br/>holds key"]
+  n4["ch2 e_give_key<br/>at island"]
+  n0 -->|"9:00 e_find_key (ch1 p1)"| n1
+  n1 -->|"12:00 e_lock (ch1 p2)"| n1
+  n1 -->|"14:00 e_ferry_out (ch1 p3)"| n2
+  n2 -.->|"continues into ch2 !! MESH_HANDOFF_STATE_MISMATCH"| n3
+  n3 -->|"18:00 e_give_key (ch2 p1) !! EVENT_RELATION_UNMET"| n4
+  classDef problem stroke:#c00,stroke-width:2px
+  class n4 problem
+  linkStyle 3,4 stroke:#c00,stroke-width:2px
+```
+
+Shown: Lena, 5 boxes, 4 events; each box lists only the declared facts about Lena.
+Left out: 2 events without Lena (ch2 e_tom_ferry, ch2 e_unlock); nodes without Lena: story; every fact not about Lena.
 
 From `v0.8.0` the hand-over between chapters compares only facts both chapters name. A character who first appears in
 chapter 2 (Tom) is no longer counted as "not on the mainland" at the end of chapter 1; the tree's `scope_limits`

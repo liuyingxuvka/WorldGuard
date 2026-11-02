@@ -95,3 +95,21 @@ observed event times. Run `mesh-check --mesh OUT` to see effects on later nodes.
 `source:` is an unchecked original-text pointer copied into problems. Report
 status, node/edge ids, codes, differences or missing inputs and scope limits.
 Full JSON preserves every child result.
+
+## Open contradictions and the lifeline picture
+
+`mesh-check --mesh FILE` keeps a record in `.worldguard/open.json` beside FILE: one entry per FAIL row of the tree,
+identified by its code, node, edge, event and subject (never by time or wording), with `established_by` naming each
+chapter, its `source` and the event or start state that set up the disagreeing facts. `check`, `mesh-check`,
+`timeline` and `lifeline` on any file in that folder print the open entries (on stderr, or first in the timeline text).
+An entry closes only when a `mesh-check` of the same tree file no longer finds it; that run prints `closed: ...` once,
+with `no longer found` or `its chapter or event is no longer in the tree`. A run of another tree never closes it. A
+passing tree with no record writes nothing. An unreadable record is an input error; a folder that cannot be written is
+reported on stderr and the check result stands.
+
+`lifeline --mesh FILE --of ENTITY` (or `--contract`) prints a Mermaid flowchart of one entity in reading order: each box
+lists only the declared `world_model.relations` facts about it (`at island`, `holds key`, `held by Tom`), each arrow is
+an event it takes part in, needs a fact of, or changes a fact of, and a dashed arrow joins chapters along `continues`.
+Arrows and boxes with FAIL rows are red and name the code. The lines under the picture say what it shows and what it
+left out (other events, nodes without the entity, every other fact); more than 12 boxes fold the middle into one box,
+`--all` draws them all. An entity named nowhere is an input error that lists the known ones.
