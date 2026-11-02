@@ -1,8 +1,9 @@
 """The READMEs' console examples are real output: each one is run as written and compared with the README's text.
 
-The commands run through the skill's own launcher, on a copy of the fixture folder they name, so the record of open
-contradictions they keep lands in the copy and not in the repository. stdout is what the README shows; the record's
-lines go to stderr, as the README says further down.
+The commands run through the skill's own launcher, on a copy of the fixture files they read, so the record of open
+contradictions they keep lands in the copy and not in the repository, and a record an earlier run left next to the
+fixtures (it is ignored by git) changes nothing. stdout is what the README shows; the record's lines go to stderr, as
+the README says further down.
 """
 from pathlib import Path
 import re
@@ -12,6 +13,7 @@ import subprocess
 import sys
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER = "skills/worldguard/scripts/run_worldguard.py"
@@ -29,11 +31,20 @@ def _console(readme, command):
     return found[0].group(1).splitlines()[1:], text[found[0].end():]
 
 
-def _run(tmp_path, command):
-    """Run the README command with its fixture folder replaced by a copy of that folder."""
-    copy = shutil.copytree(ROOT / FIXTURES, tmp_path / "lighthouse_key")
-    args = [str(copy) + argument[len(FIXTURES):] if argument.startswith(f"{FIXTURES}/") else argument
-            for argument in shlex.split(command.removeprefix("$ "))[1:]]
+def _run(tmp_path, command, fixtures=ROOT / FIXTURES):
+    """Run the README command on a copy of only the fixture files it reads: the file it names and, for a tree, each
+    chapter file the tree names. Nothing else in the folder (an ignored record left by an earlier run) is copied."""
+    words = shlex.split(command.removeprefix("$ "))[1:]
+    named = [word.removeprefix(f"{FIXTURES}/") for word in words if word.startswith(f"{FIXTURES}/")]
+    trees = [words[index + 1].removeprefix(f"{FIXTURES}/") for index, word in enumerate(words) if word == "--mesh"]
+    needed = set(named) | {node["contract"] for tree in trees
+                           for node in yaml.safe_load((fixtures / tree).read_text(encoding="utf-8"))["nodes"]
+                           if isinstance(node.get("contract"), str)}
+    copy = tmp_path / "lighthouse_key"
+    for name in sorted(needed):
+        (copy / name).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(fixtures / name, copy / name)
+    args = [str(copy / word.removeprefix(f"{FIXTURES}/")) if word.startswith(f"{FIXTURES}/") else word for word in words]
     result = subprocess.run([sys.executable, *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
     return result.stdout.splitlines(), result.stderr.splitlines()
 
@@ -63,3 +74,14 @@ def test_the_lifeline_example_draws_what_the_readme_shows(tmp_path, readme):
     picture = rest.lstrip("\n").split("\n\n", 1)[0].splitlines()
     assert picture[0] == "```mermaid" and out[:len(picture)] == picture
     assert rest.lstrip("\n").split("\n\n", 2)[1].splitlines() == out[len(picture):]
+
+
+def test_a_record_left_in_the_fixture_folder_does_not_change_what_the_examples_print(tmp_path):
+    # A checkout where someone ran the README's tree command keeps an ignored record next to the fixtures.
+    checkout = shutil.copytree(ROOT / FIXTURES, tmp_path / "checkout" / FIXTURES)
+    subprocess.run([sys.executable, LAUNCHER, "timeline", "--mesh", str(checkout / "mesh_slip.yaml")], cwd=ROOT,
+                   capture_output=True, check=True)
+    assert (checkout / ".worldguard/open.json").is_file()
+    shown, _rest = _console("README.md", LEAD)
+    out, err = _run(tmp_path / "run", LEAD, fixtures=checkout)
+    assert out == shown and err[0].startswith("open contradictions (2; kept in ")
