@@ -130,6 +130,8 @@ def timeline(contract, *, scenario=None, problems=(), report=None):
                 "tokens": _tokens(marking), "problems": sorted({problems[index]["code"] for index in here})}
         if event.get("source"):
             step["source"] = event["source"]
+        if event.get("actor_state_free"):
+            step["actor_state_free"] = event["actor_state_free"]
         steps.append(step)
     if not linked and transitions:
         marking, _ = token_replay(resources, validate=False, events=events)
@@ -225,6 +227,8 @@ def render_timeline_text(view, *, label=None, full=False):
             line += f" (source: {step['source']})"
         if step.get("problems"):
             line += "  !! " + ", ".join(step["problems"])
+        if step.get("actor_state_free"):
+            line += f"  ~ actor_state_free: {step['actor_state_free']}"
         lines.append(line)
     problems = view.get("problems", [])
     for scenario, values in view.get("variables", {}).items():

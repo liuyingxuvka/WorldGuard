@@ -93,7 +93,8 @@ def _real_contract(request):
         if request.space_token == "disjoint":
             rows.append({"at": "t2", "x": "home", "y": "out", "relation": "DC"})
         contract["inputs"]["spatial_relations"] = rows
-        contract["inputs"]["events"][0]["actor"] = "traveler"
+        contract["inputs"]["events"][0].update(actor="traveler", place="start", uses=[])
+        contract["world_model"] = {"relations": {"start": {"at": ["traveler", "start"]}, "out": {"at": ["traveler", "out"]}}}
         return contract
     if request.token_event_mismatch or request.transition_unlinked or request.rows == "tokens_world":
         transition = {"id": "move", "event": "move", "consumes": [{"place": "start", "color": "traveler", "qty": 1}],

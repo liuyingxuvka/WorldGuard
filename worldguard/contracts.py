@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
 from .clock import validate_times
+from .relations import parse_relations
 from .variants import validate_variants
 
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {
@@ -191,6 +192,15 @@ def _validate_event_links(inputs: Mapping[str, Any]) -> None:
             raise ValueError(f'inputs.events[{index}].action must be a nonempty id')
         if 'with' in event and (not isinstance(event['with'], list) or any(not isinstance(item, str) or not item for item in event['with'])):
             raise ValueError(f'inputs.events[{index}].with must be a list of ids')
+        if 'place' in event and (not isinstance(event['place'], str) or not event['place'].strip()):
+            raise ValueError(f'inputs.events[{index}].place must be a nonempty place id')
+        uses = event.get('uses', [])
+        if isinstance(uses, str):
+            uses = [uses]
+        if not isinstance(uses, list) or any(not isinstance(item, str) or not item.strip() for item in uses):
+            raise ValueError(f'inputs.events[{index}].uses must be a thing id or a list of thing ids ([] when nothing)')
+        if ('place' in event or 'uses' in event) and not event.get('actor'):
+            raise ValueError(f'inputs.events[{index}] names place or uses but no actor; place and uses describe what the actor needs')
     event_ids = {str(event['event_id']) for event in events if isinstance(event, Mapping) and event.get('event_id') and not event.get('scenario_id')}
     implicit = {'t_' + event_id for event_id in event_ids}
     causal = inputs.get('causal_model', {})
@@ -318,11 +328,12 @@ class WorldModel:
     def from_dict(cls, data: dict[str, Any]) -> 'WorldModel':
         if 'artifact_version' in data:
             raise ValueError('world_model.artifact_version is retired; migrate the input to world_model.model_version')
+        parse_relations(data.get('relations'))
         return cls(
             model_id=str(data.get('model_id', '')),
             model_version=str(data.get('model_version', '')),
             entities=dict(data.get('entities', {})),
-            relations=dict(data.get('relations', {})),
+            relations=dict(data.get('relations') or {}),
             assumptions=list(data.get('assumptions', [])),
             scope_limits=list(data.get('scope_limits', [])),
             data=dict(data),

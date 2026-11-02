@@ -31,16 +31,43 @@ world_model:
       kind: person
     Iris:
       kind: person
+    key:
+      kind: thing
+    archive_door:
+      kind: place
+    archive:
+      kind: place
+  relations:
+    jonas_has_key:
+      holds: [Jonas, key]
+    mara_has_key:
+      holds: [Mara, key]
+    jonas_at_door:
+      at: [Jonas, archive_door]
+    mara_at_door:
+      at: [Mara, archive_door]
+    iris_at_door:
+      at: [Iris, archive_door]
+    iris_in_archive:
+      at: [Iris, archive]
 inputs:
   event_model:
     initial_states:
     - jonas_has_key
     - door_locked
+    - jonas_at_door
+    - mara_at_door
+    - iris_at_door
   events:
   - event_id: e_give_key
     source: scene 3 paragraph 1
     action: give_key
     actor: Jonas
+    with:
+    - Mara
+    place: archive_door
+    uses:
+    - key
     at: t1
     requires:
     - jonas_has_key
@@ -50,6 +77,9 @@ inputs:
     source: scene 3 paragraph 2
     action: unlock_door
     actor: Mara
+    place: archive_door
+    uses:
+    - key
     at: t2
     requires:
     - mara_has_key
@@ -59,10 +89,13 @@ inputs:
   - event_id: e_iris_enter
     action: enter_archive
     actor: Iris
+    place: archive_door
+    uses: []
     at: t3
     requires:
     - door_unlocked
     initiates: iris_in_archive
+    terminates: iris_at_door
   beliefs:
     Mara:
       agent_id: Mara

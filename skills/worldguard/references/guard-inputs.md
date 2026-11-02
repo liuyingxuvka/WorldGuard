@@ -161,9 +161,35 @@ Catches: the same actor and action both forbidden and permitted/required by acti
 - A single token (declared `unique` or alone at that time) must sit where same-`at` spatial rows put it: a declared-disjoint region FAILs `WORLD_SPACE_TOKEN_MISMATCH`, an unrelated one is GAP `WORLD_SPACE_TOKEN_UNRELATED`; use one place name or declare the nesting.
 - `resources.unique: [traveler]` rejects a color whose total across places exceeds one after a step.
 - An event can name `actor: traveler` and `with: [friend]`; every unique color moved by a linked transition must be among its participants.
-- An actor's tracked fluents are read with the native fluent parser from `event_model.initial_states` and other events' `requires`/`initiates`/`terminates`; the event's own effects do not count. A fluent belongs to the actor when one whole alphanumeric segment, split at other characters, equals the actor id without regard to case (`Lena` matches `lena_has_key`, not `helena_x`). If any such state is tracked, the event must require some actor state, otherwise GAP `EVENT_ACTOR_STATE_UNCHECKED` names the event, actor and sorted `tracked_fluents`, regardless of selected Guards. A nonempty `actor_state_free: <reason>` exempts the event and prints `actor_state_free <event> (<actor>): <reason>` in unit and tree `scope_limits`; a blank or non-string reason is invalid input (exit 2).
 - Optional `world_model.entities: {traveler: {kind: person}, port: {kind: place}}` registers ids used by beliefs, spatial pairs, event participants and unique colors. Missing ids produce `ENTITY_UNDECLARED`.
 - Related events at one time produce `EVENT_SAME_TIME_ORDER_UNKNOWN`; give them distinct times.
+
+## Who holds what, who is where
+
+```yaml
+world_model:
+  relations:
+    lena_has_key: {holds: [Lena, key]}
+    tom_has_key: {holds: [Tom, key]}
+    lena_on_island: {at: [Lena, island]}
+    lena_on_mainland: {at: [Lena, mainland]}
+inputs:
+  events:
+    - {event_id: e_unlock, at: "21:00", actor: Lena, place: island, uses: [key], requires: [door_locked], initiates: door_unlocked, terminates: door_locked}
+```
+
+`world_model.relations` maps a fluent to `{holds: [holder, thing]}` or `{at: [who, place]}`; one fluent per pair. An event
+with an `actor` names `place` (where the actor and every `with` participant must be just before it) and `uses` (things
+the actor must hold; `[]` when nothing). WorldGuard derives these preconditions from the declarations and replays the
+world, whatever the fluents are called and whatever `requires` lists: an unmet one is FAIL `EVENT_RELATION_UNMET`, which
+names the relation and what holds instead (`Lena does not hold key at 21:00 (held by Tom)`). A fact the event already
+lists in `requires` is reported once, by EventGuard. A missing `place` or `uses` is GAP `EVENT_ACTOR_STATE_UNCHECKED`
+(`missing` lists them); a place or thing no relation covers is GAP `EVENT_RELATION_UNDECLARED`. When events name actors,
+an event without one is also GAP `EVENT_ACTOR_STATE_UNCHECKED` (`missing: [actor]`). A nonempty `actor_state_free:
+<reason>` exempts an event; the reason is printed in unit and tree `scope_limits` and on the event's timeline line.
+After each instant, a person at two declared places or a thing with two holders is FAIL `WORLD_RELATION_CONFLICT`, with
+the event (and source) that established each fact. These checks run regardless of requested Guards. Like a token
+mismatch, an `EVENT_RELATION_UNMET` event still changes the replayed state; only failed `requires` block effects.
 
 ## Actions and norms
 

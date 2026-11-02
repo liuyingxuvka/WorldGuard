@@ -172,27 +172,36 @@ def _lighthouse_contract(name):
     return yaml.safe_load((Path(__file__).parent / 'fixtures/trials/lighthouse_key' / name).read_text())
 
 
+_UNCHECKED_MESSAGE = ("Say where the event happens (place) and what the actor uses (uses; [] when nothing), "
+                      "declared in world_model.relations, or give actor_state_free: <reason>.")
+
+
+def _rename_fluents(contract, rename):
+    """The same world with every fluent spelled differently."""
+    import json
+    text = json.dumps(contract)
+    for old, new in sorted(rename.items(), key=lambda item: -len(item[0])):
+        text = text.replace(f'"{old}"', f'"{new}"')
+    return json.loads(text)
+
+
 def test_actor_state_unchecked_is_a_gap():
     contract = _lighthouse_contract('ch2_naive_no_variant.yaml')
     report = run_worldguard(contract)
     assert report.status is GuardStatus.GAP
-    assert report.gaps == [{
-        'code': 'EVENT_ACTOR_STATE_UNCHECKED', 'status': 'GAP', 'event_id': 'e_unlock',
-        'actor': 'Lena', 'tracked_fluents': ['lena_has_key', 'lena_on_mainland'], 'source': 'ch2 p3',
-        'message': "The event's actor has state in this world that the event does not require; require it or give actor_state_free: <reason>.",
-    }]
-
-    pair = deepcopy(contract)
-    pair['inputs']['event_model']['initial_states'] += ['helena_x', 'éva_has_key']
-    second = {**pair['inputs']['events'][-1], 'event_id': 'e_unlock_again', 'actor': 'ÉVA',
-              'at': '21:01', 'requires': 'door_unlocked', 'terminates': [], 'source': 'ch2 p4'}
-    pair['inputs']['events'].append(second)
-    pair_report = run_worldguard(pair)
-    assert pair_report.status is GuardStatus.GAP
-    assert [(row['event_id'], row['actor'], row['tracked_fluents']) for row in pair_report.gaps] == [
-        ('e_unlock', 'Lena', ['lena_has_key', 'lena_on_mainland']),
-        ('e_unlock_again', 'ÉVA', ['éva_has_key']),
+    assert report.gaps == [
+        {'code': 'EVENT_ACTOR_STATE_UNCHECKED', 'status': 'GAP', 'event_id': event_id, 'actor': actor,
+         'missing': ['place', 'uses'], 'message': _UNCHECKED_MESSAGE, 'source': source}
+        for event_id, actor, source in (('e_give_key', 'Lena', 'ch2 p1'), ('e_tom_ferry', 'Tom', 'ch2 p2'),
+                                        ('e_unlock', 'Lena', 'ch2 p3'))
     ]
+
+    # The rule reads no fluent names: initials, camel case and accents give the same rows.
+    for rename in ({'lena_has_key': 'key_held_by_L', 'lena_on_mainland': 'L_on_mainland', 'tom_has_key': 'key_held_by_T'},
+                   {'lena_has_key': 'LenaHasKey', 'tom_on_mainland': 'TomOnMainland', 'door_locked': 'DoorLocked'},
+                   {'lena_has_key': 'éva_has_key', 'lena_on_mainland': 'helena_x'}):
+        renamed = run_worldguard(_rename_fluents(contract, rename))
+        assert [row for row in renamed.gaps if row['code'] == 'EVENT_ACTOR_STATE_UNCHECKED'] == report.gaps
 
     independent = deepcopy(contract)
     independent['claim'] = {'asserts': [{'variable': 'x', 'op': '>=', 'value': 0}]}
@@ -200,7 +209,7 @@ def test_actor_state_unchecked_is_a_gap():
     report = run_worldguard(independent)
     assert report.derived_guards == ['CausalGuard']
     assert report.status is GuardStatus.GAP
-    assert [row['code'] for row in report.gaps] == ['EVENT_ACTOR_STATE_UNCHECKED']
+    assert [row['code'] for row in report.gaps] == ['EVENT_ACTOR_STATE_UNCHECKED'] * 3
 
 
 def test_actor_state_free_reason_is_printed():
@@ -208,9 +217,13 @@ def test_actor_state_free_reason_is_printed():
     from worldguard import GuardContract
     from worldguard.cli import _unit_summary
 
-    contract = _lighthouse_contract('ch2_naive_no_variant.yaml')
-    contract['inputs']['events'][-1]['actor_state_free'] = 'the door opens from either side'
-    reason = 'actor_state_free e_unlock (Lena): the door opens from either side'
+    contract = _lighthouse_contract('ch2_fixed.yaml')
+    unlock = contract['inputs']['events'][-1]
+    for name in ('place', 'uses'):
+        del unlock[name]
+    assert [row['code'] for row in run_worldguard(contract).gaps] == ['EVENT_ACTOR_STATE_UNCHECKED']
+    unlock['actor_state_free'] = 'the door opens from either side'
+    reason = 'actor_state_free e_unlock (Tom): the door opens from either side'
     report = run_worldguard(contract)
     assert report.status is GuardStatus.PASS
     assert report.gaps == []

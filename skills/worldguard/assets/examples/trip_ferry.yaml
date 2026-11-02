@@ -8,16 +8,26 @@ claim:
     - {event: d2_ferry_arr, before: d2_last_train}
     - {variable: slack_back_h, op: ">=", value: 0}
     - {place: home, color: traveler, qty: 1}
-world_model: {model_id: island-trip, model_version: draft-2, scope_limits: [published timetable, no delays]}
+world_model:
+  model_id: island-trip
+  model_version: draft-2
+  scope_limits: [published timetable, no delays]
+  relations:   # which fluent says where the traveler is
+    at_city: {at: [traveler, city]}
+    on_train: {at: [traveler, train]}
+    at_port: {at: [traveler, port]}
+    on_island: {at: [traveler, island]}
+    on_ferry: {at: [traveler, ferry]}
+    home: {at: [traveler, home]}
 inputs:
   event_model: {initial_states: [at_city]}
   events:
-    - {actor: traveler, event_id: d1_train_dep, at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
-    - {actor: traveler, event_id: d1_train_arr, source: "published timetable train arrival", at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
-    - {actor: traveler, event_id: d1_ferry_out, at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
-    - {actor: traveler, event_id: d2_ferry_back, at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
-    - {actor: traveler, event_id: d2_ferry_arr, at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
-    - {actor: traveler, event_id: d2_last_train, at: "2026-11-03T16:30", requires: [at_port], initiates: home, terminates: at_port}
+    - {actor: traveler, place: city, uses: [], event_id: d1_train_dep, at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
+    - {actor: traveler, place: train, uses: [], event_id: d1_train_arr, source: "published timetable train arrival", at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
+    - {actor: traveler, place: port, uses: [], event_id: d1_ferry_out, at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
+    - {actor: traveler, place: island, uses: [], event_id: d2_ferry_back, at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
+    - {actor: traveler, place: ferry, uses: [], event_id: d2_ferry_arr, at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
+    - {actor: traveler, place: port, uses: [], event_id: d2_last_train, at: "2026-11-03T16:30", requires: [at_port], initiates: home, terminates: at_port}
   resources:
     unique: [traveler]
     places: {at_city: [{color: traveler, qty: 1}], on_train: [], at_port: [], on_island: [], on_ferry: [], home: []}

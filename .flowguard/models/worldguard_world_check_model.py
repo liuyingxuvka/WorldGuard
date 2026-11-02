@@ -157,7 +157,7 @@ def child_status_decides_exit(state,trace):
     return InvariantResult.pass_()
 
 INVARIANTS = (
-    Invariant('actor_state_checked','An event whose actor has tracked state requires some of it or names actor_state_free; otherwise the check is GAP EVENT_ACTOR_STATE_UNCHECKED.',actor_state_checked),
+    Invariant('actor_state_checked','An event with an actor says where it happens (place) and what the actor uses (uses), checked against world_model.relations, or names actor_state_free; otherwise the check is GAP EVENT_ACTOR_STATE_UNCHECKED.',actor_state_checked),
     Invariant('pass_needs_bound_true_rows','Only bound true rows in a passing world can pass',pass_needs_bound_true_rows),
     Invariant('variants_must_fail','A known-bad variant that escapes prevents PASS',variants_must_fail),
     Invariant('one_row_per_problem','Each native problem has one report row',one_row_per_problem),
@@ -194,8 +194,8 @@ def conformance():
                 actor_rows=[row for row in gaps if row['code']=='EVENT_ACTOR_STATE_UNCHECKED']
                 if (len(actor_rows)!=1 or any(actor_rows[0].get(key)!=value for key,value in
                         {'status':'GAP','event_id':'unlock','actor':'Lena','source':'actor fixture',
-                         'tracked_fluents':['lena_has_key','lena_on_mainland']}.items())):
-                    mismatches.append('actor_state_checked: native gap does not name the event, actor and tracked fluents')
+                         'missing':['place','uses']}.items())):
+                    mismatches.append('actor_state_checked: native gap does not name the event, actor and missing place and uses')
             if request.actor_state=='free':
                 if gaps or 'actor_state_free unlock (Lena): the door opens from either side' not in report['scope_limits']:
                     mismatches.append('actor_state_checked: native free exemption omitted its reason or did not pass')

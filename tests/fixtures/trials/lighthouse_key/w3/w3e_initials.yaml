@@ -1,0 +1,57 @@
+contract_id: ch2
+claim:
+  claim_id: ch2_door_opened
+  text: Lena hands the key to Tom; the lighthouse door is opened at 21:00.
+  requested_semantics:
+  - event
+  asserts:
+  - event: e_give_key
+    before: e_unlock
+  - holds: door_unlocked
+    at: '21:00'
+world_model:
+  model_id: ch2
+  scope_limits:
+  - chapter 2 only
+inputs:
+  event_model:
+    initial_states:
+    - L_on_mainland
+    - key_held_by_L
+    - door_locked
+    - T_on_mainland
+  events:
+  - event_id: e_give_key
+    at: '18:00'
+    source: ch2 p1
+    actor: Lena
+    with:
+    - Tom
+    requires:
+    - key_held_by_L
+    - L_on_mainland
+    - T_on_mainland
+    initiates:
+    - key_held_by_T
+    terminates:
+    - key_held_by_L
+  - event_id: e_tom_ferry
+    at: '20:00'
+    source: ch2 p2
+    actor: Tom
+    requires:
+    - T_on_mainland
+    initiates:
+    - T_on_island
+    terminates:
+    - T_on_mainland
+  - event_id: e_unlock
+    at: '21:00'
+    source: ch2 p3
+    actor: Lena
+    requires:
+    - door_locked
+    initiates:
+    - door_unlocked
+    terminates:
+    - door_locked

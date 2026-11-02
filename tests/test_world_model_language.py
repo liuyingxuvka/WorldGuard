@@ -214,6 +214,9 @@ def test_unique_traveler_duplication_fails_and_a_foreign_actor_is_a_gap(step):
     assert report.status.value == "GAP"
     assert "RESOURCE_EVENT_PARTICIPANT_UNNAMED" in _codes(report)
     trip["inputs"]["events"][0]["with"] = ["traveler"]
+    # ben now acts at the city, so the world must also say where ben is.
+    trip["world_model"]["relations"]["ben_at_city"] = {"at": ["ben", "city"]}
+    trip["inputs"]["event_model"]["initial_states"].append("ben_at_city")
     assert run_worldguard(trip).status.value == "PASS"
 
 
@@ -269,6 +272,8 @@ def test_storm_prohibition_applies_to_the_actual_boat_event():
     world = yaml.safe_load((Path(__file__).parent / "fixtures/trials/trip_mut2_out/storm_consistent.yaml").read_text())
     event = next(row for row in world["inputs"]["events"] if row["event_id"] == "d2_boat")
     event.update(actor="traveler", action="take_boat")
+    for row in world["inputs"]["events"]:
+        row["actor_state_free"] = "this world models the storm rule, not who holds what or who is where"
     report = run_worldguard(world)
     assert report.status.value == "FAIL"
     assert "NORM_VIOLATED_BY_EVENT" in _codes(report)
@@ -281,8 +286,10 @@ def test_storm_prohibition_applies_to_the_actual_boat_event():
 @pytest.mark.parametrize("storm_time,expected", [("t1", "FAIL"), ("t3", "PASS")])
 def test_fluent_norm_conditions_use_the_state_before_the_event(storm_time, expected):
     world = {"claim": {"requested_semantics": ["event", "norm"], "asserts": [{"holds": "aboard", "at": "t4"}]},
-        "inputs": {"events": [{"event_id": "storm", "at": storm_time, "initiates": "storm_warning"},
-            {"event_id": "boat", "at": "t2", "actor": "traveler", "action": "take_boat", "initiates": "aboard"}],
+        "inputs": {"events": [{"event_id": "storm", "at": storm_time, "initiates": "storm_warning",
+                               "actor_state_free": "weather; nobody acts"},
+            {"event_id": "boat", "at": "t2", "actor": "traveler", "action": "take_boat", "initiates": "aboard",
+             "actor_state_free": "only the storm rule is modelled"}],
             "norms": [{"actor": "traveler", "action": "take_boat", "modality": "forbidden", "condition": {"fluent": "storm_warning", "value": True}}]}}
     report = run_worldguard(world)
     assert report.status.value == expected

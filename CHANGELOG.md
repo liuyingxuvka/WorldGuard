@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Who holds what and who is where are now checked from declarations, not guessed from fact names. `world_model.relations` maps a fact to `{holds: [holder, thing]}` or `{at: [who, place]}`; an event with an actor names its `place` and the things it `uses`. WorldGuard derives what must be true just before the event and replays the world: an unmet one is FAIL `EVENT_RELATION_UNMET` with what holds instead ("Lena does not hold key at 21:00 (held by Tom)"), whatever the facts are called and whatever `requires` lists. Every `with` participant must be at the place too.
+- An actor event without `place` and `uses` is GAP `EVENT_ACTOR_STATE_UNCHECKED` with `missing` (before: GAP only when a fact name contained the actor's name, so a renamed fact, initials or one unrelated actor fact passed). When events name actors, an event without one is also GAP. A place or thing no relation covers is GAP `EVENT_RELATION_UNDECLARED`. `actor_state_free: <reason>` still exempts an event, and its reason now also appears on the event's timeline line.
+- A person at two declared places at once, or a thing with two holders, is FAIL `WORLD_RELATION_CONFLICT`, naming the event and source that established each fact.
+- The scene and trip examples, and the fixed lighthouse chapters, declare their relations.
+
 - A token world that cannot be replayed (for example a token with a negative quantity) no longer hides the event/token and space/token agreement checks: the report shows GAP `WORLD_TOKEN_CHECK_NOT_RUN` naming the check and the broken input (before: those checks were skipped, so a real mismatch could PASS).
 - A spatial row with an invalid time is an input error (exit 2), like an event time (before: it silently switched off the space/token check). Spatial rows without a time no longer crash the space/token check.
 - An event row that is not a mapping, next to valid events, gives the usual `EVENT_MISSING_INITIATION_AXIOM` instead of a crash.

@@ -10,7 +10,7 @@
 
 | Version | Runtime | Package |
 | --- | --- | --- |
-| `v0.8.0` | Python 3.11+, PyYAML | `worldguard` |
+| `v0.9.0` | Python 3.11+, PyYAML | `worldguard` |
 
 [中文说明](./README.zh-CN.md)
 
@@ -32,74 +32,71 @@ An AI drafts two chapters:
 **Without WorldGuard** the last sentence goes out as written. Lena no longer has the key, and she is still on the
 mainland.
 
-**With WorldGuard** the AI writes chapter 2 as a world. Each event says who does it, what must be true for it to happen
-(`requires`) and what it changes; the key and the places are facts that events start and end. The events of
-`tests/fixtures/trials/lighthouse_key/ch2.yaml`:
+**With WorldGuard** the AI writes chapter 2 as a world. Each event says who does it, where (`place`), what the actor
+uses (`uses`) and what it changes; `world_model.relations` says which fact means who holds the key and who is where.
+`tests/fixtures/trials/lighthouse_key/ch2_declared.yaml`:
 
 ```yaml
+world_model:
+  relations:
+    lena_has_key: {holds: [Lena, key]}
+    tom_has_key: {holds: [Tom, key]}
+    lena_on_island: {at: [Lena, island]}
+    lena_on_mainland: {at: [Lena, mainland]}
+    tom_on_island: {at: [Tom, island]}
+    tom_on_mainland: {at: [Tom, mainland]}
 inputs:
   event_model: {initial_states: [lena_on_mainland, lena_has_key, door_locked, tom_on_mainland]}
   events:
-    - {event_id: e_give_key, at: "18:00", source: ch2 p1, actor: Lena, with: [Tom], requires: [lena_has_key, lena_on_mainland, tom_on_mainland], initiates: [tom_has_key], terminates: [lena_has_key]}
-    - {event_id: e_tom_ferry, at: "20:00", source: ch2 p2, actor: Tom, requires: [tom_on_mainland], initiates: [tom_on_island], terminates: [tom_on_mainland]}
-    - {event_id: e_unlock, at: "21:00", source: ch2 p3, actor: Lena, requires: [lena_has_key, lena_on_island, door_locked], initiates: [door_unlocked], terminates: [door_locked]}
+    - {event_id: e_give_key, at: "18:00", source: ch2 p1, actor: Lena, with: [Tom], place: mainland, uses: [key], initiates: [tom_has_key], terminates: [lena_has_key]}
+    - {event_id: e_tom_ferry, at: "20:00", source: ch2 p2, actor: Tom, place: mainland, uses: [], initiates: [tom_on_island], terminates: [tom_on_mainland]}
+    - {event_id: e_unlock, at: "21:00", source: ch2 p3, actor: Lena, place: island, uses: [key], requires: [door_locked], initiates: [door_unlocked], terminates: [door_locked]}
 ```
 
-The chapter's claim, also in the file, is that the key changes hands before the door is unlocked and that the door is
-open at 21:00.
-
-Then it reads the world back:
-
-
+The AI only wrote down what each sentence says: the unlock happens at the lighthouse and uses the key. It did not have
+to remember that Lena gave the key away or that she is still on the mainland. WorldGuard works that out by replaying
+the chapter:
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py timeline --contract tests/fixtures/trials/lighthouse_key/ch2.yaml
+$ python skills/worldguard/scripts/run_worldguard.py timeline --contract tests/fixtures/trials/lighthouse_key/ch2_declared.yaml
 world ch2 (clock: clock)
 claim ch2_door_opened row 0: event e_give_key before e_unlock PASS
-claim ch2_door_opened row 1: holds door_unlocked at 21:00 FAIL CLAIM_ASSERTION_FALSE
+claim ch2_door_opened row 1: holds door_unlocked at 21:00 PASS
 start  -  fluents: door_locked, lena_has_key, lena_on_mainland, tom_on_mainland | tokens: -
 18:00  e_give_key  fluents: +tom_has_key -lena_has_key | tokens: = (source: ch2 p1)
 20:00  e_tom_ferry  fluents: +tom_on_island -tom_on_mainland | tokens: = (source: ch2 p2)
-21:00  e_unlock  fluents: = | tokens: = (source: ch2 p3)  !! EVENT_PRECONDITION_UNMET
+21:00  e_unlock  fluents: +door_unlocked -door_locked | tokens: = (source: ch2 p3)  !! EVENT_RELATION_UNMET
 ```
 
-The 21:00 event cannot happen, so the door never opens and the chapter's own claim ("the door is open at 21:00")
-fails. `check` gives the reason in full; this is the part of its report about that event:
-
+`check` fails and gives the reason in the words of the declarations (part of its report):
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixtures/trials/lighthouse_key/ch2.yaml
+$ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixtures/trials/lighthouse_key/ch2_declared.yaml
 ...
-      "code": "EVENT_PRECONDITION_UNMET",
-      "counterexample": {
-        "at": "21:00",
-        "event_id": "e_unlock",
-        "holding_fluents": [
-          "door_locked",
-          "lena_on_mainland",
-          "tom_has_key",
-          "tom_on_island"
-        ],
-        "missing_fluents": [
-          "lena_has_key",
-          "lena_on_island"
-        ],
-        "source": "ch2 p3"
-      },
+      "code": "EVENT_RELATION_UNMET",
+      "event_id": "e_unlock",
+      "found": ["mainland"],
+      "message": "Lena is not at island at 21:00 (at mainland).",
+...
+      "code": "EVENT_RELATION_UNMET",
+      "event_id": "e_unlock",
+      "found": ["Tom"],
+      "message": "Lena does not hold key at 21:00 (held by Tom).",
 ...
   "status": "FAIL"
 }
 ```
 
-Lena lacks the key and is not on the island; Tom has the key and is. The fix is to let Tom open the door
-(`ch2_fixed.yaml` in the same folder), and the check passes.
+The fix is to let Tom open the door (`ch2_fixed.yaml` in the same folder), and the check passes. The names of the facts
+play no part: `key_held_by_L` or `LenaHasKey` give the same result, because only `world_model.relations` says what
+they mean.
 
 ## Quick start
 
 **1. Install the skill for your AI, from the release tag.**
 
 ```bash
-git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -113,7 +110,7 @@ PyYAML is needed (JSON worlds need nothing).
 **2. Optional: the `worldguard` command**, from the same tag:
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
 ```
 
 It installs the console command `worldguard` with the four subcommands `check`, `mesh-check`, `timeline` and
@@ -223,13 +220,14 @@ Five skills, one idea: each one checks the AI's answer against an explicit model
   legal judgment, a safety certificate or a market prediction.
 
 **Where it can still miss.** If the AI writes the same mistake into the world that it wrote into the story, the world is
-consistent and nothing fails. In the trial below, the AI's unlock event first required only that the door was locked;
-the chapter passed. From `v0.8.0` an event whose actor's state the world tracks (Lena's key, Lena's place) but whose
-`requires` names none of it is `GAP EVENT_ACTOR_STATE_UNCHECKED`; an event that truly depends on neither says so with
-`actor_state_free: <reason>`, which the report prints. It matches actor ids to complete alphanumeric segments in fluent names, without regard to case. One matching
-requirement suffices; other necessary conditions and facts omitted from the world remain the modeller's responsibility.
-
-
+consistent and nothing fails. In the round-11 trial the unlock event required only that the door was locked, and the
+chapter passed; v0.8.0 then matched actor names inside fact names, which five of six cheap rewrites still slipped past
+(another actor fact, camel case, initials, no actor). From v0.9.0 nothing is guessed from names or taken from
+`requires`: an event with an actor must say `place` and `uses`, and WorldGuard checks them against the declared
+`world_model.relations` by replaying the world (otherwise `GAP EVENT_ACTOR_STATE_UNCHECKED`). An event that truly
+depends on neither says so with `actor_state_free: <reason>`, which the report and the timeline print. What remains the
+modeller's job: naming the right place and the things an event uses (a wrong `place` is checked as written), and
+declaring the relations at all.
 
 **What has been measured, and what has not.**
 - Reported in the design packet: one small trial during the design of this release, on the two lighthouse chapters above, with one planted
@@ -239,8 +237,11 @@ requirement suffices; other necessary conditions and facts omitted from the worl
   who first appears in chapter 2, fixed in this release.
 - The design packet reports that modelling the two chapters took about three times as many characters of YAML as the story itself, and
   about 9,000 tokens of reading and output in total.
-- Not measured: how often the actor-state check fires on stories that are fine. It was tried on the trial chapters and
-  the repository's own worlds only; there it flagged exactly the planted mistake.
+- Re-run for v0.9.0: the six round-12 variants of the lighthouse mistake (`tests/fixtures/trials/lighthouse_key/w3/`)
+  are all GAP now, each with a row on the unlock event, except the one that states `actor_state_free`, whose reason is
+  printed; the declared chapter fails with the two relations above.
+- Not measured: how often these checks fire on stories that are fine. They were tried on the trial chapters and the
+  repository's own worlds only; declaring the relations there took one line per fact.
 
 
 

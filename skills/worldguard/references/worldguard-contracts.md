@@ -21,7 +21,7 @@ Run `check --contract <file.yaml>`, or `run_worldguard(contract)` in Python.
 ## Results
 
 Failed preconditions block effects in assertions, timelines and handoffs.
-An event whose actor's tracked state it does not require is `GAP` `EVENT_ACTOR_STATE_UNCHECKED`; `actor_state_free` reasons are listed in `scope_limits`.
+An actor event without `place` and `uses` is `GAP` `EVENT_ACTOR_STATE_UNCHECKED`; a place or thing that `world_model.relations` contradicts at that time is `FAIL` `EVENT_RELATION_UNMET`; `actor_state_free` reasons are listed in `scope_limits`.
 
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.

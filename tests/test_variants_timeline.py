@@ -294,7 +294,8 @@ def test_timeline_token_delta_skips_zero_counts():
 
 def test_timeline_names_the_uncaught_variant(capsys):
     mesh = Path(__file__).parent / 'fixtures/trials/lighthouse_key/mesh.yaml'
-    evidence = 'variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, got GAP CLAIM_ASSERTION_UNRESOLVED'
+    evidence = ('variant never_left: expected FAIL CLAIM_ASSERTION_FALSE, '
+                'got GAP CLAIM_ASSERTION_UNRESOLVED, EVENT_ACTOR_STATE_UNCHECKED')
     assert main(['timeline', '--mesh', str(mesh)]) == 0
     assert '    VARIANT_NOT_CAUGHT (-): ' + evidence in capsys.readouterr().out.splitlines()
     assert main(['timeline', '--mesh', str(mesh), '--json']) == 0

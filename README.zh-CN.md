@@ -10,7 +10,7 @@
 
 | 版本 | 运行环境 | 包名 |
 | --- | --- | --- |
-| `v0.8.0` | Python 3.11+，PyYAML | `worldguard` |
+| `v0.9.0` | Python 3.11+，PyYAML | `worldguard` |
 
 [English](./README.md)
 
@@ -29,70 +29,69 @@ AI 起草了两章：
 
 **没有 WorldGuard**，最后这句就这样交出去了。可钥匙已经不在 Lena 手里，她人也还在大陆上。
 
-**用 WorldGuard**，AI 把第 2 章写成一个世界。每个事件写明谁来做、发生之前什么必须为真（`requires`）、发生之后改变了什么；
-钥匙在谁手里、人在哪里，都是由事件开始和结束的事实。下面是 `tests/fixtures/trials/lighthouse_key/ch2.yaml` 里的事件：
+**用 WorldGuard**，AI 把第 2 章写成一个世界。每个事件写明谁来做、在哪里做（`place`）、用到什么东西（`uses`）、
+改变了什么；`world_model.relations` 写明哪条事实表示钥匙在谁手里、谁在哪里。
+`tests/fixtures/trials/lighthouse_key/ch2_declared.yaml`：
 
 ```yaml
+world_model:
+  relations:
+    lena_has_key: {holds: [Lena, key]}
+    tom_has_key: {holds: [Tom, key]}
+    lena_on_island: {at: [Lena, island]}
+    lena_on_mainland: {at: [Lena, mainland]}
+    tom_on_island: {at: [Tom, island]}
+    tom_on_mainland: {at: [Tom, mainland]}
 inputs:
   event_model: {initial_states: [lena_on_mainland, lena_has_key, door_locked, tom_on_mainland]}
   events:
-    - {event_id: e_give_key, at: "18:00", source: ch2 p1, actor: Lena, with: [Tom], requires: [lena_has_key, lena_on_mainland, tom_on_mainland], initiates: [tom_has_key], terminates: [lena_has_key]}
-    - {event_id: e_tom_ferry, at: "20:00", source: ch2 p2, actor: Tom, requires: [tom_on_mainland], initiates: [tom_on_island], terminates: [tom_on_mainland]}
-    - {event_id: e_unlock, at: "21:00", source: ch2 p3, actor: Lena, requires: [lena_has_key, lena_on_island, door_locked], initiates: [door_unlocked], terminates: [door_locked]}
+    - {event_id: e_give_key, at: "18:00", source: ch2 p1, actor: Lena, with: [Tom], place: mainland, uses: [key], initiates: [tom_has_key], terminates: [lena_has_key]}
+    - {event_id: e_tom_ferry, at: "20:00", source: ch2 p2, actor: Tom, place: mainland, uses: [], initiates: [tom_on_island], terminates: [tom_on_mainland]}
+    - {event_id: e_unlock, at: "21:00", source: ch2 p3, actor: Lena, place: island, uses: [key], requires: [door_locked], initiates: [door_unlocked], terminates: [door_locked]}
 ```
 
-同一个文件里还写着这一章的说法：钥匙先换了手，门才被打开；21:00 门是开着的。然后 AI 把这个世界读回来：
-
-
+AI 只写下每句话本身说的：开门发生在灯塔，用到了钥匙。它不必记得 Lena 已经把钥匙交了出去、人还在大陆上；
+WorldGuard 把这一章重放一遍，自己算出来：
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py timeline --contract tests/fixtures/trials/lighthouse_key/ch2.yaml
+$ python skills/worldguard/scripts/run_worldguard.py timeline --contract tests/fixtures/trials/lighthouse_key/ch2_declared.yaml
 world ch2 (clock: clock)
 claim ch2_door_opened row 0: event e_give_key before e_unlock PASS
-claim ch2_door_opened row 1: holds door_unlocked at 21:00 FAIL CLAIM_ASSERTION_FALSE
+claim ch2_door_opened row 1: holds door_unlocked at 21:00 PASS
 start  -  fluents: door_locked, lena_has_key, lena_on_mainland, tom_on_mainland | tokens: -
 18:00  e_give_key  fluents: +tom_has_key -lena_has_key | tokens: = (source: ch2 p1)
 20:00  e_tom_ferry  fluents: +tom_on_island -tom_on_mainland | tokens: = (source: ch2 p2)
-21:00  e_unlock  fluents: = | tokens: = (source: ch2 p3)  !! EVENT_PRECONDITION_UNMET
+21:00  e_unlock  fluents: +door_unlocked -door_locked | tokens: = (source: ch2 p3)  !! EVENT_RELATION_UNMET
 ```
 
-21:00 那件事不可能发生，所以门根本没开，这一章自己的说法（“21:00 门是开着的”）也就不成立。`check` 会把原因说全，
-下面是它的报告里关于这件事的那一段：
-
+`check` 判为失败，并用声明里的词说出原因（报告的一部分）：
 
 ```console
-$ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixtures/trials/lighthouse_key/ch2.yaml
+$ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixtures/trials/lighthouse_key/ch2_declared.yaml
 ...
-      "code": "EVENT_PRECONDITION_UNMET",
-      "counterexample": {
-        "at": "21:00",
-        "event_id": "e_unlock",
-        "holding_fluents": [
-          "door_locked",
-          "lena_on_mainland",
-          "tom_has_key",
-          "tom_on_island"
-        ],
-        "missing_fluents": [
-          "lena_has_key",
-          "lena_on_island"
-        ],
-        "source": "ch2 p3"
-      },
+      "code": "EVENT_RELATION_UNMET",
+      "event_id": "e_unlock",
+      "found": ["mainland"],
+      "message": "Lena is not at island at 21:00 (at mainland).",
+...
+      "code": "EVENT_RELATION_UNMET",
+      "event_id": "e_unlock",
+      "found": ["Tom"],
+      "message": "Lena does not hold key at 21:00 (held by Tom).",
 ...
   "status": "FAIL"
 }
 ```
 
-Lena 既没有钥匙，也不在岛上；钥匙在 Tom 手里，Tom 正好在岛上。改法是让 Tom 去开门（同一目录里的 `ch2_fixed.yaml`），
-检查就通过了。
+改法是让 Tom 去开门（同一目录里的 `ch2_fixed.yaml`），检查就通过了。事实叫什么名字不起作用：写成 `key_held_by_L`
+或 `LenaHasKey` 结果一样，因为它们的意思只由 `world_model.relations` 规定。
 
 ## 快速上手
 
 **1. 从发布的 tag 安装技能。**
 
 ```bash
-git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -105,7 +104,7 @@ python WorldGuard/scripts/install_skill.py --target ~/.claude/skills --check  # 
 **2. 可选：`worldguard` 命令**，同一个 tag：
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
 ```
 
 装好后有 `worldguard` 命令（四个子命令：`check`、`mesh-check`、`timeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、
@@ -203,20 +202,21 @@ WorldGuard 管故事、行程、计划和流程。软件代码和它的行为，
   不做检查。
 - `PASS` 只对声明的世界和它的范围成立，不代表现实如此。WorldGuard 不是物理求解器，不做法律判断，不是安全证书，也不预测市场。
 
-**它仍可能漏掉的。** 如果 AI 把故事里的错误原样写进了世界，世界本身是自洽的，什么也不会失败。在下面说的试验里，AI 写的
-开门事件一开始只要求“门是锁着的”，这一章就通过了。从 `v0.8.0` 起，一个事件的执行者在世界里有被记着的状态（Lena 的钥匙、
-Lena 在哪里），而这个事件的 `requires` 一条都没要求，就是 `GAP EVENT_ACTOR_STATE_UNCHECKED`；如果这件事确实和这些都无关，
-就写上 `actor_state_free: <理由>`，报告会把理由印出来。这项检查把执行者 ID 与事实名中的完整字母数字片段做忽略大小写的匹配；只要求一个匹配的事实就足够了。
-事件还需要哪些前提，以及漏写进世界的事实，仍由建模者负责。
-
-
+**它仍可能漏掉的。** 如果 AI 把故事里的错误原样写进了世界，世界本身是自洽的，什么也不会失败。第十一轮的试验里，开门事件
+只要求“门是锁着的”，这一章就通过了；v0.8.0 改为在事实名里找执行者的名字，六种省事的写法里还有五种照样通过（换一条执行者的事实、
+驼峰命名、首字母缩写、不写执行者）。从 v0.9.0 起，既不从名字猜，也不信 `requires`：有执行者的事件必须写 `place` 和 `uses`，
+WorldGuard 按 `world_model.relations` 重放整个世界来核对（否则是 `GAP EVENT_ACTOR_STATE_UNCHECKED`）。确实和这些都无关的事件
+写 `actor_state_free: <理由>`，报告和时间线都会印出理由。仍由建模者负责的：写对地点和用到的东西（写错的 `place` 按写的去查），
+以及把这些关系声明出来。
 
 **测过什么，没测过什么。**
 - 设计包报告：本版本设计期间做过一次小试验，就是上面两章灯塔故事，埋了一个错误。WorldGuard 点出了那件不可能的事，以及它缺的
   正是什么；章节交界处的错误只有树能抓住；把同一个错误写进世界本身（开门只要求门锁着）时，检查通过了，这就是本版本加了
   执行者状态检查的原因。同一次试验还发现，第 2 章才出场的人物会被误报为交接不一致，本版本已修正。
 - 设计包报告：把两章写成世界，用的 YAML 字符数大约是故事本身的三倍；读和写加起来大约 9,000 个 token。
-- 没测过：执行者状态检查在没有错误的故事上会误报多少。目前只在试验的几章和仓库自带的世界上试过，在那里它只抓出了埋下的那个错误。
+- v0.9.0 重新跑过：第十二轮那六种灯塔错误的写法（`tests/fixtures/trials/lighthouse_key/w3/`）现在都是 GAP，每种都有一行落在
+  开门事件上；写了 `actor_state_free` 的那一种会印出理由。声明过关系的这一章按上面两条关系失败。
+- 没测过：这些检查在没有错误的故事上会误报多少。目前只在试验的几章和仓库自带的世界上试过；在那里声明关系每条事实一行。
 
 
 
