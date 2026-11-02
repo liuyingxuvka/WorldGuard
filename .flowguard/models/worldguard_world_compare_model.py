@@ -56,11 +56,9 @@ def broken_variants(): return {name: make(name,{rule}) for name,rule in MUTATION
 def conformance():
     mismatches=[];checked=0
     for request in CASES:
-        try:
-            expected=next(Evaluate().apply(request,State())).new_state.status
-            for write_copy in (False,True):
-                code,report=replay(request,write_observed=write_copy)
-                if (code,report['status'])!=(0 if expected=='PASS' else 1,expected):mismatches.append(f'{request.case_id}: compare exit/status differs')
-        except Exception as exc:mismatches.append(f'{request.case_id}: native replay raised {type(exc).__name__}: {exc}')
+        expected=next(Evaluate().apply(request,State())).new_state.status
+        for write_copy in (False,True):
+            code,report=replay(request,write_observed=write_copy)
+            if (code,report['status'])!=(0 if expected=='PASS' else 1,expected):mismatches.append(f'{request.case_id}: compare exit/status differs')
         checked+=1
     return ReplayReport(checked,mismatches)

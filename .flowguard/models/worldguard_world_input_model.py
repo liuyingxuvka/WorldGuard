@@ -79,13 +79,11 @@ def broken_variants(): return {name: make(name,{rule}) for name,rule in MUTATION
 def conformance():
     mismatches=[];checked=0
     for request in CASES:
-        try:
-            code,report=replay(request)
-            expected=next(Evaluate().apply(request,State())).new_state.status
-            actual=stage_values(request,code,report)[0]
-            if actual!=expected:mismatches.append(f'{request.case_id}: stage {expected!r}, native {actual!r}')
-            if (code==2)!=(expected=='error'):mismatches.append(f'{request.case_id}: typed input exit disagrees')
-        except Exception as exc:mismatches.append(f'{request.case_id}: native replay raised {type(exc).__name__}: {exc}')
+        code,report=replay(request)
+        expected=next(Evaluate().apply(request,State())).new_state.status
+        actual=stage_values(request,code,report)[0]
+        if actual!=expected:mismatches.append(f'{request.case_id}: stage {expected!r}, native {actual!r}')
+        if (code==2)!=(expected=='error'):mismatches.append(f'{request.case_id}: typed input exit disagrees')
         checked+=1
     import hashlib,json,tempfile,io
     from pathlib import Path

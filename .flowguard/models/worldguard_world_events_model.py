@@ -100,28 +100,26 @@ def broken_variants(): return {name: make(name,{rule}) for name,rule in MUTATION
 def conformance():
     mismatches=[];checked=0
     for request in CASES:
-        try:
-            if request.case_id=='illegal_event_effect':
-                import tempfile,io,json
-                from pathlib import Path
-                from contextlib import redirect_stdout
-                from worldguard.cli import main
-                contract={'claim':{'claim_id':'illegal-effect','asserts':[{'holds':'F','at':'t2'}]},
-                    'inputs':{'events':[{'event_id':'illegal','at':'t1','requires':'missing','initiates':'F'}]}}
-                with tempfile.TemporaryDirectory() as directory:
-                    path=Path(directory)/'world.json';path.write_text(json.dumps(contract));output=io.StringIO()
-                    with redirect_stdout(output):code=main(['check','--contract',str(path),'--json'])
-                    report=json.loads(output.getvalue())
-                if report['claim_binding']['assertions'][0]['status']!='FAIL' or not any(row['code']=='CLAIM_ASSERTION_FALSE' and row.get('claim_row')==0 for row in report.get('gaps',[])):
-                    mismatches.append('illegal_event_has_no_effect: the illegal initiation still satisfies the later assertion')
-            else:
-                code,report=replay(request)
-            expected=next(Evaluate().apply(request,State())).new_state.status
-            actual=stage_values(request,code,report)[1]
-            if actual!=expected:mismatches.append(f'{request.case_id}: stage {expected!r}, native {actual!r}')
-            from _world_fixture import witness_assertions
-            witness_assertions(request,report.get('gaps',[]))
-            if report['status']!=expected:mismatches.append(f'{request.case_id}: native status differs from the event contribution')
-        except Exception as exc:mismatches.append(f'{request.case_id}: native replay raised {type(exc).__name__}: {exc}')
+        if request.case_id=='illegal_event_effect':
+            import tempfile,io,json
+            from pathlib import Path
+            from contextlib import redirect_stdout
+            from worldguard.cli import main
+            contract={'claim':{'claim_id':'illegal-effect','asserts':[{'holds':'F','at':'t2'}]},
+                'inputs':{'events':[{'event_id':'illegal','at':'t1','requires':'missing','initiates':'F'}]}}
+            with tempfile.TemporaryDirectory() as directory:
+                path=Path(directory)/'world.json';path.write_text(json.dumps(contract));output=io.StringIO()
+                with redirect_stdout(output):code=main(['check','--contract',str(path),'--json'])
+                report=json.loads(output.getvalue())
+            if report['claim_binding']['assertions'][0]['status']!='FAIL' or not any(row['code']=='CLAIM_ASSERTION_FALSE' and row.get('claim_row')==0 for row in report.get('gaps',[])):
+                mismatches.append('illegal_event_has_no_effect: the illegal initiation still satisfies the later assertion')
+        else:
+            code,report=replay(request)
+        expected=next(Evaluate().apply(request,State())).new_state.status
+        actual=stage_values(request,code,report)[1]
+        if actual!=expected:mismatches.append(f'{request.case_id}: stage {expected!r}, native {actual!r}')
+        from _world_fixture import witness_assertions
+        witness_assertions(request,report.get('gaps',[]))
+        if report['status']!=expected:mismatches.append(f'{request.case_id}: native status differs from the event contribution')
         checked+=1
     return ReplayReport(checked,mismatches)

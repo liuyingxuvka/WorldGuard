@@ -51,24 +51,22 @@ def broken_variants(): return {name: make(name,{rule}) for name,rule in MUTATION
 def conformance():
     mismatches=[];checked=0
     for request in CASES:
-        try:
-            from _world_fixture import replay_timeline
-            replay_timeline(request)
-            from _world_fixture import _real_contract
-            from worldguard.timeline import timeline, render_timeline_text
-            view=timeline(_real_contract(request))
-            rows=[line.split('fluents: ',1)[1].split(' | tokens:',1)[0] for line in render_timeline_text(view).splitlines() if 'fluents: ' in line]
-            if len(rows)!=len(view['steps']):
-                mismatches.append('timeline_shows_changes_after_start: missing steps')
-            else:
-                state=set() if rows[0]=='-' else set(rows[0].split(', '))
-                for index,(row,step) in enumerate(zip(rows,view['steps'])):
-                    if index and row!='=':
-                        for change in row.split():
-                            if change.startswith('+'):state.add(change[1:])
-                            elif change.startswith('-'):state.discard(change[1:])
-                            else:mismatches.append('timeline_shows_changes_after_start: expected a signed delta')
-                    if state!=set(step['fluents']):mismatches.append('timeline_shows_changes_after_start: text cannot reconstruct native JSON')
-        except Exception as exc:mismatches.append(f'{request.case_id}: native replay raised {type(exc).__name__}: {exc}')
+        from _world_fixture import replay_timeline
+        replay_timeline(request)
+        from _world_fixture import _real_contract
+        from worldguard.timeline import timeline, render_timeline_text
+        view=timeline(_real_contract(request))
+        rows=[line.split('fluents: ',1)[1].split(' | tokens:',1)[0] for line in render_timeline_text(view).splitlines() if 'fluents: ' in line]
+        if len(rows)!=len(view['steps']):
+            mismatches.append('timeline_shows_changes_after_start: missing steps')
+        else:
+            state=set() if rows[0]=='-' else set(rows[0].split(', '))
+            for index,(row,step) in enumerate(zip(rows,view['steps'])):
+                if index and row!='=':
+                    for change in row.split():
+                        if change.startswith('+'):state.add(change[1:])
+                        elif change.startswith('-'):state.discard(change[1:])
+                        else:mismatches.append('timeline_shows_changes_after_start: expected a signed delta')
+                if state!=set(step['fluents']):mismatches.append('timeline_shows_changes_after_start: text cannot reconstruct native JSON')
         checked+=1
     return ReplayReport(checked,mismatches)

@@ -65,6 +65,45 @@ def test_a_timeless_spatial_row_keeps_the_same_time_check():
     assert "WORLD_SPACE_TOKEN_MISMATCH" in {row["code"] for row in report.gaps}
 
 
+def test_a_timeless_spatial_row_is_named_as_not_compared():
+    world = _space_world()
+    world["inputs"]["spatial_relations"].append({"x": "lamp", "y": "tower", "relation": "NTPP"})
+    limits = run_worldguard(world).scope_limits
+    assert ("space/token agreement: 1 spatial row without at is not compared with token places (lamp NTPP tower); "
+            "give at to compare them") in limits
+
+
+def test_an_untimed_event_says_the_space_token_check_did_not_run():
+    """Before: an event without `at` switched the space/token comparison off without a word."""
+    world = _space_world()
+    world["inputs"]["events"].append({"event_id": "e_wait", "requires": "out", "initiates": "out"})
+    report = run_worldguard(world)
+    (row,) = [row for row in report.gaps if row["code"] == "WORLD_TOKEN_CHECK_NOT_RUN" and row["check"] == "space_token"]
+    assert row["problem"] == {"kind": "untimed_events", "events": ["e_wait"]}
+    assert row["message"] == "e_wait has no at time, so the space/token check did not run"
+
+
+def test_an_untimed_event_says_the_event_token_check_did_not_run_without_event_checks():
+    """With only resource checks requested, no EventGuard gap says the time is missing; this row does."""
+    world = _token_world()
+    world["claim"] = {"requested_semantics": ["resource"], "asserts": [{"place": "other", "qty": 1}]}
+    world["inputs"]["events"].append({"event_id": "e_wait", "requires": "out", "initiates": "out"})
+    report = run_worldguard(world)
+    assert report.status.value == "GAP"
+    (row,) = [row for row in report.gaps if row["code"] == "WORLD_TOKEN_CHECK_NOT_RUN"]
+    assert row["check"] == "event_token" and row["problem"]["events"] == ["e_wait"]
+
+
+def test_a_token_that_is_not_one_in_one_place_is_named_as_not_compared():
+    world = _space_world()
+    world["inputs"]["resources"]["unique"] = []
+    world["inputs"]["resources"]["places"]["start"] = [{"color": "traveler", "qty": 2}]
+    world["inputs"]["resources"]["transitions"][0]["consumes"][0]["qty"] = 1
+    limits = run_worldguard(world).scope_limits
+    assert ("space/token agreement: traveler is not one token in one place at t2, so its spatial rows there are not "
+            "compared with token places") in limits
+
+
 def test_a_malformed_event_beside_good_ones_is_the_typed_gap_not_a_crash():
     world = _token_world()
     world["inputs"]["events"].append("e_unlock at t0")
@@ -158,7 +197,7 @@ def _write(tmp_path, world, name="world.yaml"):
 
 
 @pytest.mark.parametrize("command", ["check", "timeline", "lifeline", "mesh-check"])
-@pytest.mark.parametrize("fault", [ValueError, TypeError, KeyError], ids=lambda fault: fault.__name__)
+@pytest.mark.parametrize("fault", [ValueError, TypeError, KeyError, OSError, UnicodeError], ids=lambda fault: fault.__name__)
 def test_an_internal_error_in_a_check_is_raised_not_called_an_input_error(monkeypatch, tmp_path, capsys, command, fault):
     from worldguard import qualification
 
@@ -194,6 +233,73 @@ def test_an_internal_value_error_in_a_view_is_raised(monkeypatch, tmp_path, modu
             "compare_world": ["compare", "--contract", str(path), "--observed", str(_write(tmp_path, {"events": {}}, "seen.yaml"))]}[name]
     with pytest.raises(ValueError, match="injected view failure"):
         main(args)
+
+
+SLIP = ROOT / "tests/fixtures/trials/lighthouse_key/ch2_slip.yaml"
+ENGINE = [("worldguard.qualification", "actor_relation_rows"), ("worldguard.qualification", "evaluate_claim_binding"),
+          ("worldguard.relations", "event_replay"), ("worldguard.relations", "fluent_values"),
+          ("worldguard.qualification", "relation_conflicts"), ("worldguard.claim_binding", "event_replay")]
+
+
+@pytest.mark.parametrize("command", ["check", "timeline", "lifeline"])
+@pytest.mark.parametrize("module,name", ENGINE, ids=lambda value: value.rsplit(".", 1)[-1])
+@pytest.mark.parametrize("fault", [OSError, UnicodeError], ids=lambda fault: fault.__name__)
+def test_a_file_error_raised_inside_the_engine_is_not_an_input_error(monkeypatch, tmp_path, capsys, command, module, name, fault):
+    """Only reading the given files can be an input problem; the same error type later in the run is a fault."""
+    import importlib
+
+    def broken(*args, **kwargs):
+        raise fault("injected inside the engine")
+
+    path = tmp_path / "ch2.yaml"
+    path.write_text(SLIP.read_text(encoding="utf-8"), encoding="utf-8")
+    monkeypatch.setattr(importlib.import_module(module), name, broken)
+    with pytest.raises(fault, match="injected inside the engine"):
+        main([command, "--contract", str(path)] + (["--of", "Lena"] if command == "lifeline" else []))
+    assert "WORLDGUARD_INPUT_INVALID" not in capsys.readouterr().out
+
+
+def _unreadable(tmp_path, kind):
+    if kind == "missing":
+        return tmp_path / "absent.yaml", "cannot be read"
+    if kind == "directory":
+        (tmp_path / "folder.yaml").mkdir()
+        return tmp_path / "folder.yaml", "cannot be read"
+    path = tmp_path / "latin1.yaml"
+    path.write_bytes("contract_id: caf\xe9\n".encode("latin-1"))
+    return path, "cannot be read"
+
+
+@pytest.mark.parametrize("kind", ["missing", "directory", "not utf-8"])
+@pytest.mark.parametrize("command", ["check", "timeline", "lifeline", "mesh-check", "compare"])
+def test_a_file_that_cannot_be_read_is_an_input_error_naming_it(tmp_path, capsys, kind, command):
+    path, needle = _unreadable(tmp_path, kind)
+    if command == "mesh-check":
+        args = ["mesh-check", "--mesh", str(path)]
+    elif command == "compare":
+        args = ["compare", "--contract", str(_write(tmp_path, _token_world())), "--observed", str(path)]
+    else:
+        args = [command, "--contract", str(path)] + (["--of", "Lena"] if command == "lifeline" else [])
+    assert main(args) == 2
+    error = json.loads(capsys.readouterr().out)["error"]
+    assert error["code"] == "WORLDGUARD_INPUT_INVALID" and str(path) in error["message"] and needle in error["message"]
+
+
+def test_a_chapter_file_that_cannot_be_read_names_the_chapter(tmp_path, capsys):
+    tree = _write(tmp_path, {"mesh_id": "m", "nodes": [{"model_id": "ch9", "contract": "ch9.yaml"}]}, "tree.yaml")
+    assert main(["mesh-check", "--mesh", str(tree)]) == 2
+    message = json.loads(capsys.readouterr().out)["error"]["message"]
+    assert "node ch9 contract" in message and "cannot be read" in message
+
+
+def test_an_observed_copy_that_would_overwrite_a_file_is_an_input_error(tmp_path, capsys):
+    world = _write(tmp_path, _token_world())
+    seen = _write(tmp_path, {"events": {}}, "seen.yaml")
+    existing = tmp_path / "copy.json"
+    existing.write_text("keep me")
+    assert main(["compare", "--contract", str(world), "--observed", str(seen), "--write-observed", str(existing)]) == 2
+    assert "cannot be written" in json.loads(capsys.readouterr().out)["error"]["message"]
+    assert existing.read_text() == "keep me"
 
 
 @pytest.mark.parametrize("text,needle", [("{not json", "is not valid JSON"), ("[1, 2]", "did not contain a mapping")])

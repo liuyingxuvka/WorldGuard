@@ -48,7 +48,7 @@ class ModelNode:
             path = Path(base_dir or ".") / contract
             try:
                 contract = load_mapping(path)
-            except (OSError, UnicodeError, WorldInputError) as exc:
+            except WorldInputError as exc:
                 raise WorldInputError(f"node {data.get('model_id', '')} contract {path}: {exc}") from exc
         if contract is not None and not isinstance(contract, Mapping):
             raise WorldInputError("model node contract must be a mapping, file path or null")

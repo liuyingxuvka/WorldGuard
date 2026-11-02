@@ -15,6 +15,8 @@ The project's test command is `python -m pytest -q`; the whole suite takes secon
 
 Version numbers: raise the second number for a release with new features and the third number only for small fixes; never skip a number.
 
+One route per function: when a step fails, the error reaches the caller or is reported with its text; never a quiet default, a skipped check or a second path. Invalid input raises `WorldInputError` (exit 2); any other error is raised. `tests/test_error_handlers.py` lists every exception handler that can end without raising, per function with its count, its reason and the written rule it serves, and refuses `contextlib.suppress`, warning filters and a `return` inside `finally`; no test or test module may end skipped, expected to fail or cut short (`tests/conftest.py` turns each into a failure).
+
 The skill has no committed runtime copy: `scripts/install_skill.py` copies `worldguard/` into the installed skill.
 
 Domain operations use the portable WorldGuard skill and its native runtime directly. No author-supervision framework or receipt is required.

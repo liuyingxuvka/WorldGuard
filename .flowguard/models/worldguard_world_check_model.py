@@ -185,22 +185,20 @@ def conformance():
     mismatches=[];checked=0;requests={q.case_id:q for q in CASES}
     for case in dict.fromkeys((*OWN_CASES,*CHILD_RESULTS)):
         request=requests[case]
-        try:
-            code,report=replay(request);state=outcome(request)
-            if (code,report['status'])!=(state.exit_code,state.status):mismatches.append(f'{case}: exit/status differs')
-            if case in CHILD_RESULTS and stage_values(request,code,report)!=CHILD_RESULTS[case]:mismatches.append(f'{case}: coarse received values differ from native contributions')
-            gaps=report.get('gaps',[])
-            if request.actor_state=='unchecked':
-                actor_rows=[row for row in gaps if row['code']=='EVENT_ACTOR_STATE_UNCHECKED']
-                if (len(actor_rows)!=1 or any(actor_rows[0].get(key)!=value for key,value in
-                        {'status':'GAP','event_id':'unlock','actor':'Lena','source':'actor fixture',
-                         'missing':['place','uses']}.items())):
-                    mismatches.append('actor_state_checked: native gap does not name the event, actor and missing place and uses')
-            if request.actor_state=='free':
-                if gaps or 'actor_state_free unlock (Lena): the door opens from either side' not in report['scope_limits']:
-                    mismatches.append('actor_state_checked: native free exemption omitted its reason or did not pass')
-            identities=[(row['code'],row.get('guard'),row.get('claim_row'),row.get('variant_id'),row.get('event_id')) for row in gaps]
-            if len(identities)!=len(set(identities)):mismatches.append(f'{case}: one_row_per_problem failed')
-        except Exception as exc:mismatches.append(f'{case}: native replay raised {type(exc).__name__}: {exc}')
+        code,report=replay(request);state=outcome(request)
+        if (code,report['status'])!=(state.exit_code,state.status):mismatches.append(f'{case}: exit/status differs')
+        if case in CHILD_RESULTS and stage_values(request,code,report)!=CHILD_RESULTS[case]:mismatches.append(f'{case}: coarse received values differ from native contributions')
+        gaps=report.get('gaps',[])
+        if request.actor_state=='unchecked':
+            actor_rows=[row for row in gaps if row['code']=='EVENT_ACTOR_STATE_UNCHECKED']
+            if (len(actor_rows)!=1 or any(actor_rows[0].get(key)!=value for key,value in
+                    {'status':'GAP','event_id':'unlock','actor':'Lena','source':'actor fixture',
+                     'missing':['place','uses']}.items())):
+                mismatches.append('actor_state_checked: native gap does not name the event, actor and missing place and uses')
+        if request.actor_state=='free':
+            if gaps or 'actor_state_free unlock (Lena): the door opens from either side' not in report['scope_limits']:
+                mismatches.append('actor_state_checked: native free exemption omitted its reason or did not pass')
+        identities=[(row['code'],row.get('guard'),row.get('claim_row'),row.get('variant_id'),row.get('event_id')) for row in gaps]
+        if len(identities)!=len(set(identities)):mismatches.append(f'{case}: one_row_per_problem failed')
         checked+=1
     return ReplayReport(checked,mismatches)

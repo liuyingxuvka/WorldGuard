@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any
-from .io import dump_json, load_mapping, input_digests
+from .io import dump_json, load_mapping, input_digests, write_new
 from .errors import WorldInputError
 
 FULL_OUTPUT_HINT = "summary only; add --json for the full report"
@@ -149,9 +149,8 @@ def _run(argv):
             else:
                 result = compare_mesh(world, observed) if args.mesh else compare_world(world, observed)
             if args.write_observed:
-                with Path(args.write_observed).open("x", encoding="utf-8") as stream:
-                    stream.write(dump_json(copied) + "\n")
-        except (OSError, UnicodeError, WorldInputError) as exc:
+                write_new(args.write_observed, dump_json(copied) + "\n")
+        except WorldInputError as exc:
             return _input_error("compare", f"{path} / {args.observed}", exc)
         print(dump_json(result))
         return 0 if result["status"] == "PASS" else 1
@@ -178,7 +177,7 @@ def _run(argv):
                 view = lifeline(args.of, contract=contract, report=report, limit=None if args.all else DEFAULT_LIMIT)
                 units = contract_units(args.contract, contract, report)
             text = render_mermaid(view)
-        except (OSError, UnicodeError, WorldInputError) as exc:
+        except WorldInputError as exc:
             return _input_error("lifeline", args.mesh or args.contract or args.example, exc)
         notice = ""
         if not args.example:
@@ -232,7 +231,7 @@ def _run(argv):
                 view = timeline(contract, scenario=args.scenario, report=report)
                 text = dump_json(view) if args.json else render_timeline_text(view, full=args.full)
                 units = contract_units(args.contract, contract, report)
-        except (OSError, UnicodeError, WorldInputError) as exc:
+        except WorldInputError as exc:
             return _input_error("timeline", args.mesh or args.contract or args.example, exc)
         notice = ""
         if not args.example:
@@ -254,7 +253,7 @@ def _run(argv):
             contract = GuardContract.from_dict(load_mapping(path))
             report = run_worldguard(contract)
             digests = input_digests([path], Path(path).parent)
-        except (OSError, UnicodeError, WorldInputError) as exc:
+        except WorldInputError as exc:
             return _input_error("check", args.example or args.contract, exc)
         notice = ""
         if not args.example:
@@ -278,7 +277,7 @@ def _run(argv):
             report = run_model_mesh(mesh)
             paths = [path, *[base_dir / node['contract'] for node in data.get('nodes', []) if isinstance(node.get('contract'), str)]]
             digests = input_digests(paths, base_dir)
-        except (OSError, UnicodeError, WorldInputError) as exc:
+        except WorldInputError as exc:
             return _input_error("mesh-check", args.example or args.mesh, exc)
         notice = ""
         if not args.example:

@@ -264,8 +264,10 @@ python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
-`tests/test_error_handlers.py` 列出了 WorldGuard 里每一个可以不重新抛出就结束的错误处理，写明它做什么、为什么需要；
-这份清单和源码对照检查，跳过的测试会让整轮测试失败。无效输入抛出 `WorldInputError`（退出码 2），其他任何错误都是程序的错，直接抛出。
+`tests/test_error_handlers.py` 列出了 WorldGuard 的代码、脚本、测试和旧模型里每一个可以不重新抛出就结束的错误处理：
+每个函数里有几个、各自做什么、为什么需要，以及它出自哪条写下来的规则（引用那份文件里的原句）。清单和源码对照检查，
+引用的句子也和原文件对照检查。测试或测试模块被跳过、被标成"预期失败"，或者整轮测试被提前结束，都算失败。
+无效输入（包括读不了的文件）抛出 `WorldInputError`（退出码 2），其他任何错误都是程序的错，带着回溯直接抛出。
 
 `test` 这一组会装上 pytest 和 FlowGuard：WorldGuard 用 FlowGuard 维护自己，这一组里钉着本版本开发时用的 FlowGuard 版本。
 FlowGuard 只从它的 git tag 安装（`git+https://github.com/liuyingxuvka/FlowGuard.git@<tag>`），因为 PyPI 上同名的包是另一个项目。

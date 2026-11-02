@@ -11,6 +11,8 @@ import re
 from unittest.mock import patch
 from urllib.parse import unquote, urlsplit
 
+import pytest
+
 from worldguard.cli import main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,10 +33,9 @@ def _cli_options():
     with patch.object(argparse._ActionsContainer, "add_argument", record):
         with redirect_stdout(StringIO()):
             for args in HELP_ARGS:
-                try:
+                with pytest.raises(SystemExit) as stop:
                     main(args)
-                except SystemExit as error:
-                    assert error.code == 0
+                assert stop.value.code == 0
     return flags
 
 
@@ -89,30 +90,24 @@ def _check(route, texts, flags):
             assert target.exists(), f"{route}: missing path: {code}"
 
 
-def test_route_texts_have_no_repeats_dead_links_or_missing_names():
-    flags = _cli_options()
-    errors = []
+def _routes():
     entry = SKILL / "SKILL.md"
-    routes = sorted(
+    return sorted(
         {
             (entry.parent / urlsplit(link).path).resolve()
             for link in LINKS.findall(entry.read_text())
             if urlsplit(link).path.startswith("references/")
         }
     )
-    for route in routes:
-        files = {entry, route}
-        try:
-            for path in files:
-                assert path.is_file(), f"{route.name}: missing reference: {path}"
-            texts = {path: path.read_text() for path in sorted(files)}
-            _check(route.name, texts, flags)
-        except AssertionError as error:
-            errors.append(str(error))
-        print(
-            f"route {route.name}: {sum(len(p.read_text()) for p in files if p.is_file())} characters"
-        )
-    assert not errors, "\n".join(errors)
+
+
+@pytest.mark.parametrize("route", _routes(), ids=lambda path: path.name)
+def test_route_texts_have_no_repeats_dead_links_or_missing_names(route):
+    """Each route the skill links is its own test, so every broken route is reported."""
+    files = {SKILL / "SKILL.md", route}
+    for path in files:
+        assert path.is_file(), f"{route.name}: missing reference: {path}"
+    _check(route.name, {path: path.read_text() for path in sorted(files)}, _cli_options())
 
 
 def test_skill_has_three_references_and_the_model_tree_block():

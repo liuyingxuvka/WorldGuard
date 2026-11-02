@@ -124,10 +124,8 @@ def test_skill_files_name_only_existing_commands(monkeypatch):
         parsers.append(parser)
         raise ParserCaptured
     monkeypatch.setattr(argparse.ArgumentParser, "parse_args", capture)
-    try:
+    with pytest.raises(ParserCaptured):
         main([])
-    except ParserCaptured:
-        pass
     commands = next(action.choices for action in parsers[0]._actions
                     if isinstance(action, argparse._SubParsersAction))
     paths = [SKILL / "SKILL.md", *sorted((SKILL / "references").glob("*.md")), SKILL.parents[1] / "README.md"]

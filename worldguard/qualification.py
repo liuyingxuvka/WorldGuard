@@ -110,6 +110,14 @@ def _token_check_not_run(check, problem):
             'message': f'the token world cannot be replayed, so the {check.replace("_", "/")} check did not run'}
 
 
+def _untimed_not_run(check, untimed):
+    """Events without a time cannot be ordered against the tokens, so the check did not run (whatever Guards run)."""
+    return {'code': 'WORLD_TOKEN_CHECK_NOT_RUN', 'status': 'GAP', 'check': check,
+            'problem': {'kind': 'untimed_events', 'events': untimed},
+            'message': f'{", ".join(untimed)} {"has" if len(untimed) == 1 else "have"} no at time, so the '
+                       f'{check.replace("_", "/")} check did not run'}
+
+
 def _event_token_consistency(contract):
     """Compare the two declared views using the native timeline replay."""
     inputs = contract.inputs
@@ -125,9 +133,6 @@ def _event_token_consistency(contract):
         return [{'code': 'RESOURCE_TRANSITION_UNLINKED', 'status': 'GAP',
                  'missing_slots': unlinked,
                  'message': 'every token transition must name the event that fires it'}]
-    # A missing clock is already a native EventGuard GAP, never an input error here.
-    if any('at' not in event for event in events):
-        return []
     initial = inputs.get('event_model', {}).get('initial_states', [])
     known = set(initial) if isinstance(initial, Mapping) else set(fluent_values(initial))
     for event in events:
@@ -137,6 +142,10 @@ def _event_token_consistency(contract):
     names = known & resources.get('places', {}).keys()
     if not names:
         return []
+    # A missing clock is not an input error; the check that needs it says it did not run.
+    untimed = [str(event.get('event_id', '-')) for event in events if 'at' not in event]
+    if untimed:
+        return [_untimed_not_run('event_token', untimed)]
     _, malformed = token_replay(resources, validate=False, events=events)
     if malformed:
         return [_token_check_not_run('event_token', malformed)]
@@ -219,25 +228,43 @@ def _space_relation(place, region, closure, apart):
     return "unrelated"
 
 
+def _spatial_text(row):
+    return f"{row.get('x')} {row.get('relation')} {row.get('y')}"
+
+
 def _space_token_consistency(contract):
-    """A single token's replayed place must agree with the spatial relations declared at the same time."""
+    """(gaps, scope limits): a single token's replayed place must agree with the spatial relations declared at the
+    same time. Rows the comparison cannot use are named in the scope limits instead of being left out silently."""
     inputs = contract.inputs
-    # Only rows that name an instant are compared with the token at that instant; a timeless row has none.
-    relations = [row for row in inputs.get("spatial_relations", []) or [] if isinstance(row, Mapping) and "at" in row]
+    rows = [row for row in inputs.get("spatial_relations", []) or [] if isinstance(row, Mapping)]
     resources = inputs.get("resources", {})
-    if not relations or not resources.get("places"):
-        return []
+    if not rows or not resources.get("places"):
+        return [], []
+    # Only rows that name an instant are compared with the token at that instant; a timeless row has none.
+    relations = [row for row in rows if "at" in row]
+    timeless = [_spatial_text(row) for row in rows if "at" not in row]
+    limits = []
+    if timeless:
+        shown = "; ".join(timeless[:5]) + (f"; and {len(timeless) - 5} more" if len(timeless) > 5 else "")
+        limits.append(f"space/token agreement: {len(timeless)} spatial row{'s' if len(timeless) != 1 else ''} without "
+                      f"at {'are' if len(timeless) != 1 else 'is'} not compared with token places ({shown}); give at "
+                      "to compare them")
+    if not relations:
+        return [], limits
     events = [row for row in inputs.get("events", []) if isinstance(row, Mapping) and not row.get("scenario_id")]
-    if any("at" not in event for event in events):
-        return []
+    untimed = [str(event.get("event_id", "-")) for event in events if "at" not in event]
+    if untimed:
+        return [_untimed_not_run("space_token", untimed)], limits
     _, malformed = token_replay(resources, validate=False, events=events)
     if malformed:
-        return [_token_check_not_run('space_token', malformed)]
+        return [_token_check_not_run('space_token', malformed)], limits
     # Event and spatial times were validated on one clock when the contract was read.
     steps = timeline(contract)["steps"]
     instants = [(time_key(row["at"]), row) for row in relations]
     stepped = [(time_key(step["at"]) if step["at"] is not None else None, step) for step in steps]
     unique = set(map(str, resources.get("unique", [])))
+    colors = {str(color) for step in steps for place in step.get("tokens", {}).values() for color in place}
+    several: dict[str, list[str]] = {}
     gaps = []
     reported = set()
     for instant, row in instants:
@@ -252,6 +279,8 @@ def _space_token_consistency(contract):
         places = {place: colors.get(color, 0) for place, colors in current.get("tokens", {}).items()}
         held = [place for place, quantity in places.items() if quantity > 0]
         total = sum(quantity for quantity in places.values() if quantity > 0)
+        if color in colors and (len(held) != 1 or not (color in unique or total == 1)):
+            several.setdefault(color, []).append(str(row.get("at")))
         if len(held) != 1 or not (color in unique or total == 1):
             continue
         place = held[0]
@@ -270,7 +299,10 @@ def _space_token_consistency(contract):
         gaps.append({"code": code, "status": status, "message": message,
                      "counterexample": {"at": row.get("at"), "x": color, "token_place": place,
                                         "spatial_region": region, "relation": relation}})
-    return gaps
+    for color, times in sorted(several.items()):
+        limits.append(f"space/token agreement: {color} is not one token in one place at {', '.join(dict.fromkeys(times))}, "
+                      "so its spatial rows there are not compared with token places")
+    return gaps, limits
 
 
 def qualify_guard_contract(contract, *, context=None):
@@ -288,8 +320,9 @@ def qualify_guard_contract(contract, *, context=None):
                                      descendant_ids=context.descendant_ids if context else frozenset())
     gaps = [{"code": "QUALIFICATION_SEMANTIC_UNMAPPED", "status": "GAP", **row} for row in unmapped]
     gaps.extend(_event_token_consistency(contract))
-    gaps.extend(_space_token_consistency(contract))
-    scope_limits = list(contract.world_model.scope_limits)
+    space_gaps, space_limits = _space_token_consistency(contract)
+    gaps.extend(space_gaps)
+    scope_limits = list(contract.world_model.scope_limits) + space_limits
     events = [event for event in contract.inputs.get('events', []) if isinstance(event, Mapping)]
     for event in events:
         if 'actor_state_free' in event:

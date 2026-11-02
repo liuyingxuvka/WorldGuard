@@ -294,9 +294,11 @@ python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
-`tests/test_error_handlers.py` lists every error handler in WorldGuard that can finish without raising, with what it
-does and why it is needed; the list is checked against the source, and a skipped test fails the run. Invalid input
-raises `WorldInputError` (exit 2); any other error is a fault and is raised.
+`tests/test_error_handlers.py` lists every error handler in WorldGuard, its scripts, tests and legacy models that can
+finish without raising, with how many there are in each function, what each does, why it is needed and the sentence of
+the written rule it serves; the list is checked against the source and the sentences against their files. A test or a
+test module that ends skipped or expected to fail, or a run cut short, fails. Invalid input, including a file that
+cannot be read, raises `WorldInputError` (exit 2); any other error is a fault and is raised with its traceback.
 
 The `test` extra adds pytest and FlowGuard, which WorldGuard uses to maintain itself; the extra pins the FlowGuard
 release this version is developed with. FlowGuard is installed only from its git tag
