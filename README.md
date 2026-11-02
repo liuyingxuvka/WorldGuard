@@ -191,8 +191,9 @@ closes only when the check that found it asks the same question of its own file 
 mainland just before event e_give_key now"). While that check does not reach it (no relation or actor declared, an event
 without a time, an exemption, a gap there, a Guard that no longer runs) it stays open and says why; if the story changes
 so the question is no longer asked there, it closes and says what the event needs now. Renaming, moving or deleting the
-chapter's file closes nothing: the entry says the file is gone, naming the path it was last seen at, and moves with the
-chapter's world (`contract_id`) when that is checked under its new path. To talk it through with a person,
+chapter's file closes nothing: the entry says the file is gone, naming the path it was last seen at, until the
+chapter's world (`contract_id`) is checked under its new path; there it moves along with the same contradiction, or
+closes when the same question passes. To talk it through with a person,
 draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
 
 ```console
