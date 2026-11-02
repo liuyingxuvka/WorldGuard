@@ -248,17 +248,21 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
             rows.append(row)
             continue
         established = {fluent: {"event_id": None, "at": None} for fluent in fluent_values(initial)}
-        states = [(None, None, frozenset(fluent_values(initial)))]
+        # (the instant, what holds after all its events, the events of that instant that started each fact, in order)
+        states = [(None, frozenset(fluent_values(initial)), {})]
         for instant, group in groupby(event_replay(applicable, initial, scenario, skip_illegal=True),
                                       key=lambda row: time_key(row[0]["at"])):
             group = list(group)
+            started: dict[str, list[str]] = {}
             for event, before, after in group:
                 for fluent in set(after) - set(before):
                     established[fluent] = {"event_id": event.get("event_id"), "at": event["at"],
                                            **({"source": event["source"]} if event.get("source") else {})}
-            states.append((group[-1][0].get("event_id"), group[-1][0]["at"], group[-1][2]))
+                    started.setdefault(fluent, []).append(str(event.get("event_id")))
+            states.append((group[-1][0]["at"], group[-1][2], started))
+        order = {str(event.get("event_id")): index for index, event in enumerate(applicable)}
         reported = set()
-        for event_id, at, holding in states:
+        for at, holding, started in states:
             groups: dict[tuple[str, str], list[str]] = {}
             for fluent in sorted(holding):
                 if fluent in relations:
@@ -271,9 +275,12 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
                 values = [relations[f][2] if kind == "at" else relations[f][1] for f in fluents]
                 message = (f"{who} is at {' and '.join(values)} at once" if kind == "at"
                            else f"{who} is held by {' and '.join(values)} at once")
+                # Found at the events of this instant that started one of the clashing facts, never at a neighbour of
+                # the same time; a conflict the chapter starts with is found at no event.
+                causes = sorted({event for fluent in fluents for event in started.get(fluent, [])}, key=order.__getitem__)
                 row = {"code": "WORLD_RELATION_CONFLICT", "status": "FAIL", "relation": kind,
                        "subject" if kind == "at" else "object": who, "fluents": fluents,
-                       "event_id": event_id, "at": at,
+                       "event_id": causes[-1] if causes else None, **({"event_ids": causes} if causes else {}), "at": at,
                        "established_by": {fluent: established.get(fluent, {}) for fluent in fluents},
                        "message": message + "; end one of these facts where the other begins."}
                 if scenario:

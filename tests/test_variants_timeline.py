@@ -313,3 +313,10 @@ def test_timeline_names_the_uncaught_variant(capsys, tmp_path):
     assert report.status.value == 'GAP'
     problem = next(row for row in timeline(world, report=report)['problems'] if row['code'] == 'VARIANT_NOT_CAUGHT')
     assert problem['evidence'] == 'variant same: expected FAIL, got PASS'
+
+
+def test_timeline_marks_the_event_that_causes_a_conflict_not_its_neighbour_at_the_same_time():
+    world = yaml.safe_load((Path(__file__).parent / "fixtures/trials/conflict_same_time.yaml").read_text())
+    view = timeline(world, report=run_worldguard(world))
+    assert [(step["event_id"], step.get("problems")) for step in view["steps"]] == [
+        (None, None), ("e_grab", ["WORLD_RELATION_CONFLICT"]), ("e_wave", [])]

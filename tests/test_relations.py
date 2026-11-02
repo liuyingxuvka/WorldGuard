@@ -142,6 +142,19 @@ def test_two_places_at_once_names_the_facts_that_established_them():
     assert report.status.value == "FAIL"
 
 
+def test_a_conflict_is_found_at_the_events_that_start_the_clashing_facts():
+    # At 18:00 Tom grabs the key Lena still holds, and Lena waves at the same time: the grab makes the key's second holder.
+    contract = yaml.safe_load((LIGHTHOUSE.parent / "conflict_same_time.yaml").read_text())
+    (row,) = _rows(run_worldguard(contract), "WORLD_RELATION_CONFLICT")
+    assert (row["event_id"], row["event_ids"], row["at"]) == ("e_grab", ["e_grab"], "18:00")
+    # Two events of the same instant start one holder each: both cause the conflict, the wave still does not.
+    contract["inputs"]["event_model"]["initial_states"].remove("lena_has_key")
+    contract["inputs"]["events"].insert(0, {"event_id": "e_take", "at": "18:00", "actor": "Lena", "place": "mainland",
+                                            "uses": [], "initiates": ["lena_has_key"]})
+    (row,) = _rows(run_worldguard(contract), "WORLD_RELATION_CONFLICT")
+    assert (row["event_id"], row["event_ids"]) == ("e_grab", ["e_take", "e_grab"])
+
+
 def test_a_fact_already_in_requires_is_reported_once():
     contract = _declared_slip()
     _event(contract, "e_unlock")["requires"] = ["lena_has_key", "lena_on_island", "door_locked"]

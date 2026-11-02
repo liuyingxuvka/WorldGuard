@@ -195,7 +195,9 @@ an event names: ...` with the place it claims. To check where a thing is acted o
 {at: [door, island]}`) and name it in `with`; then a wrong place is GAP `EVENT_RELATION_UNDECLARED`. An event without
 `at` stops the replay of its scenario: GAP `WORLD_RELATION_CHECK_NOT_RUN` lists the untimed events, whatever Guards run.
 After each instant, a person at two declared places or a thing with two holders is FAIL `WORLD_RELATION_CONFLICT`, with
-the event (and source) that established each fact. These checks run regardless of requested Guards. Like a token
+the event (and source) that established each fact. The row is found at the event of that instant that started one of
+the clashing facts (`event_id`; `event_ids` lists every such event when two events of the instant start one each), never
+at another event of the same time; a conflict the world starts with is found at no event. These checks run regardless of requested Guards. Like a token
 mismatch, an `EVENT_RELATION_UNMET` event still changes the replayed state; only failed `requires` block effects.
 
 ## Actions and norms

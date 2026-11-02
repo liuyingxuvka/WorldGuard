@@ -1,12 +1,13 @@
 """One character's or one thing's life, drawn from the world model for a discussion with the owner.
 
 The picture is computed, never drawn by hand: the facts `world_model.relations` declares about the entity, replayed
-event by event through each chapter in reading order, and only the events the entity takes part in or whose effects
-change those facts. A problem of the native reports is marked where it happens, on the picture of each entity it is
-about: the people, things and places of the declared facts it names (the fact an event needs, the facts that clash,
-the facts an event lacks). A problem that names no declared fact is about the event itself and is marked on every
-picture that draws the event. Everything else is left out, and the text under the picture says what was left out,
-including the problems at drawn steps that are about others.
+event by event through each chapter in reading order, and only the events the entity takes part in, whose effects
+change those facts, or where a problem about the entity is found. A problem of the native reports is marked where it
+happens (a conflict at the events that started the clashing facts), on the picture of each entity it is about: the
+people, things and places of the declared facts it names (the fact an event needs, the facts that clash, the facts an
+event lacks). A problem that names no declared fact is about the event itself and is marked on every picture that
+draws the event. Everything else is left out, and the text under the picture says what was left out, including the
+problems at drawn steps that are about others.
 """
 
 from __future__ import annotations
@@ -46,6 +47,12 @@ def _about(row, relations):
     fluents = [*row.get("fluents", []), row.get("fluent"), *counterexample.get("missing_fluents", []), evidence.get("fluent")]
     named = {entity for fluent in fluents if fluent in relations for entity in relations[fluent][1:]}
     return named | {row[key] for key in ("subject", "object") if row.get(key)}
+
+
+def _found_at(row):
+    """The events a problem row is found at: its event, every event that caused it (a conflict started by two events
+    of one instant names both), or its counterexample's event."""
+    return {row.get("event_id"), *row.get("event_ids", []), (row.get("counterexample") or {}).get("event_id")} - {None}
 
 
 def _state(holding, facts, entity):
@@ -103,12 +110,11 @@ def lifeline(entity: str, *, contract=None, mesh=None, report=None, limit: int |
         any_untimed = any("at" not in event for event in events)
         replay = [] if any_untimed else event_replay(events, initial, skip_illegal=True)
         for event, _before, after in replay:
-            if not _involves(event, entity, facts):
+            here = [row for row in rows if row.get("status") == "FAIL" and (row.get("node_id") in (chapter, None))
+                    and event.get("event_id") in _found_at(row)]
+            if not _involves(event, entity, facts) and not any(entity in _about(row, relations) for row in here):
                 left_out["events"].append(f"{chapter + ' ' if chapter else ''}{event.get('event_id')}")
                 continue
-            here = [row for row in rows if row.get("status") == "FAIL" and (row.get("node_id") in (chapter, None)) and (
-                row.get("event_id") == event.get("event_id")
-                or (row.get("counterexample") or {}).get("event_id") == event.get("event_id"))]
             codes, where = set(), f"{chapter + ' ' if chapter else ''}{event.get('event_id')}"
             for row in here:
                 about = _about(row, relations)

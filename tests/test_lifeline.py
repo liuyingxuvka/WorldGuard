@@ -142,3 +142,16 @@ def test_a_conflict_marks_every_entity_whose_facts_clash(capsys, story):
     for entity in ("Tom", "Lena", "key"):
         _code, out = _picture(capsys, "--contract", path, "--of", entity)
         assert any(line.startswith('  n0 -->|"18:00 e_give_key (ch2 p1) !! WORLD_RELATION_CONFLICT') for line in out.splitlines()), entity
+
+
+def test_a_conflict_is_marked_at_the_event_that_causes_it_on_each_picture_it_is_about(capsys, tmp_path):
+    # At 18:00 Tom grabs the key Lena still holds, and Lena waves at the same time. The grab gives the key its second
+    # holder; the wave changes nothing about the key.
+    path = tmp_path / "conflict_same_time.yaml"
+    shutil.copyfile(LIGHTHOUSE.parent / "conflict_same_time.yaml", path)
+    for entity in ("Tom", "key", "Lena"):
+        _code, out = _picture(capsys, "--contract", path, "--of", entity)
+        assert any(line.startswith('  n0 -->|"18:00 e_grab !! WORLD_RELATION_CONFLICT"|') for line in out.splitlines()), entity
+        assert not any("e_wave !!" in line for line in out.splitlines()), entity
+    # The grab is not Lena's own event, but the conflict is about her key: her picture draws it where it happens.
+    assert '  n1 -->|"18:00 e_wave"| n1' in out.splitlines() and "1 event without Lena" not in out
