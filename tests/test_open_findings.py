@@ -590,3 +590,55 @@ def test_a_gone_file_whose_contradiction_is_in_two_checked_files_is_not_followed
     assert sorted(entries) == ["a.yaml", "b.yaml"]
     assert (entries["b.yaml"]["first_seen"], entries["b.yaml"]["moved_from"]) == (before["first_seen"], ["ch2_slip.yaml"])
     assert "moved_from" not in entries["a.yaml"]
+
+
+def test_an_entry_recorded_without_its_world_id_says_so_and_how_to_settle_it(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    record = _record(story)
+    (old,) = record["open"]
+    assert old["world"] == "world ch2"
+    del old["world"]  # as a record written before entries kept their world id
+    (story / ".worldguard/open.json").write_text(json.dumps(record))
+    (story / "ch2_slip.yaml").rename(story / "ch2_new.yaml")
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_new.yaml")
+    assert "moved:" not in err and "declared no contract_id" not in err
+    gone = next(item for item in _record(story)["open"] if item["unit"] == "ch2_slip.yaml")
+    assert gone["held"] == ("file gone: ch2_slip.yaml no longer exists; this entry was recorded without its world id, so "
+                            "it is not followed to a new path; to settle it, run `worldguard check --contract <its new path> "
+                            "--takes-over ch2_slip.yaml` in the record's folder (`mesh-check --mesh` for a tree file)")
+    # Settling it keeps one entry with the older history, not two open entries for one contradiction.
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_new.yaml", "--takes-over", story / "ch2_slip.yaml")
+    (item,) = _record(story)["open"]
+    assert (item["unit"], item["first_seen"], item["moved_from"], item["world"]) == (
+        "ch2_new.yaml", old["first_seen"], ["ch2_slip.yaml"], "world ch2")
+
+
+def test_an_entry_taken_over_without_its_world_id_takes_the_world_of_its_new_file(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    record = _record(story)
+    del record["open"][0]["world"]
+    (story / ".worldguard/open.json").write_text(json.dumps(record))
+    (story / "ch2_slip.yaml").rename(story / "ch2_new.yaml")
+    _edit(story / "ch2_new.yaml", lambda world: _event(world, "e_give_key").pop("place"))  # not reached there now
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_new.yaml", "--takes-over", story / "ch2_slip.yaml")
+    assert "closed:" not in err
+    (item,) = _record(story)["open"]
+    assert (item["unit"], item["world"], item["held"]) == (
+        "ch2_new.yaml", "world ch2", "not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event e_give_key")
+
+
+def test_an_entry_of_a_world_without_an_id_says_its_world_declared_none(tmp_path, capsys):
+    path = tmp_path / "untitled.yaml"
+    shutil.copyfile(LIGHTHOUSE / "ch2_slip.yaml", path)
+    _edit(path, lambda world: (world.pop("contract_id"), world["claim"].pop("claim_id")))
+    _run(capsys, "check", "--contract", path)
+    (item,) = _record(tmp_path)["open"]
+    assert item["world"] is None
+    path.rename(tmp_path / "renamed.yaml")
+    _run(capsys, "check", "--contract", tmp_path / "renamed.yaml")
+    gone = next(item for item in _record(tmp_path)["open"] if item["unit"] == "untitled.yaml")
+    assert gone["held"] == ("file gone: untitled.yaml no longer exists; its world declares no contract_id or mesh_id, so "
+                            "it is not followed to a new path; to settle it, run `worldguard check --contract <its new "
+                            "path> --takes-over untitled.yaml` in the record's folder (`mesh-check --mesh` for a tree file)")

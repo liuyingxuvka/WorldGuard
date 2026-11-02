@@ -137,7 +137,9 @@ the check does not reach the question is named with the reason. `check --contrac
 under a new path: every open entry of OLD moves to NEW (`taken over: ...`, `moved_from` and the first-seen time kept;
 one NEW already holds for the same contradiction keeps both histories) and is judged there like any entry of NEW, so
 the same pass now closes it. It is an input error (exit 2, nothing changed) when OLD still exists, when no open entry
-under NEW's folder belongs to OLD, or when OLD's entries were recorded for another world than NEW declares. A file
+under NEW's folder belongs to OLD, or when OLD's entries were recorded for another world than NEW declares. An entry
+with no world to follow (recorded without its world id, or of a file that declares no `contract_id` or `mesh_id`) is
+never followed; its `held` says which and names the same command. A file
 moved out of the record's folder is not followed: its entries stay open in the old record, and the new folder gets
 entries of its own. Other
 FAIL rows (token, space, norm, agent, causal and conflict Guards) close when the Guard that found them runs on the file

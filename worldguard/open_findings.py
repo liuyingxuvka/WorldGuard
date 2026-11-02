@@ -457,8 +457,7 @@ def update(units: list[Unit], *, checked: Path, run: str, takes_over: Path | Non
                 item["guard"] = row["guard"]
             if _question(row):
                 item["question"] = _question(row)
-            if unit.world is not None:
-                item["world"] = unit.world
+            item["world"] = unit.world  # None (null) when the file declares no contract_id or mesh_id
             data["open"].append(item)
             opened.append(item)
         changed.add(target)
@@ -490,10 +489,9 @@ def _take_over(records, old: Path, checked: Path, covered: Mapping[str, Unit]) -
             if target is None:
                 raise WorldInputError(f"--takes-over {old}: its entry {item['unit']} is about inline chapter {node}, "
                                       f"which {new.name} does not have")
-            if "world" in item and item["world"] != target.world:
-                raise WorldInputError(f"--takes-over {old}: its entries were recorded for "
-                                      f"{item['world'] or 'a world without an id'}, but {target.name(folder)} checks "
-                                      f"{target.world or 'a world without an id'}")
+            if "world" in item and item["world"] is not None and item["world"] != target.world:
+                raise WorldInputError(f"--takes-over {old}: its entries were recorded for {item['world']}, but "
+                                      f"{target.name(folder)} checks {target.world or 'a world without an id'}")
             planned.append((folder, item, target))
     if not planned:
         raise WorldInputError(f"--takes-over {old}: no open contradiction recorded for {new.name}'s folder or a folder "
@@ -501,7 +499,7 @@ def _take_over(records, old: Path, checked: Path, covered: Mapping[str, Unit]) -
     taken = []
     for folder, item, target in planned:
         last = item["unit"]
-        item.update(unit=target.name(folder), moved_from=[*item.get("moved_from", []), last])
+        item.update(unit=target.name(folder), moved_from=[*item.get("moved_from", []), last], world=target.world)
         item.pop("held", None)
         item.pop("gone_since", None)
         data = records[folder]
@@ -527,10 +525,18 @@ def _follow(folder, item, units, found, seen, run, now, moved, dropped, changed)
     contradiction in exactly one file of its world (the file's contract_id, or the tree's mesh_id) under the same
     record moves the entry there; found in two or more, it follows none and names them. A pass in such a file closes
     nothing (it may be another draft of the world): the entry says so and names the `--takes-over` command with which
-    the person makes that file the new path."""
-    last, world = _file_of(item), item.get("world")
-    node = item["unit"].partition("#")[2]
-    candidates = sorted((unit for unit in units if world is not None and unit.world == world and unit.node == node
+    the person makes that file the new path. An entry without a world to follow (recorded before entries kept their
+    world id, or of a file that declares none) says which and names the same command."""
+    last, node = _file_of(item), item["unit"].partition("#")[2]
+    if "world" not in item or item["world"] is None:
+        why = ("this entry was recorded without its world id" if "world" not in item
+               else "its world declares no contract_id or mesh_id")
+        _hold(folder, item, now, changed, f"file gone: {last} no longer exists; {why}, so it is not followed to a new path; "
+              f"to settle it, run `worldguard check --contract <its new path> --takes-over {last}` in the record's folder "
+              "(`mesh-check --mesh` for a tree file)")
+        return
+    world = item["world"]
+    candidates = sorted((unit for unit in units if unit.world == world and unit.node == node
                          and unit.path.is_relative_to(folder)), key=_unit_key)
     hits = [(unit, key) for unit in candidates for key in [_item_key(folder, item, _unit_key(unit))] if key in found]
     if len(hits) == 1:  # found in exactly one file of its world: that file is the new path
@@ -567,11 +573,13 @@ def _follow(folder, item, units, found, seen, run, now, moved, dropped, changed)
         held = (f"file gone: {last} no longer exists; {world} is in more than one file this run checked "
                 f"({', '.join(unit.name(folder) for unit in candidates)}), so it is not followed to any of them; if one "
                 f"of them is {last} under a new path, run {_takes_over(candidates[0], '<that file>', last)}")
-    elif world is not None:
-        held = f"file gone: {last} no longer exists; it stays open until {world} is checked again under its new path"
     else:
-        held = (f"file gone: {last} no longer exists; its world declared no contract_id or mesh_id, so it cannot be "
-                "followed to a new path")
+        held = f"file gone: {last} no longer exists; it stays open until {world} is checked again under its new path"
+    _hold(folder, item, now, changed, held)
+
+
+def _hold(folder, item, now, changed, held) -> None:
+    """Keep a gone file's entry open with `held`; the record changes only when the text or the gone mark does."""
     if item.get("held") != held or "gone_since" not in item:
         item["held"] = held
         item.setdefault("gone_since", now)
