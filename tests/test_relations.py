@@ -9,6 +9,7 @@ import yaml
 from worldguard import GuardContract
 from worldguard.cli import main
 from worldguard.kernel import run_worldguard
+from worldguard.relations import NOTHING_DECLARED
 
 LIGHTHOUSE = Path(__file__).parent / "fixtures/trials/lighthouse_key"
 
@@ -250,3 +251,34 @@ def test_a_null_relations_block_is_an_input_error():
     contract["world_model"]["relations"] = None
     with pytest.raises(ValueError, match="must map fluent ids"):
         GuardContract.from_dict(contract)
+
+
+def _blank_relations(text):
+    """The world file with `relations:` left without a value (the block's entries removed)."""
+    lines, kept, inside = text.splitlines(), [], False
+    for line in lines:
+        if line == "  relations:":
+            inside = True
+            kept.append(line)
+            continue
+        if inside and line.startswith("    "):
+            continue
+        inside = False
+        kept.append(line)
+    return "\n".join(kept) + "\n"
+
+
+def test_a_blank_relations_block_is_an_input_error_but_an_empty_mapping_declares_nothing():
+    """What CHANGELOG says: no value (blank or null) is an input error; `relations: {}` is accepted and declares nothing."""
+    blank = yaml.safe_load(_blank_relations((LIGHTHOUSE / "ch2_fixed.yaml").read_text()))
+    assert "relations" in blank["world_model"] and blank["world_model"]["relations"] is None
+    with pytest.raises(ValueError, match="must map fluent ids"):
+        GuardContract.from_dict(blank)
+    empty = _load("ch2_fixed.yaml")
+    empty["world_model"]["relations"] = {}
+    report = run_worldguard(empty)
+    assert "EVENT_RELATION_UNDECLARED" in {row["code"] for row in report.gaps} and report.status.value == "GAP"
+    for event in empty["inputs"]["events"]:
+        for key in ("actor", "with", "place", "uses"):
+            event.pop(key, None)
+    assert NOTHING_DECLARED in run_worldguard(empty).scope_limits

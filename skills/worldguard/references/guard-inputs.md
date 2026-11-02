@@ -187,8 +187,8 @@ lists in `requires` is reported once, by EventGuard. A missing `place` or `uses`
 (`missing` lists them); a place or thing no relation covers is GAP `EVENT_RELATION_UNDECLARED`. When the world declares
 any relation, or other events name actors, an event without one is also GAP `EVENT_ACTOR_STATE_UNCHECKED` (`missing:
 [actor]`). A nonempty `actor_state_free: <reason>` exempts an event; the reason is printed in unit and tree
-`scope_limits` and on the event's timeline line. `relations` present but empty-valued (`relations:` with nothing, or
-`null`) is an input error. What the declarations cannot reach goes into `scope_limits`, computed from the world: a
+`scope_limits` and on the event's timeline line. `relations` written with no value (`relations:` with nothing after it,
+or `null`) is an input error; `relations: {}` is accepted and declares nothing. What the declarations cannot reach goes into `scope_limits`, computed from the world: a
 world with events, no actor and no relation gets `who holds what and who is where are not checked: ...`; an actor event
 that initiates or terminates a fact no relation declares is listed under `place checked only for the people and things
 an event names: ...` with the place it claims. To check where a thing is acted on, declare its place (`door_on_island:
