@@ -68,19 +68,45 @@ def _describe(kind, subject, obj):
     return f"{subject} holds {obj}" if kind == "holds" else f"{subject} is at {obj}"
 
 
-def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]], *,
-                        requires_checked: bool = False) -> list[dict[str, Any]]:
-    """GAP rows for actor events whose state the declarations cannot check; FAIL rows where the replay contradicts them.
+def _scenarios(events):
+    """{scenario: (applicable events, untimed event ids)} exactly as the replays below order them."""
+    names = sorted({str(event["scenario_id"]) for event in events if event.get("scenario_id")}) or [""]
+    result = {}
+    for scenario in names:
+        applicable = [event for event in events if not event.get("scenario_id") or str(event["scenario_id"]) == scenario]
+        result[scenario] = (applicable, [str(event.get("event_id", "")) for event in applicable if "at" not in event])
+    return result
 
-    With `requires_checked` (EventGuard runs), a derived fluent the event already lists in `requires` is left to
-    EventGuard's EVENT_PRECONDITION_UNMET, so one missing fact is reported once."""
+
+def _event_scenarios(event, scenarios):
+    return [str(event["scenario_id"])] if event.get("scenario_id") else list(scenarios)
+
+
+def _plan(inputs, relations, requires_checked):
+    """The one derivation behind the relation check and its coverage.
+
+    Returns (gap rows, needed, coverage). `needed` maps (scenario id, event id) to {fluent: (kind, subject, object)}
+    for the derived facts the replay must check. `coverage` maps the same key to (questions, unchecked): the
+    (kind, subject, object) facts this run checks just before the event, and why anything else there is not checked."""
     events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
     actors_named = any(event.get("actor") for event in events)
     fluent_of = {key: fluent for fluent, key in relations.items()}
+    scenarios = _scenarios(events)
     rows: list[dict[str, Any]] = []
     needed: dict[tuple[str, str], dict[str, tuple[str, str, str]]] = {}
+    coverage: dict[tuple[str, str], tuple[frozenset, tuple[str, ...]]] = {}
     for event in events:
+        key = (str(event.get("scenario_id") or ""), str(event.get("event_id")))
+        unchecked: list[str] = []
+        questions: set[tuple[str, str, str]] = set()
+        untimed = sorted({name for scenario in _event_scenarios(event, scenarios) for name in scenarios[scenario][1]})
+        if untimed:
+            unchecked.append(f"{', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time, so the world "
+                             "was not replayed")
+        if not relations:
+            unchecked.append("world_model.relations declares nothing")
         if "actor_state_free" in event:
+            coverage[key] = (frozenset(), (*unchecked, f"the event is marked actor_state_free ({event['actor_state_free']})"))
             continue
         actor = event.get("actor")
         if not actor:
@@ -90,6 +116,7 @@ def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple
                 rows.append(_row("EVENT_ACTOR_STATE_UNCHECKED", "GAP", event,
                                  f"{why}, but this event names no actor; name its actor, "
                                  "or give actor_state_free: <reason> when nobody acts.", actor=None, missing=["actor"]))
+            coverage[key] = (frozenset(), (*unchecked, "the event names no actor"))
             continue
         missing = [name for name in ("place", "uses") if name not in event]
         if missing:
@@ -97,45 +124,107 @@ def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple
                              "Say where the event happens (place) and what the actor uses (uses; [] when nothing), "
                              "declared in world_model.relations, or give actor_state_free: <reason>.",
                              actor=actor, missing=missing))
+            unchecked.append(f"the event does not say {' or '.join(missing)}")
         wanted = [("holds", actor, thing) for thing in event_things(event)]
         if "place" in event:
             wanted.extend(("at", person, event["place"]) for person in [actor, *event.get("with", [])])
         own = set(fluent_values(event.get("requires"))) if requires_checked else set()
-        for key in wanted:
-            fluent = fluent_of.get(key)
-            if fluent in own:
-                continue
+        for fact in wanted:
+            fluent = fluent_of.get(fact)
             if fluent is None:
                 rows.append(_row("EVENT_RELATION_UNDECLARED", "GAP", event,
-                                 f"No fluent in world_model.relations says that {_describe(*key)}, so the event cannot be checked.",
-                                 actor=actor, relation=key[0], subject=key[1], object=key[2]))
-            else:
-                needed.setdefault((str(event.get("scenario_id") or ""), str(event.get("event_id"))), {})[fluent] = key
+                                 f"No fluent in world_model.relations says that {_describe(*fact)}, so the event cannot be checked.",
+                                 actor=actor, relation=fact[0], subject=fact[1], object=fact[2]))
+                unchecked.append(f"no relation says that {_describe(*fact)}")
+                continue
+            if not untimed:
+                questions.add(fact)  # replayed below, or by EventGuard when the event's own requires lists it
+            if fluent not in own:
+                needed.setdefault(key, {})[fluent] = fact
+        coverage[key] = (frozenset(questions), tuple(unchecked))
+    return rows, needed, coverage
+
+
+def relation_coverage(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]], *,
+                      requires_checked: bool = False) -> dict[tuple[str, str], tuple[frozenset, tuple[str, ...]]]:
+    """What the relation check asks of this world: {(scenario id, event id): (facts checked just before the event,
+    why anything else there is not checked)}. Computed by the same derivation as the check itself."""
+    return _plan(inputs, relations, requires_checked)[2]
+
+
+def _origins(applicable, initial, scenario):
+    """{(event id, at): (fluent -> event that started it or None for the start state, fluent -> event that last ended it)},
+    as things stand at the start of each event's instant (the replay's own view)."""
+    started: dict[str, Any] = {fluent: None for fluent in fluent_values(initial)}
+    ended: dict[str, Any] = {}
+    result = {}
+    for _instant, group in groupby(event_replay(applicable, initial, scenario), key=lambda row: time_key(row[0]["at"])):
+        group = list(group)
+        snapshot = (dict(started), dict(ended))
+        for event, before, after in group:
+            result[(event.get("event_id"), event.get("at"))] = snapshot
+            for fluent in set(after) - set(before):
+                started[fluent] = event
+                ended.pop(fluent, None)
+            for fluent in set(before) - set(after):
+                ended[fluent] = event
+                started.pop(fluent, None)
+    return result
+
+
+def _origin(event):
+    if event is None:
+        return {"event_id": None, "at": None, "where": "start"}
+    return {"event_id": event.get("event_id"), "at": event.get("at"),
+            "where": f"{event['source']} ({event.get('event_id')})" if event.get("source") else str(event.get("event_id")),
+            **({"source": event["source"]} if event.get("source") else {})}
+
+
+def actor_relation_rows(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]], *,
+                        requires_checked: bool = False) -> list[dict[str, Any]]:
+    """GAP rows for actor events whose state the declarations cannot check; FAIL rows where the replay contradicts them.
+
+    With `requires_checked` (EventGuard runs), a derived fluent the event already lists in `requires` is left to
+    EventGuard's EVENT_PRECONDITION_UNMET, so one missing fact is reported once. A FAIL row names, in
+    `established_by`, the event (or the start state) that set up each fact holding instead, and in `ended_by` the
+    event that ended the needed fact."""
+    rows, needed, _coverage = _plan(inputs, relations, requires_checked)
     if not needed:
         return rows
+    events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
     # A scenario with an untimed event is not replayed here; relation_conflicts reports it once.
     derived = [{**event, "requires": sorted(needed.get((str(event.get("scenario_id") or ""), str(event.get("event_id"))), {}))}
                for event in events]
     initial = inputs.get("event_model", {}).get("initial_states", []) if isinstance(inputs.get("event_model"), Mapping) else []
     by_id = {(str(event.get("scenario_id") or ""), str(event.get("event_id"))): event for event in events}
+    scenarios = _scenarios(events)
+    origins = {}
     for failure in event_precondition_failures(derived, initial):
         identity = (str(failure.get("scenario_id") or ""), str(failure["event_id"]))
         event = by_id.get(identity) or by_id[("", identity[1])]
+        if identity[0] not in origins:
+            origins[identity[0]] = _origins(scenarios[identity[0]][0], initial, identity[0])
+        started, ended = origins[identity[0]][(event.get("event_id"), event.get("at"))]
         holding = set(failure["holding_fluents"])
         wanted = needed[(str(event.get("scenario_id") or ""), identity[1])]
         # Order by the declared relation, never by how the fluents are spelled.
         for fluent in sorted(failure["missing_fluents"], key=lambda name: wanted[name]):
             kind, subject, obj = wanted[fluent]
             if kind == "holds":
-                found = sorted(relations[f][1] for f in holding if f in relations and relations[f][0] == "holds" and relations[f][2] == obj)
+                instead = sorted(f for f in holding if f in relations and relations[f][0] == "holds" and relations[f][2] == obj)
+                found = sorted(relations[f][1] for f in instead)
                 where = f"held by {', '.join(found)}" if found else "nobody holds it"
                 message = f"{subject} does not hold {obj} at {event['at']} ({where})."
             else:
-                found = sorted(relations[f][2] for f in holding if f in relations and relations[f][0] == "at" and relations[f][1] == subject)
+                instead = sorted(f for f in holding if f in relations and relations[f][0] == "at" and relations[f][1] == subject)
+                found = sorted(relations[f][2] for f in instead)
                 where = f"at {', '.join(found)}" if found else "no declared place holds"
                 message = f"{subject} is not at {obj} at {event['at']} ({where})."
+            extra = {"established_by": {f: {"fact": _describe(*relations[f]), **_origin(started.get(f))} for f in instead}}
+            if fluent in ended:
+                extra["ended_by"] = {"fact": _describe(kind, subject, obj), **_origin(ended[fluent])}
             rows.append(_row("EVENT_RELATION_UNMET", "FAIL", event, message, actor=event.get("actor"), relation=kind,
-                             subject=subject, object=obj, fluent=fluent, at=event["at"], found=found))
+                             subject=subject, object=obj, fluent=fluent, at=event["at"], found=found, **extra))
     return rows
 
 
@@ -196,6 +285,27 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
     return rows
 
 
+def conflict_coverage(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]]) -> dict[str, tuple[frozenset, str]]:
+    """What the conflict check asks of this world: {scenario id: ((kind, who) pairs it can find two facts for, why it did
+    not run or "")}. A person with two declared places, or a thing with two declared holders, is asked about."""
+    events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
+    groups: dict[tuple[str, str], int] = {}
+    for kind, subject, obj in relations.values():
+        key = ("at", subject) if kind == "at" else ("holds", obj)
+        groups[key] = groups.get(key, 0) + 1
+    asked = frozenset(key for key, count in groups.items() if count >= 2)
+    result = {}
+    for scenario, (_applicable, untimed) in _scenarios(events).items():
+        if not relations:
+            result[scenario] = (frozenset(), "world_model.relations declares nothing")
+        elif untimed:
+            result[scenario] = (frozenset(), f"{', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time, so "
+                                             "the world was not replayed")
+        else:
+            result[scenario] = (asked, "")
+    return result
+
+
 def relation_scope_limits(inputs: Mapping[str, Any], relations: Mapping[str, tuple[str, str, str]]) -> list[str]:
     """What the declarations cannot check, computed from the world itself; empty when nothing is out of reach."""
     events = [event for event in inputs.get("events", []) if isinstance(event, Mapping)]
@@ -221,5 +331,5 @@ def relation_scope_limits(inputs: Mapping[str, Any], relations: Mapping[str, tup
             "({at: [thing, place]}) and name it in with to check it"]
 
 
-__all__ = ["RELATION_KINDS", "NOTHING_DECLARED", "parse_relations", "event_things", "actor_relation_rows", "relation_conflicts",
-           "relation_scope_limits"]
+__all__ = ["RELATION_KINDS", "NOTHING_DECLARED", "parse_relations", "event_things", "actor_relation_rows", "relation_coverage",
+           "relation_conflicts", "conflict_coverage", "relation_scope_limits"]

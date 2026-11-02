@@ -12,7 +12,7 @@ HANDOFF = ("MESH_HANDOFF_STATE_MISMATCH [mesh_slip.yaml] lena_on_island is false
            "true at the start of the next -- established by ch1 (chapter 1) ch1 p3 (e_ferry_out); "
            "ch2 (chapter 2) start of ch2: lena_on_island holds")
 UNMET = ("EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- established by ch2 "
-         "(chapter 2) ch2 p1")
+         "(chapter 2) ch2 p1 (e_give_key) needs: Lena is at mainland; ch2 (chapter 2) start of ch2: Lena is at island")
 
 
 def _story(tmp_path):
@@ -72,7 +72,7 @@ def test_a_buried_contradiction_is_still_shown_two_sessions_later(tmp_path, caps
 def test_a_contradiction_found_by_check_alone_is_kept(tmp_path, capsys):
     story = _story(tmp_path)
     code, _out, err = _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
-    alone = UNMET.replace("established by ch2 (chapter 2) ch2 p1", "established by ch2_slip.yaml ch2 p1")
+    alone = UNMET.replace("ch2 (chapter 2) ", "ch2_slip.yaml ").replace("start of ch2:", "start of ch2_slip.yaml:")
     assert code == 1 and any(line.startswith(f"  {alone}") for line in err.splitlines())
     (item,) = _record(story)["open"]
     assert (item["unit"], item["found_by"]) == ("ch2_slip.yaml", "check ch2_slip.yaml")
@@ -102,7 +102,7 @@ def test_a_chapter_in_a_subfolder_sees_the_trees_record_and_can_close_its_own_en
     _edit(chapters / "ch2_slip.yaml", fix)
     code, _out, err = _run(capsys, "check", "--contract", chapters / "ch2_slip.yaml")
     assert ("closed: EVENT_RELATION_UNMET [chapters/ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- "
-            "re-checked by check ch2_slip.yaml: event e_give_key passes now") in err.splitlines()
+            "re-checked by check ch2_slip.yaml: Lena is at mainland just before event e_give_key now") in err.splitlines()
     assert [item["code"] for item in _record(story)["open"]] == ["MESH_HANDOFF_STATE_MISMATCH"]
 
 
@@ -123,8 +123,8 @@ def test_a_check_that_stopped_running_does_not_close_the_contradiction(tmp_path,
     _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
     assert "closed:" not in err
     (item,) = [item for item in _record(story)["open"] if item["code"] == "EVENT_RELATION_UNMET"]
-    assert item["held"] == ("not re-checked: event e_give_key is marked actor_state_free "
-                            "(the key changes hands by post)")
+    assert item["held"] == ("not re-checked: whether Lena is at mainland before event e_give_key: the event is marked "
+                            "actor_state_free (the key changes hands by post)")
 
 
 def test_a_guard_that_no_longer_runs_does_not_close_its_finding(tmp_path, capsys):
@@ -164,9 +164,10 @@ def test_a_real_fix_closes_it_once_and_says_how(tmp_path, capsys):
     assert code == 0
     assert sorted(err.splitlines()) == [
         "closed: EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- "
-        "re-checked by mesh-check mesh_slip.yaml: event e_give_key passes now",
+        "re-checked by mesh-check mesh_slip.yaml: Lena is at mainland just before event e_give_key now",
         "closed: MESH_HANDOFF_STATE_MISMATCH [mesh_slip.yaml] lena_on_island is false at the end of the earlier chapter "
-        "but true at the start of the next -- re-checked by mesh-check mesh_slip.yaml: hand-over ch1_ch2 passes now"]
+        "but true at the start of the next -- re-checked by mesh-check mesh_slip.yaml: the chapters of hand-over ch1_ch2 "
+        "no longer both name lena_on_island"]
     _code, _out, err = _run(capsys, "check", "--contract", story / "ch1_fixed.yaml")
     assert err == ""
     record = _record(story)
@@ -216,3 +217,151 @@ def test_a_passing_tree_writes_nothing(tmp_path, capsys):
     code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
     assert code == 0 and err == ""
     assert not (story / ".worldguard").exists()
+
+
+def _strip_relations(world):
+    """The reviewer's switch-off: no relations and no actor, place, uses or with on any event."""
+    world["world_model"].pop("relations")
+    for event in world["inputs"]["events"]:
+        for key in ("actor", "with", "place", "uses"):
+            event.pop(key, None)
+
+
+def test_switching_the_relation_check_off_by_removing_its_declarations_keeps_the_entry(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    _edit(story / "ch2_slip.yaml", _strip_relations)
+    code, out, err = _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    assert code == 0 and json.loads(out)["status"] == "PASS"  # the check itself passes and says what it did not check
+    assert "closed:" not in err
+    (item,) = _record(story)["open"]
+    assert item["held"] == ("not re-checked: whether Lena is at mainland before event e_give_key: world_model.relations "
+                            "declares nothing; the event names no actor")
+    assert err.splitlines()[1].endswith(f"; {item['held']})")
+
+
+def test_an_untimed_event_elsewhere_keeps_the_entry(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    _edit(story / "ch2_slip.yaml", lambda world: _event(world, "e_tom_ferry").pop("at"))
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    assert "closed:" not in err
+    (item,) = [item for item in _record(story)["open"] if item["code"] == "EVENT_RELATION_UNMET"]
+    assert item["held"] == ("not re-checked: whether Lena is at mainland before event e_give_key: e_tom_ferry has no at "
+                            "time, so the world was not replayed")
+
+
+def test_an_event_that_no_longer_needs_the_fact_closes_and_says_what_it_needs_now(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+
+    def hand_over_on_the_island(world):
+        # The story changes: Lena gives the key away on the island, to nobody in particular.
+        _event(world, "e_give_key").update(place="island", **{"with": []})
+    _edit(story / "ch2_slip.yaml", hand_over_on_the_island)
+    _code, _out, err = _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
+    assert ("closed: EVENT_RELATION_UNMET [ch2_slip.yaml] Lena is not at mainland at 18:00 (at island). -- re-checked by "
+            "check ch2_slip.yaml: event e_give_key no longer needs Lena is at mainland (it now needs: Lena holds key, "
+            "Lena is at island)") in err.splitlines()
+
+
+def test_a_chapter_slip_names_the_event_that_set_up_the_opposing_fact(tmp_path, capsys):
+    shutil.copyfile(LIGHTHOUSE / "ch2_declared.yaml", tmp_path / "ch2_declared.yaml")
+    _run(capsys, "check", "--contract", tmp_path / "ch2_declared.yaml")
+    (key,) = [item for item in _record(tmp_path)["open"] if item.get("subject", "").endswith("object=key")]
+    assert key["summary"] == "Lena does not hold key at 21:00 (held by Tom)."
+    assert key["established_by"] == [
+        {"chapter": "ch2_declared.yaml", "event_id": "e_unlock", "where": "ch2 p3 (e_unlock) needs: Lena holds key"},
+        {"chapter": "ch2_declared.yaml", "fact": "tom_has_key", "event_id": "e_give_key",
+         "where": "ch2 p1 (e_give_key) makes: Tom holds key"},
+        {"chapter": "ch2_declared.yaml", "event_id": "e_give_key", "where": "ch2 p1 (e_give_key) ends: Lena holds key"}]
+
+
+def _two_places(tmp_path):
+    """Lena starts the chapter on the island and on the mainland at once: WORLD_RELATION_CONFLICT."""
+    path = tmp_path / "ch2_twice.yaml"
+    shutil.copyfile(LIGHTHOUSE / "ch2_fixed.yaml", path)
+    _edit(path, lambda world: world["inputs"]["event_model"]["initial_states"].append("lena_on_island"))
+    return path
+
+
+def test_a_conflict_stays_open_when_its_relations_are_removed_and_closes_on_a_real_fix(tmp_path, capsys):
+    path = _two_places(tmp_path)
+    code, _out, _err = _run(capsys, "check", "--contract", path)
+    assert code == 1
+    (item,) = [item for item in _record(tmp_path)["open"] if item["code"] == "WORLD_RELATION_CONFLICT"]
+    assert item["question"] == ["relation_conflict", "", "at", "Lena"]
+    original = path.read_text()
+    _edit(path, _strip_relations)
+    _code, _out, err = _run(capsys, "check", "--contract", path)
+    assert "closed:" not in err
+    (item,) = [item for item in _record(tmp_path)["open"] if item["code"] == "WORLD_RELATION_CONFLICT"]
+    assert item["held"] == "not re-checked: Lena's places: world_model.relations declares nothing"
+    path.write_text(original)
+    _edit(path, lambda world: world["inputs"]["event_model"]["initial_states"].remove("lena_on_island"))
+    _code, _out, err = _run(capsys, "check", "--contract", path)
+    assert any(line.startswith("closed: WORLD_RELATION_CONFLICT") and line.endswith(
+        "re-checked by check ch2_twice.yaml: Lena's places never overlap now") for line in err.splitlines())
+
+
+def test_a_handover_whose_earlier_chapter_lost_its_times_stays_open(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
+    _edit(story / "ch1_fixed.yaml", lambda world: _event(world, "e_ferry_out").pop("at"))
+    _code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
+    assert "closed: MESH_HANDOFF" not in err
+    (item,) = [item for item in _record(story)["open"] if item["code"] == "MESH_HANDOFF_STATE_MISMATCH"]
+    assert item["held"].startswith("not re-checked: GAP MESH_HANDOFF_TIME_MISSING on hand-over ch1_ch2")
+
+
+def _lamp(tmp_path):
+    """The fixed chapter, but the door also needs a lit lamp nobody lights, and the claim says it is lit."""
+    path = tmp_path / "ch2_lamp.yaml"
+    shutil.copyfile(LIGHTHOUSE / "ch2_fixed.yaml", path)
+
+    def lamp(world):
+        _event(world, "e_unlock")["requires"].append("lamp_lit")
+        world["claim"]["asserts"].append({"holds": "lamp_lit", "at": "21:00"})
+        world.pop("variants", None)
+    _edit(path, lamp)
+    return path
+
+
+def test_an_event_check_stays_open_while_the_events_cannot_be_replayed(tmp_path, capsys):
+    path = _lamp(tmp_path)
+    _run(capsys, "check", "--contract", path)
+    (item,) = [item for item in _record(tmp_path)["open"] if item["code"] == "EVENT_PRECONDITION_UNMET"]
+    assert item["question"] == ["precondition", "|e_unlock|lamp_lit"]
+    _edit(path, lambda world: _event(world, "e_tom_ferry").pop("at"))
+    _code, _out, err = _run(capsys, "check", "--contract", path)
+    assert "closed: EVENT_PRECONDITION_UNMET" not in err
+    (item,) = [item for item in _record(tmp_path)["open"] if item["code"] == "EVENT_PRECONDITION_UNMET"]
+    assert item["held"] == "not re-checked: e_unlock: e_tom_ferry has no at time, so the events were not replayed"
+
+
+def test_an_event_that_no_longer_requires_the_fact_closes_and_says_so(tmp_path, capsys):
+    path = _lamp(tmp_path)
+    _run(capsys, "check", "--contract", path)
+    _edit(path, lambda world: _event(world, "e_unlock")["requires"].remove("lamp_lit"))
+    _code, _out, err = _run(capsys, "check", "--contract", path)
+    assert ("closed: EVENT_PRECONDITION_UNMET [ch2_lamp.yaml] e_unlock at 21:00 needs lamp_lit -- re-checked by check "
+            "ch2_lamp.yaml: e_unlock no longer requires lamp_lit") in err.splitlines()
+
+
+def test_a_false_claim_row_closes_when_it_holds_or_is_gone_and_says_which(tmp_path, capsys):
+    path = _lamp(tmp_path)
+    _run(capsys, "check", "--contract", path)
+    rows = sorted(item["summary"] for item in _record(tmp_path)["open"] if item["code"] == "CLAIM_ASSERTION_FALSE")
+    assert rows == ["claim row 1 is false: at: 21:00, holds: door_unlocked", "claim row 2 is false: at: 21:00, holds: lamp_lit"]
+
+    def light_the_lamp_and_drop_the_claim(world):
+        _event(world, "e_unlock")["requires"].remove("lamp_lit")
+        world["claim"]["asserts"].pop()
+    _edit(path, light_the_lamp_and_drop_the_claim)
+    _code, _out, err = _run(capsys, "check", "--contract", path)
+    closed = sorted(line for line in err.splitlines() if line.startswith("closed: CLAIM_ASSERTION_FALSE"))
+    assert closed == [
+        "closed: CLAIM_ASSERTION_FALSE [ch2_lamp.yaml] claim row 1 is false: at: 21:00, holds: door_unlocked -- "
+        "re-checked by check ch2_lamp.yaml: claim row 1 (at: 21:00, holds: door_unlocked) holds now",
+        "closed: CLAIM_ASSERTION_FALSE [ch2_lamp.yaml] claim row 2 is false: at: 21:00, holds: lamp_lit -- "
+        "claim row 2 (at: 21:00, holds: lamp_lit) is no longer in the claim"]

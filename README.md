@@ -93,6 +93,11 @@ they mean.
 
 ## Quick start
 
+> **Not released yet.** This page describes `main`, which holds changes that are not in a release yet (CHANGELOG.md,
+> "Unreleased"): the declared relations (`world_model.relations`), the record of open contradictions and `lifeline`.
+> The tag below, `v0.8.0`, is the newest release and has none of them, so the lighthouse output above, `lifeline` and
+> the record need `main` until the next release: use `--branch main` in the clone and `@main` with pip.
+
 **1. Install the skill for your AI, from the release tag.**
 
 ```bash
@@ -179,12 +184,14 @@ story PASS (tree FAIL)
 
 Every `check`, `mesh-check`, `timeline` and `lifeline` keeps the contradictions it finds on record in
 `.worldguard/open.json` (in the checked file's folder, or the nearest folder above it that already has one), with the
-chapters that set them up: chapter 1's ferry at `ch1 p3` and chapter 2's start for the hand-over, `ch2 p1` for chapter
-2's own slip. Every later command on a file under that folder, even a check of another chapter in a new session,
-prints them on stderr. One closes only when a check of its own file finds the place it was found (the event, the
-hand-over) free of problems; if that place now has a gap, an exemption or no longer runs the check that found it, it
-stays open and says it was not re-checked. To talk it through with a person, draw Lena's life from the model; only Lena
-is drawn, and the lines below the picture say what was left out:
+chapters and events that set them up: chapter 1's ferry at `ch1 p3` and chapter 2's start for the hand-over; for chapter
+2's own slip, `ch2 p1`, where Lena has to be on the mainland, and chapter 2's start, which puts her on the island. Every
+later command on a file under that folder, even a check of another chapter in a new session, prints them on stderr. One
+closes only when the check that found it asks the same question of its own file again and gets a pass ("Lena is at
+mainland just before event e_give_key now"). While that check does not reach it (no relation or actor declared, an event
+without a time, an exemption, a gap there, a Guard that no longer runs) it stays open and says why; if the story changes
+so the question is no longer asked there, it closes and says what the event needs now. To talk it through with a person,
+draw Lena's life from the model; only Lena is drawn, and the lines below the picture say what was left out:
 
 ```console
 $ python skills/worldguard/scripts/run_worldguard.py lifeline --mesh tests/fixtures/trials/lighthouse_key/mesh_slip.yaml --of Lena

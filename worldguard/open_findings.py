@@ -6,10 +6,16 @@ file's folder. An entry belongs to the file the contradiction lives in (a chapte
 hand-over between chapters), and every later command whose files lie under a record's folder prints the entries
 that record holds.
 
-An entry closes only when a later run re-checks its file and the place it was found (the event, the hand-over, the
-claim row) has no problem left, is not exempted and is still checked by the Guard that found it. Otherwise it stays
-open and says why it was not re-checked. An entry whose file, chapter, hand-over or event is gone closes and says so.
-A record that cannot be read or written stops the command (RecordError); nothing falls back to a run without it.
+An entry closes only when a later run re-checks its file and the check that found it asked the same question again
+there and got a pass. For the relation check that question is one fact just before one event ("Lena holds key before
+e_unlock"), for the conflict check one person's places or one thing's holders, for a hand-over one fact across one edge;
+the same derivation the check runs says which questions this run asked and why it asked nothing at a place
+(`relations.relation_coverage`, `relations.conflict_coverage`, `mesh.handoff_fluents`). An entry stays open while that
+check does not reach its place (no relation declared, no actor, no time, `actor_state_free`, a Guard that no longer
+runs, any other problem row there) and says why. It closes, saying exactly what changed, when its file, chapter,
+hand-over or event is gone, or when the check still runs there but the world no longer asks that question (the event
+no longer uses the thing, the chapters no longer both name the fact). A record that cannot be read or written stops
+the command (RecordError); nothing falls back to a run without it.
 """
 
 from __future__ import annotations
@@ -22,10 +28,11 @@ import os
 from pathlib import Path
 from typing import Any
 
-from .semantic import event_replay
+from .relations import conflict_coverage, parse_relations, relation_coverage
+from .semantic import event_replay, precondition_coverage
 
 STORE = Path(".worldguard") / "open.json"
-_SUBJECT_KEYS = ("fluent", "color", "variable", "relation", "subject", "object", "claim_row", "variant_id")
+_SUBJECT_KEYS = ("fluent", "color", "variable", "relation", "subject", "object", "claim_row", "variant_id", "scenario_id")
 _ITEM_FIELDS = ("unit", "code", "summary", "first_seen")
 
 
@@ -51,6 +58,11 @@ class Unit:
     chapter: dict[str, Any] = field(default_factory=dict)       # chapter id and source, for established_by
     mesh: Any = None                                             # the tree, for the hand-over's established_by
     tree: bool = False                                           # the unit is the tree file itself
+    relation_questions: dict[tuple[str, str], tuple[frozenset, tuple[str, ...]]] = field(default_factory=dict)
+    conflict_questions: dict[str, tuple[frozenset, str]] = field(default_factory=dict)
+    handoff_questions: dict[str, tuple[frozenset, str]] = field(default_factory=dict)   # tree file only
+    precondition_questions: dict[tuple[str, str], tuple[frozenset, str]] = field(default_factory=dict)
+    claim_rows: dict[str, tuple[str, str]] = field(default_factory=dict)  # index -> (assertion, status)
 
     def name(self, folder: Path) -> str:
         relative = Path(os.path.relpath(self.path, folder)).as_posix()
@@ -92,6 +104,46 @@ def _subject(row: Mapping[str, Any]) -> str:
     parts = [f"{key}={row[key]}" for key in _SUBJECT_KEYS if key in row]
     parts += [f"{key}={evidence[key]}" for key in _SUBJECT_KEYS if key in evidence]
     return ",".join(parts)
+
+
+def _question(row: Mapping[str, Any]) -> list[str] | None:
+    """The question a check answers for this row, in the check's own terms; None for rows judged by place and Guard."""
+    code, scenario = row.get("code"), str(row.get("scenario_id") or "")
+    if code == "EVENT_RELATION_UNMET":
+        return ["relation", scenario, str(row.get("event_id") or ""), str(row.get("relation")), str(row.get("subject")),
+                str(row.get("object"))]
+    if code == "WORLD_RELATION_CONFLICT":
+        who = row.get("subject") if row.get("relation") == "at" else row.get("object")
+        return ["relation_conflict", scenario, str(row.get("relation")), str(who)]
+    evidence = row.get("evidence") if isinstance(row.get("evidence"), Mapping) else {}
+    if code == "MESH_HANDOFF_STATE_MISMATCH" and "fluent" in evidence:
+        return ["handoff", str(row.get("edge_id") or ""), str(evidence["fluent"])]
+    counterexample = row.get("counterexample") if isinstance(row.get("counterexample"), Mapping) else {}
+    if code == "EVENT_PRECONDITION_UNMET" and counterexample:
+        steps = counterexample.get("steps") if "steps" in counterexample else [counterexample]
+        return ["precondition", *sorted(f"{step.get('scenario_id') or ''}|{step.get('event_id')}|"
+                                        f"{','.join(sorted(map(str, step.get('missing_fluents', []))))}"
+                                        for step in steps if isinstance(step, Mapping))]
+    if code == "CLAIM_ASSERTION_FALSE" and "claim_row" in row:
+        return ["claim", str(row["claim_row"]), _assertion(row.get("assertion"))]
+    return None
+
+
+def _assertion(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+
+
+def _claim_text(value: Any) -> str:
+    """A claim row as a person reads it: `holds: door_unlocked, at: 21:00`."""
+    if isinstance(value, str):
+        value = json.loads(value)
+    if not isinstance(value, Mapping):
+        return str(value)
+    return ", ".join(f"{key}: {item}" for key, item in value.items())
+
+
+def _fact(kind: str, subject: str, obj: str) -> str:
+    return f"{subject} holds {obj}" if kind == "holds" else f"{subject} is at {obj}"
 
 
 def _place(row: Mapping[str, Any], tree: bool) -> dict[str, str]:
@@ -157,8 +209,23 @@ def established_by(row: Mapping[str, Any], unit: Unit) -> list[dict[str, Any]]:
             result.append(entry)
         return result
     entry = dict(unit.chapter)
+    start = f"start of {entry.get('chapter')}"
+    if row.get("code") == "EVENT_RELATION_UNMET":
+        need = _fact(str(row.get("relation")), str(row.get("subject")), str(row.get("object")))
+        own = f"{row['source']} ({row.get('event_id')})" if row.get("source") else str(row.get("event_id"))
+        result = [{**entry, "event_id": row.get("event_id"), "where": f"{own} needs: {need}"}]
+        for fluent, info in sorted((row.get("established_by") or {}).items()):
+            where = f"{start}: {info['fact']}" if info.get("event_id") is None else f"{info['where']} makes: {info['fact']}"
+            result.append({**entry, "fact": fluent, **({"event_id": info["event_id"]} if info.get("event_id") else {}),
+                           "where": where})
+        ended = row.get("ended_by")
+        if ended:
+            result.append({**entry, "event_id": ended.get("event_id"), "where": f"{ended['where']} ends: {ended['fact']}"})
+        return result
     if row.get("established_by"):
-        return [{**entry, "fact": fact, "where": (info.get("source") or info.get("event_id") or "start")}
+        return [{**entry, "fact": fact, **({"event_id": info["event_id"]} if info.get("event_id") else {}),
+                 "where": start if info.get("event_id") is None else
+                 (f"{info['source']} ({info['event_id']})" if info.get("source") else str(info["event_id"]))}
                 for fact, info in row["established_by"].items()]
     counterexample = row.get("counterexample") if isinstance(row.get("counterexample"), Mapping) else {}
     source = row.get("source") or counterexample.get("source")
@@ -171,6 +238,8 @@ def summary(row: Mapping[str, Any]) -> str:
     if row.get("code") == "MESH_HANDOFF_STATE_MISMATCH" and "fluent" in evidence:
         return (f"{evidence['fluent']} is {'true' if evidence.get('from_end') else 'false'} at the end of the earlier "
                 f"chapter but {'true' if evidence.get('to_initial') else 'false'} at the start of the next")
+    if row.get("code") == "CLAIM_ASSERTION_FALSE" and "claim_row" in row:
+        return f"claim row {row['claim_row']} is false: {_claim_text(_assertion(row.get('assertion')))}"
     counterexample = row.get("counterexample") if isinstance(row.get("counterexample"), Mapping) else {}
     if row.get("code") == "EVENT_PRECONDITION_UNMET" and counterexample.get("missing_fluents"):
         return f"{counterexample.get('event_id')} at {counterexample.get('at')} needs {', '.join(counterexample['missing_fluents'])}"
@@ -188,19 +257,27 @@ def _where(item: Mapping[str, Any]) -> str:
 
 
 def _judge(item: Mapping[str, Any], unit: Unit, unit_name: str, run: str) -> tuple[bool, str]:
-    """(closed, how) for an entry whose file this run re-checked without finding the same contradiction."""
+    """(closed, how) for an entry whose file this run re-checked without finding the same row."""
     edge, event, node = item.get("edge_id") or "", item.get("event_id") or "", item.get("node_id") or ""
+    question = list(item.get("question") or [])
+    if question:
+        again = sorted({str(row.get("event_id") or row.get("edge_id") or "") for row in unit.rows
+                        if row.get("status") == "FAIL" and _question(row) == question})
+        if again:
+            return False, f"still failing: {item['code']} at {', '.join(name or 'the start' for name in again)}"
     if unit.tree and edge and edge not in unit.edges:
         return True, f"hand-over {edge} is no longer in {unit_name}"
     if unit.tree and node and node not in unit.nodes:
         return True, f"chapter {node} is no longer in {unit_name}"
-    if event and event not in unit.events:
+    if event and event not in unit.events and question[:1] != ["relation_conflict"]:
         return True, f"event {event} is no longer in {unit_name}"
     place = {name: str(item.get(name) or "") for name in ("edge_id", "event_id", "node_id", "subject")}
     blockers = []
     for row in unit.rows:
         found = _place(row, unit.tree)
-        if edge:
+        if question[:1] == ["relation_conflict"]:
+            same = False  # the conflict question is answered below, wherever it is found
+        elif edge:
             same = found["edge_id"] == edge
         elif event:
             same = found["event_id"] == event
@@ -216,11 +293,66 @@ def _judge(item: Mapping[str, Any], unit: Unit, unit_name: str, run: str) -> tup
             return False, f"still failing on {_where(item)}: {', '.join(failing)}"
         return False, (f"not re-checked: {' and '.join(sorted({str(row.get('status')) for row in blockers}))} "
                        f"{', '.join(sorted({str(row['code']) for row in blockers}))} on {_where(item)}")
-    if event and "actor_state_free" in unit.events[event]:
-        return False, f"not re-checked: event {event} is marked actor_state_free ({unit.events[event]['actor_state_free']})"
     if item.get("guard") and item["guard"] not in unit.guards:
         return False, f"not re-checked: {item['guard']} does not run on {unit_name} now"
-    return True, f"re-checked by {run}: {_where(item)} passes now"
+    if question:
+        return _answer(question, unit, run)
+    if item.get("guard"):
+        return True, f"re-checked by {run}: {item['guard']} ran on {unit_name} and found no problem on {_where(item)}"
+    return True, f"re-checked by {run}: no problem on {_where(item)} now"
+
+
+def _answer(question: list[str], unit: Unit, run: str) -> tuple[bool, str]:
+    """Close only on the check's own answer to the same question; stay open while the check does not reach it."""
+    kind = question[0]
+    if kind == "relation":
+        scenario, event, relation, subject, obj = question[1:]
+        fact = _fact(relation, subject, obj)
+        asked, unchecked = unit.relation_questions.get((scenario, event), (frozenset(), ("the relation check did not reach it",)))
+        if (relation, subject, obj) in asked:
+            return True, f"re-checked by {run}: {fact} just before event {event} now"
+        if unchecked:
+            return False, f"not re-checked: whether {fact} before event {event}: {'; '.join(unchecked)}"
+        now = ", ".join(sorted(_fact(*other) for other in asked)) or "nothing"
+        return True, f"re-checked by {run}: event {event} no longer needs {fact} (it now needs: {now})"
+    if kind == "relation_conflict":
+        scenario, relation, who = question[1:]
+        what = f"{who}'s {'places' if relation == 'at' else 'holders'}"
+        asked, why = unit.conflict_questions.get(scenario, (frozenset(), "the conflict check did not reach it"))
+        if why:
+            return False, f"not re-checked: {what}: {why}"
+        if (relation, who) in asked:
+            return True, f"re-checked by {run}: {what} never overlap now"
+        return True, f"re-checked by {run}: world_model.relations no longer gives {who} two {'places' if relation == 'at' else 'holders'}"
+    if kind == "precondition":
+        held, gone, waiting = [], [], []
+        for step in question[1:]:
+            scenario, event, missing = step.split("|", 2)
+            needed = [name for name in missing.split(",") if name]
+            asked, why = unit.precondition_questions.get((scenario, event), (frozenset(), "the event is no longer there"))
+            if why:
+                waiting.append(f"{event}: {why}")
+            elif set(needed) <= asked:
+                held.append(f"{event} has {', '.join(needed)}")
+            else:
+                gone.append(f"{event} no longer requires {', '.join(name for name in needed if name not in asked)}")
+        if waiting:
+            return False, f"not re-checked: {'; '.join(waiting)}"
+        return True, f"re-checked by {run}: " + "; ".join([*(f"{text} now" for text in held), *gone])
+    if kind == "claim":
+        index, assertion = question[1:]
+        now, _status = unit.claim_rows.get(index, ("", ""))
+        if now != assertion:
+            return True, (f"claim row {index} ({_claim_text(assertion)}) is no longer in the claim"
+                          + (f"; row {index} is now ({_claim_text(now)})" if now else ""))
+        return True, f"re-checked by {run}: claim row {index} ({_claim_text(assertion)}) holds now"
+    edge, fluent = question[1:]
+    compared, why = unit.handoff_questions.get(edge, (frozenset(), "it is no longer a continues edge between two chapters"))
+    if why:
+        return False, f"not re-checked: hand-over {edge}: {why}"
+    if fluent in compared:
+        return True, f"re-checked by {run}: {fluent} agrees across hand-over {edge} now"
+    return True, f"re-checked by {run}: the chapters of hand-over {edge} no longer both name {fluent}"
 
 
 def _now():
@@ -296,6 +428,8 @@ def update(units: list[Unit], *, checked: Path, run: str) -> dict[str, Any]:
                     "first_seen": now, "last_seen": now, "runs": 1}
             if row.get("guard"):
                 item["guard"] = row["guard"]
+            if _question(row):
+                item["question"] = _question(row)
             data["open"].append(item)
             opened.append(item)
         changed.add(target)
@@ -334,7 +468,19 @@ def contract_units(path: str | Path, contract, report) -> list[Unit]:
     events = {str(event.get("event_id")): event for event in contract.inputs.get("events", [])
               if isinstance(event, Mapping) and event.get("event_id")}
     return [Unit(path=path, rows=list(report.gaps), guards=frozenset(report.checked.get("guards", [])), events=events,
-                 chapter={"chapter": path.name})]
+                 chapter={"chapter": path.name}, **_questions(contract, report))]
+
+
+def _questions(contract, report) -> dict[str, Any]:
+    """What this run's checks asked of one world, from the derivations the checks themselves use."""
+    relations = parse_relations(contract.world_model.relations)
+    events = [event for event in contract.inputs.get("events", []) if isinstance(event, Mapping)]
+    return {"relation_questions": relation_coverage(contract.inputs, relations,
+                                                    requires_checked="EventGuard" in report.derived_guards),
+            "conflict_questions": conflict_coverage(contract.inputs, relations),
+            "precondition_questions": precondition_coverage(events),
+            "claim_rows": {str(row["index"]): (_assertion(row["assertion"]), str(row["status"]))
+                           for row in report.claim_binding.get("assertions", [])}}
 
 
 def mesh_units(path: str | Path, data: Mapping[str, Any], mesh, report) -> list[Unit]:
@@ -342,8 +488,13 @@ def mesh_units(path: str | Path, data: Mapping[str, Any], mesh, report) -> list[
     path = Path(path).resolve()
     contract_files = {str(node.get("model_id", "")): (path.parent / node["contract"]).resolve()
                       for node in data.get("nodes", []) if isinstance(node, Mapping) and isinstance(node.get("contract"), str)}
+    from .mesh import handoff_fluents
+
+    contracts = {n.model_id: n.contract for n in mesh.nodes if n.contract is not None}
+    handoffs = {edge.edge_id: handoff_fluents(contracts[edge.from_id], contracts[edge.to_id]) for edge in mesh.edges
+                if edge.relation == "continues" and edge.from_id in contracts and edge.to_id in contracts}
     units = [Unit(path=path, rows=[finding.to_dict() for finding in report.findings], edges=frozenset(e.edge_id for e in mesh.edges),
-                  nodes=frozenset(n.model_id for n in mesh.nodes), mesh=mesh, tree=True)]
+                  nodes=frozenset(n.model_id for n in mesh.nodes), mesh=mesh, tree=True, handoff_questions=handoffs)]
     for node in mesh.nodes:
         node_report = report.node_reports.get(node.model_id)
         if node.contract is None or node_report is None:
@@ -353,17 +504,36 @@ def mesh_units(path: str | Path, data: Mapping[str, Any], mesh, report) -> list[
         file = contract_files.get(node.model_id)
         units.append(Unit(path=file or path, node="" if file else node.model_id, rows=list(node_report.gaps),
                           guards=frozenset(node_report.checked.get("guards", [])), events=events,
-                          chapter={"chapter": node.model_id, **({"source": node.source} if node.source else {})}))
+                          chapter={"chapter": node.model_id, **({"source": node.source} if node.source else {})},
+                          **_questions(node.contract, node_report)))
     merged: dict[str, Unit] = {}
     for unit in units:
         key = _unit_key(unit)
-        if key in merged:  # one chapter file used by two nodes: every row of both runs counts
+        if key in merged:  # one chapter file used by two nodes: every row of both runs counts, and only what both asked
             first = merged[key]
             merged[key] = Unit(path=first.path, node=first.node, rows=first.rows + unit.rows, guards=first.guards & unit.guards,
-                               events=first.events, chapter=first.chapter)
+                               events=first.events, chapter=first.chapter,
+                               relation_questions=_both(first.relation_questions, unit.relation_questions),
+                               conflict_questions=_both(first.conflict_questions, unit.conflict_questions),
+                               precondition_questions=_both(first.precondition_questions, unit.precondition_questions),
+                               claim_rows={key: value for key, value in first.claim_rows.items()
+                                           if unit.claim_rows.get(key) == value})
         else:
             merged[key] = unit
     return list(merged.values())
+
+
+def _both(left: Mapping[Any, Any], right: Mapping[Any, Any]) -> dict[Any, Any]:
+    """Questions both runs asked; reasons either run gave for not asking."""
+    result = {}
+    for key in set(left) | set(right):
+        (asked_left, why_left), (asked_right, why_right) = (left.get(key, (frozenset(), "not in one of the runs")),
+                                                            right.get(key, (frozenset(), "not in one of the runs")))
+        if isinstance(why_left, tuple):
+            result[key] = (asked_left & asked_right, tuple(dict.fromkeys((*why_left, *why_right))))
+        else:
+            result[key] = (asked_left & asked_right, "; ".join(dict.fromkeys(reason for reason in (why_left, why_right) if reason)))
+    return result
 
 
 __all__ = ["STORE", "RecordError", "Unit", "store_path", "records_above", "established_by", "summary", "update", "render",

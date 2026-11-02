@@ -437,6 +437,19 @@ def _named_fluents(contract):
     return named
 
 
+def handoff_fluents(from_contract: GuardContract, to_contract: GuardContract) -> tuple[frozenset, str]:
+    """(facts a `continues` hand-over compares, why it compares none or ""): the one rule the check below follows."""
+    from_events = from_contract.inputs.get("events", [])
+    to_events = to_contract.inputs.get("events", [])
+    untimed = [str(event.get("event_id", "-")) if isinstance(event, Mapping) else "-" for event in from_events
+               if not isinstance(event, Mapping) or "at" not in event]
+    if untimed:
+        return frozenset(), f"the earlier chapter's {', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time"
+    if not all(isinstance(event, Mapping) for event in to_events):
+        return frozenset(), "the next chapter has an event that is not a mapping"
+    return frozenset(_named_fluents(from_contract) & _named_fluents(to_contract)), ""
+
+
 def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract: GuardContract, to_contract: GuardContract) -> list[MeshFinding]:
     """Compare the actual source end state to the next node's declared start."""
     findings = []
@@ -468,14 +481,15 @@ def _continues_findings(mesh: ModelMeshContract, edge: ModelEdge, from_contract:
             start = min((event["at"] for event in to_events), key=time_key)
             if time_key(start) < time_key(end):
                 add(GuardStatus.FAIL, "MESH_HANDOFF_TIME_BACKWARDS", "The next node begins before the previous node ends.", from_end=end, to_start=start)
-    if not from_missing_time and all(isinstance(event, Mapping) for event in to_events):
+    compared, not_compared = handoff_fluents(from_contract, to_contract)
+    if not not_compared:
         from_initial = from_contract.inputs.get("event_model", {}).get("initial_states", [])
         to_initial = to_contract.inputs.get("event_model", {}).get("initial_states", [])
         holding = frozenset(fluent_values(from_initial))
         for _event, _before, after in event_replay(from_events, from_initial, skip_illegal=True):
             holding = after
         to_start = set(fluent_values(to_initial))
-        for fluent in sorted(_named_fluents(from_contract) & _named_fluents(to_contract)):
+        for fluent in sorted(compared):
             if (fluent in holding) != (fluent in to_start):
                 add(
                     GuardStatus.FAIL,

@@ -55,8 +55,9 @@ The tool draws it from the declared relations and the replayed events, only for 
 appearance; do not draw one by hand. `check`, `mesh-check`, `timeline` and `lifeline` record each FAIL, with the
 chapters and sources that established it, in `.worldguard/open.json` (the checked file's folder, or the nearest folder
 above it that has one); every later command on a file under that folder prints the open ones on stderr. One closes
-only when a check of its own file finds that place free of problems; a GAP, an `actor_state_free` or a Guard that no
-longer runs there leaves it open as "not re-checked", so never exempt or delete facts to make one go away. End a reply
+only when the check that found it asks the same question of its file again and gets a pass; while that check does not
+reach it (no declared relation or actor, an untimed event, a GAP, an `actor_state_free`, a Guard that no longer runs)
+it stays open as "not re-checked", so never exempt, strip or delete facts to make one go away. End a reply
 that leaves one open with it under "still open".
 
 ## Read the result

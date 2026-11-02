@@ -103,17 +103,28 @@ nearest one in the checked file's folder or a folder above it, or a new one in t
 becomes one entry that belongs to the file the contradiction lives in (`unit`: the chapter's world file, or the tree
 file for a hand-over and the tree's own findings, `tree.yaml#node` for an inline chapter), identified by its code and
 place (edge, event, chapter, subject; never by time or wording), with `established_by` naming each chapter, its
-`source` and the event or start state that set up the disagreeing facts, and `found_by` naming the first command.
+`source` and the event or start state that set up the disagreeing facts (for a slip inside one chapter: the event that
+needs the fact, the event or start that set up what holds instead, and the event that ended the needed fact), and
+`found_by` naming the first command.
 Every later command prints, on stderr, the open entries of every record on the paths of the files it checks; JSON and
 text output on stdout are unchanged.
 
-An entry closes only when a later run re-checks its file, the same contradiction is not found, the place it was found
-(the event, the hand-over, the claim row) has no other problem row, the event is not `actor_state_free`, and the Guard
-that found it still runs there; that run prints `closed: ... -- re-checked by <command>: <place> passes now` once.
-Otherwise the entry stays open with `held`, for example `not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event
-e_give_key`, `still failing on event e_give_key: EVENT_PRECONDITION_UNMET` or `not re-checked: EventGuard does not run
-on ch2.yaml now`. It also closes, saying so, when its hand-over, chapter or event is no longer in its file, or the file
-no longer exists. A run that does not check the entry's file leaves it alone. A passing run with no record writes
+An entry closes only when a later run of its file asks the check's own question again and gets a pass, and that run
+prints `closed: ... -- re-checked by <command>: <answer>` once. The question is the one the check computed when it
+failed, kept in the entry's `question`: one fact just before one event for the relation check (`Lena is at mainland
+just before event e_give_key now`), one person's places or one thing's holders for a relation conflict, the facts an
+event requires for EventGuard, one fact across one hand-over, one claim row. The same derivation the check runs says
+which questions this run asked. While the check does not reach the entry's place the entry stays open with `held`, for
+example `not re-checked: whether Lena is at mainland before event e_give_key: world_model.relations declares nothing;
+the event names no actor`, `not re-checked: e_unlock: e_tom_ferry has no at time, so the events were not replayed`,
+`not re-checked: GAP EVENT_ACTOR_STATE_UNCHECKED on event e_give_key`, `still failing on event e_give_key:
+EVENT_RELATION_UNMET` or `not re-checked: EventGuard does not run on ch2.yaml now`. When the check still runs there but
+the world no longer asks that question, the entry closes and says what changed (`event e_give_key no longer needs Lena
+is at mainland (it now needs: Lena holds key, Lena is at island)`, `e_unlock no longer requires lamp_lit`, `the chapters
+of hand-over ch1_ch2 no longer both name lena_on_island`, `claim row 2 (...) is no longer in the claim`). It also
+closes, saying so, when its hand-over, chapter or event is no longer in its file, or the file no longer exists. Other
+FAIL rows (token, space, norm, agent, causal and conflict Guards) close when the Guard that found them runs on the file
+and finds nothing at that place; the closing line says exactly that. A run that does not check the entry's file leaves it alone. A passing run with no record writes
 nothing. A record that cannot be read or written stops the command with `WORLDGUARD_RECORD_ERROR` (exit 2, the check
 status in `details`).
 

@@ -42,16 +42,35 @@ def event_replay(events: list[Any], initial_fluents: Any = (), scenario_id: str 
         holding = after
 
 
-def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) -> list[dict[str, Any]]:
-    """Return every event whose `requires` fluents do not hold when it happens."""
+def _precondition_scenarios(events: list[Any]):
+    """(scenario id, its events, its untimed event ids) in the order the precondition replay walks them."""
     scenario_ids = sorted({str(event["scenario_id"]) for event in events if isinstance(event, dict) and event.get("scenario_id")})
-    failures: list[dict[str, Any]] = []
     for scenario_id in scenario_ids or [""]:
         applicable = [
             event for event in events
             if isinstance(event, dict) and (not event.get("scenario_id") or str(event["scenario_id"]) == scenario_id)
         ]
-        if any("at" not in event for event in applicable):
+        yield scenario_id, applicable, [str(event.get("event_id", "-")) for event in applicable if "at" not in event]
+
+
+def precondition_coverage(events: list[Any]) -> dict[tuple[str, str], tuple[frozenset, str]]:
+    """{(scenario id, event id): (the requires fluents the precondition replay checks before the event, why it checks
+    none or "")}, from the same walk as event_precondition_failures."""
+    coverage = {}
+    for scenario_id, applicable, untimed in _precondition_scenarios(events):
+        why = (f"{', '.join(untimed)} {'has' if len(untimed) == 1 else 'have'} no at time, so the events were not replayed"
+               if untimed else "")
+        for event in applicable:
+            coverage[(scenario_id, str(event.get("event_id", "")))] = (
+                frozenset() if why else frozenset(fluent_values(event.get("requires"))), why)
+    return coverage
+
+
+def event_precondition_failures(events: list[Any], initial_fluents: Any = ()) -> list[dict[str, Any]]:
+    """Return every event whose `requires` fluents do not hold when it happens."""
+    failures: list[dict[str, Any]] = []
+    for scenario_id, applicable, untimed in _precondition_scenarios(events):
+        if untimed:
             # Missing axioms prevent ordering only this scenario, including its shared events.
             continue
         uncertain: set[str] = set()
