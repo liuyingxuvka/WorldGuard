@@ -390,6 +390,11 @@ class GuardContract:
             for index, row in enumerate(claim.asserts)
             if ('holds' in row or 'modality' in row) and 'at' in row and 'node' not in row
         )
+        named_times.extend(
+            (f"inputs.spatial_relations[{index}]", row['at'])
+            for index, row in enumerate(inputs.get('spatial_relations', []) or [])
+            if isinstance(row, Mapping) and 'at' in row
+        )
         validate_times(named_times)
         return cls(
             contract_id=str(data.get('contract_id', '') or claim.claim_id),

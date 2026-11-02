@@ -227,8 +227,10 @@ def _check(contract: GuardContract):
         )
 
     simultaneous = []
-    for index, first in enumerate(events):
-        for second in events[index + 1:]:
+    # Rows that are not mappings are reported below as EVENT_MISSING_INITIATION_AXIOM; they have no time to compare.
+    records = [event for event in events if isinstance(event, dict)]
+    for index, first in enumerate(records):
+        for second in records[index + 1:]:
             if "at" not in first or "at" not in second or time_key(first["at"]) != time_key(second["at"]):
                 continue
             if first.get("scenario_id") and second.get("scenario_id") and first["scenario_id"] != second["scenario_id"]:

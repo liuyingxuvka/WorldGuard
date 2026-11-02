@@ -240,7 +240,9 @@ def evaluate_claim_binding(contract: GuardContract, *, node_contracts=None, desc
                 else:
                     inputs = node_contracts[destination].inputs if "node" in assertion else contract.inputs
                     status, detail = _EVALUATORS[kind](inputs, assertion)
-            except (TypeError, ValueError, KeyError, AttributeError) as exc:
+            except (TypeError, ValueError) as exc:
+                # A value of the wrong kind in the claim row or model (for example a text reward) is the
+                # user's input: the row stays visible as GAP with the reason. Any other error is a bug and is raised.
                 status, detail = _gap(f"cannot evaluate: {exc}")
         row["status"] = status
         row["reason" if status == "GAP" else "observed"] = detail

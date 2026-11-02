@@ -86,10 +86,12 @@ def _counterexample_context(contract, results):
                 if event:
                     scenario = step.get("scenario_id")
                     if scenario not in timelines:
-                        try:
-                            timelines[scenario] = timeline(contract, scenario=scenario)["steps"]
-                        except ValueError:
-                            timelines[scenario] = []
+                        # A trace needs every applicable event's time; without one there is no order to show
+                        # (the missing time is its own native GAP). Any other timeline error is raised.
+                        applicable = [row for row in contract.inputs.get("events", []) if isinstance(row, Mapping)
+                                      and (not row.get("scenario_id") or str(row["scenario_id"]) == str(scenario or ""))]
+                        timed = all("at" in row for row in applicable)
+                        timelines[scenario] = timeline(contract, scenario=scenario)["steps"] if timed else []
                     prefix = []
                     for row in timelines[scenario]:
                         if row["event_id"] is not None:
@@ -99,6 +101,12 @@ def _counterexample_context(contract, results):
                             break
         updated.append(replace(result, counterexamples=examples, missing_slots=missing_slots))
     return updated
+
+
+def _token_check_not_run(check, problem):
+    """The token world cannot be replayed, so a world check that needs it did not run: say so, never pass silently."""
+    return {'code': 'WORLD_TOKEN_CHECK_NOT_RUN', 'status': 'GAP', 'check': check, 'problem': problem,
+            'message': f'the token world cannot be replayed, so the {check.replace("_", "/")} check did not run'}
 
 
 def _event_token_consistency(contract):
@@ -130,7 +138,7 @@ def _event_token_consistency(contract):
         return []
     _, malformed = token_replay(resources, validate=False, events=events)
     if malformed:
-        return []
+        return [_token_check_not_run('event_token', malformed)]
     view = timeline(contract)
     by_time = {}
     for event in events:
@@ -213,7 +221,8 @@ def _space_relation(place, region, closure, apart):
 def _space_token_consistency(contract):
     """A single token's replayed place must agree with the spatial relations declared at the same time."""
     inputs = contract.inputs
-    relations = [row for row in inputs.get("spatial_relations", []) or [] if isinstance(row, Mapping)]
+    # Only rows that name an instant are compared with the token at that instant; a timeless row has none.
+    relations = [row for row in inputs.get("spatial_relations", []) or [] if isinstance(row, Mapping) and "at" in row]
     resources = inputs.get("resources", {})
     if not relations or not resources.get("places"):
         return []
@@ -222,13 +231,11 @@ def _space_token_consistency(contract):
         return []
     _, malformed = token_replay(resources, validate=False, events=events)
     if malformed:
-        return []
-    try:
-        steps = timeline(contract)["steps"]
-        instants = [(time_key(row["at"]), row) for row in relations]
-        stepped = [(time_key(step["at"]) if step["at"] is not None else None, step) for step in steps]
-    except (TypeError, ValueError):
-        return []
+        return [_token_check_not_run('space_token', malformed)]
+    # Event and spatial times were validated on one clock when the contract was read.
+    steps = timeline(contract)["steps"]
+    instants = [(time_key(row["at"]), row) for row in relations]
+    stepped = [(time_key(step["at"]) if step["at"] is not None else None, step) for step in steps]
     unique = set(map(str, resources.get("unique", [])))
     gaps = []
     reported = set()

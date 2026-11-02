@@ -244,9 +244,12 @@ def _evaluate_equations(
     for _ in range(max(1, len(remaining) + 1)):
         progressed = False
         for variable in list(remaining):
+            expression = equations[variable]
             try:
-                environment[variable] = _safe_scalar_eval(equations[variable], environment)
-            except (KeyError, NameError):
+                environment[variable] = _safe_scalar_eval(expression, environment)
+            except NameError:
+                # The equation reads a variable this pass has not computed yet; the next pass retries it and
+                # whatever never resolves is reported as unresolved_dependencies below.
                 continue
             except (TypeError, ValueError, ZeroDivisionError, OverflowError) as exc:
                 errors.append(f"{variable}:{type(exc).__name__}")

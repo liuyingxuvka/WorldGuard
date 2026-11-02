@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- A token world that cannot be replayed (for example a token with a negative quantity) no longer hides the event/token and space/token agreement checks: the report shows GAP `WORLD_TOKEN_CHECK_NOT_RUN` naming the check and the broken input (before: those checks were skipped, so a real mismatch could PASS).
+- A spatial row with an invalid time is an input error (exit 2), like an event time (before: it silently switched off the space/token check). Spatial rows without a time no longer crash the space/token check.
+- An event row that is not a mapping, next to valid events, gives the usual `EVENT_MISSING_INITIATION_AXIOM` instead of a crash.
+- Errors inside WorldGuard itself are no longer turned into results: a bug in a claim-row evaluator is raised instead of becoming a GAP (a wrong value in the row, such as a text reward, is still a GAP with its reason), and `python -m worldguard` shows a crash as a crash instead of printing an `{"ok": false}` message.
+- `timeline ... | head` no longer reports a closed reader as an input error; it prints one line on stderr and exits 141.
+
 - Maintenance checks run on FlowGuard 0.72.0. The project rules are the four plain FlowGuard steps (status first, store only the owner's own words, find code and run the tests, one commit in your own words); the stored round-11 action list is recorded as not the owner's words, so `status` no longer shows it as an open request.
 
 ## v0.8.0 - 2026-10-31 - Actor state, bindable trees and open-world handoffs

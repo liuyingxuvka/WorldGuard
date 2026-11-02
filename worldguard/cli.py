@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -53,7 +54,24 @@ def _example_path(name):
     raise ValueError(f"The {name} example is distributed with the WorldGuard portable skill; use its launcher or supply a file.")
 
 
+BROKEN_PIPE_EXIT = 141  # the shell's code for a writer stopped by SIGPIPE
+
+
 def main(argv=None):
+    """Run one command. A reader that closes the output early (for example `| head`) is reported once on
+    stderr with its own exit code; it is neither an input error nor a check result."""
+    try:
+        code = _run(argv)
+        sys.stdout.flush()
+    except BrokenPipeError:
+        # Point stdout at devnull so the interpreter's final flush does not raise a second time.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        print("worldguard: the reader closed the output early (broken pipe); the output is incomplete", file=sys.stderr)
+        return BROKEN_PIPE_EXIT
+    return code
+
+
+def _run(argv):
     parser = argparse.ArgumentParser(prog="worldguard")
     commands = parser.add_subparsers(dest="command", required=True)
     check = commands.add_parser("check", help="Check a world and its claim assertions.")
@@ -126,21 +144,23 @@ def main(argv=None):
                     if node.contract is not None and node.contract.inputs.get("events"):
                         views[identity] = timeline(node.contract, report=report.node_reports[identity])
                 if args.json:
-                    print(dump_json({"mesh_id": mesh.mesh_id, "tree": report.tree, "nodes": views}))
+                    text = dump_json({"mesh_id": mesh.mesh_id, "tree": report.tree, "nodes": views})
                 else:
-                    print("\n".join(report.tree))
+                    lines = list(report.tree)
                     for row in report.tree:
                         identity = row.strip().split()[0]
                         if identity in views:
                             padding = row[: len(row) - len(row.lstrip())]
-                            print("\n".join(padding + line for line in render_timeline_text(views[identity], label=identity, full=args.full).splitlines()))
+                            lines.extend(padding + line for line in render_timeline_text(views[identity], label=identity, full=args.full).splitlines())
+                    text = "\n".join(lines)
             else:
                 contract = GuardContract.from_dict(load_mapping(args.contract))
                 report = run_worldguard(contract)
                 view = timeline(contract, scenario=args.scenario, report=report)
-                print(dump_json(view) if args.json else render_timeline_text(view, full=args.full))
+                text = dump_json(view) if args.json else render_timeline_text(view, full=args.full)
         except (OSError, UnicodeError, ValueError) as exc:
             return _input_error("timeline", args.mesh or args.contract or args.example, exc)
+        print(text)
         return 0
     if args.command == "check":
         from .contracts import GuardContract
