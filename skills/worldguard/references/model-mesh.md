@@ -138,6 +138,10 @@ status in `details`).
 `lifeline --mesh FILE --of ENTITY` (or `--contract`) prints a Mermaid flowchart of one entity in reading order: each box
 lists only the declared `world_model.relations` facts about it (`at island`, `holds key`, `held by Tom`), each arrow is
 an event it takes part in, needs a fact of, or changes a fact of, and a dashed arrow joins chapters along `continues`.
-Arrows and boxes with FAIL rows are red and name the code. The lines under the picture say what it shows and what it
-left out (other events, nodes without the entity, every other fact); more than 12 boxes fold the middle into one box,
-`--all` draws them all. An entity named nowhere is an input error that lists the known ones.
+Arrows and boxes with FAIL rows are red and name the code, on the picture of each entity the row is about: the people,
+things and places of the declared facts it names (the fact an event needs, the facts that clash, the facts an event
+lacks). Tom's picture of the hand-over stays plain when only Lena is not on the mainland; a row that names no declared
+fact is about the event and is marked on every picture that draws it. The lines under the picture say what it shows
+and what it left out (other events, nodes without the entity, problems about others at a drawn step, every other fact);
+more than 12 boxes fold the middle into one box, `--all` draws them all. An entity named nowhere is an input error that
+lists the known ones.

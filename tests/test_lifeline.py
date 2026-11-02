@@ -102,3 +102,43 @@ def test_one_box_is_not_called_boxes():
     view = lifeline("island", contract=contract, report=run_worldguard(contract))
     view = {**view, "boxes": view["boxes"][:1], "arrows": []}
     assert "Shown: island, 1 box, 0 events;" in render_mermaid(view)
+
+
+def test_a_problem_marks_only_the_lifelines_of_the_entities_it_is_about(capsys, story):
+    # Lena is not on the mainland when she hands Tom the key: the unmet fact is "Lena is at mainland", about Lena and
+    # the mainland. Tom takes part in the event, but his box is not marked; the lines below say what was left out.
+    code, out = _picture(capsys, "--mesh", story / "mesh_slip.yaml", "--of", "Tom")
+    assert code == 0
+    assert out.splitlines() == [
+        "```mermaid",
+        "flowchart LR",
+        '  n0["ch1 start<br/>at mainland"]',
+        '  n1["ch2 start<br/>at mainland"]',
+        '  n2["ch2 e_give_key<br/>at mainland<br/>holds key"]',
+        '  n3["ch2 e_tom_ferry<br/>at island<br/>holds key"]',
+        '  n0 -.->|"continues into ch2"| n1',
+        '  n1 -->|"18:00 e_give_key (ch2 p1)"| n2',
+        '  n2 -->|"20:00 e_tom_ferry (ch2 p2)"| n3',
+        '  n3 -->|"21:00 e_unlock (ch2 p3)"| n3',
+        "```",
+        "Shown: Tom, 4 boxes, 3 events; each box lists only the declared facts about Tom.",
+        "Left out: 3 events without Tom (ch1 e_find_key, ch1 e_lock, ch1 e_ferry_out); nodes without Tom: story; "
+        "1 problem about others at a drawn step (EVENT_RELATION_UNMET at ch2 e_give_key, about Lena, mainland); "
+        "every fact not about Tom.",
+    ]
+    # The key is not what the problem is about either; the mainland is.
+    _code, key = _picture(capsys, "--mesh", story / "mesh_slip.yaml", "--of", "key")
+    assert '  n2 -->|"18:00 e_give_key (ch2 p1)"| n3' in key.splitlines() and "  class " not in key
+    _code, mainland = _picture(capsys, "--mesh", story / "mesh_slip.yaml", "--of", "mainland")
+    assert '  n2 -->|"18:00 e_give_key (ch2 p1) !! EVENT_RELATION_UNMET"| n3' in mainland.splitlines()
+
+
+def test_a_conflict_marks_every_entity_whose_facts_clash(capsys, story):
+    # Lena hands over the key but the world forgets to end "Lena holds key": the key has two holders, Lena and Tom.
+    path = story / "ch2_declared.yaml"
+    world = yaml.safe_load(path.read_text())
+    next(event for event in world["inputs"]["events"] if event["event_id"] == "e_give_key")["terminates"] = []
+    path.write_text(yaml.safe_dump(world, sort_keys=False))
+    for entity in ("Tom", "Lena", "key"):
+        _code, out = _picture(capsys, "--contract", path, "--of", entity)
+        assert any(line.startswith('  n0 -->|"18:00 e_give_key (ch2 p1) !! WORLD_RELATION_CONFLICT') for line in out.splitlines()), entity

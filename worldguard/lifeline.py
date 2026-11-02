@@ -2,8 +2,11 @@
 
 The picture is computed, never drawn by hand: the facts `world_model.relations` declares about the entity, replayed
 event by event through each chapter in reading order, and only the events the entity takes part in or whose effects
-change those facts. Problems of the native reports are marked where they happen. Everything else is left out, and
-the text under the picture says what was left out.
+change those facts. A problem of the native reports is marked where it happens, on the picture of each entity it is
+about: the people, things and places of the declared facts it names (the fact an event needs, the facts that clash,
+the facts an event lacks). A problem that names no declared fact is about the event itself and is marked on every
+picture that draws the event. Everything else is left out, and the text under the picture says what was left out,
+including the problems at drawn steps that are about others.
 """
 
 from __future__ import annotations
@@ -36,6 +39,15 @@ def _involves(event, entity, facts):
             or event.get("place") == entity or bool(changed & set(facts)))
 
 
+def _about(row, relations):
+    """The entities of the declared facts a problem row names; empty when it names none."""
+    counterexample = row.get("counterexample") or {}
+    evidence = row.get("evidence") or {}
+    fluents = [*row.get("fluents", []), row.get("fluent"), *counterexample.get("missing_fluents", []), evidence.get("fluent")]
+    named = {entity for fluent in fluents if fluent in relations for entity in relations[fluent][1:]}
+    return named | {row[key] for key in ("subject", "object") if row.get(key)}
+
+
 def _state(holding, facts, entity):
     return sorted(_describe(facts[fluent], entity) for fluent in holding if fluent in facts)
 
@@ -62,7 +74,7 @@ def lifeline(entity: str, *, contract=None, mesh=None, report=None, limit: int |
     rows = report.to_dict()["gaps"] if report is not None else []
     boxes: list[dict[str, Any]] = []
     arrows: list[dict[str, Any]] = []
-    left_out = {"events": [], "chapters": [], "undeclared": []}
+    left_out = {"events": [], "chapters": [], "undeclared": [], "others": []}
     known = set()
     for chapter, source, world in _chapters(contract, mesh):
         relations = parse_relations(world.world_model.relations)
@@ -94,10 +106,17 @@ def lifeline(entity: str, *, contract=None, mesh=None, report=None, limit: int |
             if not _involves(event, entity, facts):
                 left_out["events"].append(f"{chapter + ' ' if chapter else ''}{event.get('event_id')}")
                 continue
-            codes = sorted({row["code"] for row in rows if row.get("status") == "FAIL"
-                            and (row.get("node_id") in (chapter, None)) and (
-                                row.get("event_id") == event.get("event_id")
-                                or (row.get("counterexample") or {}).get("event_id") == event.get("event_id"))})
+            here = [row for row in rows if row.get("status") == "FAIL" and (row.get("node_id") in (chapter, None)) and (
+                row.get("event_id") == event.get("event_id")
+                or (row.get("counterexample") or {}).get("event_id") == event.get("event_id"))]
+            codes, where = set(), f"{chapter + ' ' if chapter else ''}{event.get('event_id')}"
+            for row in here:
+                about = _about(row, relations)
+                if not about or entity in about:
+                    codes.add(row["code"])
+                else:
+                    left_out["others"].append(f"{row['code']} at {where}, about {', '.join(sorted(about))}")
+            codes = sorted(codes)
             state = _state(after, facts, entity)
             label = f"{event['at']} {event.get('event_id')}" + (f" ({event['source']})" if event.get("source") else "")
             if state == boxes[-1]["state"] and not codes:
@@ -175,6 +194,10 @@ def render_mermaid(view: Mapping[str, Any]) -> str:
         parts.append(f"nodes without {view['entity']}: {', '.join(map(str, left['chapters']))}")
     if view["folded"]:
         parts.append(f"{view['folded']} middle steps folded into one box (add --all to draw them)")
+    if left["others"]:
+        count = len(left["others"])
+        parts.append(f"{count} problem{'s' if count != 1 else ''} about others at {'a drawn step' if count == 1 else 'drawn steps'} "
+                     f"({'; '.join(left['others'])})")
     parts.append(f"every fact not about {view['entity']}")
     lines.append("Left out: " + "; ".join(parts) + ".")
     if left["undeclared"]:
