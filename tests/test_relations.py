@@ -224,11 +224,13 @@ def test_a_world_that_names_no_actor_and_declares_no_relation_says_what_is_not_c
     assert report.status.value == "PASS"
 
 
-def test_an_event_whose_changed_facts_no_relation_ties_to_anything_is_listed():
+@pytest.mark.parametrize("ending", ["terminates", "releases"])
+def test_an_event_whose_changed_facts_no_relation_ties_to_anything_is_listed(ending):
     # The review's second escape: Lena turns the key on the mainland, using nothing. The door has no declared place,
     # so only Lena's own place can be checked; the report names the event and the facts.
     contract = _load("ch2_declared.yaml")
     unlock = _event(contract, "e_unlock")
+    unlock[ending] = unlock.pop("terminates")
     unlock["uses"], unlock["place"] = [], "mainland"
     report = run_worldguard(contract)
     assert report.status.value == "PASS"

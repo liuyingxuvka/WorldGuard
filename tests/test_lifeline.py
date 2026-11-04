@@ -155,3 +155,30 @@ def test_a_conflict_is_marked_at_the_event_that_causes_it_on_each_picture_it_is_
         assert not any("e_wave !!" in line for line in out.splitlines()), entity
     # The grab is not Lena's own event, but the conflict is about her key: her picture draws it where it happens.
     assert '  n1 -->|"18:00 e_wave"| n1' in out.splitlines() and "1 event without Lena" not in out
+
+
+@pytest.mark.parametrize("kind,other", [("at", "A"), ("holds", "key")])
+@pytest.mark.parametrize("initially_holding", [True, False])
+@pytest.mark.parametrize("endpoint", [0, 1])
+def test_a_release_is_drawn_on_both_entities_of_its_declared_fact(
+        capsys, tmp_path, kind, other, initially_holding, endpoint):
+    # A release changes the replay even when no actor is named; opaque fluent ids do not hide either entity.
+    path = tmp_path / "world.json"
+    path.write_text(json.dumps({
+        "contract_id": "release-lifeline",
+        "claim": {"claim_id": "q", "requested_semantics": ["event"],
+                  "asserts": [{"holds": "opaque", "at": 2, "value": False}]},
+        "world_model": {"model_id": "m", "relations": {"opaque": {kind: ["Lena", other]}}},
+        "inputs": {"event_model": {"initial_states": ["opaque"] if initially_holding else []},
+                   "events": [{"event_id": "lose-location", "at": 1, "releases": ["opaque"],
+                               "actor_state_free": "the fact is no longer known", "source": "chapter p2"}]},
+    }))
+    entity = ("Lena", other)[endpoint]
+    code, out = _picture(capsys, "--contract", path, "--of", entity)
+    assert code == 0
+    target = 1 if initially_holding else 0
+    assert f'  n0 -->|"1 lose-location (chapter p2)"| n{target}' in out.splitlines()
+    label = "lose-location" if initially_holding else "start"
+    assert f'  n{target}["{label}<br/>(no declared fact)"]' in out.splitlines()
+    assert f"Shown: {entity}, {target + 1} box" in out
+    assert "1 event;" in out and f"without {entity}" not in out

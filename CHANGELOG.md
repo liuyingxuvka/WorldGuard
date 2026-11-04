@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Lifelines include events that release a declared fact on the pictures of both entities it names, including an event with no actor. Scope limits also name released facts that no relation covers.
+
 - Conflict explanations keep the sources that held when the conflict first appeared, even if those facts end and are established again later. Re-checking an open finding refreshes its explanation while retaining its first-seen time and history.
 
 - A contradiction stays visible until it is fixed. `check`, `mesh-check`, `timeline` and `lifeline` record every FAIL they find, with the chapters, sources and events that established it, in `.worldguard/open.json` (in the checked file's folder, or the nearest folder above it that already has one), and every later command on a file under that folder, including a chapter in a subfolder, prints the open ones on stderr. An entry belongs to the file the contradiction lives in, so a chapter's own slip found by the tree can be closed by checking that chapter.

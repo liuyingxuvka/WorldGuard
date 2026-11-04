@@ -35,7 +35,7 @@ def _facts(relations, entity):
 
 def _involves(event, entity, facts):
     # For the picture an event also involves the entity when it needs one of its facts; only checks distrust requires.
-    changed = {name for key in ("initiates", "terminates", "requires") for name in fluent_values(event.get(key))}
+    changed = {name for key in ("initiates", "terminates", "releases", "requires") for name in fluent_values(event.get(key))}
     return (event.get("actor") == entity or entity in event.get("with", []) or entity in event_things(event)
             or event.get("place") == entity or bool(changed & set(facts)))
 

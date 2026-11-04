@@ -325,7 +325,7 @@ def relation_scope_limits(inputs: Mapping[str, Any], relations: Mapping[str, tup
     for event in events:
         if not event.get("actor") or "actor_state_free" in event:
             continue
-        changed = [name for key in ("initiates", "terminates") for name in fluent_values(event.get(key))]
+        changed = [name for key in ("initiates", "terminates", "releases") for name in fluent_values(event.get(key))]
         untied = sorted(dict.fromkeys(name for name in changed if name not in relations))
         if untied:
             where = f" at {event['place']}" if event.get("place") else ""
