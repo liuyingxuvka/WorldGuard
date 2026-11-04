@@ -248,8 +248,9 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
             rows.append(row)
             continue
         established = {fluent: {"event_id": None, "at": None} for fluent in fluent_values(initial)}
-        # (the instant, what holds after all its events, the events of that instant that started each fact, in order)
-        states = [(None, frozenset(fluent_values(initial)), {})]
+        # Each instant owns its origins: a later re-establishment must not rewrite an earlier conflict's explanation.
+        # (instant, holding facts, events that started them at this instant, origins of the holding facts)
+        states = [(None, frozenset(fluent_values(initial)), {}, dict(established))]
         for instant, group in groupby(event_replay(applicable, initial, scenario, skip_illegal=True),
                                       key=lambda row: time_key(row[0]["at"])):
             group = list(group)
@@ -259,10 +260,11 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
                     established[fluent] = {"event_id": event.get("event_id"), "at": event["at"],
                                            **({"source": event["source"]} if event.get("source") else {})}
                     started.setdefault(fluent, []).append(str(event.get("event_id")))
-            states.append((group[-1][0]["at"], group[-1][2], started))
+            holding = group[-1][2]
+            states.append((group[-1][0]["at"], holding, started, {fluent: established[fluent] for fluent in holding}))
         order = {str(event.get("event_id")): index for index, event in enumerate(applicable)}
         reported = set()
-        for at, holding, started in states:
+        for at, holding, started, origins in states:
             groups: dict[tuple[str, str], list[str]] = {}
             for fluent in sorted(holding):
                 if fluent in relations:
@@ -281,7 +283,7 @@ def relation_conflicts(inputs: Mapping[str, Any], relations: Mapping[str, tuple[
                 row = {"code": "WORLD_RELATION_CONFLICT", "status": "FAIL", "relation": kind,
                        "subject" if kind == "at" else "object": who, "fluents": fluents,
                        "event_id": causes[-1] if causes else None, **({"event_ids": causes} if causes else {}), "at": at,
-                       "established_by": {fluent: established.get(fluent, {}) for fluent in fluents},
+                       "established_by": {fluent: origins[fluent] for fluent in fluents},
                        "message": message + "; end one of these facts where the other begins."}
                 if scenario:
                     row["scenario_id"] = scenario

@@ -421,7 +421,8 @@ def update(units: list[Unit], *, checked: Path, run: str, takes_over: Path | Non
                 changed.add(folder)
                 if key in found:
                     seen[key] = item
-                    item.update(last_seen=now, runs=item.get("runs", 1) + 1)
+                    item.update(last_seen=now, runs=item.get("runs", 1) + 1,
+                                established_by=established_by(found[key][1], unit))
                     item.pop("held", None)
                     continue
                 is_closed, how = _judge(item, unit, unit.name(folder), run)
