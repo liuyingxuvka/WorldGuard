@@ -10,7 +10,7 @@
 
 | 版本 | 运行环境 | 包名 |
 | --- | --- | --- |
-| `v0.8.0` | Python 3.11+，PyYAML | `worldguard` |
+| `v0.9.0` | Python 3.11+，PyYAML | `worldguard` |
 
 [English](./README.md)
 
@@ -88,14 +88,10 @@ $ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixt
 
 ## 快速上手
 
-> **尚未发布。** 本页描述的是 `main`，其中有还没有进入任何发布的改动（CHANGELOG.md 的"Unreleased"）：声明的关系
-> （`world_model.relations`）、未解决矛盾的记录和 `lifeline`。下面的 tag `v0.8.0` 是最新的发布，这些都没有；
-> 所以在下一次发布之前，上面灯塔例子的输出、`lifeline` 和矛盾记录都要用 `main`：克隆时用 `--branch main`，pip 用 `@main`。
-
 **1. 从发布的 tag 安装技能。**
 
 ```bash
-git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -108,7 +104,7 @@ python WorldGuard/scripts/install_skill.py --target ~/.claude/skills --check  # 
 **2. 可选：`worldguard` 命令**，同一个 tag：
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
 ```
 
 装好后有 `worldguard` 命令（五个子命令：`check`、`mesh-check`、`timeline`、`lifeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、

@@ -10,7 +10,7 @@
 
 | Version | Runtime | Package |
 | --- | --- | --- |
-| `v0.8.0` | Python 3.11+, PyYAML | `worldguard` |
+| `v0.9.0` | Python 3.11+, PyYAML | `worldguard` |
 
 [中文说明](./README.zh-CN.md)
 
@@ -93,15 +93,10 @@ they mean.
 
 ## Quick start
 
-> **Not released yet.** This page describes `main`, which holds changes that are not in a release yet (CHANGELOG.md,
-> "Unreleased"): the declared relations (`world_model.relations`), the record of open contradictions and `lifeline`.
-> The tag below, `v0.8.0`, is the newest release and has none of them, so the lighthouse output above, `lifeline` and
-> the record need `main` until the next release: use `--branch main` in the clone and `@main` with pip.
-
 **1. Install the skill for your AI, from the release tag.**
 
 ```bash
-git clone --depth 1 --branch v0.8.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -115,7 +110,7 @@ PyYAML is needed (JSON worlds need nothing).
 **2. Optional: the `worldguard` command**, from the same tag:
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.8.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
 ```
 
 It installs the console command `worldguard` with the five subcommands `check`, `mesh-check`, `timeline`, `lifeline`

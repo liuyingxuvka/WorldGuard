@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.9.0 - 2026-11-04 - Declared relations, visible contradictions and lifelines
 
 - Lifelines include events that release a declared fact on the pictures of both entities it names, including an event with no actor. Scope limits also name released facts that no relation covers.
 
