@@ -563,6 +563,36 @@ def test_takes_over_refuses_what_it_cannot_do(tmp_path, capsys):
     assert len(_record(story)["open"]) == 2  # a refused command changes nothing
 
 
+def test_taking_over_twice_refuses_the_second_request_without_changing_history(tmp_path, capsys):
+    story = _declared(tmp_path)
+    _run(capsys, "check", "--contract", story / "ch2_declared.yaml")
+    (story / "ch2_declared.yaml").unlink()
+    code, _out, _err = _run(capsys, "check", "--contract", story / "ch2_fixed.yaml",
+                            "--takes-over", story / "ch2_declared.yaml")
+    assert code == 0 and _record(story)["open"] == []
+    record = story / ".worldguard/open.json"
+    before = record.read_bytes()
+    code, out, _err = _run(capsys, "check", "--contract", story / "ch2_fixed.yaml",
+                           "--takes-over", story / "ch2_declared.yaml")
+    assert code == 2 and "no open contradiction" in json.loads(out)["error"]["message"]
+    assert record.read_bytes() == before
+
+
+def test_mesh_check_can_take_over_a_gone_tree_and_keep_its_history(tmp_path, capsys):
+    story = _story(tmp_path)
+    _run(capsys, "mesh-check", "--mesh", story / "mesh_slip.yaml")
+    before = next(item for item in _record(story)["open"] if item["code"] == "MESH_HANDOFF_STATE_MISMATCH")
+    (story / "mesh_slip.yaml").rename(story / "renamed_mesh.yaml")
+    code, _out, err = _run(capsys, "mesh-check", "--mesh", story / "renamed_mesh.yaml",
+                           "--takes-over", story / "mesh_slip.yaml")
+    assert code == 1 and "taken over: MESH_HANDOFF_STATE_MISMATCH [renamed_mesh.yaml]" in err
+    after = _record(story)["open"]
+    assert len(after) == 2
+    entry = next(item for item in after if item["code"] == "MESH_HANDOFF_STATE_MISMATCH")
+    assert (entry["unit"], entry["first_seen"], entry["runs"], entry["moved_from"]) == (
+        "renamed_mesh.yaml", before["first_seen"], before["runs"] + 1, ["mesh_slip.yaml"])
+
+
 def test_a_gone_file_whose_contradiction_is_in_two_checked_files_is_not_followed(tmp_path, capsys):
     story = _story(tmp_path)
     _run(capsys, "check", "--contract", story / "ch2_slip.yaml")
@@ -585,10 +615,13 @@ def test_a_gone_file_whose_contradiction_is_in_two_checked_files_is_not_followed
                             "--takes-over ch2_slip.yaml` in the record's folder")
     assert sorted(item["unit"] for item in _record(story)["open"]) == ["a.yaml", "b.yaml", "ch2_slip.yaml"]
     # The person names the real rename: its entry keeps the gone file's history, and the copy keeps its own.
+    previous = {item["unit"]: item for item in _record(story)["open"]}
     _code, _out, err = _run(capsys, "check", "--contract", story / "b.yaml", "--takes-over", story / "ch2_slip.yaml")
     entries = {item["unit"]: item for item in _record(story)["open"]}
     assert sorted(entries) == ["a.yaml", "b.yaml"]
     assert (entries["b.yaml"]["first_seen"], entries["b.yaml"]["moved_from"]) == (before["first_seen"], ["ch2_slip.yaml"])
+    assert entries["b.yaml"]["runs"] == previous["b.yaml"]["runs"] + previous["ch2_slip.yaml"]["runs"] + 1
+    assert entries["a.yaml"]["runs"] == previous["a.yaml"]["runs"]
     assert "moved_from" not in entries["a.yaml"]
 
 
