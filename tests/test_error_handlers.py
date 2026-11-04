@@ -1,6 +1,6 @@
 """The handler list: every exception handler in WorldGuard that can finish without raising, why it may, and the rule it serves.
 
-The scan is computed from the source of worldguard/, scripts/, skills/, tests/ and .flowguard/ (the legacy models).
+The scan is computed from the source of worldguard/, scripts/, skills/, tests/ and .flowguard/ (the flow models).
 A handler counts as re-raising only when every path through it ends in a raise, so `if strict: raise` followed by
 `return None` is a handler that swallows. Each key is listed with the number of such handlers in that function, so a
 second quiet handler of the same kind fails too. A new handler that does not re-raise fails this test until it is

@@ -303,7 +303,7 @@ python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
-`tests/test_error_handlers.py` lists every error handler in WorldGuard, its scripts, tests and legacy models that can
+`tests/test_error_handlers.py` lists every error handler in WorldGuard, its scripts, tests and flow models that can
 finish without raising, with how many there are in each function, what each does, why it is needed and the sentence of
 the written rule it serves; the list is checked against the source and the sentences against their files. A test or a
 test module that ends skipped or expected to fail, or a run cut short, fails. Invalid input, including a file that

@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_python_sources_have_at_most_two_consecutive_blank_lines():
     root = Path(__file__).resolve().parents[1]
-    roots = ("worldguard", "tests", "scripts", "skills/worldguard/scripts", ".flowguard/models")
+    roots = ("worldguard", "tests", "scripts", "skills/worldguard/scripts", ".flowguard/flow")
     violations = []
     for directory in roots:
         for path in sorted((root / directory).rglob("*.py")):
