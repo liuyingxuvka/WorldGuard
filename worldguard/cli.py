@@ -262,9 +262,11 @@ def _run(argv):
         try:
             _no_example(args)
             path = str(_example_path(args.example)) if args.example else args.contract
-            contract = GuardContract.from_dict(load_mapping(path))
+            contract = GuardContract.from_dict(load_mapping(path), base_dir=Path(path).resolve().parent)
             report = run_worldguard(contract)
-            digests = input_digests([path], Path(path).parent)
+            source_paths = [Path(contract.source_base_dir) / value
+                            for value in contract.source_config.get('texts', {}).values()]
+            digests = input_digests([path, *source_paths], Path(path).parent)
             # The record comes last: a --takes-over the record cannot follow is an input error like any other.
             notice = "" if args.example else _keep(contract_units(path, contract, report), path, f"check {Path(path).name}",
                                                    args.takes_over)
@@ -288,6 +290,9 @@ def _run(argv):
             mesh = ModelMeshContract.from_dict(data, base_dir=base_dir)
             report = run_model_mesh(mesh)
             paths = [path, *[base_dir / node['contract'] for node in data.get('nodes', []) if isinstance(node.get('contract'), str)]]
+            paths.extend(base_dir / value for value in mesh.source_config.get('texts', {}).values())
+            paths.extend(Path(node.contract.source_base_dir) / value for node in mesh.nodes if node.contract
+                         for value in node.contract.source_config.get('texts', {}).values())
             digests = input_digests(paths, base_dir)
             notice = "" if args.example else _keep(mesh_units(path, data, mesh, report), path,
                                                    f"mesh-check {Path(path).name}", args.takes_over)

@@ -17,6 +17,7 @@ from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses, coerce_status
 from .variants import validate_variants, apply_variant
 from .errors import WorldInputError
+from .source_readings import SOURCE_FIELDS, source_config
 
 EDGE_RELATIONS = {"parent_child", "continues"}
 CYCLE_RELATIONS = EDGE_RELATIONS
@@ -44,8 +45,10 @@ class ModelNode:
         if not isinstance(data.get("source", ""), str):
             raise WorldInputError("model node source must be a string")
         contract = data.get("contract")
+        contract_base = base_dir
         if isinstance(contract, str):
             path = Path(base_dir or ".") / contract
+            contract_base = path.parent
             try:
                 contract = load_mapping(path)
             except WorldInputError as exc:
@@ -54,7 +57,7 @@ class ModelNode:
             raise WorldInputError("model node contract must be a mapping, file path or null")
         return cls(
             str(data.get("model_id", "")),
-            GuardContract.from_dict(contract) if contract is not None else None,
+            GuardContract.from_dict(contract, base_dir=contract_base) if contract is not None else None,
             data.get("source", ""),
             deepcopy(dict(contract)) if contract is not None else None,
         )
@@ -113,6 +116,7 @@ class ModelMeshContract:
     nodes: list[ModelNode] = field(default_factory=list)
     edges: list[ModelEdge] = field(default_factory=list)
     variants: list[dict[str, Any]] = field(default_factory=list)
+    source_config: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data, *, base_dir=None):
@@ -132,7 +136,8 @@ class ModelMeshContract:
             },
             "mesh.",
         )
-        if set(data) - {"mesh_id", "nodes", "edges", "variants"}:
+        sources = source_config(data)
+        if set(data) - {"mesh_id", "nodes", "edges", "variants", *SOURCE_FIELDS}:
             raise WorldInputError("model mesh has unknown fields")
         for name in ("nodes", "edges"):
             if not isinstance(data.get(name, []), (list, tuple)) or any(not isinstance(row, Mapping) for row in data.get(name, [])):
@@ -144,6 +149,7 @@ class ModelMeshContract:
             [ModelNode.from_dict(n, base_dir=base_dir) for n in data.get("nodes", [])],
             [ModelEdge.from_dict(e) for e in data.get("edges", [])],
             variants,
+            sources,
         )
 
     def to_dict(self):
@@ -152,6 +158,7 @@ class ModelMeshContract:
             "nodes": [n.to_dict() for n in self.nodes],
             "edges": [e.to_dict() for e in self.edges],
             **({"variants": self.variants} if self.variants else {}),
+            **self.source_config,
         }
 
 
@@ -341,6 +348,16 @@ def qualification_context_for_node(mesh, node):
 def run_model_mesh(mesh, *, base_dir=None):
     if not isinstance(mesh, ModelMeshContract):
         mesh = ModelMeshContract.from_dict(mesh, base_dir=base_dir)
+    if mesh.source_config:
+        nodes = []
+        for node in mesh.nodes:
+            if node.contract is not None:
+                config = {**mesh.source_config, **node.contract.source_config}
+                contract = replace(node.contract, source_config=config,
+                                   source_base_dir=str(Path(base_dir or node.contract.source_base_dir).resolve()))
+                node = replace(node, contract=contract)
+            nodes.append(node)
+        mesh = replace(mesh, nodes=nodes)
     findings = []
     reports = {}
     ids = set()

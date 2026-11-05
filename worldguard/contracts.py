@@ -7,6 +7,7 @@ from .clock import validate_times
 from .relations import parse_relations
 from .variants import validate_variants
 from .errors import WorldInputError
+from .source_readings import source_config
 
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {
     'event': ('EventGuard',),
@@ -375,15 +376,18 @@ class GuardContract:
     world_model: WorldModel
     inputs: dict[str, Any] = field(default_factory=dict)
     variants: list[dict[str, Any]] = field(default_factory=list)
+    source_config: dict[str, Any] = field(default_factory=dict)
+    source_base_dir: str = field(default='.', repr=False, compare=False)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'GuardContract':
+    def from_dict(cls, data: dict[str, Any], *, base_dir=None) -> 'GuardContract':
         if not isinstance(data, Mapping):
             raise WorldInputError('contract must be a mapping')
         _reject_retired_contract_keys(data)
         for name in ('claim', 'world_model', 'inputs'):
             if name in data and not isinstance(data[name], Mapping):
                 raise WorldInputError(f'{name} must be a mapping')
+        sources = source_config(data)
         world_model = dict(data.get('world_model', {}))
         inputs = dict(data.get('inputs', {}))
         variants = data.get('variants', [])
@@ -429,6 +433,8 @@ class GuardContract:
             world_model=WorldModel.from_dict(world_model),
             inputs=inputs,
             variants=variants,
+            source_config=sources,
+            source_base_dir=str(base_dir or '.'),
         )
 
     def for_guard(self, guard: str) -> 'GuardContract':
@@ -439,4 +445,5 @@ class GuardContract:
         result = {'contract_id': self.contract_id, 'claim': self.claim.to_dict(), 'world_model': self.world_model.to_dict(), 'inputs': self.inputs}
         if self.variants:
             result['variants'] = self.variants
+        result.update(self.source_config)
         return result
