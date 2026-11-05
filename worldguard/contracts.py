@@ -7,7 +7,7 @@ from .clock import validate_times
 from .relations import parse_relations
 from .variants import validate_variants
 from .errors import WorldInputError
-from .source_readings import source_config
+from .source_readings import SOURCE_FIELDS, source_config
 
 SEMANTIC_GUARD_ROUTES: dict[str, tuple[str, ...]] = {
     'event': ('EventGuard',),
@@ -384,6 +384,9 @@ class GuardContract:
         if not isinstance(data, Mapping):
             raise WorldInputError('contract must be a mapping')
         _reject_retired_contract_keys(data)
+        unknown = sorted(map(str, set(data) - {'contract_id', 'claim', 'world_model', 'inputs', 'variants', *SOURCE_FIELDS}))
+        if unknown:
+            raise WorldInputError('contract has unknown fields: ' + ', '.join(unknown))
         for name in ('claim', 'world_model', 'inputs'):
             if name in data and not isinstance(data[name], Mapping):
                 raise WorldInputError(f'{name} must be a mapping')

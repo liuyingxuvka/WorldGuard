@@ -1,0 +1,10 @@
+id: x11_unknown_toplevel_field
+kind: mistake
+world: loan.yaml
+mode: contract
+mistake: 'the AI wrote the top-level key ''variant:'' instead of ''variants:''; WorldGuard 0.9.0 ignores an unknown top-level key, so the negative check the AI meant to add never runs. Every reading in the world is right'
+expect: 'exit 2, WorldInputError (WORLDGUARD_INPUT_INVALID) naming the unknown top-level field ''variant'' (WG-904); no screen'
+layout: 'misspelled top-level contract field'
+truth:
+  set: {}
+  status: input error

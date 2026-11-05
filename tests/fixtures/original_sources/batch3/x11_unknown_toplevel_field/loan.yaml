@@ -1,0 +1,23 @@
+contract_id: loan
+claim:
+  claim_id: atlas_on_shelf
+  text: The atlas is on the branch library shelf by 15:00.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_unload, before: e_shelve}
+    - {holds: atlas_on_branch_shelf, at: "15:00"}
+world_model:
+  model_id: loan
+  scope_limits: [one loan]
+  relations:
+    mireille_at_city_library: {at: [Mireille, city_library]}
+    mireille_has_atlas: {holds: [Mireille, atlas]}
+    dario_at_branch_library: {at: [Dario, branch_library]}
+inputs:
+  event_model: {initial_states: [mireille_at_city_library, mireille_has_atlas, dario_at_branch_library]}
+  events:
+    - {event_id: e_pack, at: "11:30", source: loan p1, actor: Mireille, place: city_library, uses: [atlas], initiates: [atlas_in_crate], terminates: [mireille_has_atlas]}
+    - {event_id: e_unload, at: "14:10", source: loan p2, actor_state_free: the courier van is not modelled, requires: [atlas_in_crate], initiates: [atlas_at_branch], terminates: [atlas_in_crate]}
+    - {event_id: e_shelve, at: "14:30", source: loan p3, actor: Dario, place: branch_library, uses: [], requires: [atlas_at_branch], initiates: [atlas_on_branch_shelf]}
+variant:
+  - {id: shelved_before_delivery, code: EVENT_PRECONDITION_UNMET, set: {"inputs.events[e_shelve].at": "13:00"}}
