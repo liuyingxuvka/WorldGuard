@@ -1,0 +1,9 @@
+id: h06_row_counted_with_header
+kind: mistake
+world: bus.yaml
+mistake: the AI cites 'bus r2 dep' for the Harbour stop (it counted rows by eye and skipped one); the time 07:20 is right, the pointer is not
+expect: red on e_harbour, naming where 07:20 is (dep of r3)
+layout: row pointer counted by hand
+truth:
+  set: {}
+  status: PASS

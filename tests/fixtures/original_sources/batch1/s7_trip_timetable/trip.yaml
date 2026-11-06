@@ -1,0 +1,53 @@
+contract_id: trip-island-001
+claim:
+  claim_id: c_trip_plan
+  text: Take the 08:00 train, the 11:00 ferry out on day 1, and the 15:00 ferry back on day 2 for the 16:30 last train.
+  requested_semantics: [event, resource, causal]
+  asserts:   # what the claim says, checked against the model below
+    - {holds: on_island, at: "2026-11-02T12:00"}
+    - {event: d2_ferry_arr, before: d2_last_train}
+    - {variable: slack_back_h, op: ">=", value: 0}
+    - {place: home, color: traveler, qty: 1}
+world_model:
+  model_id: island-trip
+  model_version: draft-2
+  scope_limits: [published timetable, no delays]
+  relations:   # which fluent says where the traveler is
+    at_city: {at: [traveler, city]}
+    on_train: {at: [traveler, train]}
+    at_port: {at: [traveler, port]}
+    on_island: {at: [traveler, island]}
+    on_ferry: {at: [traveler, ferry]}
+    home: {at: [traveler, home]}
+inputs:
+  event_model: {initial_states: [at_city]}
+  events:
+    - {actor: traveler, place: city, uses: [], event_id: d1_train_dep, source: "tt r1 dep", at: "2026-11-02T08:00", requires: [at_city], initiates: on_train, terminates: at_city}
+    - {actor: traveler, place: train, uses: [], event_id: d1_train_arr, source: "tt r1 arr", at: "2026-11-02T10:05", requires: [on_train], initiates: at_port, terminates: on_train}
+    - {actor: traveler, place: port, uses: [], event_id: d1_ferry_out, source: "tt r2 dep", at: "2026-11-02T11:00", requires: [at_port], initiates: on_island, terminates: at_port}
+    - {actor: traveler, place: island, uses: [], event_id: d2_ferry_back, source: "tt r3 dep", at: "2026-11-03T15:00", requires: [on_island], initiates: on_ferry, terminates: on_island}
+    - {actor: traveler, place: ferry, uses: [], event_id: d2_ferry_arr, source: "tt r3 arr", at: "2026-11-03T15:45", requires: [on_ferry], initiates: at_port, terminates: on_ferry}
+    - {actor: traveler, place: port, uses: [], event_id: d2_last_train, source: "tt r4 dep", at: "2026-11-03T16:30", requires: [at_port], initiates: home, terminates: at_port}
+  resources:
+    unique: [traveler]
+    places: {at_city: [{color: traveler, qty: 1}], on_train: [], at_port: [], on_island: [], on_ferry: [], home: []}
+    capacities: {on_ferry: 1}
+    transitions:
+      - {id: d1_train_dep, event: d1_train_dep, consumes: [{place: at_city, color: traveler, qty: 1}], produces: [{place: on_train, color: traveler, qty: 1}]}
+      - {id: d1_train_arr, event: d1_train_arr, consumes: [{place: on_train, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
+      - {id: d1_ferry_out, event: d1_ferry_out, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: on_island, color: traveler, qty: 1}]}
+      - {id: d2_ferry_back, event: d2_ferry_back, consumes: [{place: on_island, color: traveler, qty: 1}], produces: [{place: on_ferry, color: traveler, qty: 1}]}
+      - {id: d2_ferry_arr, event: d2_ferry_arr, consumes: [{place: on_ferry, color: traveler, qty: 1}], produces: [{place: at_port, color: traveler, qty: 1}]}
+      - {id: d2_last_train, event: d2_last_train, consumes: [{place: at_port, color: traveler, qty: 1}], produces: [{place: home, color: traveler, qty: 1}]}
+  causal_model:
+    variables: [slack_out_h, slack_back_h]
+    equations: {slack_out_h: "t_d1_ferry_out - t_d1_train_arr", slack_back_h: "t_d2_last_train - t_d2_ferry_arr"}
+    scenarios: {published_timetable: {}}
+    constraints: ["slack_out_h >= 0", "slack_back_h >= 0"]
+variants:
+  - id: ferry_before_train_arrives
+    code: CAUSAL_CONSTRAINT_VIOLATED
+    set: {"inputs.events[d1_ferry_out].at": "2026-11-02T10:00"}
+  - id: traveler_is_cloned
+    code: RESOURCE_UNIQUE_TOKEN_DUPLICATED
+    set: {"inputs.resources.transitions[d1_train_dep].produces[0].qty": 2}

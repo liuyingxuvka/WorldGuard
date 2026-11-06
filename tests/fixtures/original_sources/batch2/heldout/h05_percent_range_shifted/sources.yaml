@@ -1,0 +1,7 @@
+texts: {ebike: ebike.md}
+values:
+  start_charge: {paths: ["inputs.resources.places.battery[0].qty"], source: ebike p1, unit: "%"}
+  per_climb: {paths: ["inputs.resources.transitions[climb1].consumes[0].qty", "inputs.resources.transitions[climb1].produces[0].qty",
+                      "inputs.resources.transitions[climb2].consumes[0].qty", "inputs.resources.transitions[climb2].produces[0].qty",
+                      "inputs.resources.transitions[climb3].consumes[0].qty", "inputs.resources.transitions[climb3].produces[0].qty"],
+              source: ebike p2, unit: "%"}

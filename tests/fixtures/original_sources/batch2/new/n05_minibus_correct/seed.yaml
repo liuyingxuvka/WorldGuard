@@ -1,0 +1,9 @@
+id: n05_minibus_correct
+kind: control
+world: minibus.yaml
+mistake: 'none: nine pupils, ten seats'
+expect: exit 0, no red
+layout: counts written as words
+truth:
+  set: {}
+  status: PASS

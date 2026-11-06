@@ -1,0 +1,9 @@
+id: h08_dot_thousands_correct
+kind: control
+world: kran.yaml
+mistake: 'none: German text, ''1.500 kg'' and ''1.250 kg'' typed as 1500 and 1250'
+expect: exit 0, no red (or grey), no false red
+layout: dot as thousands separator
+truth:
+  set: {}
+  status: PASS

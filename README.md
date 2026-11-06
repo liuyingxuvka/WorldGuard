@@ -16,8 +16,8 @@
 
 WorldGuard is a Python tool and an agent skill (Claude Code, Codex). The AI writes a story, a trip, a plan or a process
 as a small world: what is true at the start, the events with their times, what each event needs and what it changes,
-and the claims that must hold. The tool, not the AI, replays the events and checks every claim. It never reads the
-prose; it checks the world the AI wrote down.
+and the claims that must hold. The tool replays the events and checks every claim. With original files in `texts`,
+event `source` pointers also check stated times, names, codes and quantities against the actual passage.
 
 ## 30 seconds: the lighthouse key
 
@@ -116,6 +116,10 @@ python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0
 It installs the console command `worldguard` with the five subcommands `check`, `mesh-check`, `timeline`, `lifeline`
 and `compare`, and the Python API (`GuardContract`,
 `ModelMeshContract`, `run_worldguard`, `run_model_mesh`).
+
+For source quantity conversion, add the optional `units` extra from a source checkout:
+`python -m pip install ".[units]"`.
+Times, dates and model checks work without it; physical units that cannot be read stay grey.
 
 **3. The first commands**, in the cloned folder:
 
@@ -248,17 +252,18 @@ Five skills, one idea: each one checks the AI's answer against an explicit model
 | Skill | The AI weakness it makes up for | Use it when | Works with the others |
 |---|---|---|---|
 | [FlowGuard](https://github.com/liuyingxuvka/FlowGuard) | It changes one part of the software and does not see what that broke elsewhere; it rebuilds what already exists, or puts new code in the wrong place | you change, extend, refactor or audit software code, including the code of a simulation | Sends calculation results to PhysicsGuard, causal claims to ResearchGuard, story or plan consistency to WorldGuard, long texts to LogicWriting. The other four Guards are developed with FlowGuard |
-| [PhysicsGuard](https://github.com/liuyingxuvka/PhysicsGuard) | It does physics in its head and is confidently wrong about units, signs and balances | a number comes from physics: a simulation result, test data, or a calculation the AI made itself | Sends the simulation's code to FlowGuard. No other Guard reads its reports |
+| [PhysicsGuard](https://github.com/liuyingxuvka/PhysicsGuard) | It does physics in its head and is confidently wrong about units, signs and balances | a number comes from physics: a simulation result, test data, or a calculation the AI made itself | Sends simulation code to FlowGuard. LogicWriting reads its saved status and source summary |
 | [ResearchGuard](https://github.com/liuyingxuvka/ResearchGuard) | It tells a confident causal story that its sources do not support | before a causal or evidential conclusion is stated: claims, sources, timelines, competing explanations | LogicWriting reads its saved status report. Sends the writing of the finished report to LogicWriting |
-| [WorldGuard](https://github.com/liuyingxuvka/WorldGuard) | Across chapters, days or steps it forgets who holds what and who is where, and writes events that cannot happen | a story, trip, plan or process must stay consistent from step to step | LogicWriting reads its saved check report. Sends software code to FlowGuard |
+| [WorldGuard](https://github.com/liuyingxuvka/WorldGuard) | Across chapters, days or steps it forgets who holds what and who is where, and writes events that cannot happen | a story, trip, plan or process must stay consistent from step to step | LogicWriting reads its saved check report. Optional quantity conversion uses PhysicsGuard's unit table; software code goes to FlowGuard |
 | [LogicWriting](https://github.com/liuyingxuvka/LogicWriting) | In a long text it drifts away from its own plan and evidence | you need a finished piece for real readers: an investigation report, a paper, fiction or a story plan, a travel guide | Reads the saved reports of ResearchGuard and WorldGuard. Sends the checking of claims on their own to ResearchGuard |
 <!-- END GUARD FAMILY TABLE -->
 
 ## Honest limits
 
 **What it does not do.**
-- It never reads the prose. It checks the world the AI wrote down; whether that world matches the text is the AI's job.
-  `source:` on an event only points at the original passage and is not checked.
+- It reads only pointed original passages, not arbitrary prose meaning. Use `texts: {ch: chapter.md}` and event
+  `source: ch p3 "quoted words"` (CSV: `tt r3 arr`). Pronouns, unreadable units and ambiguous readings stay grey;
+  without originals, a model pass is only an AI transcription. See the [source inputs](skills/worldguard/references/worldguard-contracts.md).
 - A `PASS` holds for the declared world and its scope, not for the real world. WorldGuard is not a physics solver, a
   legal judgment, a safety certificate or a market prediction.
 

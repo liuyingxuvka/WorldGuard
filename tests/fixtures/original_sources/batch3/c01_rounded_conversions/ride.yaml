@@ -1,0 +1,21 @@
+contract_id: ride
+claim:
+  claim_id: museum_still_open
+  text: We reach Valdora before the museum closes.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: ride
+  scope_limits: [riding times as stated]
+inputs:
+  event_model: {initial_states: [museum_open]}
+  events:
+    - {event_id: e_leave, at: "09:20", source: ride p1, actor_state_free: the riders are not modelled, initiates: [riding]}
+    - {event_id: e_museum_closes, at: "12:15", source: ride p4, actor_state_free: the museum hours, terminates: [museum_open]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [climb_h, descent_h]
+    equations: {margin_h: "t_e_museum_closes - t_e_leave - climb_h - descent_h"}
+    scenarios: {tour: {climb_h: 1.83, descent_h: 0.67}}
+    constraints: ["margin_h >= 0"]

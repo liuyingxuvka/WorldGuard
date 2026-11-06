@@ -1,0 +1,11 @@
+id: x03_transposed_wrong_row
+kind: mistake
+world: shuttle.yaml
+mode: contract
+mistake: 'the timetable has stops as rows and runs as columns; the AI cites ''tt r4 late'' (Station) but typed 07:41, the late run at the Clinic (r3, the row above); the text leaves 3 minutes for a 5-minute walk, the AI''s world 11'
+expect: 'red time on e_arrive (text 7:49, world 7:41) with a hint that 7:41 is in late of r3; text world FAIL (CAUSAL_CONSTRAINT_VIOLATED, CLAIM_ASSERTION_FALSE)'
+layout: 'transposed timetable (stops are rows, runs are columns), one header row, dotted cells such as 7.41'
+truth:
+  set:
+    inputs.events[e_arrive].at: '07:49'
+  status: FAIL

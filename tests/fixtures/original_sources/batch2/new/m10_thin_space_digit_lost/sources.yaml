@@ -1,0 +1,4 @@
+texts: {crane: crane.md}
+values:
+  rating: {paths: [inputs.resources.capacities.on_hook], source: crane p1, unit: kg}
+  crate: {paths: ["inputs.resources.places.on_quay[0].qty", "inputs.resources.transitions[lift].consumes[0].qty", "inputs.resources.transitions[lift].produces[0].qty", "claim.asserts[0].qty"], source: crane p2, unit: kg}

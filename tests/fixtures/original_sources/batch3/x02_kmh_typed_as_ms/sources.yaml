@@ -1,0 +1,4 @@
+texts: {weir: weir.md}
+values:
+  speed: {paths: [inputs.causal_model.scenarios.patrol.speed_ms], source: weir p1, unit: m/s}
+  distance: {paths: [inputs.causal_model.scenarios.patrol.distance_m], source: weir p2, unit: m}

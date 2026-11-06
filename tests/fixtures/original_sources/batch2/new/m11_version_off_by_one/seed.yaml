@@ -1,0 +1,11 @@
+id: m11_version_off_by_one
+kind: mistake
+world: release.yaml
+mistake: 'text: ''Omar deploys 4.2.0'' (the build without the fix); the AI typed uses [4.2.1] as it expected'
+expect: red on e_deploy uses (text names 4.2.0)
+layout: version number
+truth:
+  set:
+    inputs.events[e_deploy].uses:
+    - 4.2.0
+  status: not PASS

@@ -1,0 +1,4 @@
+texts: {minibus: minibus.md}
+values:
+  seats: {paths: [inputs.resources.capacities.on_bus], source: minibus p2}
+  pupils: {paths: ["inputs.resources.places.at_gate[0].qty", "inputs.resources.transitions[board].consumes[0].qty", "inputs.resources.transitions[board].produces[0].qty", "claim.asserts[0].qty"], source: minibus p1}

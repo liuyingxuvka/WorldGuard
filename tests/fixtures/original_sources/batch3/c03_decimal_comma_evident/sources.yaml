@@ -1,0 +1,5 @@
+texts: {etappe: etappe.md}
+values:
+  etappe: {paths: [inputs.causal_model.scenarios.plan.etappe_m], source: etappe p2, unit: m}
+  umweg: {paths: [inputs.causal_model.scenarios.plan.umweg_m], source: etappe p3, unit: m}
+  tempo: {paths: [inputs.causal_model.scenarios.plan.tempo_kmh], source: etappe p4, unit: km/h}

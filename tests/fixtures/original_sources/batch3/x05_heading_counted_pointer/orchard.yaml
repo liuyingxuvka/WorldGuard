@@ -1,0 +1,19 @@
+contract_id: orchard
+claim:
+  claim_id: burners_lit
+  text: The fans run first, and the burners are lit after the frost warning.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_fans, before: e_burners}
+    - {holds: burners_lit, at: "22:00"}
+world_model:
+  model_id: orchard
+  scope_limits: [one frost night]
+  relations:
+    saskia_in_orchard: {at: [Saskia, orchard]}
+inputs:
+  event_model: {initial_states: [saskia_in_orchard]}
+  events:
+    - {event_id: e_fans, at: "17:40", source: 'orchard p2 "switches on the frost fans"', actor: Saskia, place: orchard, uses: [], initiates: [fans_running]}
+    - {event_id: e_reading, at: "18:05", source: orchard p3, actor_state_free: a thermometer, initiates: [frost_warning]}
+    - {event_id: e_burners, at: "21:30", source: orchard p5, actor: Saskia, place: orchard, uses: [], requires: [frost_warning], initiates: [burners_lit]}

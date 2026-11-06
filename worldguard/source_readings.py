@@ -28,8 +28,12 @@ from .source_readers import (
     show_cands,
     hm,
     strip_times_dates,
+    quantities,
+    unit_info,
+    fmt,
 )
-from .status import GuardStatus
+from .variants import _select_path, apply_variant
+from .status import GuardStatus, aggregate_statuses
 
 POINTER = re.compile(
     r'^(?P<label>[\w.-]+)\s+(?:p(?P<para>\d+)|r(?P<row>\d+)\s+(?P<col>[\w.-]+))(?:\s+"(?P<quote>[^"]*)")?\s*$'
@@ -53,7 +57,7 @@ def source_config(data):
             raise WorldInputError(f"tables.{label} accepts only header_rows")
         if type(table.get("header_rows", 1)) is not int or table.get("header_rows", 1) < 1:
             raise WorldInputError(f"tables.{label}.header_rows must be a positive integer")
-    if any(value not in {".", ","} for value in config.get("decimal", {}).values()):
+    if any(not isinstance(value, str) or value not in {".", ","} for value in config.get("decimal", {}).values()):
         raise WorldInputError("decimal values must be dot or comma")
     return config
 
@@ -428,6 +432,130 @@ def read_event(event: dict, texts: dict, aliases: dict, names: tuple, cited: dic
     return out
 
 
+def read_value(name: str, spec: dict, contracts: dict, texts: dict, cited: dict) -> dict:
+    """A number the AI typed into the world (one or more paths), read from its pointer and the declared unit.
+    A range in the text makes two text worlds, one at each end; an ambiguous number is never green."""
+    out = {
+        "name": name,
+        "pointer": spec.get("source", ""),
+        "readings": [],
+        "edits_lo": [],
+        "edits_hi": [],
+        "range": False,
+        "sourced": False,
+        "paths": [],
+    }
+    add = lambda field, colour, note: out["readings"].append((field, colour, note))  # noqa: E731
+    paths = spec.get("paths") or ([spec["path"]] if "path" in spec else [])
+    if not paths or not isinstance(paths, list) or any(not isinstance(path, str) for path in paths):
+        raise WorldInputError(f"values.{name} needs paths: a nonempty list of world paths")
+    for raw in paths:
+        node, path = raw.split(":", 1) if ":" in raw.split(".", 1)[0] else (None, raw)
+        parent, key = _select_path(contracts[node], path)
+        out["paths"].append((node, path, parent[key]))
+    unit = str(spec.get("unit", "1"))
+    declared = unit_info(unit) if unit != "1" else (None, 1.0, 0.0)
+    if declared is None:
+        add("unit", ".", f"declared unit {unit!r} is unreadable; PhysicsGuard unit support is needed")
+        return out
+    want_dim, want_factor, want_offset = declared
+    if want_offset:
+        add("unit", ".", f"declared unit {unit!r} has an offset; this source comparison does not convert it")
+        return out
+    res = resolve(spec.get("source", ""), texts, cited, add)
+    if res is None:
+        return out
+    source_text = (
+        res["cell"]
+        if res["text"].kind == "csv"
+        else (res["quote"] if res.get("quote") and not res.get("quote_missing") else res["span"])
+    )
+    found = quantities(source_text, res["text"].decimal)
+    fitting = [q for q in found if q["dim"] == want_dim and q["factor"] is not None and (q["readable"] or unit == "1")]
+    if not found:
+        add("value", ".", "span states no number")
+        return out
+    if not fitting:
+        q = found[0]
+        if want_dim is not None and all(f["dim"] is None for f in found):
+            add(
+                "value",
+                ".",
+                f"span says {', '.join(f['written'] for f in found)} with no unit; the world value is in {unit}",
+            )
+        elif any(not q["readable"] and q["unit"] for q in found):
+            add(
+                "unit",
+                ".",
+                f"unreadable source unit in {', '.join(f['written'] for f in found)}; no conversion guessed",
+            )
+        elif want_dim is None:
+            add(
+                "value",
+                ".",
+                f"span says {', '.join(f['written'] for f in found)}; the world value has no unit declared",
+            )
+        else:
+            add(
+                "value",
+                "R",
+                f"span says {q['written']} ({q['dim']}); the world value is declared in {unit} ({want_dim})",
+            )
+        return out
+    if len(fitting) > 1:
+        add(
+            "value",
+            ".",
+            f"span states {len(fitting)} numbers ({', '.join(f['written'] for f in fitting)}); quote the one meant",
+        )
+        return out
+    q = fitting[0]
+    conv = lambda v: v * q["factor"] / want_factor  # noqa: E731
+    in_unit = "" if want_dim is None or q["factor"] == want_factor else f" {unit}"
+    worlds = sorted({fmt(v) for _, _, v in out["paths"]})
+    numeric = [float(v) for _, _, v in out["paths"] if isinstance(v, (int, float))]
+    close = lambda a, b: abs(a - b) <= 0.01 * abs(b) + 1e-9  # noqa: E731
+    exact = lambda x: int(round(x, 6)) if round(x, 6) == int(round(x, 6)) else round(x, 6)  # noqa: E731
+    if q["lo"] != q["hi"]:
+        lo, hi = conv(q["lo"]), conv(q["hi"])
+        said = f"{q['written']}" + (f" = {fmt(lo)}..{fmt(hi)}{in_unit}" if in_unit else "")
+        out["range"] = True
+        out["edits_lo"] = [(node, path, exact(lo)) for node, path, _ in out["paths"]]
+        out["edits_hi"] = [(node, path, exact(hi)) for node, path, _ in out["paths"]]
+        if len(numeric) == len(out["paths"]) and all(
+            lo - 1e-9 <= v <= hi + 1e-9 or close(v, lo) or close(v, hi) for v in numeric
+        ):
+            add(
+                "value",
+                ".",
+                f"span says {said}; world says {', '.join(worlds)}, one point of the range (the text's world is checked at both ends)",
+            )
+        else:
+            add("value", "R", f"span says {said}; world says {', '.join(worlds)}, outside the range")
+        return out
+    if q["alts"]:
+        cands = [conv(a) for a in q["alts"]]
+        how = " or ".join(fmt(c) + in_unit for c in cands)
+        hint = f"declare decimal: {{{res['label']}: ','}} or '.' in the sidecar"
+        if len(numeric) == len(out["paths"]) and any(all(close(v, c) for v in numeric) for c in cands):
+            add("value", ".", f"span says {q['written']}, which is {how}; world says {', '.join(worlds)} ({hint})")
+        else:
+            add("value", "R", f"span says {q['written']}, which is {how}; world says {', '.join(worlds)} ({hint})")
+        return out
+    converted = conv(q["lo"])
+    said = q["written"] + (f" = {fmt(converted)}{in_unit}" if in_unit else "")
+    bad = sorted(
+        {fmt(v) for _, _, v in out["paths"] if not isinstance(v, (int, float)) or not close(float(v), converted)}
+    )
+    if bad:
+        add("value", "R", f"span says {said}; world says {', '.join(bad)}")
+        out["edits_lo"] = out["edits_hi"] = [(node, path, exact(converted)) for node, path, _ in out["paths"]]
+    else:
+        add("value", "G", f"span says {said}; world says {', '.join(worlds)}")
+        out["sourced"] = True
+    return out
+
+
 def code_present(name, span):
     shape = code_shape(name)
     if not shape:
@@ -436,19 +564,64 @@ def code_present(name, span):
     return any(value.lower().lstrip("vV") == normal for value in codes_in(span, shape))
 
 
+def read_contract_values(contract, raw, texts, cited, context):
+    contracts = {None: raw}
+    current = None
+    if context is not None and context.node_contracts:
+        contracts.update({key: value.to_dict() for key, value in context.node_contracts.items()})
+        current = next((key for key, value in context.node_contracts.items() if value is contract), None)
+    values = []
+    for name, spec in contract.source_config.get("values", {}).items():
+        if not isinstance(spec, dict):
+            raise WorldInputError(f"values.{name} must be a mapping")
+        paths = spec.get("paths") or ([spec["path"]] if "path" in spec else [])
+        if not paths or not isinstance(paths, list) or any(not isinstance(path, str) for path in paths):
+            raise WorldInputError(f"values.{name} needs paths: a nonempty list of world paths")
+        selected = [path for path in paths if ":" not in path.split(".", 1)[0] or path.split(":", 1)[0] == current]
+        if selected:
+            values.append(read_value(name, {**spec, "paths": selected}, contracts, texts, cited))
+    return values
+
+
+def source_citations(texts, context=None):
+    """A shared document paragraph is cited once across the actual mesh, by file identity."""
+    cited = {}
+    if context is None or not context.node_contracts:
+        return cited
+    paths = {}
+    for label, text in texts.items():
+        paths.setdefault(text.path.resolve(), set()).add(label)
+    for other in context.node_contracts.values():
+        config = other.source_config
+        pointers = [event.get('source', '') for event in other.inputs.get('events', [])]
+        pointers.extend(value.get('source', '') for value in config.get('values', {}).values()
+                        if isinstance(value, dict))
+        for pointer in pointers:
+            match = POINTER.fullmatch(str(pointer))
+            if match is None or match['label'] not in config.get('texts', {}):
+                continue
+            path = (Path(other.source_base_dir) / config['texts'][match['label']]).resolve()
+            number = int(match['para'] or match['row'])
+            for label in paths.get(path, ()):
+                if 1 <= number <= texts[label].units:
+                    cited.setdefault(label, set()).add(number)
+    return cited
+
+
 def attach_readings(contract, report, *, context=None):
     """Leave an unsourced model untouched; source-enabled models expose every reading."""
     if not contract.source_config:
         return report
     texts = load_texts(contract.source_config, contract.source_base_dir)
-    cited = {}
+    cited = source_citations(texts, context)
     raw = contract.to_dict()
     readings = [
         read_event(event, texts, contract.source_config.get("aliases", {}), world_names(raw), cited)
         for event in contract.inputs.get("events", [])
     ]
+    values = read_contract_values(contract, raw, texts, cited, context)
     gaps = list(report.gaps)
-    for reading in readings:
+    for reading in [*readings, *values]:
         for field, colour, note in reading["readings"]:
             if colour != "R":
                 continue
@@ -463,7 +636,7 @@ def attach_readings(contract, report, *, context=None):
                 {
                     "code": code,
                     "status": "FAIL",
-                    "event_id": reading["event"],
+                    "event_id": reading.get("event"),
                     "source": reading["pointer"],
                     "message": note,
                 }
@@ -478,12 +651,232 @@ def attach_readings(contract, report, *, context=None):
     checked = {
         **report.checked,
         "source_readings": readings,
+        "ai_world_status": report.status.value,
+        "source_values": values,
         "source_digests": input_digests([text.path for text in texts.values()], contract.source_base_dir),
     }
-    return replace(
+    updated = replace(
         report,
         status=GuardStatus.FAIL if gaps != report.gaps else report.status,
         checked=checked,
         gaps=gaps,
         scope_limits=limits,
+    )
+    return attach_text_worlds(contract, updated, readings, values, texts, cited, context=context, native_report=report)
+
+
+def support(contract: dict, asserts: list) -> list[tuple[set, set | None]]:
+    """For each claim row, every event and scenario value it can rest on (a superset, on purpose):
+    `holds X at T` reads the state at T, so every event at or before T; `A before B` reads A and B; `variable v`
+    reads the event times (t_<event>) and the scenario values its equations name, followed through other variables;
+    any other row reads the whole replay and every sourced value (None). Removing one event at a time is not used:
+    WorldGuard blocks the effects of an event whose precondition fails but not of the events after it, so a row can
+    still pass without an event it needs."""
+    events = [e for e in contract.get("inputs", {}).get("events", []) if "at" in e]
+    causal = contract.get("inputs", {}).get("causal_model", {}) or {}
+    equations = causal.get("equations", {}) or {}
+    result = []
+    for a in asserts:
+        if "holds" in a and "at" in a:
+            limit = time_key(a["at"])
+            result.append(({e["event_id"] for e in events if time_key(e["at"]) <= limit}, set()))
+        elif "event" in a and "before" in a:
+            result.append(({a["event"], a["before"]}, set()))
+        elif "variable" in a:
+            todo, seen, used, inputs = [a["variable"]], set(), set(), set()
+            while todo:
+                name = todo.pop()
+                if name in seen:
+                    continue
+                seen.add(name)
+                for token in re.findall(r"[A-Za-z_]\w*", str(equations.get(name, ""))):
+                    if token.startswith("t_"):
+                        used.add(token[2:])
+                    elif token in equations:
+                        todo.append(token)
+                    else:
+                        inputs.add(token)
+            result.append((used, inputs))
+        else:
+            result.append(({e["event_id"] for e in events}, None))
+    return result
+
+
+def scenario_var(path: str) -> str | None:
+    match = re.match(r"^inputs\.causal_model\.(?:scenarios|holdout_scenarios)\.[^.]+\.([A-Za-z_]\w*)$", path)
+    return match[1] if match else None
+
+
+def _scenario_names(contract):
+    causal = contract.get("inputs", {}).get("causal_model", {}) or {}
+    return set(map(str, causal.get('exogenous', []) or [])) | {
+        str(name)
+        for group in ("scenarios", "holdout_scenarios")
+        for values in causal.get(group, {}).values()
+        for name in values
+    }
+
+
+def _bundle_identity(sources):
+    import json
+
+    payload = json.dumps(sources, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _row_status(report, index):
+    rows = report.claim_binding.get("assertions", [])
+    return next((row["status"] for row in rows if row["index"] == index), "GAP")
+
+
+def _source_evidence(contract, context=None):
+    raw = contract.to_dict()
+    texts = load_texts(contract.source_config, contract.source_base_dir)
+    cited = source_citations(texts, context)
+    readings = [
+        read_event(event, texts, contract.source_config.get("aliases", {}), world_names(raw), cited)
+        for event in contract.inputs.get("events", [])
+    ]
+    values = read_contract_values(contract, raw, texts, cited, context)
+    return raw, texts, cited, readings, values
+
+
+def attach_text_worlds(contract, report, readings, values, texts, cited, *, context=None, native_report=None):
+    """Replay explicit text edits through the existing world owner; qualify only that finite world."""
+    from .qualification import qualify_guard_contract
+
+    raw = contract.to_dict()
+    ends = ["lo", "hi"] if any(value["range"] for value in values) else ["lo"]
+    worlds, text_reports = [], []
+    for end in ends:
+        edits = {
+            f"inputs.events[{reading['event']}].{field}": value
+            for reading in readings
+            for field, value in reading["edits"].items()
+        }
+        edits.update({path: value for row in values for _, path, value in row[f"edits_{end}"]})
+        if edits:
+            changed = apply_variant(raw, {"id": "as_the_text_says", "set": edits})
+            text_report = qualify_guard_contract(changed, context=context)
+        else:
+            text_report = native_report or report
+        text_reports.append(text_report)
+        worlds.append(
+            {
+                "end": end,
+                "status": text_report.status.value,
+                "edits": [{"path": path, "value": value} for path, value in sorted(edits.items())],
+                "gaps": text_report.gaps,
+            }
+        )
+    statuses = []
+    sources = report.checked["source_digests"]
+    for row in report.claim_binding.get("assertions", []):
+        assertion, index = row["assertion"], row["index"]
+        target = assertion.get("node")
+        target_contract = (
+            context.node_contracts.get(target) if target and context and context.node_contracts else contract
+        )
+        evidence = (
+            (raw, texts, cited, readings, values)
+            if target_contract is contract
+            else _source_evidence(target_contract, context) if target_contract is not None else None
+        )
+        problems = []
+        weak = []
+        if row["status"] != "PASS" or any(_row_status(result, index) != "PASS" for result in text_reports):
+            problems.append("AI world or text world does not pass this assertion")
+        if evidence is None:
+            weak.append("target model has no source evidence")
+        else:
+            target_raw, target_texts, target_cited, target_readings, target_values = evidence
+            rests, inputs = support(target_raw, [{key: value for key, value in assertion.items() if key != "node"}])[0]
+            failures = [
+                gap
+                for result in [report, *text_reports]
+                for gap in result.gaps
+                if gap.get("status") == "FAIL"
+                and (gap.get("event_id") or (gap.get("counterexample") or {}).get("event_id")) in rests
+            ]
+            problems.extend(f"supporting event cannot happen: {gap['code']}" for gap in failures)
+            used_readings = [reading for reading in target_readings if reading["event"] in rests]
+            by_event = {reading["event"]: reading for reading in used_readings}
+            relevant_values = [
+                value
+                for value in target_values
+                if inputs is None or any(scenario_var(path) in inputs for _, path, _ in value["paths"])
+            ]
+            for event in sorted(rests):
+                reading = by_event.get(event)
+                if reading and any(colour == "R" for _, colour, _ in reading["readings"]):
+                    problems.append(f"text disagrees on {event}")
+                elif not reading or not reading["sourced"]:
+                    weak.append(f"{event} not sourced")
+            for value in relevant_values:
+                if any(colour == "R" for _, colour, _ in value["readings"]):
+                    problems.append(f"text disagrees on value {value['name']}")
+                elif not value["sourced"]:
+                    weak.append(f"value {value['name']} not sourced")
+            supplied = {scenario_var(path) for value in relevant_values for _, path, _ in value["paths"]}
+            weak.extend(
+                f"value {name} has no pointer"
+                for name in sorted((inputs or set()) & _scenario_names(target_raw) - supplied)
+            )
+            event_minutes = [
+                at_parts(event["at"])[2]
+                for event in target_raw.get("inputs", {}).get("events", [])
+                if event.get("event_id") in rests and "at" in event
+            ]
+            latest = max([minute for minute in event_minutes if minute is not None] or [0])
+            labels = {
+                match["label"] for reading in target_readings if (match := POINTER.match(str(reading["pointer"])))
+            }
+            aliases = target_contract.source_config.get("aliases", {})
+            names = world_names(target_raw)
+            for label in sorted(labels):
+                text = target_texts[label]
+                for number in range(1, text.units + 1):
+                    if number in target_cited.get(label, set()):
+                        continue
+                    span = text.unit_text(number)
+                    named_person = any(named(name, span, aliases) for group in names for name in group)
+                    times = text.unit_times(number)
+                    if named_person and (not times or min(times) <= latest):
+                        weak.append(f'uncited text in its window: {label} {"r" if text.kind == "csv" else "p"}{number}')
+        colour = "red" if problems else "grey" if weak else "green"
+        reason = (
+            "; ".join(problems + weak) if problems or weak else "AI world and text world pass; relevant inputs sourced"
+        )
+        if colour == "grey":
+            reason = "passes on AI transcription only; " + reason
+        row_sources = (input_digests([text.path for text in evidence[1].values()], contract.source_base_dir)
+                       if evidence is not None else sources)
+        status = {
+            "id": f"{contract.claim.claim_id or contract.contract_id}:{index}",
+            "colour": colour,
+            "reason": reason,
+            "source_digest": _bundle_identity(row_sources),
+            "sources": row_sources,
+        }
+        statuses.append(status)
+    checked = {
+        **report.checked,
+        "ai_world_status": report.checked.get("ai_world_status", report.status.value),
+        "text_worlds": worlds,
+        "source_statuses": statuses,
+    }
+    binding = deepcopy(report.claim_binding)
+    for row, status in zip(binding.get("assertions", []), statuses):
+        row["source_status"] = status
+    gaps = list(report.gaps)
+    for result in text_reports:
+        for gap in result.gaps:
+            if gap not in report.gaps and {**gap, "world": "text"} not in gaps:
+                gaps.append({**gap, "world": "text"})
+    return replace(
+        report,
+        checked=checked,
+        gaps=gaps,
+        claim_binding=binding,
+        status=aggregate_statuses([report.status, *[result.status for result in text_reports]]),
     )

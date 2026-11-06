@@ -1,0 +1,10 @@
+id: m05_date_from_heading
+kind: mistake
+world: hut.yaml
+mistake: 'text says ''We reach the Belalp hut on 4 March at 15:30'' (a day late: the room is booked for 3 March only); the AI copied the date of the day heading (2026-03-03)'
+expect: red date on d1_reach_hut (text 4 March); text world FAIL (room no longer booked; not at the hut on 3 March)
+layout: date in a sentence that also names another date
+truth:
+  set:
+    inputs.events[d1_reach_hut].at: 2026-03-04T15:30
+  status: FAIL

@@ -1,0 +1,13 @@
+id: m10_thin_space_digit_lost
+kind: mistake
+world: crane.yaml
+mistake: 'text: the crate is ''1 350 kg'' (over the 1.2-tonne rating); the AI lost the ''1'' at the thin space and typed 350'
+expect: red value crate (text 1350 kg); text world FAIL (capacity overflow)
+layout: a number with a thin space
+truth:
+  set:
+    inputs.resources.places.on_quay[0].qty: 1350
+    inputs.resources.transitions[lift].consumes[0].qty: 1350
+    inputs.resources.transitions[lift].produces[0].qty: 1350
+    claim.asserts[0].qty: 1350
+  status: FAIL

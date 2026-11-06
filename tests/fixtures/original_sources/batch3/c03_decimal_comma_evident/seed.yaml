@@ -1,0 +1,10 @@
+id: c03_decimal_comma_evident
+kind: control
+world: etappe.yaml
+mode: contract
+mistake: 'none: German text; ''14,6 km'' shows that the comma is this file''s decimal mark, so ''2.700 m'' is 2700 m; typed 14600, 2700 and 4'
+expect: 'exit 0, no red; all three values green (the decimal mark is evident in the same file, so 2.700 is not ambiguous and not grey); the claim row green'
+layout: 'decimal comma evident elsewhere in the file, dot as thousands separator, no decimal declaration, km/h'
+truth:
+  set: {}
+  status: PASS

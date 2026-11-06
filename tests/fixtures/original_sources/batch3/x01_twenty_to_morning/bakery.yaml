@@ -1,0 +1,21 @@
+contract_id: bakery
+claim:
+  claim_id: rye_delivered
+  text: Jakob loads the fresh rye loaves and brings them to the cafe before it opens.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_load, before: e_deliver}
+    - {holds: loaves_at_cafe, at: "09:45"}
+world_model:
+  model_id: bakery
+  scope_limits: [one morning round]
+  relations:
+    jakob_at_bakery: {at: [Jakob, bakery]}
+    jakob_at_cafe: {at: [Jakob, cafe]}
+    jakob_has_loaves: {holds: [Jakob, loaves]}
+inputs:
+  event_model: {initial_states: [jakob_at_bakery]}
+  events:
+    - {event_id: e_tray_out, at: "08:50", source: bakery p1, actor_state_free: the oven timer, initiates: [loaves_baked]}
+    - {event_id: e_load, at: "09:20", source: bakery p2, actor: Jakob, place: bakery, uses: [], requires: [loaves_baked], initiates: [jakob_has_loaves, jakob_at_cafe], terminates: [jakob_at_bakery]}
+    - {event_id: e_deliver, at: "09:35", source: bakery p3, actor: Jakob, place: cafe, uses: [loaves], initiates: [loaves_at_cafe], terminates: [jakob_has_loaves]}

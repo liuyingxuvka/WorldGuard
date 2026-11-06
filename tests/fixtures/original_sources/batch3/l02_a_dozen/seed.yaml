@@ -1,0 +1,12 @@
+id: l02_a_dozen
+kind: limit
+limit: L6
+world: clinic.yaml
+mode: contract
+mistake: 'text: the cool box holds ''a dozen'' vials (12) and 13 are packed; the AI typed capacity 14, so its world passes'
+expect: 'known not caught (L6: number words stop at 99 and ''a dozen'' is not read): value box grey (''span states no number''), the claim row grey, exit 0; no red is required'
+layout: 'a count written as ''a dozen'''
+truth:
+  set:
+    inputs.resources.capacities.cool_box: 12
+  status: FAIL

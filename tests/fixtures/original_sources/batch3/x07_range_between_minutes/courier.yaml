@@ -1,0 +1,21 @@
+contract_id: courier
+claim:
+  claim_id: medicines_in_time
+  text: The medicines reach the care home before the evening round.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: courier
+  scope_limits: [ride time as stated]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_leave_pharmacy, at: "15:20", source: courier p1, actor_state_free: the courier is not modelled, initiates: [medicines_on_the_way]}
+    - {event_id: e_round_starts, at: "16:00", source: courier p3, actor_state_free: the care home roster, initiates: [round_running]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [ride_h]
+    equations: {margin_h: "t_e_round_starts - t_e_leave_pharmacy - ride_h"}
+    scenarios: {evening: {ride_h: 0.5}}
+    constraints: ["margin_h >= 0"]

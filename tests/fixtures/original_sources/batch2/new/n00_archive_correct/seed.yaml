@@ -1,0 +1,9 @@
+id: n00_archive_correct
+kind: control
+world: archive.yaml
+mistake: 'none: the evening as written (worded time, ''7:40 that evening'', curly apostrophe, quote across a line break)'
+expect: exit 0, no red
+layout: time in words; 12-hour time with 'evening'; typographic apostrophe in a quote; quote across a line break
+truth:
+  set: {}
+  status: PASS

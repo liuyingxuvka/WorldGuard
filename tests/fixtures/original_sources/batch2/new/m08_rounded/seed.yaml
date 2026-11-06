@@ -1,0 +1,10 @@
+id: m08_rounded
+kind: mistake
+world: ferry.yaml
+mistake: 'the timetable says 18.27; the AI rounded to 18:25, which leaves exactly the 15 minutes needed (text: 13)'
+expect: red time on e_ferry_arr (text 18:27); text world FAIL (margin_h < 0)
+layout: merged header; dotted times
+truth:
+  set:
+    inputs.events[e_ferry_arr].at: 2026-11-07T18:27
+  status: FAIL

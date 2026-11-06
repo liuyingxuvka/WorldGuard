@@ -1,0 +1,24 @@
+contract_id: weir
+claim:
+  claim_id: through_before_gates
+  text: The patrol boat reaches the weir before the gates open.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: weir
+  scope_limits: [steady speed, no current]
+  relations:
+    yusuf_at_boathouse: {at: [Yusuf, boathouse]}
+    yusuf_on_river: {at: [Yusuf, river]}
+inputs:
+  event_model: {initial_states: [yusuf_at_boathouse]}
+  events:
+    - {event_id: e_depart, at: "13:50", source: weir p3, actor: Yusuf, place: boathouse, uses: [], requires: [yusuf_at_boathouse], initiates: [yusuf_on_river], terminates: [yusuf_at_boathouse]}
+    - {event_id: e_gates_open, at: "14:10", source: weir p4, actor_state_free: the weir gates run on a timer, initiates: [gates_open]}
+  causal_model:
+    variables: [travel_h, margin_h]
+    exogenous: [distance_m, speed_ms]
+    equations: {travel_h: "distance_m / speed_ms / 3600", margin_h: "t_e_gates_open - t_e_depart - travel_h"}
+    scenarios: {patrol: {distance_m: 10000, speed_ms: 27}}
+    constraints: ["margin_h >= 0"]

@@ -1,0 +1,10 @@
+id: c06_abbrev_two_dates
+kind: control
+world: trail.yaml
+mode: contract
+mistake: 'none: p1 states two dates (Nov. 15 and Nov. 9) in two sentences, with full stops after ''Nov.'', ''Dr.'' and ''a.m.'' inside them; each time takes the date of its own sentence'
+expect: 'exit 0, no red; all three events green with the date of their own sentence (D12: no sentence ends after Nov., Dr. or a.m.); a splitter that cuts there leaves 7:05 without a date (grey), and taking the paragraph''s first date would give a false red'
+layout: 'US month abbreviations with full stops, a.m./p.m., an abbreviated title, two dates in one paragraph'
+truth:
+  set: {}
+  status: PASS

@@ -1,0 +1,11 @@
+id: x01_twenty_to_morning
+kind: mistake
+world: bakery.yaml
+mode: contract
+mistake: 'text: ''At twenty to nine in the morning Jakob loads'' (08:40, ten minutes before the loaves come out of the oven at 08:50: the text contradicts itself); the AI read ''twenty to nine'' as 09:20 (to/past swapped), so its world passes'
+expect: 'red time on e_load (text 8:40, world 9:20); text world FAIL (EVENT_PRECONDITION_UNMET on e_load)'
+layout: 'worded time with a number word for the minutes (''twenty to'') and a day-part word (''in the morning''); typographic e in an alias'
+truth:
+  set:
+    inputs.events[e_load].at: '08:40'
+  status: FAIL

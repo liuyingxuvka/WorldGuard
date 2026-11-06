@@ -1,0 +1,10 @@
+id: m12_person_swapped
+kind: mistake
+world: release.yaml
+mistake: 'text: ''Omar deploys 4.2.1''; the AI typed Priya as the deployer (and wired her relations), so its world passes'
+expect: red actor on e_deploy (text names Omar)
+layout: one person named
+truth:
+  set:
+    inputs.events[e_deploy].actor: Omar
+  status: not PASS

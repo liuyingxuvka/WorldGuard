@@ -1,0 +1,1838 @@
+[
+  {
+    "path": "batch1/s1_faithful/ch1.md",
+    "source": "seeds/s1_faithful/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s1_faithful/ch1.yaml",
+    "source": "seeds/s1_faithful/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s1_faithful/ch2.md",
+    "source": "seeds/s1_faithful/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch1/s1_faithful/ch2.yaml",
+    "source": "seeds/s1_faithful/ch2.yaml",
+    "sha256": "ff90c1ec4090350987c7f2da593d525e1dcd3c16c0376f2ea937c8f55ba6bdb0",
+    "bytes": 1190
+  },
+  {
+    "path": "batch1/s1_faithful/mesh.yaml",
+    "source": "seeds/s1_faithful/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s1_faithful/sources.yaml",
+    "source": "seeds/s1_faithful/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s2_silent_repair/ch1.md",
+    "source": "seeds/s2_silent_repair/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s2_silent_repair/ch1.yaml",
+    "source": "seeds/s2_silent_repair/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s2_silent_repair/ch2.md",
+    "source": "seeds/s2_silent_repair/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch1/s2_silent_repair/ch2.yaml",
+    "source": "seeds/s2_silent_repair/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch1/s2_silent_repair/mesh.yaml",
+    "source": "seeds/s2_silent_repair/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s2_silent_repair/sources.yaml",
+    "source": "seeds/s2_silent_repair/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s3_prose_revised/ch1.md",
+    "source": "seeds/s3_prose_revised/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s3_prose_revised/ch1.yaml",
+    "source": "seeds/s3_prose_revised/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s3_prose_revised/ch2.md",
+    "source": "seeds/s3_prose_revised/ch2.md",
+    "sha256": "9d1e9835e91a9ed83c947f80519fe24e65def340118a193e6d7acedfa882d512",
+    "bytes": 195
+  },
+  {
+    "path": "batch1/s3_prose_revised/ch2.yaml",
+    "source": "seeds/s3_prose_revised/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch1/s3_prose_revised/mesh.yaml",
+    "source": "seeds/s3_prose_revised/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s3_prose_revised/sources.yaml",
+    "source": "seeds/s3_prose_revised/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s4_unencoded/ch1.md",
+    "source": "seeds/s4_unencoded/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s4_unencoded/ch1.yaml",
+    "source": "seeds/s4_unencoded/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s4_unencoded/ch2.md",
+    "source": "seeds/s4_unencoded/ch2.md",
+    "sha256": "4385c6c72d4e86a78515b71073825fc4a5c4c87d89094ce1f88cd69889cd0fda",
+    "bytes": 274
+  },
+  {
+    "path": "batch1/s4_unencoded/ch2.yaml",
+    "source": "seeds/s4_unencoded/ch2.yaml",
+    "sha256": "ef0c081ef7f63e99043a25ffb684a934a08fa91056c1851eb45692c3054c4e43",
+    "bytes": 1428
+  },
+  {
+    "path": "batch1/s4_unencoded/mesh.yaml",
+    "source": "seeds/s4_unencoded/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s4_unencoded/sources.yaml",
+    "source": "seeds/s4_unencoded/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s4b_encoded/ch1.md",
+    "source": "seeds/s4b_encoded/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s4b_encoded/ch1.yaml",
+    "source": "seeds/s4b_encoded/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s4b_encoded/ch2.md",
+    "source": "seeds/s4b_encoded/ch2.md",
+    "sha256": "4385c6c72d4e86a78515b71073825fc4a5c4c87d89094ce1f88cd69889cd0fda",
+    "bytes": 274
+  },
+  {
+    "path": "batch1/s4b_encoded/ch2.yaml",
+    "source": "seeds/s4b_encoded/ch2.yaml",
+    "sha256": "5aface507c94d30ab45de2569e5d94df8018d256a0b357e21a4049dca06a7c0b",
+    "bytes": 1579
+  },
+  {
+    "path": "batch1/s4b_encoded/mesh.yaml",
+    "source": "seeds/s4b_encoded/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s4b_encoded/sources.yaml",
+    "source": "seeds/s4b_encoded/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s5_wished_quote/ch1.md",
+    "source": "seeds/s5_wished_quote/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s5_wished_quote/ch1.yaml",
+    "source": "seeds/s5_wished_quote/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s5_wished_quote/ch2.md",
+    "source": "seeds/s5_wished_quote/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch1/s5_wished_quote/ch2.yaml",
+    "source": "seeds/s5_wished_quote/ch2.yaml",
+    "sha256": "82b3df869c6c262fcd2d63812257b3212895d868f5e325fa3dd7df346cd8c07e",
+    "bytes": 1456
+  },
+  {
+    "path": "batch1/s5_wished_quote/mesh.yaml",
+    "source": "seeds/s5_wished_quote/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s5_wished_quote/sources.yaml",
+    "source": "seeds/s5_wished_quote/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s6_correct/ch1.md",
+    "source": "seeds/s6_correct/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch1/s6_correct/ch1.yaml",
+    "source": "seeds/s6_correct/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch1/s6_correct/ch2.md",
+    "source": "seeds/s6_correct/ch2.md",
+    "sha256": "7a8383e0c7ec9be0038c0ea6c3b217c0afd54ec16d5bd0a7fc229b943006e206",
+    "bytes": 195
+  },
+  {
+    "path": "batch1/s6_correct/ch2.yaml",
+    "source": "seeds/s6_correct/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch1/s6_correct/mesh.yaml",
+    "source": "seeds/s6_correct/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch1/s6_correct/sources.yaml",
+    "source": "seeds/s6_correct/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch1/s7_trip_timetable/observed_by_hand.yaml",
+    "source": "seeds/s7_trip_timetable/observed_by_hand.yaml",
+    "sha256": "66b9e8f1c4b8d45a4c72fdc99821d069d759c8c3b7eb90a9adc09c1f6b53ddee",
+    "bytes": 99
+  },
+  {
+    "path": "batch1/s7_trip_timetable/sources.yaml",
+    "source": "seeds/s7_trip_timetable/sources.yaml",
+    "sha256": "6dcb1e14670a805979065c9f55dd2b315581d82442811d796ebaeb20c66486b1",
+    "bytes": 27
+  },
+  {
+    "path": "batch1/s7_trip_timetable/timetable.csv",
+    "source": "seeds/s7_trip_timetable/timetable.csv",
+    "sha256": "a0dc32733755f33f66af77ded9b93db136441c834c91104bec88a228ebe32c72",
+    "bytes": 183
+  },
+  {
+    "path": "batch1/s7_trip_timetable/trip.yaml",
+    "source": "seeds/s7_trip_timetable/trip.yaml",
+    "sha256": "37b76abe9cbb072e4f9595d74b20107889ba1024c28bfa9cdde59ea8d0344761",
+    "bytes": 3747
+  },
+  {
+    "path": "batch2/heldout/h01_pm_words_correct/concert.md",
+    "source": "新种子/seeds/heldout/h01_pm_words_correct/concert.md",
+    "sha256": "e4e075e18f38da3e2e9a62474674d79bbc35d4c26dc6213d1d0f4f99ce079f77",
+    "bytes": 205
+  },
+  {
+    "path": "batch2/heldout/h01_pm_words_correct/concert.yaml",
+    "source": "新种子/seeds/heldout/h01_pm_words_correct/concert.yaml",
+    "sha256": "f142ab00877e006bdfd68ba4c3bbab9f8fbb57133be2cf91147e52da74b12b6a",
+    "bytes": 1061
+  },
+  {
+    "path": "batch2/heldout/h01_pm_words_correct/seed.yaml",
+    "source": "新种子/seeds/heldout/h01_pm_words_correct/seed.yaml",
+    "sha256": "b60ad14626f5da372617ebf24f39dcaa2758109475e1af79027f638962599bbb",
+    "bytes": 296
+  },
+  {
+    "path": "batch2/heldout/h01_pm_words_correct/sources.yaml",
+    "source": "新种子/seeds/heldout/h01_pm_words_correct/sources.yaml",
+    "sha256": "7d5bdb4bcae05f9291c760e553a1acf6bf79d3a0cab3cf880c845f1e043e945e",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/heldout/h02_pm_dropped/museum.md",
+    "source": "新种子/seeds/heldout/h02_pm_dropped/museum.md",
+    "sha256": "ca0311ed62f798e049187d95ea3f73224273f0808fcc462f62ec82ab11df217e",
+    "bytes": 148
+  },
+  {
+    "path": "batch2/heldout/h02_pm_dropped/museum.yaml",
+    "source": "新种子/seeds/heldout/h02_pm_dropped/museum.yaml",
+    "sha256": "eaba35dbe2fb6e24b9fbdece10f330f2d58b03fda235e0a979a66ed9bb122a7e",
+    "bytes": 621
+  },
+  {
+    "path": "batch2/heldout/h02_pm_dropped/seed.yaml",
+    "source": "新种子/seeds/heldout/h02_pm_dropped/seed.yaml",
+    "sha256": "96efdbafe1d425daf380b34bc4d0aed1fa39e62bd0ec3df7e9f6e6d035840a20",
+    "bytes": 352
+  },
+  {
+    "path": "batch2/heldout/h02_pm_dropped/sources.yaml",
+    "source": "新种子/seeds/heldout/h02_pm_dropped/sources.yaml",
+    "sha256": "3653a4d782cf255ea11dadbf89eb1022e1706b2898a13836522acbaee6de3f42",
+    "bytes": 27
+  },
+  {
+    "path": "batch2/heldout/h03_us_date/lake.md",
+    "source": "新种子/seeds/heldout/h03_us_date/lake.md",
+    "sha256": "91c29b58f826ba3f580ba9d2d05a19904b44cd09429e963eb6aa6814a7525320",
+    "bytes": 162
+  },
+  {
+    "path": "batch2/heldout/h03_us_date/lake.yaml",
+    "source": "新种子/seeds/heldout/h03_us_date/lake.yaml",
+    "sha256": "6f0604eb567c520b789feb87b8d2befcfc2a5e71a6b034ae18578887354555c2",
+    "bytes": 753
+  },
+  {
+    "path": "batch2/heldout/h03_us_date/seed.yaml",
+    "source": "新种子/seeds/heldout/h03_us_date/seed.yaml",
+    "sha256": "9c86b8b3ce5f4d05761e809f9af20a0acb2391638a7fdc554defbfe3e03cac56",
+    "bytes": 351
+  },
+  {
+    "path": "batch2/heldout/h03_us_date/sources.yaml",
+    "source": "新种子/seeds/heldout/h03_us_date/sources.yaml",
+    "sha256": "0a7904fe3bd9165e6853435bb01f201400db456d9e87ab6c52b5f19e8488879b",
+    "bytes": 23
+  },
+  {
+    "path": "batch2/heldout/h04_three_quarters_hour/seed.yaml",
+    "source": "新种子/seeds/heldout/h04_three_quarters_hour/seed.yaml",
+    "sha256": "ef35657dcc1ef90eb54b633bafdda1ba7eb0342a664e0fafbe2d54d45c0cdca6",
+    "bytes": 370
+  },
+  {
+    "path": "batch2/heldout/h04_three_quarters_hour/sources.yaml",
+    "source": "新种子/seeds/heldout/h04_three_quarters_hour/sources.yaml",
+    "sha256": "75e2439682582b40b6df32009fa719db87de6ab473b987799306bd2d532e247d",
+    "bytes": 123
+  },
+  {
+    "path": "batch2/heldout/h04_three_quarters_hour/walk.md",
+    "source": "新种子/seeds/heldout/h04_three_quarters_hour/walk.md",
+    "sha256": "3fa51faed5f178efea74a12bd0dd624007cc622bd662cb2ce6b91e58524cf4ac",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/heldout/h04_three_quarters_hour/walk.yaml",
+    "source": "新种子/seeds/heldout/h04_three_quarters_hour/walk.yaml",
+    "sha256": "6120c9f998b489298828e93c26277cb739b71d169c03d87bbb249c82be0dd02c",
+    "bytes": 908
+  },
+  {
+    "path": "batch2/heldout/h05_percent_range_shifted/ebike.md",
+    "source": "新种子/seeds/heldout/h05_percent_range_shifted/ebike.md",
+    "sha256": "51eb348570c72ee44c7af73b06c8c1cf695326a386a7d008b95837554fcfe614",
+    "bytes": 185
+  },
+  {
+    "path": "batch2/heldout/h05_percent_range_shifted/ebike.yaml",
+    "source": "新种子/seeds/heldout/h05_percent_range_shifted/ebike.yaml",
+    "sha256": "db9920de58ca3a9cd01d342bf5ad17134cdffbeb8a3eb7ccc92205a1780d3dde",
+    "bytes": 1176
+  },
+  {
+    "path": "batch2/heldout/h05_percent_range_shifted/seed.yaml",
+    "source": "新种子/seeds/heldout/h05_percent_range_shifted/seed.yaml",
+    "sha256": "f33a2dafa24b0193b8623c152e5307a282e2544ad3f27fabf1a9dbf9ab6c0b45",
+    "bytes": 739
+  },
+  {
+    "path": "batch2/heldout/h05_percent_range_shifted/sources.yaml",
+    "source": "新种子/seeds/heldout/h05_percent_range_shifted/sources.yaml",
+    "sha256": "402719d705fea637d8a65a2c9931c4d7d291f8c1bcf555af9c42a2f28f4b0671",
+    "bytes": 576
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header/bus.csv",
+    "source": "新种子/seeds/heldout/h06_row_counted_with_header/bus.csv",
+    "sha256": "d3d8ff416a5c54669e4f59c0aff8eb25c2c49ee2f0a4e49e089dbf9faac164f6",
+    "bytes": 64
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header/bus.yaml",
+    "source": "新种子/seeds/heldout/h06_row_counted_with_header/bus.yaml",
+    "sha256": "e14258a689a07c11c97d9827d5a35bda08dc5639c62f118d21879fdfd2d7f8d2",
+    "bytes": 715
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header/plan.md",
+    "source": "新种子/seeds/heldout/h06_row_counted_with_header/plan.md",
+    "sha256": "bf87bd70e7589464e0ed6e54a20e8312af2d7af4b2747f4300a1cb0074889865",
+    "bytes": 47
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header/seed.yaml",
+    "source": "新种子/seeds/heldout/h06_row_counted_with_header/seed.yaml",
+    "sha256": "733765152708a669bfc06156ecc7f347e923299b28784a6d3c63a4502811c2eb",
+    "bytes": 332
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header/sources.yaml",
+    "source": "新种子/seeds/heldout/h06_row_counted_with_header/sources.yaml",
+    "sha256": "99735b025d1c091a986cbdf6debb418e908dcf3cf2ea9f377937c7b5bc27a042",
+    "bytes": 37
+  },
+  {
+    "path": "batch2/heldout/h07_typography_correct/seed.yaml",
+    "source": "新种子/seeds/heldout/h07_typography_correct/seed.yaml",
+    "sha256": "ade16bb63c4b625bdaad887091d75338e6bcf01ca7f8abbf9e8ff0199729126c",
+    "bytes": 303
+  },
+  {
+    "path": "batch2/heldout/h07_typography_correct/shift.md",
+    "source": "新种子/seeds/heldout/h07_typography_correct/shift.md",
+    "sha256": "b8cc1dd57ae9e9a367deae392746c17b34dcbf0ec2d98cf3b5b2d3f673da554a",
+    "bytes": 142
+  },
+  {
+    "path": "batch2/heldout/h07_typography_correct/shift.yaml",
+    "source": "新种子/seeds/heldout/h07_typography_correct/shift.yaml",
+    "sha256": "f5ab5fd4c74d49163f0a00ca2f1b25dce585430f54ea2c83745389f803c04579",
+    "bytes": 1035
+  },
+  {
+    "path": "batch2/heldout/h07_typography_correct/sources.yaml",
+    "source": "新种子/seeds/heldout/h07_typography_correct/sources.yaml",
+    "sha256": "8396cd6f88db88aa8b330f2b757966140b52615d3555ccff015799f1aa3cb619",
+    "bytes": 25
+  },
+  {
+    "path": "batch2/heldout/h08_dot_thousands_correct/kran.md",
+    "source": "新种子/seeds/heldout/h08_dot_thousands_correct/kran.md",
+    "sha256": "f34191b4a7e1c5dd24b5fc439f9491f8c6fe6c3e09023b14a2e7ad12d1f765cd",
+    "bytes": 151
+  },
+  {
+    "path": "batch2/heldout/h08_dot_thousands_correct/kran.yaml",
+    "source": "新种子/seeds/heldout/h08_dot_thousands_correct/kran.yaml",
+    "sha256": "afd95a4ed2c394f27c1e25810759ddcb7f4bfff156b6149531bf316fd47a81fb",
+    "bytes": 831
+  },
+  {
+    "path": "batch2/heldout/h08_dot_thousands_correct/seed.yaml",
+    "source": "新种子/seeds/heldout/h08_dot_thousands_correct/seed.yaml",
+    "sha256": "4d6daf718470689de147a1694162c65db0d270af50c1837f3c4f0165605da7a3",
+    "bytes": 258
+  },
+  {
+    "path": "batch2/heldout/h08_dot_thousands_correct/sources.yaml",
+    "source": "新种子/seeds/heldout/h08_dot_thousands_correct/sources.yaml",
+    "sha256": "22138250b812c0d77abafcde180d801731f53b3c4005bab039cf21a2154cc74e",
+    "bytes": 336
+  },
+  {
+    "path": "batch2/new/m01_quarter_to/archive.md",
+    "source": "新种子/seeds/new/m01_quarter_to/archive.md",
+    "sha256": "6333a8d706f29f6954e8327daa4368f96f61798a0c0f8ad19adbb00d5cf5cf75",
+    "bytes": 351
+  },
+  {
+    "path": "batch2/new/m01_quarter_to/archive.yaml",
+    "source": "新种子/seeds/new/m01_quarter_to/archive.yaml",
+    "sha256": "c66bd1412aed34231deb4e3dcb159099a8161564859d7153306e365829c30292",
+    "bytes": 1784
+  },
+  {
+    "path": "batch2/new/m01_quarter_to/seed.yaml",
+    "source": "新种子/seeds/new/m01_quarter_to/seed.yaml",
+    "sha256": "05b0826959baa92098135d38201601bf98aefc515a033f26e231e3c9cb766f7b",
+    "bytes": 449
+  },
+  {
+    "path": "batch2/new/m01_quarter_to/sources.yaml",
+    "source": "新种子/seeds/new/m01_quarter_to/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m02_role_swap/archive.md",
+    "source": "新种子/seeds/new/m02_role_swap/archive.md",
+    "sha256": "0d7afb54e366d2a05a98ceeb9dd573772e2e92fd54f77667323bb5f61f94e537",
+    "bytes": 353
+  },
+  {
+    "path": "batch2/new/m02_role_swap/archive.yaml",
+    "source": "新种子/seeds/new/m02_role_swap/archive.yaml",
+    "sha256": "c66bd1412aed34231deb4e3dcb159099a8161564859d7153306e365829c30292",
+    "bytes": 1784
+  },
+  {
+    "path": "batch2/new/m02_role_swap/seed.yaml",
+    "source": "新种子/seeds/new/m02_role_swap/seed.yaml",
+    "sha256": "80ff05c39de7e683240258b1a3ec88dd6b6a93b95883ec8d3a19c7ad2ddaa2ad",
+    "bytes": 464
+  },
+  {
+    "path": "batch2/new/m02_role_swap/sources.yaml",
+    "source": "新种子/seeds/new/m02_role_swap/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m02b_role_swap_quoted/archive.md",
+    "source": "新种子/seeds/new/m02b_role_swap_quoted/archive.md",
+    "sha256": "0d7afb54e366d2a05a98ceeb9dd573772e2e92fd54f77667323bb5f61f94e537",
+    "bytes": 353
+  },
+  {
+    "path": "batch2/new/m02b_role_swap_quoted/archive.yaml",
+    "source": "新种子/seeds/new/m02b_role_swap_quoted/archive.yaml",
+    "sha256": "3ad5756aa0b53c6e066faa22791258e6fe20c57774d89277eb1e3b4b66b225e7",
+    "bytes": 1814
+  },
+  {
+    "path": "batch2/new/m02b_role_swap_quoted/seed.yaml",
+    "source": "新种子/seeds/new/m02b_role_swap_quoted/seed.yaml",
+    "sha256": "d9421de6330182808a8252c31762227459cf5713b123464df485f4ebe478934f",
+    "bytes": 383
+  },
+  {
+    "path": "batch2/new/m02b_role_swap_quoted/sources.yaml",
+    "source": "新种子/seeds/new/m02b_role_swap_quoted/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m03_quote_altered/archive.md",
+    "source": "新种子/seeds/new/m03_quote_altered/archive.md",
+    "sha256": "010d0b7216cfefd48cef1fe098aa6ad60b5dce6d30c84efbd8390a09c7ef40ee",
+    "bytes": 353
+  },
+  {
+    "path": "batch2/new/m03_quote_altered/archive.yaml",
+    "source": "新种子/seeds/new/m03_quote_altered/archive.yaml",
+    "sha256": "d5dec30cc6a085a4642dd87d6615909117c19c1bf92a0425fb3a1be329e8e7ff",
+    "bytes": 1784
+  },
+  {
+    "path": "batch2/new/m03_quote_altered/seed.yaml",
+    "source": "新种子/seeds/new/m03_quote_altered/seed.yaml",
+    "sha256": "d88629356b5dfa715615a044653695b0cb0f577f3b04d4a30fac59daf0a38ef5",
+    "bytes": 305
+  },
+  {
+    "path": "batch2/new/m03_quote_altered/sources.yaml",
+    "source": "新种子/seeds/new/m03_quote_altered/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m04_digits_swapped/archive.md",
+    "source": "新种子/seeds/new/m04_digits_swapped/archive.md",
+    "sha256": "010d0b7216cfefd48cef1fe098aa6ad60b5dce6d30c84efbd8390a09c7ef40ee",
+    "bytes": 353
+  },
+  {
+    "path": "batch2/new/m04_digits_swapped/archive.yaml",
+    "source": "新种子/seeds/new/m04_digits_swapped/archive.yaml",
+    "sha256": "173aaaa266b65f26e070b4ed2fa9d9423133f0c597c580bf882bd29912ea0fe9",
+    "bytes": 1784
+  },
+  {
+    "path": "batch2/new/m04_digits_swapped/seed.yaml",
+    "source": "新种子/seeds/new/m04_digits_swapped/seed.yaml",
+    "sha256": "ddb1313e3e1a6e2e776ef333c48682a74a21c5ab77fdf4c5aac5949bb72e8a39",
+    "bytes": 432
+  },
+  {
+    "path": "batch2/new/m04_digits_swapped/sources.yaml",
+    "source": "新种子/seeds/new/m04_digits_swapped/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m05_date_from_heading/hut.md",
+    "source": "新种子/seeds/new/m05_date_from_heading/hut.md",
+    "sha256": "e44244290a36fdfbc47cfad604e3cf532169361a1f7ff70ab1936b0ddb491c52",
+    "bytes": 372
+  },
+  {
+    "path": "batch2/new/m05_date_from_heading/hut.yaml",
+    "source": "新种子/seeds/new/m05_date_from_heading/hut.yaml",
+    "sha256": "2aa7cccfeae4041fd43529467561b736e02205f4a50558ef77b17a9b2848f845",
+    "bytes": 1511
+  },
+  {
+    "path": "batch2/new/m05_date_from_heading/seed.yaml",
+    "source": "新种子/seeds/new/m05_date_from_heading/seed.yaml",
+    "sha256": "90ffc12b3c1a7fcca793e86d89da308f1ac9a8fdb19620dbaaeb4dcb2ce065d5",
+    "bytes": 485
+  },
+  {
+    "path": "batch2/new/m05_date_from_heading/sources.yaml",
+    "source": "新种子/seeds/new/m05_date_from_heading/sources.yaml",
+    "sha256": "956a1a93e71b3e6f5b43dbb1597ff498e7563c8b1c08f624d7e336a1124b8189",
+    "bytes": 180
+  },
+  {
+    "path": "batch2/new/m06_dropped_60/hut.md",
+    "source": "新种子/seeds/new/m06_dropped_60/hut.md",
+    "sha256": "7287d76273d4d7a877aa8c9d7780313cbf208df6bab092ec97c01c6b631a7479",
+    "bytes": 361
+  },
+  {
+    "path": "batch2/new/m06_dropped_60/hut.yaml",
+    "source": "新种子/seeds/new/m06_dropped_60/hut.yaml",
+    "sha256": "dd20560350e7cacb00fcd6a58756860050dca39a6487528b98433a62f1ac1d7d",
+    "bytes": 1509
+  },
+  {
+    "path": "batch2/new/m06_dropped_60/seed.yaml",
+    "source": "新种子/seeds/new/m06_dropped_60/seed.yaml",
+    "sha256": "a85dfe80681ce0128afebac352480c5c55e2072a09d5e91b31d38f3437f92e7a",
+    "bytes": 449
+  },
+  {
+    "path": "batch2/new/m06_dropped_60/sources.yaml",
+    "source": "新种子/seeds/new/m06_dropped_60/sources.yaml",
+    "sha256": "956a1a93e71b3e6f5b43dbb1597ff498e7563c8b1c08f624d7e336a1124b8189",
+    "bytes": 180
+  },
+  {
+    "path": "batch2/new/m07_wrong_column/ferry.csv",
+    "source": "新种子/seeds/new/m07_wrong_column/ferry.csv",
+    "sha256": "b891b7e2c17c957af75b317141b47b3c57b984635df41710e3b7014dcba7d205",
+    "bytes": 124
+  },
+  {
+    "path": "batch2/new/m07_wrong_column/ferry.yaml",
+    "source": "新种子/seeds/new/m07_wrong_column/ferry.yaml",
+    "sha256": "b529accb5c6ada72e1e0a793402900637958395456b34bec2340fcdedd287a04",
+    "bytes": 1398
+  },
+  {
+    "path": "batch2/new/m07_wrong_column/notes.md",
+    "source": "新种子/seeds/new/m07_wrong_column/notes.md",
+    "sha256": "fc85b74104bfa4ac787bc64db04dafb06eb9ffe4a406bf7ba0c35ce1136b9efe",
+    "bytes": 229
+  },
+  {
+    "path": "batch2/new/m07_wrong_column/seed.yaml",
+    "source": "新种子/seeds/new/m07_wrong_column/seed.yaml",
+    "sha256": "87680ca995670b9d23370c28ce082f1c615e6a94dfe46e13c23ec5c337bce7d7",
+    "bytes": 420
+  },
+  {
+    "path": "batch2/new/m07_wrong_column/sources.yaml",
+    "source": "新种子/seeds/new/m07_wrong_column/sources.yaml",
+    "sha256": "a28cc0a8bdc457a873aeeb4bd44a8c2391b6325124ab0513e30be2efe86bb4cd",
+    "bytes": 210
+  },
+  {
+    "path": "batch2/new/m08_rounded/ferry.csv",
+    "source": "新种子/seeds/new/m08_rounded/ferry.csv",
+    "sha256": "90167febe4847596391afdc675dabee69ee86e1b68027b55d383373be043e523",
+    "bytes": 124
+  },
+  {
+    "path": "batch2/new/m08_rounded/ferry.yaml",
+    "source": "新种子/seeds/new/m08_rounded/ferry.yaml",
+    "sha256": "83d9c3d0ee8380c7754553d20e71c3314527a25b0eaf8e98c165095185b3025d",
+    "bytes": 1398
+  },
+  {
+    "path": "batch2/new/m08_rounded/notes.md",
+    "source": "新种子/seeds/new/m08_rounded/notes.md",
+    "sha256": "67c8cecc3252882a42702dc385e67e0acb81696091667fc8a9f5dc28d9a90ec5",
+    "bytes": 229
+  },
+  {
+    "path": "batch2/new/m08_rounded/seed.yaml",
+    "source": "新种子/seeds/new/m08_rounded/seed.yaml",
+    "sha256": "9108ae08c0c93145027d9ed14cd3246b1bd5d5b0c4ce269a876f541c097d7054",
+    "bytes": 358
+  },
+  {
+    "path": "batch2/new/m08_rounded/sources.yaml",
+    "source": "新种子/seeds/new/m08_rounded/sources.yaml",
+    "sha256": "a28cc0a8bdc457a873aeeb4bd44a8c2391b6325124ab0513e30be2efe86bb4cd",
+    "bytes": 210
+  },
+  {
+    "path": "batch2/new/m09_count_off_by_one/minibus.md",
+    "source": "新种子/seeds/new/m09_count_off_by_one/minibus.md",
+    "sha256": "018c3559045bc173b103b25866aec90837cf384643fa07bf0713ffe64ab54d88",
+    "bytes": 181
+  },
+  {
+    "path": "batch2/new/m09_count_off_by_one/minibus.yaml",
+    "source": "新种子/seeds/new/m09_count_off_by_one/minibus.yaml",
+    "sha256": "1e6e50293ff373f5c2736d09f96c6d97a0d7bb0dee573162ecea48a9309be479",
+    "bytes": 1119
+  },
+  {
+    "path": "batch2/new/m09_count_off_by_one/seed.yaml",
+    "source": "新种子/seeds/new/m09_count_off_by_one/seed.yaml",
+    "sha256": "d125e9db7eb2a06a802c2fd302ad7089d65c42c6a6eb10a3ef6e42f26cbac65a",
+    "bytes": 371
+  },
+  {
+    "path": "batch2/new/m09_count_off_by_one/sources.yaml",
+    "source": "新种子/seeds/new/m09_count_off_by_one/sources.yaml",
+    "sha256": "6230d8efcf3313668aa23c6981f263bdafa4a821e6879d02c4263ec1a1cbb3f1",
+    "bytes": 328
+  },
+  {
+    "path": "batch2/new/m10_thin_space_digit_lost/crane.md",
+    "source": "新种子/seeds/new/m10_thin_space_digit_lost/crane.md",
+    "sha256": "334f448b0a0d3d3dd0a54653952c98647744b8572601655ec52c5ed7eb1b6a0d",
+    "bytes": 194
+  },
+  {
+    "path": "batch2/new/m10_thin_space_digit_lost/crane.yaml",
+    "source": "新种子/seeds/new/m10_thin_space_digit_lost/crane.yaml",
+    "sha256": "3b0b2a4e52b5e3861e43f54a55de03e8eb472c231ea92c0591d3070181c73cad",
+    "bytes": 887
+  },
+  {
+    "path": "batch2/new/m10_thin_space_digit_lost/seed.yaml",
+    "source": "新种子/seeds/new/m10_thin_space_digit_lost/seed.yaml",
+    "sha256": "d593a90d95788d5210ea3f32e004da92bc2cfa70a487fa79ce5612d597dcf5f4",
+    "bytes": 532
+  },
+  {
+    "path": "batch2/new/m10_thin_space_digit_lost/sources.yaml",
+    "source": "新种子/seeds/new/m10_thin_space_digit_lost/sources.yaml",
+    "sha256": "47e8f8f1483a3f47984f6b3b059ff607a26867be4789faadd7c695c090b24149",
+    "bytes": 339
+  },
+  {
+    "path": "batch2/new/m11_version_off_by_one/release.md",
+    "source": "新种子/seeds/new/m11_version_off_by_one/release.md",
+    "sha256": "752a83865592a61fe7736df4a1d5cdca357a07e7fb5ce9422480fa869a507648",
+    "bytes": 172
+  },
+  {
+    "path": "batch2/new/m11_version_off_by_one/release.yaml",
+    "source": "新种子/seeds/new/m11_version_off_by_one/release.yaml",
+    "sha256": "92acc6833abda927235ef19a3ce8f66e56b7756bf0b23a5288033ec9ce7a7dac",
+    "bytes": 951
+  },
+  {
+    "path": "batch2/new/m11_version_off_by_one/seed.yaml",
+    "source": "新种子/seeds/new/m11_version_off_by_one/seed.yaml",
+    "sha256": "d06ab8735f0c62b834cb1c88a7941a3965a1161737667a4a879d4622d8560ba0",
+    "bytes": 321
+  },
+  {
+    "path": "batch2/new/m11_version_off_by_one/sources.yaml",
+    "source": "新种子/seeds/new/m11_version_off_by_one/sources.yaml",
+    "sha256": "07f1172352fc100ecdee90f3c34e86d6f6a3cd718326f46f8921e209145b5b7f",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/m12_person_swapped/release.md",
+    "source": "新种子/seeds/new/m12_person_swapped/release.md",
+    "sha256": "7bb7b54d49971fad3d40859ad25f3bbc8c2ac39853597f196707d5bba8fa1046",
+    "bytes": 172
+  },
+  {
+    "path": "batch2/new/m12_person_swapped/release.yaml",
+    "source": "新种子/seeds/new/m12_person_swapped/release.yaml",
+    "sha256": "5b2299a458d55ee7ac09d46786677a3432fa8342f3254a32d70691f163c5674f",
+    "bytes": 955
+  },
+  {
+    "path": "batch2/new/m12_person_swapped/seed.yaml",
+    "source": "新种子/seeds/new/m12_person_swapped/seed.yaml",
+    "sha256": "8b2fbbd8895823bb6cb7f6a0eed41a9bb84c037064a6f412f9dd4a175bd69658",
+    "bytes": 326
+  },
+  {
+    "path": "batch2/new/m12_person_swapped/sources.yaml",
+    "source": "新种子/seeds/new/m12_person_swapped/sources.yaml",
+    "sha256": "07f1172352fc100ecdee90f3c34e86d6f6a3cd718326f46f8921e209145b5b7f",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/n00_archive_correct/archive.md",
+    "source": "新种子/seeds/new/n00_archive_correct/archive.md",
+    "sha256": "010d0b7216cfefd48cef1fe098aa6ad60b5dce6d30c84efbd8390a09c7ef40ee",
+    "bytes": 353
+  },
+  {
+    "path": "batch2/new/n00_archive_correct/archive.yaml",
+    "source": "新种子/seeds/new/n00_archive_correct/archive.yaml",
+    "sha256": "c66bd1412aed34231deb4e3dcb159099a8161564859d7153306e365829c30292",
+    "bytes": 1784
+  },
+  {
+    "path": "batch2/new/n00_archive_correct/seed.yaml",
+    "source": "新种子/seeds/new/n00_archive_correct/seed.yaml",
+    "sha256": "8db24fcf73a6a72d45ecde2d78b0cee47c3fb00268fa7ea145a19966cb34549a",
+    "bytes": 348
+  },
+  {
+    "path": "batch2/new/n00_archive_correct/sources.yaml",
+    "source": "新种子/seeds/new/n00_archive_correct/sources.yaml",
+    "sha256": "60eacd135cf8e1be309821847dcc67ae31eed4c1bbbeae4c11a86fbcd366799d",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/n01_hut_correct/hut.md",
+    "source": "新种子/seeds/new/n01_hut_correct/hut.md",
+    "sha256": "057fb431b52050d4578eab9baf0120b99df40a1e370cd8b513c54a0cda15b7a6",
+    "bytes": 361
+  },
+  {
+    "path": "batch2/new/n01_hut_correct/hut.yaml",
+    "source": "新种子/seeds/new/n01_hut_correct/hut.yaml",
+    "sha256": "2aa7cccfeae4041fd43529467561b736e02205f4a50558ef77b17a9b2848f845",
+    "bytes": 1511
+  },
+  {
+    "path": "batch2/new/n01_hut_correct/seed.yaml",
+    "source": "新种子/seeds/new/n01_hut_correct/seed.yaml",
+    "sha256": "d1a9e04d9b800812d509c20dd00b6ddb680b809994e8ac7263db03536c465f63",
+    "bytes": 255
+  },
+  {
+    "path": "batch2/new/n01_hut_correct/sources.yaml",
+    "source": "新种子/seeds/new/n01_hut_correct/sources.yaml",
+    "sha256": "956a1a93e71b3e6f5b43dbb1597ff498e7563c8b1c08f624d7e336a1124b8189",
+    "bytes": 180
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct/ferry.csv",
+    "source": "新种子/seeds/new/n02_ferry_correct/ferry.csv",
+    "sha256": "b891b7e2c17c957af75b317141b47b3c57b984635df41710e3b7014dcba7d205",
+    "bytes": 124
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct/ferry.yaml",
+    "source": "新种子/seeds/new/n02_ferry_correct/ferry.yaml",
+    "sha256": "e6cc763d08bbfafa13735c4163a14d5b97ca863f4f03b98c5cd3d470a046e724",
+    "bytes": 1398
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct/notes.md",
+    "source": "新种子/seeds/new/n02_ferry_correct/notes.md",
+    "sha256": "0dfa2662068dc654630c175c2492b1b3971870b7ad68ef9cfb94bf06bbe92a66",
+    "bytes": 229
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct/seed.yaml",
+    "source": "新种子/seeds/new/n02_ferry_correct/seed.yaml",
+    "sha256": "5ccf9dab4250c65359993ce03c16853bc9568009eb189bf7aab4cb852ac45b11",
+    "bytes": 211
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct/sources.yaml",
+    "source": "新种子/seeds/new/n02_ferry_correct/sources.yaml",
+    "sha256": "a28cc0a8bdc457a873aeeb4bd44a8c2391b6325124ab0513e30be2efe86bb4cd",
+    "bytes": 210
+  },
+  {
+    "path": "batch2/new/n03_crane_correct/crane.md",
+    "source": "新种子/seeds/new/n03_crane_correct/crane.md",
+    "sha256": "8b143b8b1a45336f235215e058da143fee847c076e879de9d3bd86a9b79aa79e",
+    "bytes": 194
+  },
+  {
+    "path": "batch2/new/n03_crane_correct/crane.yaml",
+    "source": "新种子/seeds/new/n03_crane_correct/crane.yaml",
+    "sha256": "d622e0822fadea612572980feece4b0902ee8abe2783f315f87e536d3262b8e4",
+    "bytes": 891
+  },
+  {
+    "path": "batch2/new/n03_crane_correct/seed.yaml",
+    "source": "新种子/seeds/new/n03_crane_correct/seed.yaml",
+    "sha256": "8812195985e2fe14995341bb07a2c343910e916a6a8ac3d610fe2d0f7d491b56",
+    "bytes": 252
+  },
+  {
+    "path": "batch2/new/n03_crane_correct/sources.yaml",
+    "source": "新种子/seeds/new/n03_crane_correct/sources.yaml",
+    "sha256": "47e8f8f1483a3f47984f6b3b059ff607a26867be4789faadd7c695c090b24149",
+    "bytes": 339
+  },
+  {
+    "path": "batch2/new/n04_release_correct/release.md",
+    "source": "新种子/seeds/new/n04_release_correct/release.md",
+    "sha256": "7bb7b54d49971fad3d40859ad25f3bbc8c2ac39853597f196707d5bba8fa1046",
+    "bytes": 172
+  },
+  {
+    "path": "batch2/new/n04_release_correct/release.yaml",
+    "source": "新种子/seeds/new/n04_release_correct/release.yaml",
+    "sha256": "92acc6833abda927235ef19a3ce8f66e56b7756bf0b23a5288033ec9ce7a7dac",
+    "bytes": 951
+  },
+  {
+    "path": "batch2/new/n04_release_correct/seed.yaml",
+    "source": "新种子/seeds/new/n04_release_correct/seed.yaml",
+    "sha256": "b9c35714571ea98593bc7278fd6692bdcc560e810538f3733e15db033baf5a06",
+    "bytes": 151
+  },
+  {
+    "path": "batch2/new/n04_release_correct/sources.yaml",
+    "source": "新种子/seeds/new/n04_release_correct/sources.yaml",
+    "sha256": "07f1172352fc100ecdee90f3c34e86d6f6a3cd718326f46f8921e209145b5b7f",
+    "bytes": 29
+  },
+  {
+    "path": "batch2/new/n05_minibus_correct/minibus.md",
+    "source": "新种子/seeds/new/n05_minibus_correct/minibus.md",
+    "sha256": "0923b333bf904571042bfdc853f99805e7b2a1a4131c907ef10075e7a5320aac",
+    "bytes": 180
+  },
+  {
+    "path": "batch2/new/n05_minibus_correct/minibus.yaml",
+    "source": "新种子/seeds/new/n05_minibus_correct/minibus.yaml",
+    "sha256": "1e6e50293ff373f5c2736d09f96c6d97a0d7bb0dee573162ecea48a9309be479",
+    "bytes": 1119
+  },
+  {
+    "path": "batch2/new/n05_minibus_correct/seed.yaml",
+    "source": "新种子/seeds/new/n05_minibus_correct/seed.yaml",
+    "sha256": "96f16964a37b2d4786e985d3252c378dc66492554a6fb90d09fcab1ab1021beb",
+    "bytes": 185
+  },
+  {
+    "path": "batch2/new/n05_minibus_correct/sources.yaml",
+    "source": "新种子/seeds/new/n05_minibus_correct/sources.yaml",
+    "sha256": "6230d8efcf3313668aa23c6981f263bdafa4a821e6879d02c4263ec1a1cbb3f1",
+    "bytes": 328
+  },
+  {
+    "path": "batch2/public/s1_faithful/ch1.md",
+    "source": "新种子/seeds/public/s1_faithful/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s1_faithful/ch1.yaml",
+    "source": "新种子/seeds/public/s1_faithful/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s1_faithful/ch2.md",
+    "source": "新种子/seeds/public/s1_faithful/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch2/public/s1_faithful/ch2.yaml",
+    "source": "新种子/seeds/public/s1_faithful/ch2.yaml",
+    "sha256": "ff90c1ec4090350987c7f2da593d525e1dcd3c16c0376f2ea937c8f55ba6bdb0",
+    "bytes": 1190
+  },
+  {
+    "path": "batch2/public/s1_faithful/mesh.yaml",
+    "source": "新种子/seeds/public/s1_faithful/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s1_faithful/sources.yaml",
+    "source": "新种子/seeds/public/s1_faithful/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/ch1.md",
+    "source": "新种子/seeds/public/s2_silent_repair/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/ch1.yaml",
+    "source": "新种子/seeds/public/s2_silent_repair/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/ch2.md",
+    "source": "新种子/seeds/public/s2_silent_repair/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/ch2.yaml",
+    "source": "新种子/seeds/public/s2_silent_repair/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/mesh.yaml",
+    "source": "新种子/seeds/public/s2_silent_repair/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s2_silent_repair/sources.yaml",
+    "source": "新种子/seeds/public/s2_silent_repair/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/ch1.md",
+    "source": "新种子/seeds/public/s3_prose_revised/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/ch1.yaml",
+    "source": "新种子/seeds/public/s3_prose_revised/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/ch2.md",
+    "source": "新种子/seeds/public/s3_prose_revised/ch2.md",
+    "sha256": "9d1e9835e91a9ed83c947f80519fe24e65def340118a193e6d7acedfa882d512",
+    "bytes": 195
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/ch2.yaml",
+    "source": "新种子/seeds/public/s3_prose_revised/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/mesh.yaml",
+    "source": "新种子/seeds/public/s3_prose_revised/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s3_prose_revised/sources.yaml",
+    "source": "新种子/seeds/public/s3_prose_revised/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s4_unencoded/ch1.md",
+    "source": "新种子/seeds/public/s4_unencoded/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s4_unencoded/ch1.yaml",
+    "source": "新种子/seeds/public/s4_unencoded/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s4_unencoded/ch2.md",
+    "source": "新种子/seeds/public/s4_unencoded/ch2.md",
+    "sha256": "4385c6c72d4e86a78515b71073825fc4a5c4c87d89094ce1f88cd69889cd0fda",
+    "bytes": 274
+  },
+  {
+    "path": "batch2/public/s4_unencoded/ch2.yaml",
+    "source": "新种子/seeds/public/s4_unencoded/ch2.yaml",
+    "sha256": "ef0c081ef7f63e99043a25ffb684a934a08fa91056c1851eb45692c3054c4e43",
+    "bytes": 1428
+  },
+  {
+    "path": "batch2/public/s4_unencoded/mesh.yaml",
+    "source": "新种子/seeds/public/s4_unencoded/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s4_unencoded/sources.yaml",
+    "source": "新种子/seeds/public/s4_unencoded/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s4b_encoded/ch1.md",
+    "source": "新种子/seeds/public/s4b_encoded/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s4b_encoded/ch1.yaml",
+    "source": "新种子/seeds/public/s4b_encoded/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s4b_encoded/ch2.md",
+    "source": "新种子/seeds/public/s4b_encoded/ch2.md",
+    "sha256": "4385c6c72d4e86a78515b71073825fc4a5c4c87d89094ce1f88cd69889cd0fda",
+    "bytes": 274
+  },
+  {
+    "path": "batch2/public/s4b_encoded/ch2.yaml",
+    "source": "新种子/seeds/public/s4b_encoded/ch2.yaml",
+    "sha256": "5aface507c94d30ab45de2569e5d94df8018d256a0b357e21a4049dca06a7c0b",
+    "bytes": 1579
+  },
+  {
+    "path": "batch2/public/s4b_encoded/mesh.yaml",
+    "source": "新种子/seeds/public/s4b_encoded/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s4b_encoded/sources.yaml",
+    "source": "新种子/seeds/public/s4b_encoded/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/ch1.md",
+    "source": "新种子/seeds/public/s5_wished_quote/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/ch1.yaml",
+    "source": "新种子/seeds/public/s5_wished_quote/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/ch2.md",
+    "source": "新种子/seeds/public/s5_wished_quote/ch2.md",
+    "sha256": "4cd6800bf5883e0c710c8a772b3d1da1795c496a95f7eba28fc1173b591736b5",
+    "bytes": 196
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/ch2.yaml",
+    "source": "新种子/seeds/public/s5_wished_quote/ch2.yaml",
+    "sha256": "82b3df869c6c262fcd2d63812257b3212895d868f5e325fa3dd7df346cd8c07e",
+    "bytes": 1456
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/mesh.yaml",
+    "source": "新种子/seeds/public/s5_wished_quote/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s5_wished_quote/sources.yaml",
+    "source": "新种子/seeds/public/s5_wished_quote/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s6_correct/ch1.md",
+    "source": "新种子/seeds/public/s6_correct/ch1.md",
+    "sha256": "b5aee76ddb22620b213f8e0a8f646ca84522e9108e4777c5dfa1682717a9c7f3",
+    "bytes": 161
+  },
+  {
+    "path": "batch2/public/s6_correct/ch1.yaml",
+    "source": "新种子/seeds/public/s6_correct/ch1.yaml",
+    "sha256": "2e552037864f3f5ad3c6517b431677ca1fe2c0dbe65efde2c07bc67cf434052b",
+    "bytes": 1301
+  },
+  {
+    "path": "batch2/public/s6_correct/ch2.md",
+    "source": "新种子/seeds/public/s6_correct/ch2.md",
+    "sha256": "7a8383e0c7ec9be0038c0ea6c3b217c0afd54ec16d5bd0a7fc229b943006e206",
+    "bytes": 195
+  },
+  {
+    "path": "batch2/public/s6_correct/ch2.yaml",
+    "source": "新种子/seeds/public/s6_correct/ch2.yaml",
+    "sha256": "ef2d08f24859db75322c41008d4135abf6d0d36464a947e88668ac43ab391a44",
+    "bytes": 1428
+  },
+  {
+    "path": "batch2/public/s6_correct/mesh.yaml",
+    "source": "新种子/seeds/public/s6_correct/mesh.yaml",
+    "sha256": "80877d2d3748fde6e0fe1b91c1634ebe7a88a27d5d787592f979cd604effb9de",
+    "bytes": 522
+  },
+  {
+    "path": "batch2/public/s6_correct/sources.yaml",
+    "source": "新种子/seeds/public/s6_correct/sources.yaml",
+    "sha256": "e5584061a4003f35db3157af500d4dcc7f6dab10a7bd78e1fb315d398b4175b7",
+    "bytes": 87
+  },
+  {
+    "path": "batch2/public/s7_trip_timetable/observed_by_hand.yaml",
+    "source": "新种子/seeds/public/s7_trip_timetable/observed_by_hand.yaml",
+    "sha256": "66b9e8f1c4b8d45a4c72fdc99821d069d759c8c3b7eb90a9adc09c1f6b53ddee",
+    "bytes": 99
+  },
+  {
+    "path": "batch2/public/s7_trip_timetable/sources.yaml",
+    "source": "新种子/seeds/public/s7_trip_timetable/sources.yaml",
+    "sha256": "6dcb1e14670a805979065c9f55dd2b315581d82442811d796ebaeb20c66486b1",
+    "bytes": 27
+  },
+  {
+    "path": "batch2/public/s7_trip_timetable/timetable.csv",
+    "source": "新种子/seeds/public/s7_trip_timetable/timetable.csv",
+    "sha256": "a0dc32733755f33f66af77ded9b93db136441c834c91104bec88a228ebe32c72",
+    "bytes": 183
+  },
+  {
+    "path": "batch2/public/s7_trip_timetable/trip.yaml",
+    "source": "新种子/seeds/public/s7_trip_timetable/trip.yaml",
+    "sha256": "37b76abe9cbb072e4f9595d74b20107889ba1024c28bfa9cdde59ea8d0344761",
+    "bytes": 3747
+  },
+  {
+    "path": "batch3/c01_rounded_conversions/ride.md",
+    "source": "第三批种子/seeds/c01_rounded_conversions/ride.md",
+    "sha256": "6c919b0b37943a7cfa1e9ba4d19cb20517bafcdfb70d9f219f586cdce8e53ff9",
+    "bytes": 199
+  },
+  {
+    "path": "batch3/c01_rounded_conversions/ride.yaml",
+    "source": "第三批种子/seeds/c01_rounded_conversions/ride.yaml",
+    "sha256": "57bd375cbba9d7159bddf9f0829999829defca8d33cbc9ed9cb48f7130b529e8",
+    "bytes": 840
+  },
+  {
+    "path": "batch3/c01_rounded_conversions/seed.yaml",
+    "source": "第三批种子/seeds/c01_rounded_conversions/seed.yaml",
+    "sha256": "69301b877d5a57b8c25c033d0c3057b8ad19168643f5e5fcf02ac29067a92730",
+    "bytes": 427
+  },
+  {
+    "path": "batch3/c01_rounded_conversions/sources.yaml",
+    "source": "第三批种子/seeds/c01_rounded_conversions/sources.yaml",
+    "sha256": "e54dadfab47b0eef4173eed6c2e5378c8eaf80837783e8c4d16081484df777f9",
+    "bytes": 213
+  },
+  {
+    "path": "batch3/c02_nbsp_thousands/seed.yaml",
+    "source": "第三批种子/seeds/c02_nbsp_thousands/seed.yaml",
+    "sha256": "9fd8e8dd68a01aa3e7de27fff8676d12b5aa22c34e987b7f596c0726fe44effe",
+    "bytes": 476
+  },
+  {
+    "path": "batch3/c02_nbsp_thousands/sources.yaml",
+    "source": "第三批种子/seeds/c02_nbsp_thousands/sources.yaml",
+    "sha256": "7b22263f2ce7f7ced0ff0f5c79294f9da8d8517b99928c3cd3b2f10d8b295d17",
+    "bytes": 347
+  },
+  {
+    "path": "batch3/c02_nbsp_thousands/timber.md",
+    "source": "第三批种子/seeds/c02_nbsp_thousands/timber.md",
+    "sha256": "d0df9c4da860aaa0dae3950e9024663784a558151e6c74f4cec6916d98d14dd7",
+    "bytes": 204
+  },
+  {
+    "path": "batch3/c02_nbsp_thousands/timber.yaml",
+    "source": "第三批种子/seeds/c02_nbsp_thousands/timber.yaml",
+    "sha256": "ce1881ad18d8546710f817bfd325bf74eaee0ef957bab9bf96830bca5989894b",
+    "bytes": 901
+  },
+  {
+    "path": "batch3/c03_decimal_comma_evident/etappe.md",
+    "source": "第三批种子/seeds/c03_decimal_comma_evident/etappe.md",
+    "sha256": "3365a28cc767655314b089e66b81cfa8f2fab0c22604e2858a06a11faa57bc80",
+    "bytes": 248
+  },
+  {
+    "path": "batch3/c03_decimal_comma_evident/etappe.yaml",
+    "source": "第三批种子/seeds/c03_decimal_comma_evident/etappe.yaml",
+    "sha256": "7a8f3f86e59c3c5195c5cb516fe2b21494d6c42799072c43654cfab372880a8f",
+    "bytes": 935
+  },
+  {
+    "path": "batch3/c03_decimal_comma_evident/seed.yaml",
+    "source": "第三批种子/seeds/c03_decimal_comma_evident/seed.yaml",
+    "sha256": "2f4227012e010c028acbb491bc269873afbcc76cf8be6fb8299b32978b7e4428",
+    "bytes": 522
+  },
+  {
+    "path": "batch3/c03_decimal_comma_evident/sources.yaml",
+    "source": "第三批种子/seeds/c03_decimal_comma_evident/sources.yaml",
+    "sha256": "789db92a91e8a0de95acb8fd139e2f0878a073d460f98ff65b049359896d7ea2",
+    "bytes": 315
+  },
+  {
+    "path": "batch3/c04_v_prefixed_version/seed.yaml",
+    "source": "第三批种子/seeds/c04_v_prefixed_version/seed.yaml",
+    "sha256": "0f140fdb4602db4ccab87532db6ee08102b2a03f4e217506238f6b5b7bcdc4ae",
+    "bytes": 483
+  },
+  {
+    "path": "batch3/c04_v_prefixed_version/sources.yaml",
+    "source": "第三批种子/seeds/c04_v_prefixed_version/sources.yaml",
+    "sha256": "b4629ec0f8971203507d6fc3ebe2d4f6e167cef7154a7ec9cd3e173782a661a4",
+    "bytes": 27
+  },
+  {
+    "path": "batch3/c04_v_prefixed_version/window.md",
+    "source": "第三批种子/seeds/c04_v_prefixed_version/window.md",
+    "sha256": "767db016cd51f2aed17c0275b8232bb6bd4bad65aa2c551f3fbebf3b7efb1102",
+    "bytes": 223
+  },
+  {
+    "path": "batch3/c04_v_prefixed_version/window.yaml",
+    "source": "第三批种子/seeds/c04_v_prefixed_version/window.yaml",
+    "sha256": "7af1ecc9bc409b8474be9ce6b594d975d80af344f01a7b7fdbee529c3b546710",
+    "bytes": 985
+  },
+  {
+    "path": "batch3/c05_soft_hyphen_quote/cable.md",
+    "source": "第三批种子/seeds/c05_soft_hyphen_quote/cable.md",
+    "sha256": "ac0dccd5118991e7300fa2ac33721a94ce7a253d4e91e25966a803ab3268f72d",
+    "bytes": 213
+  },
+  {
+    "path": "batch3/c05_soft_hyphen_quote/cable.yaml",
+    "source": "第三批种子/seeds/c05_soft_hyphen_quote/cable.yaml",
+    "sha256": "92ce39b94a2bedb190054eaf28cc1a9350feccabe57400c9a9b12d7b937b7de4",
+    "bytes": 882
+  },
+  {
+    "path": "batch3/c05_soft_hyphen_quote/seed.yaml",
+    "source": "第三批种子/seeds/c05_soft_hyphen_quote/seed.yaml",
+    "sha256": "c45d7bedc592c2180e5d86d5b40521c1ea9a7f518d2d63694540a7c3347708ce",
+    "bytes": 691
+  },
+  {
+    "path": "batch3/c05_soft_hyphen_quote/sources.yaml",
+    "source": "第三批种子/seeds/c05_soft_hyphen_quote/sources.yaml",
+    "sha256": "fd06c426ac48e61afca065fe34c36c5999f6d2db666620ffed3fb6a171333490",
+    "bytes": 25
+  },
+  {
+    "path": "batch3/c06_abbrev_two_dates/seed.yaml",
+    "source": "第三批种子/seeds/c06_abbrev_two_dates/seed.yaml",
+    "sha256": "07e0c4c51aa0ef5f62d249154ab52f007e206548065003f53c17206c3ff62d49",
+    "bytes": 659
+  },
+  {
+    "path": "batch3/c06_abbrev_two_dates/sources.yaml",
+    "source": "第三批种子/seeds/c06_abbrev_two_dates/sources.yaml",
+    "sha256": "b3912c69ca8fb3be43afda66e8e07023928e15df3f2e0481a7e3b02650c79941",
+    "bytes": 25
+  },
+  {
+    "path": "batch3/c06_abbrev_two_dates/trail.md",
+    "source": "第三批种子/seeds/c06_abbrev_two_dates/trail.md",
+    "sha256": "0a2852cf4327ba223149cb0896f0d0c48e44c4f6baffa16bd31afb21453a4ab1",
+    "bytes": 267
+  },
+  {
+    "path": "batch3/c06_abbrev_two_dates/trail.yaml",
+    "source": "第三批种子/seeds/c06_abbrev_two_dates/trail.yaml",
+    "sha256": "6314b8a9055d795215c620ef121badd467dffed044f1a58356b9934b1e5f62f2",
+    "bytes": 822
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/act1.md",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/act1.md",
+    "sha256": "5e32966943d31910eb1ac887fad5122be9fb76b8ea3d70c721adaf3093285589",
+    "bytes": 129
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/act1.yaml",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/act1.yaml",
+    "sha256": "d49b466ce2d7dd8372cb515229c10243cfb646271fd19ce5e40d9b3a90e05bb1",
+    "bytes": 930
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/act2.md",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/act2.md",
+    "sha256": "6864aa72afe3ab0562e4543e8f63eb164243d1a6effc3b8b2dd6435b62b6868d",
+    "bytes": 204
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/act2.yaml",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/act2.yaml",
+    "sha256": "408e02ca3c592699175b406e5defca39db796fc3b8e9fe4e6331bd256f6da198",
+    "bytes": 798
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/mesh.yaml",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/mesh.yaml",
+    "sha256": "8dbb53d8c248026f7b59018e8aaac841ad56ec0b0e6d989773cbebcfe80de8d6",
+    "bytes": 520
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/seed.yaml",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/seed.yaml",
+    "sha256": "08306079ece1abceb751d7e79537179b928e59e2e35286cd371292dc8199da63",
+    "bytes": 451
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts/sources.yaml",
+    "source": "第三批种子/seeds/c07_mesh_two_acts/sources.yaml",
+    "sha256": "df072f807c457926f09fb9d4424cb8b461ea6ebc1717bdb0022c5e4f0bdaec2b",
+    "bytes": 38
+  },
+  {
+    "path": "batch3/l01_any_match_second_departure/depot.md",
+    "source": "第三批种子/seeds/l01_any_match_second_departure/depot.md",
+    "sha256": "58532390340842bb4ce13b3c093b5cb38651d1b08ad8685ff07ac69e7af445a3",
+    "bytes": 221
+  },
+  {
+    "path": "batch3/l01_any_match_second_departure/depot.yaml",
+    "source": "第三批种子/seeds/l01_any_match_second_departure/depot.yaml",
+    "sha256": "3ccf3472c2ec28bfbb81cee1c4c6f84fd5b49245d11b1ba3a8a0cfe37a728cc5",
+    "bytes": 923
+  },
+  {
+    "path": "batch3/l01_any_match_second_departure/seed.yaml",
+    "source": "第三批种子/seeds/l01_any_match_second_departure/seed.yaml",
+    "sha256": "ddc973535864268acc0e3b5e0a11eb739a20e0ee3051d410e900491296cc4bfa",
+    "bytes": 629
+  },
+  {
+    "path": "batch3/l01_any_match_second_departure/sources.yaml",
+    "source": "第三批种子/seeds/l01_any_match_second_departure/sources.yaml",
+    "sha256": "bf905b317a8035fb1dea74c09ccc2d140af8c0fab5fcf5dd97dde969fb79bdb3",
+    "bytes": 122
+  },
+  {
+    "path": "batch3/l02_a_dozen/clinic.md",
+    "source": "第三批种子/seeds/l02_a_dozen/clinic.md",
+    "sha256": "43209eb4dd264a3bb675f46d9d505846c779cc55724da1555920b37f3a402242",
+    "bytes": 147
+  },
+  {
+    "path": "batch3/l02_a_dozen/clinic.yaml",
+    "source": "第三批种子/seeds/l02_a_dozen/clinic.yaml",
+    "sha256": "be7660aa228a0ed5e1d4d41e77a8dbcde8da306a2beba31dd7a662408179c8fc",
+    "bytes": 730
+  },
+  {
+    "path": "batch3/l02_a_dozen/seed.yaml",
+    "source": "第三批种子/seeds/l02_a_dozen/seed.yaml",
+    "sha256": "0b912dd7b06c4690a62e49693bbc1ff5ca8552729aa7e042c2b75a64e3ce24a9",
+    "bytes": 488
+  },
+  {
+    "path": "batch3/l02_a_dozen/sources.yaml",
+    "source": "第三批种子/seeds/l02_a_dozen/sources.yaml",
+    "sha256": "d2f4b825f3a8c4e7d7877e7a310dff1ef27c31eb285921b6d40959247a5fa8f4",
+    "bytes": 320
+  },
+  {
+    "path": "batch3/l03_passive_roles/boathouse.md",
+    "source": "第三批种子/seeds/l03_passive_roles/boathouse.md",
+    "sha256": "6e04842a8b4d9a8b239caa2e39d80473747bfacfd2cbd4521ced8d18d42ba9cb",
+    "bytes": 177
+  },
+  {
+    "path": "batch3/l03_passive_roles/boathouse.yaml",
+    "source": "第三批种子/seeds/l03_passive_roles/boathouse.yaml",
+    "sha256": "6619bcc69a9f0d3d2ddf2a6180a6e6ee251aa8a06bf5b8df9aa4a11f97f1b47a",
+    "bytes": 911
+  },
+  {
+    "path": "batch3/l03_passive_roles/seed.yaml",
+    "source": "第三批种子/seeds/l03_passive_roles/seed.yaml",
+    "sha256": "c4efc685737f58be0165f51471f00b6bc9ae539e523ae5874d4ee36d4269019a",
+    "bytes": 1027
+  },
+  {
+    "path": "batch3/l03_passive_roles/sources.yaml",
+    "source": "第三批种子/seeds/l03_passive_roles/sources.yaml",
+    "sha256": "936c170d735d3b42b64be95b25075c9ab597a4a03e1e8793b941ca5f4e82b032",
+    "bytes": 33
+  },
+  {
+    "path": "batch3/x01_twenty_to_morning/bakery.md",
+    "source": "第三批种子/seeds/x01_twenty_to_morning/bakery.md",
+    "sha256": "ec52837dc33eaccf446416ffb4314dfa9b1ef5dd2a37dd783b390046bc0d639c",
+    "bytes": 252
+  },
+  {
+    "path": "batch3/x01_twenty_to_morning/bakery.yaml",
+    "source": "第三批种子/seeds/x01_twenty_to_morning/bakery.yaml",
+    "sha256": "d028204a7336f38c5bb9f8a1134bf9be689811d316cef244e6c261537ca9af9a",
+    "bytes": 1029
+  },
+  {
+    "path": "batch3/x01_twenty_to_morning/seed.yaml",
+    "source": "第三批种子/seeds/x01_twenty_to_morning/seed.yaml",
+    "sha256": "3af2d0c5a1c7fa69aaf392700328bd1558b313c0764a1d4f7e19672e50ea5cfd",
+    "bytes": 633
+  },
+  {
+    "path": "batch3/x01_twenty_to_morning/sources.yaml",
+    "source": "第三批种子/seeds/x01_twenty_to_morning/sources.yaml",
+    "sha256": "de4c9afcac1856fb356f80247e5643e86e520c0df2547bfacec7a871abdc48f3",
+    "bytes": 54
+  },
+  {
+    "path": "batch3/x02_kmh_typed_as_ms/seed.yaml",
+    "source": "第三批种子/seeds/x02_kmh_typed_as_ms/seed.yaml",
+    "sha256": "525f77ba7d23b3d8ac5510bc7533e8b843dbaf3ec055aae42a14d27db51e7593",
+    "bytes": 593
+  },
+  {
+    "path": "batch3/x02_kmh_typed_as_ms/sources.yaml",
+    "source": "第三批种子/seeds/x02_kmh_typed_as_ms/sources.yaml",
+    "sha256": "08085e7ad7658db802d9492df66852c4940829f33ae4548b4ceb75d4c8352e05",
+    "bytes": 222
+  },
+  {
+    "path": "batch3/x02_kmh_typed_as_ms/weir.md",
+    "source": "第三批种子/seeds/x02_kmh_typed_as_ms/weir.md",
+    "sha256": "cfe2f90f0c9003a295bdff6b3c8711173fd809c8e365528ea89be8b974045f68",
+    "bytes": 273
+  },
+  {
+    "path": "batch3/x02_kmh_typed_as_ms/weir.yaml",
+    "source": "第三批种子/seeds/x02_kmh_typed_as_ms/weir.yaml",
+    "sha256": "3dbc05303708b03a0a42cd064b54167624039c3c1934ebd563084fe25fe3ee8c",
+    "bytes": 1090
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row/plan.md",
+    "source": "第三批种子/seeds/x03_transposed_wrong_row/plan.md",
+    "sha256": "8f12e5be3c2de0c6653dc5a6ea7efe29d79ffb3f3892fbc5efb6e2eb972ee2cf",
+    "bytes": 159
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row/seed.yaml",
+    "source": "第三批种子/seeds/x03_transposed_wrong_row/seed.yaml",
+    "sha256": "d0d226fec825618423f347750b61d4b8a6dbe8f0462a77c302f0720872cb046d",
+    "bytes": 652
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row/shuttle.csv",
+    "source": "第三批种子/seeds/x03_transposed_wrong_row/shuttle.csv",
+    "sha256": "740f2bc606f8c12de4e9af67a6f2867d9c7fdae5517852b55640672fdf1da9cc",
+    "bytes": 87
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row/shuttle.yaml",
+    "source": "第三批种子/seeds/x03_transposed_wrong_row/shuttle.yaml",
+    "sha256": "4e3e8f80045806e5beaad7a2db4af1ff9a7bb2aca9d22e2fec8dee160257d2ed",
+    "bytes": 1028
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row/sources.yaml",
+    "source": "第三批种子/seeds/x03_transposed_wrong_row/sources.yaml",
+    "sha256": "6eb3750c7346581f0e17cc28476ca3d5321ecf577e6e40df1949d9e4f29856dc",
+    "bytes": 138
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped/exams.csv",
+    "source": "第三批种子/seeds/x04_dotted_date_column_swapped/exams.csv",
+    "sha256": "0cd731dafd59d7559693fa125739ba74dd01cd7464286f791f3e308a6ac7bd33",
+    "bytes": 115
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped/exams.yaml",
+    "source": "第三批种子/seeds/x04_dotted_date_column_swapped/exams.yaml",
+    "sha256": "c34b2bc223fbae800372e4e5c8e2b64eb3dd6776212eedc287e819b171855f68",
+    "bytes": 882
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped/notes.md",
+    "source": "第三批种子/seeds/x04_dotted_date_column_swapped/notes.md",
+    "sha256": "65516bc97c5d1c34339b5011108d6d2ada8f3ce29d76f618c2d7064d1ae5ace9",
+    "bytes": 110
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped/seed.yaml",
+    "source": "第三批种子/seeds/x04_dotted_date_column_swapped/seed.yaml",
+    "sha256": "d32d52510af0e3d3558465bfaa7ceadb15556ff40c6dd14e9011d87f43375c19",
+    "bytes": 694
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped/sources.yaml",
+    "source": "第三批种子/seeds/x04_dotted_date_column_swapped/sources.yaml",
+    "sha256": "856c8a94fcc1c43b6da7588aa28de81909753422a218474648748164db725c56",
+    "bytes": 40
+  },
+  {
+    "path": "batch3/x05_heading_counted_pointer/orchard.md",
+    "source": "第三批种子/seeds/x05_heading_counted_pointer/orchard.md",
+    "sha256": "43fbdcbf09da53585f00687801738049c7fdf6e7e28a1706f9c96bb1c56de411",
+    "bytes": 250
+  },
+  {
+    "path": "batch3/x05_heading_counted_pointer/orchard.yaml",
+    "source": "第三批种子/seeds/x05_heading_counted_pointer/orchard.yaml",
+    "sha256": "032f76bc75fbd10bc2072f19e8b3ac1a7555545a6682e679f5117b1963a9463c",
+    "bytes": 884
+  },
+  {
+    "path": "batch3/x05_heading_counted_pointer/seed.yaml",
+    "source": "第三批种子/seeds/x05_heading_counted_pointer/seed.yaml",
+    "sha256": "6bba66d1e73f9db613ceea2b0e5fb7fe39b53be6d9a164cb7037d9408946e8bc",
+    "bytes": 665
+  },
+  {
+    "path": "batch3/x05_heading_counted_pointer/sources.yaml",
+    "source": "第三批种子/seeds/x05_heading_counted_pointer/sources.yaml",
+    "sha256": "566d9661f08074bcd81978830098c4b3a16b7cfd2bc89a0e04cb4fe4d4c8db26",
+    "bytes": 29
+  },
+  {
+    "path": "batch3/x06_compound_duration/choir.md",
+    "source": "第三批种子/seeds/x06_compound_duration/choir.md",
+    "sha256": "27568fc1e4f39061a8688ec034f4cf63ba1f6315265cfb1792dc27315fc08604",
+    "bytes": 179
+  },
+  {
+    "path": "batch3/x06_compound_duration/choir.yaml",
+    "source": "第三批种子/seeds/x06_compound_duration/choir.yaml",
+    "sha256": "ecf03c9f9a3c4f9f1920b09121fbc13848331640d1ccc6e6d35eac94936ebd17",
+    "bytes": 932
+  },
+  {
+    "path": "batch3/x06_compound_duration/seed.yaml",
+    "source": "第三批种子/seeds/x06_compound_duration/seed.yaml",
+    "sha256": "12501c88e8baf7b9f15e9a7224b0338d8ecec3bd1e6cec71f00602e26937c97d",
+    "bytes": 540
+  },
+  {
+    "path": "batch3/x06_compound_duration/sources.yaml",
+    "source": "第三批种子/seeds/x06_compound_duration/sources.yaml",
+    "sha256": "9b2523c940269c5c37f8a5e79b0d19e258e5c9f5c5fa68a49fec28be63dae1ca",
+    "bytes": 127
+  },
+  {
+    "path": "batch3/x07_range_between_minutes/courier.md",
+    "source": "第三批种子/seeds/x07_range_between_minutes/courier.md",
+    "sha256": "5a7eae9c384cf86d59b695df9b414f53d4b06e247f2bc4afa65bbc2312de8952",
+    "bytes": 273
+  },
+  {
+    "path": "batch3/x07_range_between_minutes/courier.yaml",
+    "source": "第三批种子/seeds/x07_range_between_minutes/courier.yaml",
+    "sha256": "a520fd9da5c9f71c2888cdc24583ac5413cef5f5cb10304e2fbd3b5916954357",
+    "bytes": 849
+  },
+  {
+    "path": "batch3/x07_range_between_minutes/seed.yaml",
+    "source": "第三批种子/seeds/x07_range_between_minutes/seed.yaml",
+    "sha256": "590e359a8491ad411d1ffc8a0a50daedb5e67c29c92ea512677743e93d279121",
+    "bytes": 592
+  },
+  {
+    "path": "batch3/x07_range_between_minutes/sources.yaml",
+    "source": "第三批种子/seeds/x07_range_between_minutes/sources.yaml",
+    "sha256": "23f597d6eff9d03b9425eab57149e547af7e998a70353762f4cfff1aa95d85d9",
+    "bytes": 160
+  },
+  {
+    "path": "batch3/x08_hanna_not_anna/seed.yaml",
+    "source": "第三批种子/seeds/x08_hanna_not_anna/seed.yaml",
+    "sha256": "44750dfa40f96b1b317cd2dc7eca61ee8014a9bf3b6ddcb43d023617664d492e",
+    "bytes": 630
+  },
+  {
+    "path": "batch3/x08_hanna_not_anna/sources.yaml",
+    "source": "第三批种子/seeds/x08_hanna_not_anna/sources.yaml",
+    "sha256": "ff440c2962b4318c1880daa73f2279896b53a4e6895b8a3b7ebb54e3137e5519",
+    "bytes": 27
+  },
+  {
+    "path": "batch3/x08_hanna_not_anna/stable.md",
+    "source": "第三批种子/seeds/x08_hanna_not_anna/stable.md",
+    "sha256": "2be72f66cc6f705fe7b1149d8fdc5e1080346bc7f32f5b642752e6be00bb3ad9",
+    "bytes": 234
+  },
+  {
+    "path": "batch3/x08_hanna_not_anna/stable.yaml",
+    "source": "第三批种子/seeds/x08_hanna_not_anna/stable.yaml",
+    "sha256": "45c852bcc1485a9ef734516789fb739114f135bedccc18c52aadd471c4230f6a",
+    "bytes": 1001
+  },
+  {
+    "path": "batch3/x09_lowercase_room_code/samples.md",
+    "source": "第三批种子/seeds/x09_lowercase_room_code/samples.md",
+    "sha256": "3b516fa142157359b923ed75cfc2d1ed0b8cdda817244e24a746e16c73c01fbf",
+    "bytes": 226
+  },
+  {
+    "path": "batch3/x09_lowercase_room_code/samples.yaml",
+    "source": "第三批种子/seeds/x09_lowercase_room_code/samples.yaml",
+    "sha256": "a463416b93037d1c1c2ff3a5a5775d427806ceef51dd9423cc4802eed7c8496a",
+    "bytes": 919
+  },
+  {
+    "path": "batch3/x09_lowercase_room_code/seed.yaml",
+    "source": "第三批种子/seeds/x09_lowercase_room_code/seed.yaml",
+    "sha256": "44751b75fc07f9b9ac7fb466e2592027bc0d99fda46de259ae791e48001b262e",
+    "bytes": 578
+  },
+  {
+    "path": "batch3/x09_lowercase_room_code/sources.yaml",
+    "source": "第三批种子/seeds/x09_lowercase_room_code/sources.yaml",
+    "sha256": "1858776e87be35f91ccd16e53f1b14cc072270a40ed6af268302b734c623df44",
+    "bytes": 29
+  },
+  {
+    "path": "batch3/x10_comma_thousands_evident/seed.yaml",
+    "source": "第三批种子/seeds/x10_comma_thousands_evident/seed.yaml",
+    "sha256": "01809b00136e8a994edb7c8ac1a206e5dbc73d99becb9f66d18f2ee5b45deda6",
+    "bytes": 1038
+  },
+  {
+    "path": "batch3/x10_comma_thousands_evident/sources.yaml",
+    "source": "第三批种子/seeds/x10_comma_thousands_evident/sources.yaml",
+    "sha256": "5af51dbcf4c01ee4c9b99415783adfa4e3798ea1c55074907ed8d9080ce32b31",
+    "bytes": 552
+  },
+  {
+    "path": "batch3/x10_comma_thousands_evident/stage.md",
+    "source": "第三批种子/seeds/x10_comma_thousands_evident/stage.md",
+    "sha256": "9caa48c64a5af20c6bf7a839ec4531d252709df361a81d5a4a1ea6334d103378",
+    "bytes": 237
+  },
+  {
+    "path": "batch3/x10_comma_thousands_evident/stage.yaml",
+    "source": "第三批种子/seeds/x10_comma_thousands_evident/stage.yaml",
+    "sha256": "4881490b1abb029d410b275d99b187e46b8a83481636fcd89114de665e72ad4c",
+    "bytes": 1044
+  },
+  {
+    "path": "batch3/x11_unknown_toplevel_field/loan.md",
+    "source": "第三批种子/seeds/x11_unknown_toplevel_field/loan.md",
+    "sha256": "e006d8cb3969e7342970920c36b72e75b524acae4a572a6675461dd63804f9bb",
+    "bytes": 236
+  },
+  {
+    "path": "batch3/x11_unknown_toplevel_field/loan.yaml",
+    "source": "第三批种子/seeds/x11_unknown_toplevel_field/loan.yaml",
+    "sha256": "f4a0e4f2814e0735001f704fa07c210f5f03071ac942fac7740353b26bbe0e54",
+    "bytes": 1266
+  },
+  {
+    "path": "batch3/x11_unknown_toplevel_field/seed.yaml",
+    "source": "第三批种子/seeds/x11_unknown_toplevel_field/seed.yaml",
+    "sha256": "269407befe95e7cd6f06ad1de960675e007e2b2f37079a9511552da54834e0d3",
+    "bytes": 512
+  },
+  {
+    "path": "batch3/x11_unknown_toplevel_field/sources.yaml",
+    "source": "第三批种子/seeds/x11_unknown_toplevel_field/sources.yaml",
+    "sha256": "1bacfb137108853c85d106aef395a8c5236be2f7aed94c33d01b89ccb6b6c056",
+    "bytes": 23
+  },
+  {
+    "path": "batch3/x12_value_without_pointer/kiln.md",
+    "source": "第三批种子/seeds/x12_value_without_pointer/kiln.md",
+    "sha256": "1e69b1468022cd528580e8764a8375fb52ace469617abc1bc96dc6c670468495",
+    "bytes": 183
+  },
+  {
+    "path": "batch3/x12_value_without_pointer/kiln.yaml",
+    "source": "第三批种子/seeds/x12_value_without_pointer/kiln.yaml",
+    "sha256": "f476cdf97649281b9961daff3ec2fc709f24a10b3d1be5a95217db835f643ec7",
+    "bytes": 862
+  },
+  {
+    "path": "batch3/x12_value_without_pointer/seed.yaml",
+    "source": "第三批种子/seeds/x12_value_without_pointer/seed.yaml",
+    "sha256": "b7005559df7975a3f6142ce43722cd77c12b9d697a057bb87c5137b0ae5a67f4",
+    "bytes": 665
+  },
+  {
+    "path": "batch3/x12_value_without_pointer/sources.yaml",
+    "source": "第三批种子/seeds/x12_value_without_pointer/sources.yaml",
+    "sha256": "81acbe9883e4d5da6333108965afd9f1d74018572203ba7870d9fdbfe08d643e",
+    "bytes": 23
+  },
+  {
+    "path": "batch3/x13_date_from_paragraph/market.md",
+    "source": "第三批种子/seeds/x13_date_from_paragraph/market.md",
+    "sha256": "3da64b4e434c92721e9e7bfa0101397068d7c3ae2f1e68a85b3fb7ab5d42d4f5",
+    "bytes": 326
+  },
+  {
+    "path": "batch3/x13_date_from_paragraph/market.yaml",
+    "source": "第三批种子/seeds/x13_date_from_paragraph/market.yaml",
+    "sha256": "ac6af5d7a4eb3d2c9f74a2b2a272d3b68b6d8edf51efb51c693824f482e86865",
+    "bytes": 1243
+  },
+  {
+    "path": "batch3/x13_date_from_paragraph/seed.yaml",
+    "source": "第三批种子/seeds/x13_date_from_paragraph/seed.yaml",
+    "sha256": "c3e2c94ca0b57442998512d7e90b989506b2fa3a64ee684b2eb69e5df1315ed6",
+    "bytes": 734
+  },
+  {
+    "path": "batch3/x13_date_from_paragraph/sources.yaml",
+    "source": "第三批种子/seeds/x13_date_from_paragraph/sources.yaml",
+    "sha256": "29afdb46b5de32b44239f5e60743b16bcf18843ec20fba3f0d7561a700e2a8b7",
+    "bytes": 27
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column/notes.md",
+    "source": "第三批种子/seeds/x14_tide_wrong_column/notes.md",
+    "sha256": "5e91458a3c9471d610d26917bb985f2ebd0dd3164cbd62b0f82ff5817bf5667e",
+    "bytes": 183
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column/seed.yaml",
+    "source": "第三批种子/seeds/x14_tide_wrong_column/seed.yaml",
+    "sha256": "7a3ee7cf91252dcc65f1b8079adfb23e45c4e81d4655d1206a7d780389352d92",
+    "bytes": 690
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column/sources.yaml",
+    "source": "第三批种子/seeds/x14_tide_wrong_column/sources.yaml",
+    "sha256": "6e6299a7e8db9eb1b7bf90c938028d3af55e5c2ef187b0887f9825730af98cc5",
+    "bytes": 299
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column/tide.csv",
+    "source": "第三批种子/seeds/x14_tide_wrong_column/tide.csv",
+    "sha256": "9f1c031a39b7cfb0c392e3f670db1bea621b1f680684aa2b5ad55ff1658def34",
+    "bytes": 90
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column/tide.yaml",
+    "source": "第三批种子/seeds/x14_tide_wrong_column/tide.yaml",
+    "sha256": "b940faae5c53271ee2765c7eca8aff617b2b642136d2113b236c1dd57569b527",
+    "bytes": 1058
+  }
+]

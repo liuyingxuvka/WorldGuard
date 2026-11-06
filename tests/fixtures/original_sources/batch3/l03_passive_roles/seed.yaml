@@ -1,0 +1,16 @@
+id: l03_passive_roles
+kind: limit
+limit: L1
+world: boathouse.yaml
+mode: contract
+mistake: 'text (passive voice): ''the keys are handed to Rosa by Viktor'', so Viktor gives them away and cannot unlock at 18:45 (the text contradicts itself); the AI read Rosa as the giver and Viktor as the receiver, so its world passes'
+expect: 'known not caught (L1 roles inside one sentence): both participants are named and the AI''s actor Rosa comes first, so the actor reads green (D11 greys only when another participant is named before the actor); exit 0; no red is required. Proposed rule in L1: an event whose span names more than one participant carries a quote that names the actor'
+layout: 'passive voice ''handed to A by B'''
+truth:
+  set:
+    inputs.event_model.initial_states: [viktor_has_keys, rosa_at_jetty, viktor_at_jetty]
+    inputs.events[e_keys].actor: Viktor
+    inputs.events[e_keys].with: [Rosa]
+    inputs.events[e_keys].initiates: [rosa_has_keys]
+    inputs.events[e_keys].terminates: [viktor_has_keys]
+  status: FAIL

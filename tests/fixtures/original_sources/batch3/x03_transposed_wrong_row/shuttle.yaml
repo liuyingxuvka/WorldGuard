@@ -1,0 +1,23 @@
+contract_id: shuttle
+claim:
+  claim_id: catch_the_train
+  text: The late shuttle gets me to the station in time for the 07:52 train.
+  requested_semantics: [event, causal]
+  asserts:
+    - {event: e_arrive, before: e_train}
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: shuttle
+  scope_limits: [published shuttle times, no delays]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_board, at: "07:33", source: tt r2 late, actor_state_free: timetable, initiates: [on_shuttle]}
+    - {event_id: e_arrive, at: "07:41", source: tt r4 late, actor_state_free: timetable, requires: [on_shuttle], initiates: [at_station], terminates: [on_shuttle]}
+    - {event_id: e_train, at: "07:52", source: plan p1, actor_state_free: timetable, requires: [at_station], initiates: [on_train]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [walk_h]
+    equations: {margin_h: "t_e_train - t_e_arrive - walk_h"}
+    scenarios: {weekday: {walk_h: 0.0833333}}
+    constraints: ["margin_h >= 0"]

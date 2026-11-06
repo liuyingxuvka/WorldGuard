@@ -1,0 +1,24 @@
+contract_id: walk
+claim:
+  claim_id: in_time_for_dinner
+  text: We reach the hut before dinner is served.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: walk
+  scope_limits: [walking time as stated]
+  relations:
+    at_station: {at: [we, station]}
+    on_path: {at: [we, path]}
+inputs:
+  event_model: {initial_states: [at_station]}
+  events:
+    - {event_id: e_leave, at: "18:20", source: walk p1, actor: we, place: station, uses: [], requires: [at_station], initiates: [on_path], terminates: [at_station]}
+    - {event_id: e_dinner, at: "19:00", source: walk p3, actor_state_free: the hut serves dinner, initiates: [dinner_served]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [walk_h]
+    equations: {margin_h: "t_e_dinner - t_e_leave - walk_h"}
+    scenarios: {plan: {walk_h: 0.45}}
+    constraints: ["margin_h >= 0"]

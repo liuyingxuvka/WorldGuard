@@ -1,0 +1,21 @@
+contract_id: choir
+claim:
+  claim_id: on_time_for_sound_check
+  text: The coach reaches the festival hall before the sound check.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: choir
+  scope_limits: [drive time as stated, no traffic]
+inputs:
+  event_model: {initial_states: [choir_at_school]}
+  events:
+    - {event_id: e_coach_leaves, at: "13:10", source: choir p1, actor_state_free: the coach is not modelled, requires: [choir_at_school], initiates: [choir_on_coach], terminates: [choir_at_school]}
+    - {event_id: e_sound_check, at: "14:25", source: choir p3, actor_state_free: the festival schedule, initiates: [sound_check_running]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [drive_h]
+    equations: {margin_h: "t_e_sound_check - t_e_coach_leaves - drive_h"}
+    scenarios: {festival: {drive_h: 1.2}}
+    constraints: ["margin_h >= 0"]

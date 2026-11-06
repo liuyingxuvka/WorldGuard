@@ -1,0 +1,16 @@
+contract_id: bus
+claim:
+  claim_id: harbour_by_half_past
+  text: The bus reaches the harbour before the 07:30 ferry.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_harbour, before: e_ferry}
+world_model:
+  model_id: bus
+  scope_limits: [timetable as published]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_station, at: "07:05", source: bus r1 dep, actor_state_free: timetable, initiates: [left_station]}
+    - {event_id: e_harbour, at: "07:20", source: bus r2 dep, actor_state_free: timetable, requires: [left_station], initiates: [at_harbour]}
+    - {event_id: e_ferry, at: "07:30", source: plan p1, actor_state_free: timetable, requires: [at_harbour], initiates: [on_ferry]}

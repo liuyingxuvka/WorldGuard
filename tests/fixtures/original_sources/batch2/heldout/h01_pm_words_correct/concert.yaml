@@ -1,0 +1,22 @@
+contract_id: concert
+claim:
+  claim_id: concert_night
+  text: Lea meets Jonas, gets in with both tickets, and the show is over by ten.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_meet, before: e_doors}
+    - {holds: show_over, at: "22:00"}
+world_model:
+  model_id: concert
+  scope_limits: [one evening]
+  relations:
+    lea_at_station: {at: [Lea, station]}
+    jonas_at_station: {at: [Jonas, station]}
+    lea_at_hall: {at: [Lea, hall]}
+    lea_has_tickets: {holds: [Lea, tickets]}
+inputs:
+  event_model: {initial_states: [lea_at_station, jonas_at_station, lea_has_tickets]}
+  events:
+    - {event_id: e_meet, at: "18:30", source: concert p1, actor: Lea, with: [Jonas], place: station, uses: [], initiates: [met, lea_at_hall], terminates: [lea_at_station]}
+    - {event_id: e_doors, at: "19:15", source: concert p2, actor: Lea, place: hall, uses: [tickets], requires: [met], initiates: [inside]}
+    - {event_id: e_last_song, at: "21:00", source: concert p3, actor_state_free: the band is not modelled, requires: [inside], initiates: [show_over]}

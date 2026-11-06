@@ -1,0 +1,21 @@
+contract_id: release
+claim:
+  claim_id: fix_live
+  text: The payment fix is live before the 02:00 check.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_deploy, before: e_check}
+    - {holds: prod_has_fix, at: "02:00"}
+world_model:
+  model_id: release
+  scope_limits: [one release]
+  relations:
+    priya_has_421: {holds: [Priya, "4.2.1"]}
+    priya_at_office: {at: [Priya, office]}
+    omar_at_office: {at: [Omar, office]}
+inputs:
+  event_model: {initial_states: [priya_at_office, omar_at_office]}
+  events:
+    - {event_id: e_build, at: "01:00", source: release p1, actor: Priya, place: office, uses: [], requires: [priya_at_office], initiates: [priya_has_421]}
+    - {event_id: e_deploy, at: "01:40", source: release p2, actor: Priya, place: office, uses: ["4.2.1"], initiates: [prod_has_fix]}
+    - {event_id: e_check, at: "02:00", source: release p3, actor_state_free: an automatic check, requires: [prod_has_fix], initiates: [check_done]}

@@ -1,0 +1,11 @@
+id: m01_quarter_to
+kind: mistake
+world: archive.yaml
+mistake: 'text says ''At a quarter to seven Ivo unlocks'' (18:45, before the guard''s 19:00 round finds the door locked: the story contradicts itself); the AI read it as 19:15 (to/past swapped), so its
+  world passes'
+expect: red time on e_unlock (text 18:45); text world FAIL (guard finds the door open)
+layout: time in words
+truth:
+  set:
+    inputs.events[e_unlock].at: '18:45'
+  status: FAIL

@@ -1,0 +1,22 @@
+contract_id: ebike
+claim:
+  claim_id: battery_lasts
+  text: The battery lasts the three climbs.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: used, color: charge, qty: 75}
+world_model:
+  model_id: ebike
+  scope_limits: [battery use as stated, no charging]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_climb1, at: "09:00", source: ebike p3, actor_state_free: the bike, initiates: [climbed1]}
+    - {event_id: e_climb2, at: "11:00", source: ebike p3, actor_state_free: the bike, initiates: [climbed2]}
+    - {event_id: e_climb3, at: "14:00", source: ebike p3, actor_state_free: the bike, initiates: [climbed3]}
+  resources:
+    places: {battery: [{color: charge, qty: 90}], used: []}
+    transitions:
+      - {id: climb1, event: e_climb1, consumes: [{place: battery, color: charge, qty: 25}], produces: [{place: used, color: charge, qty: 25}]}
+      - {id: climb2, event: e_climb2, consumes: [{place: battery, color: charge, qty: 25}], produces: [{place: used, color: charge, qty: 25}]}
+      - {id: climb3, event: e_climb3, consumes: [{place: battery, color: charge, qty: 25}], produces: [{place: used, color: charge, qty: 25}]}

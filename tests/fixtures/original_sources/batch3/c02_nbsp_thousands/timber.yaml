@@ -1,0 +1,20 @@
+contract_id: timber
+claim:
+  claim_id: truck_over_the_bridge
+  text: The loaded truck crosses the bridge within its limit.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: bridge, color: truck_kg, qty: 6800}
+world_model:
+  model_id: timber
+  scope_limits: [one crossing]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_weigh, at: "05:50", source: timber p2, actor_state_free: the scale, initiates: [truck_weighed]}
+    - {event_id: e_cross, at: "06:15", source: timber p3, actor_state_free: the driver is not modelled, requires: [truck_weighed], initiates: [truck_across]}
+  resources:
+    places: {forest_road: [{color: truck_kg, qty: 6800}], bridge: []}
+    capacities: {bridge: 7500}
+    transitions:
+      - {id: cross, event: e_cross, consumes: [{place: forest_road, color: truck_kg, qty: 6800}], produces: [{place: bridge, color: truck_kg, qty: 6800}]}

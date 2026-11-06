@@ -5,7 +5,7 @@
 ## Unit input
 
 A contract contains `contract_id`, `claim`, `world_model`, `inputs` and optional
-`variants`. The claim has `claim_id`, descriptive `text` (never parsed),
+`variants`, `texts`, `aliases`, `tables`, `decimal` and `values`. Unknown top-level fields are input errors. The claim has `claim_id`, descriptive `text` (never parsed),
 `requested_semantics` and `asserts`. The world has `model_id`, `model_version`,
 `entities`, `relations`, `assumptions` and `scope_limits`. Contract id defaults to
 claim id; model version defaults to `unversioned`. Retired keys are input errors:
@@ -26,7 +26,14 @@ An actor event without `place` and `uses` is `GAP` `EVENT_ACTOR_STATE_UNCHECKED`
 Each derived Guard runs once, returning `guard`, `status`, `errors`, `counterexamples`,
 `missing_slots`. Boundaries skip no checks. Priority: FAIL > GAP > BOUNDARY_EXCEEDED > PASS.
 
-A unit summary contains `contract_id`, `status`, `checked`, `gaps` (one row per problem), `scope_limits` and CLI `input_digests`. A mesh summary is identified by `mesh_id`; its `input_digests` cover the raw mesh file and every file-backed node contract. Digests use relative paths and sha256 of raw bytes. `checked` names the Guards and counts claim rows. Add `--json` for `guard_results`, `claim_binding`, `derived_guards` and `unmapped_semantics`. A missing assertion is `GAP` `CLAIM_NOT_BOUND`; a false assertion is `FAIL` `CLAIM_ASSERTION_FALSE`; an unresolved assertion is `GAP` `CLAIM_ASSERTION_UNRESOLVED`. `check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input. Invalid input includes a file that cannot be read; an error inside WorldGuard after the files are read is raised with its traceback. A reader that closes the output early (for example `| head`) ends any command with exit 141 and one line on stderr saying the output is incomplete; it is neither an input error nor a result.
+Summaries contain `contract_id` (unit) or `mesh_id` (tree), `status`, `checked`, `gaps`, `scope_limits`
+and CLI `input_digests` (raw contract, node and source files; relative paths, sha256). `checked` names
+Guards and claim counts. `--json` adds `guard_results`, `claim_binding`, `derived_guards` and
+`unmapped_semantics`. Missing/false/unresolved assertions give `CLAIM_NOT_BOUND` GAP,
+`CLAIM_ASSERTION_FALSE` FAIL, or `CLAIM_ASSERTION_UNRESOLVED` GAP.
+`check` and `mesh-check` exit 0 on PASS, 1 on any other status and 2 on invalid input.
+Invalid input includes unreadable files; internal errors raise their traceback.
+A reader that closes the output early (for example `| head`) ends any command with exit 141 and one line on stderr saying the output is incomplete; it is neither an input error nor a result.
 
 ## Runnable world
 
@@ -60,11 +67,20 @@ variants:
 
 ## Known-bad variants and the timeline
 
-Each variant id must be unique; `expect` is `FAIL` (default), `GAP` or `BOUNDARY_EXCEEDED`. `code` is optional. `set` replaces existing values, `remove` lists existing fields/items, and `add` maps list paths to lists of appended items. Dot-separated keys, numeric list indices (`[0]`) and exact list ids (`[e_give_key]`, matching `id` or any `_id` field) are supported. Invalid or ambiguous paths are input errors naming the variant. Edits affect an independent in-memory copy with its variants removed. Each result must match status and optional code; otherwise `VARIANT_NOT_CAUGHT` blocks PASS. `checked.variants` counts a contract's own variants; a tree's summary counts the tree's variants in `checked.variants` and its node contracts' variants in `checked.node_variants`.
+Variant ids are unique. `expect` defaults to `FAIL`, or use `GAP` / `BOUNDARY_EXCEEDED`; `code` is optional.
+`set` replaces existing values, `remove` lists existing paths, `add` maps list paths to appended items.
+Paths use dotted keys, numeric indices (`[0]`) or exact `id` / `*_id` values (`[e_give_key]`); invalid or
+ambiguous paths are input errors. Each edit runs on an independent copy without its variants. A result
+missing its declared status or code gives `VARIANT_NOT_CAUGHT` GAP. `checked.variants` counts local
+variants; a mesh separately counts its own variants and `checked.node_variants`.
 
 `timeline --contract <file> [--scenario <id>]` shows claims, sub-models and all codes. Start has all fluents/tokens; later steps show `fluents: +a -b` or `=` and changed token places. `--full` repeats full states; `--json` keeps the whole view. Sources, `!!` codes, variables and other problems remain. `--mesh <file>` labels worlds by node; `--example scene|trip|story` uses skill assets. All applicable events need times.
 
-Optional string `source` fields on events, transitions, assertion rows and mesh nodes survive on their problem rows. They point to original text; no content or age is checked. Event counterexamples include `trace` (time and event id through the failed event); summaries omit the prefix.
+With `texts: {ch: chapter.md}`, event `source: ch p3 "quoted words"` reads the third non-heading paragraph; `tt r3 arr` reads a CSV data row and column (`tables: {tt: {header_rows: 2}}` for merged headers). `aliases: {Anna: [Dr. Anna]}` supplies names; `decimal: {ch: ','}` resolves numeric convention. Source files enter the input digests. A definite mismatch is red; pronouns and unreadable language are grey. Uncited paragraphs appear in `scope_limits`.
+
+Other numeric inputs use `values: {distance: {paths: [inputs.causal_model.scenarios.base.distance], source: ch p2, unit: km}}`. Quantity conversion uses PhysicsGuard's unit table (`units` extra); without it, grey. `unit: '1'` checks only dimensionless/count values, without understanding noun meanings. Unknown physical units and offset temperature conversions stay grey. Source ranges produce text worlds at both endpoints; explicit text time or actor edits use the existing variant evaluator. Claim rows expose `source_statuses`: id, colour, reason, original `sources` and their `source_digest`. Source paths are relative to the contract/mesh manifest, never the saved report; parent rows bind the target's originals.
+
+`timeline` and tree lines mark claims that pass on AI transcription only. The default summary keeps decisions and counterexamples; `--json` includes the original readings and edits. Optional `source` strings remain labels. Event counterexamples include a timeline `trace`; summaries omit it.
 
 ## Compare the world with observations
 
@@ -81,22 +97,16 @@ events: {e_unlock: t2.5}
 variables: {entry_gap: 0.5}
 ```
 
-Expected values come from the contract's event times and native causal scenario.
-A sole causal scenario can be selected implicitly; otherwise name it. Only supplied
-observations are compared. ISO/clock differences and time_tolerance use minutes;
-numeric/label clocks use their own scale. Variable tolerance uses that variable's unit.
-Differences are signed actual minus expected; absolute differences control tolerance.
-Output has matches and mismatches with ids, values, differences and tolerances, and
-copies optional source unchanged. Exit 0 means all comparisons match, 1 means at
-least one mismatch, 2 means an invalid input, unknown id/scenario or mixed time kinds.
-Add `--write-observed OUT` to write a new independent contract with only the
-selected observed event occurrences' `at` fields replaced. Variables and other
-events stay unchanged; the original file is untouched and an existing OUT is an
-input error. Run `check --contract OUT` to see whether actual times break the plan.
+Expected values come from the native event times and causal scenario. Name `scenario` unless only one exists;
+only supplied observations are compared. ISO/clock differences and `time_tolerance` use minutes;
+other clocks and variable tolerances use their own scale. Differences are actual minus expected;
+absolute differences control tolerance. `source` is copied unchanged. Exit 0 means all supplied readings
+match, 1 means a mismatch, 2 means invalid input, unknown id/scenario or mixed time kinds.
+`--write-observed OUT` makes a new copy changing only selected event `at` values; other events and variables
+stay unchanged. An existing OUT is an input error. Run `check --contract OUT` to check the resulting world.
 
-For a tree, use `compare --mesh mesh.yaml --observed log.yaml`. Observations have
+For `compare --mesh mesh.yaml --observed log.yaml`, observations use
 `nodes: {model_id: {scenario: base, events: {event_id: time}, variables: {name: value}}}`;
-shared `time_tolerance`, `tolerance` and `source` may appear outside `nodes`. Every
-comparison row names its `node`. A written tree embeds its resolved contracts and
-changes only selected observed event times; `mesh-check --mesh OUT` reveals
-continuation or later-node failures.
+shared `time_tolerance`, `tolerance` and `source` may sit outside `nodes`. Rows name their node.
+A written tree embeds its resolved contracts and changes only selected event times;
+`mesh-check --mesh OUT` checks handoffs and later nodes.

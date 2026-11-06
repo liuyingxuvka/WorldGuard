@@ -1,0 +1,12 @@
+id: m02_role_swap
+kind: mistake
+world: archive.yaml
+mistake: 'text says ''Ivo hands the key to Mara'' (the writer swapped the two names: Ivo never had the key); the AI typed actor Mara, with Ivo, as it expected; both names are in the paragraph'
+expect: not green on e_handover (roles swapped); ideally red
+layout: two people named in one sentence
+truth:
+  set:
+    inputs.events[e_handover].actor: Ivo
+    inputs.events[e_handover].with:
+    - Mara
+  status: FAIL

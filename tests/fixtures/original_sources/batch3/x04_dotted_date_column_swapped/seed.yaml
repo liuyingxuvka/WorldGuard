@@ -1,0 +1,12 @@
+id: x04_dotted_date_column_swapped
+kind: mistake
+world: exams.yaml
+mode: contract
+mistake: 'the timetable''s date column is day.month.year (07.06.2027 = 7 June); the AI read it month first and typed 2027-07-06 for both Chemistry events, so its world puts the exam a month after the practical and FAILS, while the text is consistent'
+expect: 'red date on e_exam_start and e_exam_end (span 07.06.2027 = 7 June, world 2027-07-06); text world PASS, so the world is wrong, not the plan'
+layout: 'CSV date column written DD.MM.YYYY, dotted time cells, ISO world'
+truth:
+  set:
+    inputs.events[e_exam_start].at: '2027-06-07T09:00'
+    inputs.events[e_exam_end].at: '2027-06-07T11:30'
+  status: PASS

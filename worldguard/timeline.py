@@ -95,7 +95,8 @@ def _claims(contract, report, rows):
         if status != "PASS" and code is None:
             code = "CLAIM_ASSERTION_FALSE" if status == "FAIL" else "CLAIM_ASSERTION_UNRESOLVED"
         claims.append({"claim_id": claim_id, "row": row.get("index"), "assertion": _short(row.get("assertion", {})),
-                       "status": status, **({"code": code} if status != "PASS" else {})})
+                       "status": status, **({"code": code} if status != "PASS" else {}),
+                       **({"source_status": row["source_status"]} if "source_status" in row else {})})
     if report is not None and not assertions:
         claims.append({"claim_id": claim_id, "row": None, "status": "GAP", "code": "CLAIM_NOT_BOUND"})
     return claims
@@ -181,6 +182,8 @@ def render_timeline_text(view, *, label=None, full=False):
     lines = [f"{label}: {head}" if label else head]
     for claim in view.get("claims", []):
         result = claim["status"] + (f" {claim['code']}" if claim.get("code") else "")
+        if claim.get('source_status', {}).get('colour') == 'grey':
+            result += ' [passes on AI transcription only]'
         if claim.get("row") is None:
             lines.append(f"claim {claim['claim_id']}: {result}")
         else:

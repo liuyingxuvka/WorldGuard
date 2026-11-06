@@ -1,0 +1,834 @@
+[
+  {
+    "path": "batch1/s1_faithful",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 4,
+      "red": 5,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s1_faithful.v1.txt"
+  },
+  {
+    "path": "batch1/s2_silent_repair",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s2_silent_repair.v1.txt"
+  },
+  {
+    "path": "batch1/s3_prose_revised",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 7,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s3_prose_revised.v1.txt"
+  },
+  {
+    "path": "batch1/s4_unencoded",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 8
+    },
+    "oracle_source": "新种子/out/s4_unencoded.v1.txt"
+  },
+  {
+    "path": "batch1/s4b_encoded",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 5,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s4b_encoded.v1.txt"
+  },
+  {
+    "path": "batch1/s5_wished_quote",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s5_wished_quote.v1.txt"
+  },
+  {
+    "path": "batch1/s6_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 7,
+      "red": 0,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s6_correct.v1.txt"
+  },
+  {
+    "path": "batch1/s7_trip_timetable",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 6,
+      "red": 11,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/s7_trip_timetable.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h01_pm_words_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/h01_pm_words_correct.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h02_pm_dropped",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 1,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/h02_pm_dropped.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h03_us_date",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 1,
+      "red": 3,
+      "grey": 1
+    },
+    "oracle_source": "新种子/out/h03_us_date.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h04_three_quarters_hour",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 2,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/h04_three_quarters_hour.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h05_percent_range_shifted",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 4,
+      "red": 5,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/h05_percent_range_shifted.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h06_row_counted_with_header",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 2,
+      "red": 2,
+      "grey": 1
+    },
+    "oracle_source": "新种子/out/h06_row_counted_with_header.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h07_typography_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/h07_typography_correct.v1.txt"
+  },
+  {
+    "path": "batch2/heldout/h08_dot_thousands_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 2,
+      "red": 0,
+      "grey": 3
+    },
+    "oracle_source": "新种子/out/h08_dot_thousands_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/m01_quarter_to",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 4,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m01_quarter_to.v1.txt"
+  },
+  {
+    "path": "batch2/new/m02_role_swap",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 3
+    },
+    "oracle_source": "新种子/out/m02_role_swap.v1.txt"
+  },
+  {
+    "path": "batch2/new/m02b_role_swap_quoted",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m02b_role_swap_quoted.v1.txt"
+  },
+  {
+    "path": "batch2/new/m03_quote_altered",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 2,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m03_quote_altered.v1.txt"
+  },
+  {
+    "path": "batch2/new/m04_digits_swapped",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 6,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m04_digits_swapped.v1.txt"
+  },
+  {
+    "path": "batch2/new/m05_date_from_heading",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 5,
+      "red": 5,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m05_date_from_heading.v1.txt"
+  },
+  {
+    "path": "batch2/new/m06_dropped_60",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 5,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m06_dropped_60.v1.txt"
+  },
+  {
+    "path": "batch2/new/m07_wrong_column",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 5,
+      "grey": 1
+    },
+    "oracle_source": "新种子/out/m07_wrong_column.v1.txt"
+  },
+  {
+    "path": "batch2/new/m08_rounded",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 5,
+      "grey": 1
+    },
+    "oracle_source": "新种子/out/m08_rounded.v1.txt"
+  },
+  {
+    "path": "batch2/new/m09_count_off_by_one",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m09_count_off_by_one.v1.txt"
+  },
+  {
+    "path": "batch2/new/m10_thin_space_digit_lost",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m10_thin_space_digit_lost.v1.txt"
+  },
+  {
+    "path": "batch2/new/m11_version_off_by_one",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "GAP",
+    "reference_counts": {
+      "green": 2,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m11_version_off_by_one.v1.txt"
+  },
+  {
+    "path": "batch2/new/m12_person_swapped",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "GAP",
+    "reference_counts": {
+      "green": 2,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/m12_person_swapped.v1.txt"
+  },
+  {
+    "path": "batch2/new/n00_archive_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 7,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/n00_archive_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/n01_hut_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 7,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/n01_hut_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/n02_ferry_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 3,
+      "red": 0,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/n02_ferry_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/n03_crane_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/n03_crane_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/n04_release_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/n04_release_correct.v1.txt"
+  },
+  {
+    "path": "batch2/new/n05_minibus_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/n05_minibus_correct.v1.txt"
+  },
+  {
+    "path": "batch2/public/s1_faithful",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 4,
+      "red": 5,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s1_faithful.v1.txt"
+  },
+  {
+    "path": "batch2/public/s2_silent_repair",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s2_silent_repair.v1.txt"
+  },
+  {
+    "path": "batch2/public/s3_prose_revised",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 7,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s3_prose_revised.v1.txt"
+  },
+  {
+    "path": "batch2/public/s4_unencoded",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 8
+    },
+    "oracle_source": "新种子/out/s4_unencoded.v1.txt"
+  },
+  {
+    "path": "batch2/public/s4b_encoded",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 5,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s4b_encoded.v1.txt"
+  },
+  {
+    "path": "batch2/public/s5_wished_quote",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 6,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s5_wished_quote.v1.txt"
+  },
+  {
+    "path": "batch2/public/s6_correct",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 7,
+      "red": 0,
+      "grey": 4
+    },
+    "oracle_source": "新种子/out/s6_correct.v1.txt"
+  },
+  {
+    "path": "batch2/public/s7_trip_timetable",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 6,
+      "red": 11,
+      "grey": 0
+    },
+    "oracle_source": "新种子/out/s7_trip_timetable.v1.txt"
+  },
+  {
+    "path": "batch3/c01_rounded_conversions",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c01_rounded_conversions.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/c02_nbsp_thousands",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c02_nbsp_thousands.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/c03_decimal_comma_evident",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 6,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c03_decimal_comma_evident.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/c04_v_prefixed_version",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 2,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c04_v_prefixed_version.v1.txt",
+    "kind": "control",
+    "oracle_override": "third-batch TRUTH.md: v-prefixed equal version is correct"
+  },
+  {
+    "path": "batch3/c05_soft_hyphen_quote",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 1,
+      "red": 0,
+      "grey": 3
+    },
+    "oracle_source": "第三批种子/v1_out/c05_soft_hyphen_quote.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/c06_abbrev_two_dates",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c06_abbrev_two_dates.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/c07_mesh_two_acts",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 8,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/c07_mesh_two_acts.v1.txt",
+    "kind": "control"
+  },
+  {
+    "path": "batch3/l01_any_match_second_departure",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/l01_any_match_second_departure.v1.txt",
+    "kind": "known_limit"
+  },
+  {
+    "path": "batch3/l02_a_dozen",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 2,
+      "red": 0,
+      "grey": 2
+    },
+    "oracle_source": "第三批种子/v1_out/l02_a_dozen.v1.txt",
+    "kind": "known_limit"
+  },
+  {
+    "path": "batch3/l03_passive_roles",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/l03_passive_roles.v1.txt",
+    "kind": "known_limit"
+  },
+  {
+    "path": "batch3/x01_twenty_to_morning",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 2,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x01_twenty_to_morning.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x02_kmh_typed_as_ms",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x02_kmh_typed_as_ms.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x03_transposed_wrong_row",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 5,
+      "grey": 2
+    },
+    "oracle_source": "第三批种子/v1_out/x03_transposed_wrong_row.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x04_dotted_date_column_swapped",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 1,
+      "red": 7,
+      "grey": 2
+    },
+    "oracle_source": "第三批种子/v1_out/x04_dotted_date_column_swapped.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x05_heading_counted_pointer",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "GAP",
+    "reference_counts": {
+      "green": 0,
+      "red": 5,
+      "grey": 1
+    },
+    "oracle_source": "第三批种子/v1_out/x05_heading_counted_pointer.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x06_compound_duration",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 2,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x06_compound_duration.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x07_range_between_minutes",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 2,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x07_range_between_minutes.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x08_hanna_not_anna",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 2,
+      "red": 4,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x08_hanna_not_anna.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x09_lowercase_room_code",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "GAP",
+    "reference_counts": {
+      "green": 4,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x09_lowercase_room_code.v1.txt",
+    "kind": "mistake",
+    "oracle_override": "third-batch TRUTH.md: lowercase lab code mismatch, text world GAP"
+  },
+  {
+    "path": "batch3/x10_comma_thousands_evident",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 3,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x10_comma_thousands_evident.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x11_unknown_toplevel_field",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 5,
+      "red": 0,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x11_unknown_toplevel_field.v1.txt",
+    "kind": "mistake",
+    "input_error": "variant",
+    "oracle_override": "third-batch TRUTH.md: unknown top-level variant is input error, not a pass"
+  },
+  {
+    "path": "batch3/x12_value_without_pointer",
+    "has_red": false,
+    "ai_status": "PASS",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 2,
+      "red": 0,
+      "grey": 2
+    },
+    "oracle_source": "第三批种子/v1_out/x12_value_without_pointer.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x13_date_from_paragraph",
+    "has_red": true,
+    "ai_status": "FAIL",
+    "text_status": "PASS",
+    "reference_counts": {
+      "green": 3,
+      "red": 8,
+      "grey": 0
+    },
+    "oracle_source": "第三批种子/v1_out/x13_date_from_paragraph.v1.txt",
+    "kind": "mistake"
+  },
+  {
+    "path": "batch3/x14_tide_wrong_column",
+    "has_red": true,
+    "ai_status": "PASS",
+    "text_status": "FAIL",
+    "reference_counts": {
+      "green": 3,
+      "red": 4,
+      "grey": 1
+    },
+    "oracle_source": "第三批种子/v1_out/x14_tide_wrong_column.v1.txt",
+    "kind": "mistake"
+  }
+]

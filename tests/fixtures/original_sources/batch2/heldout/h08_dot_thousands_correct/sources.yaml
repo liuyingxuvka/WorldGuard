@@ -1,0 +1,4 @@
+texts: {kran: kran.md}
+values:
+  tragkraft: {paths: [inputs.resources.capacities.am_haken], source: kran p1, unit: kg}
+  kiste: {paths: ["inputs.resources.places.am_kai[0].qty", "inputs.resources.transitions[hub].consumes[0].qty", "inputs.resources.transitions[hub].produces[0].qty", "claim.asserts[0].qty"], source: kran p2, unit: kg}

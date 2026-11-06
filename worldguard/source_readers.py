@@ -240,7 +240,7 @@ def unit_info(label: str, unit_reader=None) -> UnitInfo | None:
 
 
 THIN = "\u2009\u202f\u00a0'"
-NUMBER = re.compile(r"(?<![\w.,])\d+(?:[\u2009\u202f\u00a0'.,]\d+)*(?![\w])")
+NUMBER = re.compile(r"(?<![\w.,])[-+−]?\d+(?:[\u2009\u202f\u00a0'.,]\d+)*(?![\w])")
 WORDNUM = re.compile(rf"\b({_NUMWORD})\b", re.I)
 _N = rf"(?:a|an|one|{_NUMWORD}|\d+)"
 DURATIONS = (
@@ -261,18 +261,20 @@ def _count(word: str | None) -> float:
 
 def parse_number(token: str, mark: str | None) -> list[float]:
     """Read digit grouping, retaining both interpretations of an undeclared three-digit suffix."""
+    sign = -1 if token.startswith(("-", "−")) else 1
+    token = token.lstrip("+-−")
     groups = re.split(r"[^\d]", token)
     marks = [c for c in token if c in ".,"]
     if not marks:
-        return [float("".join(groups))]
+        return [sign * float("".join(groups))]
     last = marks[-1]
     if mark and last != mark or len(set(marks)) == 1 and len(marks) > 1:
-        return [float("".join(groups))]
+        return [sign * float("".join(groups))]
     head, frac = token.rsplit(last, 1)
     decimal = float(re.sub(r"[^\d]", "", head) + "." + frac)
     if mark or len(set(marks)) == 2 or len(frac) != 3:
-        return [decimal]
-    return [float(re.sub(r"[^\d]", "", head) + frac), decimal]
+        return [sign * decimal]
+    return [sign * float(re.sub(r"[^\d]", "", head) + frac), sign * decimal]
 
 
 def decimal_evidence(text: str) -> str | None:
@@ -364,7 +366,7 @@ def quantities(text: str, mark: str | None = None, *, unit_reader=None) -> list[
                 "dim": info.dim if info else None,
                 "factor": info.factor if info else 1.0,
                 "unit": suffix.strip(),
-                "readable": info is not None or not suffix,
+                "readable": (info is not None and info.offset == 0) or not suffix,
             }
         )
     tokens.sort(key=lambda t: t["start"])
@@ -381,6 +383,10 @@ def quantities(text: str, mark: str | None = None, *, unit_reader=None) -> list[
             and not tok["alts"]
             and prev["lo"] == prev["hi"]
             and range_gap
+            and prev["lo"] is not None
+            and tok["lo"] is not None
+            and prev["factor"] is not None
+            and tok["factor"] is not None
             and prev["dim"] in (None, tok["dim"])
         ):
             factor = prev["factor"] if prev["dim"] else tok["factor"]

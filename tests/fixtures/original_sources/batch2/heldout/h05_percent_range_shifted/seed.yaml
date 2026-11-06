@@ -1,0 +1,16 @@
+id: h05_percent_range_shifted
+kind: mistake
+world: ebike.yaml
+mistake: 'text: each climb uses 30–35 % (three climbs: 90..105 % of a 90 % battery); the AI typed 25 (the range shifted down)'
+expect: red value per_climb (outside 30..35 %); text world FAIL at the high end
+layout: a percentage range with an en dash
+truth:
+  set:
+    inputs.resources.transitions[climb1].consumes[0].qty: 35
+    inputs.resources.transitions[climb1].produces[0].qty: 35
+    inputs.resources.transitions[climb2].consumes[0].qty: 35
+    inputs.resources.transitions[climb2].produces[0].qty: 35
+    inputs.resources.transitions[climb3].consumes[0].qty: 35
+    inputs.resources.transitions[climb3].produces[0].qty: 35
+    claim.asserts[0].qty: 105
+  status: FAIL

@@ -16,6 +16,8 @@ def run_worldguard(
 ) -> GuardedReport:
     """Evaluate one contract through WorldGuard's sole qualification owner."""
 
+    if isinstance(context, Mapping):
+        context = QualificationContext.from_dict(context)
     if not isinstance(contract, GuardContract):
         contract = GuardContract.from_dict(contract)
     report = qualify_guard_contract(contract, context=context)

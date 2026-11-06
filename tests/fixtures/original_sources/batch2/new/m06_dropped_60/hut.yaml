@@ -1,0 +1,29 @@
+contract_id: hut
+claim:
+  claim_id: hut_weekend
+  text: Change at Brig in time and reach the hut while the room is booked.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: change_margin_h, op: ">=", value: 0}
+    - {holds: at_hut, at: "2026-03-03T18:00"}
+world_model:
+  model_id: hut
+  scope_limits: [published times, no delays]
+  relations:
+    on_train: {at: [walker, train]}
+    at_brig: {at: [walker, brig]}
+    on_bus: {at: [walker, bus]}
+    at_hut: {at: [walker, hut]}
+inputs:
+  event_model: {initial_states: [on_train, room_booked]}
+  events:
+    - {event_id: d1_train_arr, at: "2026-03-03T09:58", source: hut p1, actor: walker, place: train, uses: [], requires: [on_train], initiates: [at_brig], terminates: [on_train]}
+    - {event_id: d1_bus_dep, at: "2026-03-03T10:20", source: hut p2, actor: walker, place: brig, uses: [], requires: [at_brig], initiates: [on_bus], terminates: [at_brig]}
+    - {event_id: d1_reach_hut, at: "2026-03-03T15:30", source: hut p4, actor: walker, place: bus, uses: [], requires: [on_bus, room_booked], initiates: [at_hut], terminates: [on_bus]}
+    - {event_id: d2_check_out, at: "2026-03-04T10:00", source: hut p5, actor: walker, place: hut, uses: [], requires: [room_booked], terminates: [room_booked]}
+  causal_model:
+    variables: [change_margin_h]
+    exogenous: [min_change_h]
+    equations: {change_margin_h: "t_d1_bus_dep - t_d1_train_arr - min_change_h"}
+    scenarios: {plan: {min_change_h: 0.25}}
+    constraints: ["change_margin_h >= 0"]

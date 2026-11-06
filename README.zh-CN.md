@@ -15,8 +15,8 @@
 [English](./README.md)
 
 WorldGuard 是一个 Python 工具，也是一个 AI 技能（Claude Code、Codex 都能用）。AI 把故事、行程、计划或流程写成一个小小的
-“世界”：一开始什么为真，有哪些事件、各在什么时间，每件事需要什么前提、改变了什么，以及哪些说法必须成立。重放事件、
-检查每条说法的是工具，不是 AI。它从不读正文，只检查 AI 写下来的这个世界。
+“世界”：一开始什么为真，有哪些事件、各在什么时间，每件事需要什么前提、改变了什么，以及哪些说法必须成立。
+工具重放事件、检查说法。声明 `texts` 原件和事件 `source` 指针后，还会直接核对原文中的时间、人名、编号和数量。
 
 ## 30 秒看懂：灯塔的钥匙
 
@@ -109,6 +109,10 @@ python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0
 
 装好后有 `worldguard` 命令（五个子命令：`check`、`mesh-check`、`timeline`、`lifeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、
 `run_worldguard`、`run_model_mesh`）。
+
+需要原件数量换算时，可在源码目录中装 `units` 可选依赖：
+`python -m pip install ".[units]"`。
+时间、日期和模型检查不需要它；不能读出的物理单位为灰。
 
 **3. 先跑这三条**，在克隆下来的目录里：
 
@@ -229,17 +233,17 @@ WorldGuard 管故事、行程、计划和流程。软件代码和它的行为，
 | 技能 | 它弥补 AI 的哪个弱点 | 什么时候用 | 和其他技能怎么配合 |
 |---|---|---|---|
 | [FlowGuard](https://github.com/liuyingxuvka/FlowGuard) | 改了软件的一处，看不到别处因此坏了；把已经有的东西再写一遍，或者把新代码放错地方 | 修改、扩展、重构或审查软件代码，包括仿真程序本身的代码 | 计算结果交给 PhysicsGuard，因果结论交给 ResearchGuard，故事或计划的前后一致交给 WorldGuard，长文交给 LogicWriting。另外四个 Guard 自己也是用 FlowGuard 开发的 |
-| [PhysicsGuard](https://github.com/liuyingxuvka/PhysicsGuard) | 在脑子里算物理，单位、正负号、守恒算错了还说得很肯定 | 数字来自物理：仿真结果、试验数据，或者 AI 自己算的一道题 | 仿真程序的代码交给 FlowGuard。没有别的技能读它的报告 |
+| [PhysicsGuard](https://github.com/liuyingxuvka/PhysicsGuard) | 在脑子里算物理，单位、正负号、守恒算错了还说得很肯定 | 数字来自物理：仿真结果、试验数据，或者 AI 自己算的一道题 | 仿真代码交给 FlowGuard；LogicWriting 读取它存下的状态和来源摘要 |
 | [ResearchGuard](https://github.com/liuyingxuvka/ResearchGuard) | 讲出一个很有把握的因果故事，资料其实撑不住 | 说出一个因果或证据上的结论之前：论点、来源、时间线、几种互相竞争的解释 | LogicWriting 读取它存下的状态报告。把结论写成完整的报告，交给 LogicWriting |
-| [WorldGuard](https://github.com/liuyingxuvka/WorldGuard) | 跨章节、跨天、跨步骤时，忘了谁手里有什么、谁在哪里，写出不可能发生的事 | 一个故事、行程、计划或流程，要每一步都前后一致 | LogicWriting 读取它存下的检查报告。软件代码交给 FlowGuard |
+| [WorldGuard](https://github.com/liuyingxuvka/WorldGuard) | 跨章节、跨天、跨步骤时，忘了谁手里有什么、谁在哪里，写出不可能发生的事 | 一个故事、行程、计划或流程，要每一步都前后一致 | LogicWriting 读取检查报告；数量换算可选用 PhysicsGuard 的单位表，软件代码交给 FlowGuard |
 | [LogicWriting](https://github.com/liuyingxuvka/LogicWriting) | 长文写着写着，偏离了自己的提纲和证据 | 要一篇给真实读者看的成品：调查报告、论文、小说或故事提纲、旅行攻略 | 读取 ResearchGuard 和 WorldGuard 存下的报告。只检查论点、不写成文，交给 ResearchGuard |
 <!-- END GUARD FAMILY TABLE -->
 
 ## 实话实说：它的局限
 
 **它不做的事。**
-- 它从不读正文，只检查 AI 写下来的世界；这个世界和正文是否一致，是 AI 的责任。事件上的 `source:` 只是指向原文的位置，
-  不做检查。
+- 它只读指针指向的原文，不理解任意叙事语义。用 `texts: {ch: chapter.md}` 和事件 `source: ch p3 "原句"`（CSV 用 `tt r3 arr`）。
+  代词、未知单位和歧义读数为灰；没有原件时，模型通过只表示 AI 转写的世界通过。详见[来源输入](skills/worldguard/references/worldguard-contracts.md)。
 - `PASS` 只对声明的世界和它的范围成立，不代表现实如此。WorldGuard 不是物理求解器，不做法律判断，不是安全证书，也不预测市场。
 
 **它仍可能漏掉的。** 如果 AI 把故事里的错误原样写进了世界，世界本身是自洽的，什么也不会失败。第十一轮的试验里，开门事件

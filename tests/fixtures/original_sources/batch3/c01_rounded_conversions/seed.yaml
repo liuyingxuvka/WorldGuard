@@ -1,0 +1,10 @@
+id: c01_rounded_conversions
+kind: control
+world: ride.yaml
+mode: contract
+mistake: 'none: ''1 h 50 min'' typed as 1.83 h (1.8333, 0.2 % off) and ''40 minutes'' typed as 0.67 h (0.6667, 0.5 % off); both are rounded to two decimals'
+expect: 'exit 0, no red; both values green (within 1 %), the claim row green'
+layout: 'compound duration and minutes read into hour values rounded to two decimals'
+truth:
+  set: {}
+  status: PASS

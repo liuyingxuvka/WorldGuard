@@ -1,0 +1,12 @@
+id: m02b_role_swap_quoted
+kind: mistake
+world: archive.yaml
+mistake: 'same swapped text as m02; the AI cites the sentence as it believes it: ''archive p2 "Mara hands the key to Ivo"'''
+expect: red quote on e_handover
+layout: two people named in one sentence, quoted
+truth:
+  set:
+    inputs.events[e_handover].actor: Ivo
+    inputs.events[e_handover].with:
+    - Mara
+  status: FAIL

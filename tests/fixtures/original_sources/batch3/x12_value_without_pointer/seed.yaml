@@ -1,0 +1,11 @@
+id: x12_value_without_pointer
+kind: mistake
+world: kiln.yaml
+mode: contract
+mistake: 'text: the firing takes ''50 minutes'' (0.833 h; 40 minutes are available); the AI typed firing_h 0.5 with no value pointer at all, so nothing reads it and its world passes'
+expect: 'grey, not green, exit 0: claim row 0 rests on the scenario value firing_h, which has no pointer (D7: an unsourced value named by a variable row is grey); p2 is listed as uncited text (TEXT_UNCITED); no red can be expected without a pointer'
+layout: 'a scenario value typed by hand with no pointer'
+truth:
+  set:
+    inputs.causal_model.scenarios.studio.firing_h: 0.8333333333333334
+  status: FAIL

@@ -1,0 +1,4 @@
+texts: {clinic: clinic.md}
+values:
+  box: {paths: [inputs.resources.capacities.cool_box], source: clinic p1}
+  vials: {paths: ["inputs.resources.places.fridge[0].qty", "inputs.resources.transitions[pack].consumes[0].qty", "inputs.resources.transitions[pack].produces[0].qty", "claim.asserts[0].qty"], source: clinic p2}

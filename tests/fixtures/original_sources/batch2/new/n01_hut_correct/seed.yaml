@@ -1,0 +1,9 @@
+id: n01_hut_correct
+kind: control
+world: hut.yaml
+mistake: 'none: the itinerary as written; 25 minutes typed as 0.4167 h'
+expect: exit 0, no red
+layout: day headings carry the date; minutes in words read into an hour value
+truth:
+  set: {}
+  status: PASS

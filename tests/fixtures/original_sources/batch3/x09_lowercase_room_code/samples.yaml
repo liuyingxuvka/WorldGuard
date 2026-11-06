@@ -1,0 +1,20 @@
+contract_id: samples
+claim:
+  claim_id: samples_cold
+  text: The samples are in the freezer of lab 3 by 10:40.
+  requested_semantics: [event]
+  asserts:
+    - {holds: samples_in_freezer, at: "10:40"}
+world_model:
+  model_id: samples
+  scope_limits: [one transfer]
+  relations:
+    ilse_in_hall: {at: [Ilse, hall]}
+    ilse_in_lab_3: {at: [Ilse, lab_3]}
+    ilse_has_samples: {holds: [Ilse, samples]}
+inputs:
+  event_model: {initial_states: [ilse_in_hall]}
+  events:
+    - {event_id: e_unpack, at: "10:05", source: samples p1, actor: Ilse, place: hall, uses: [], initiates: [ilse_has_samples]}
+    - {event_id: e_climb, at: "10:11", source: samples p2, actor: Ilse, place: hall, uses: [samples], initiates: [ilse_in_lab_3], terminates: [ilse_in_hall]}
+    - {event_id: e_store, at: "10:24", source: samples p3, actor: Ilse, place: lab_3, uses: [samples], initiates: [samples_in_freezer], terminates: [ilse_has_samples]}

@@ -1,0 +1,22 @@
+contract_id: market
+claim:
+  claim_id: stall_open_with_permit
+  text: Odile loads the van and opens her stall while the permit is valid.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_load, before: e_open}
+    - {holds: stall_open, at: "2027-03-14T08:00"}
+world_model:
+  model_id: market
+  scope_limits: [one market day]
+  relations:
+    odile_at_farm: {at: [Odile, farm]}
+    odile_at_square: {at: [Odile, square]}
+inputs:
+  event_model: {initial_states: [odile_at_farm]}
+  events:
+    - {event_id: e_load, at: "2027-03-13T16:00", source: market p1, actor: Odile, place: farm, uses: [], initiates: [van_loaded]}
+    - {event_id: e_drive, at: "2027-03-13T06:45", source: market p2, actor: Odile, place: farm, uses: [], requires: [van_loaded], initiates: [odile_at_square], terminates: [odile_at_farm]}
+    - {event_id: e_open, at: "2027-03-13T07:35", source: market p2, actor: Odile, place: square, uses: [], requires: [permit_valid], initiates: [stall_open]}
+    - {event_id: e_permit_on, at: "2027-03-14T06:00", source: market p3, actor_state_free: the town permit, initiates: [permit_valid]}
+    - {event_id: e_permit_off, at: "2027-03-14T13:30", source: market p3, actor_state_free: the town permit, terminates: [permit_valid]}

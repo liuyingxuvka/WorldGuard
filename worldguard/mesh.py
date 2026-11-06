@@ -17,7 +17,7 @@ from .reports import GuardedReport
 from .status import GuardStatus, aggregate_statuses, coerce_status
 from .variants import validate_variants, apply_variant
 from .errors import WorldInputError
-from .source_readings import SOURCE_FIELDS, source_config
+from .source_readings import SOURCE_FIELDS, source_config, support
 
 EDGE_RELATIONS = {"parent_child", "continues"}
 CYCLE_RELATIONS = EDGE_RELATIONS
@@ -117,6 +117,7 @@ class ModelMeshContract:
     edges: list[ModelEdge] = field(default_factory=list)
     variants: list[dict[str, Any]] = field(default_factory=list)
     source_config: dict[str, Any] = field(default_factory=dict)
+    source_base_dir: str = field(default=".", repr=False, compare=False)
 
     @classmethod
     def from_dict(cls, data, *, base_dir=None):
@@ -150,6 +151,7 @@ class ModelMeshContract:
             [ModelEdge.from_dict(e) for e in data.get("edges", [])],
             variants,
             sources,
+            str(base_dir or "."),
         )
 
     def to_dict(self):
@@ -328,6 +330,9 @@ def _tree_structure(mesh, reports, findings):
             line += f" (tree {whole.value})"
         for edge in sorted(continuations.get(node, []), key=lambda e: (e.to_id, e.edge_id)):
             line += segment(edge)
+        source_rows = reports[node].checked.get('source_statuses', []) if node in reports else []
+        if any(row['colour'] == 'grey' for row in source_rows):
+            line += ' [passes on AI transcription only]'
         lines.append(line)
         for child in sorted(children.get(node, [])):
             visit(child, depth + 1, False)
@@ -348,13 +353,19 @@ def qualification_context_for_node(mesh, node):
 def run_model_mesh(mesh, *, base_dir=None):
     if not isinstance(mesh, ModelMeshContract):
         mesh = ModelMeshContract.from_dict(mesh, base_dir=base_dir)
-    if mesh.source_config:
+    if mesh.source_config or any(node.contract is not None and node.contract.source_config for node in mesh.nodes):
         nodes = []
+        source_base = Path(base_dir or mesh.source_base_dir).resolve()
         for node in mesh.nodes:
             if node.contract is not None:
-                config = {**mesh.source_config, **node.contract.source_config}
-                contract = replace(node.contract, source_config=config,
-                                   source_base_dir=str(Path(base_dir or node.contract.source_base_dir).resolve()))
+                config = {key: {**mesh.source_config.get(key, {}), **node.contract.source_config.get(key, {})}
+                          for key in set(mesh.source_config) | set(node.contract.source_config)}
+                shared_texts = {label: str(source_base / path)
+                                for label, path in mesh.source_config.get('texts', {}).items()}
+                local_texts = {label: str(Path(node.contract.source_base_dir).resolve() / path)
+                               for label, path in node.contract.source_config.get('texts', {}).items()}
+                config['texts'] = {**shared_texts, **local_texts}
+                contract = replace(node.contract, source_config=config, source_base_dir=str(source_base))
                 node = replace(node, contract=contract)
             nodes.append(node)
         mesh = replace(mesh, nodes=nodes)
@@ -430,7 +441,7 @@ def run_model_mesh(mesh, *, base_dir=None):
             )
     status = aggregate_statuses([*[r.status for r in reports.values()], *[f.status for f in findings]])
     lines = _tree_structure(mesh, reports, findings)
-    return MeshReport(
+    report = MeshReport(
         status,
         reports,
         findings,
@@ -442,6 +453,97 @@ def run_model_mesh(mesh, *, base_dir=None):
         variant_results,
         mesh_id=mesh.mesh_id,
     )
+    return _attach_mesh_text_worlds(mesh, report, base_dir=base_dir)
+
+
+def _attach_mesh_text_worlds(mesh, report, *, base_dir=None):
+    if not any('source_readings' in result.checked for result in report.node_reports.values()):
+        return report
+    worlds = []
+    native_status = aggregate_statuses([*[result.checked.get('ai_world_status', result.status.value)
+                                        for result in report.node_reports.values()],
+                                       *[finding.status for finding in report.findings]])
+    ends = ['lo', 'hi'] if any(len(result.checked.get('text_worlds', [])) > 1
+                              for result in report.node_reports.values()) else ['lo']
+    findings = list(report.findings)
+    text_statuses = []
+    text_reports = []
+    for end in ends:
+        edits = {}
+        changed = mesh.to_dict()
+        for key in SOURCE_FIELDS:
+            changed.pop(key, None)
+        for node in changed['nodes']:
+            contract = node.get('contract')
+            if contract is not None:
+                for key in SOURCE_FIELDS:
+                    contract.pop(key, None)
+            part = report.node_reports.get(node['model_id'])
+            if part is None:
+                continue
+            rows = part.checked.get('text_worlds', [])
+            world = next((row for row in rows if row['end'] == end), rows[0] if rows else {})
+            for edit in world.get('edits', []):
+                edits[f"nodes[{node['model_id']}].contract.{edit['path']}"] = edit['value']
+        if edits:
+            changed = apply_variant(changed, {'id': 'as_the_text_says', 'set': edits})
+            text_report = run_model_mesh(changed, base_dir=base_dir or mesh.source_base_dir)
+            text_reports.append(text_report)
+            status = text_report.status
+            gaps = text_report.to_dict()['gaps']
+            for gap in gaps:
+                if gap not in report.to_dict()['gaps']:
+                    findings.append(_finding(mesh, gap['status'], gap['code'], gap.get('message', ''),
+                                             node_id=gap.get('node_id'), edge_id=gap.get('edge_id'),
+                                             evidence={'world': 'text', 'gap': gap}))
+        else:
+            status, gaps = native_status, []
+            text_reports.append(report)
+        text_statuses.append(status)
+        worlds.append({'end': end, 'status': status.value,
+                       'edits': [{'path': path, 'value': value} for path, value in sorted(edits.items())],
+                       'gaps': gaps})
+    reports = _mesh_claim_source_statuses(mesh, report, text_reports)
+    checked = {**report.checked, 'ai_world_status': native_status.value, 'text_worlds': worlds}
+    return replace(report, checked=checked, findings=findings, node_reports=reports,
+                   tree=_tree_structure(mesh, reports, findings),
+                   status=aggregate_statuses([report.status, *text_statuses]))
+
+
+def _mesh_claim_source_statuses(mesh, report, text_reports):
+    """A parent claim reads the target's real supporting failures in every text world."""
+    contracts = {node.model_id: node.contract for node in mesh.nodes if node.contract is not None}
+    reports = dict(report.node_reports)
+    for node_id, part in report.node_reports.items():
+        binding = deepcopy(part.claim_binding)
+        statuses = deepcopy(part.checked.get('source_statuses', []))
+        by_id = {row['id']: row for row in statuses}
+        for row in binding.get('assertions', []):
+            assertion = row['assertion']
+            target = assertion.get('node')
+            if target not in contracts or target == node_id or 'source_status' not in row:
+                continue
+            rests, _ = support(contracts[target].to_dict(), [{k: v for k, v in assertion.items() if k != 'node'}])[0]
+            problems = set()
+            for world in (report, *text_reports):
+                target_part = world.node_reports.get(target)
+                if target_part is None:
+                    continue
+                for gap in target_part.gaps:
+                    event = gap.get('event_id') or (gap.get('counterexample') or {}).get('event_id')
+                    if gap.get('status') == 'FAIL' and event in rests:
+                        problems.add(f"supporting event cannot happen: {event} ({gap['code']})")
+                world_part = world.node_reports.get(node_id)
+                if world_part is not None and any(r['index'] == row['index'] and r['status'] != 'PASS'
+                                                  for r in world_part.claim_binding.get('assertions', [])):
+                    problems.add('AI world or text world does not pass this assertion')
+            if problems:
+                status = {**row['source_status'], 'colour': 'red', 'reason': '; '.join(sorted(problems))}
+                row['source_status'] = status
+                by_id[status['id']] = status
+        reports[node_id] = replace(part, claim_binding=binding,
+                                   checked={**part.checked, 'source_statuses': list(by_id.values())})
+    return reports
 
 
 def _named_fluents(contract):

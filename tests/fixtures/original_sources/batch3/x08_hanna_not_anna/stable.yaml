@@ -1,0 +1,22 @@
+contract_id: stable
+claim:
+  claim_id: horses_fed
+  text: The old horses are fed before the mare goes out to the paddock.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_feed, before: e_lead_out}
+    - {holds: old_horses_fed, at: "08:30"}
+world_model:
+  model_id: stable
+  scope_limits: [one morning]
+  relations:
+    hanna_in_barn: {at: [Hanna, barn]}
+    hanna_on_meadow: {at: [Hanna, meadow]}
+    anna_in_barn: {at: [Anna, barn]}
+    anna_at_paddock: {at: [Anna, paddock]}
+inputs:
+  event_model: {initial_states: [hanna_in_barn, anna_in_barn]}
+  events:
+    - {event_id: e_ride_out, at: "06:50", source: stable p1, actor: Hanna, place: barn, uses: [], initiates: [hanna_on_meadow], terminates: [hanna_in_barn]}
+    - {event_id: e_feed, at: "07:25", source: stable p2, actor: Anna, place: barn, uses: [], initiates: [old_horses_fed]}
+    - {event_id: e_lead_out, at: "08:05", source: stable p3, actor: Anna, place: barn, uses: [], initiates: [anna_at_paddock], terminates: [anna_in_barn]}

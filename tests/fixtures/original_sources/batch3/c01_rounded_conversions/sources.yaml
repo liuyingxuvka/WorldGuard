@@ -1,0 +1,4 @@
+texts: {ride: ride.md}
+values:
+  climb: {paths: [inputs.causal_model.scenarios.tour.climb_h], source: ride p2, unit: h}
+  descent: {paths: [inputs.causal_model.scenarios.tour.descent_h], source: ride p3, unit: h}

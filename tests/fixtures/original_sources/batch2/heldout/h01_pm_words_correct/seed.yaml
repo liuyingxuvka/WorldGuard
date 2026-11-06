@@ -1,0 +1,9 @@
+id: h01_pm_words_correct
+kind: control
+world: concert.yaml
+mistake: 'none: ''half past six in the evening'', ''7.15 pm'', ''nine o’clock that night'' typed 18:30, 19:15, 21:00'
+expect: exit 0, no red
+layout: times in words, a dotted time with pm, a 12-hour text
+truth:
+  set: {}
+  status: PASS

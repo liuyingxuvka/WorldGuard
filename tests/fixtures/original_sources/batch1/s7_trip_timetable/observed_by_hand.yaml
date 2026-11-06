@@ -1,0 +1,3 @@
+source: timetable.csv row 3 (F15 arr)
+time_tolerance: 0
+events: {d2_ferry_arr: "2026-11-03T16:40"}

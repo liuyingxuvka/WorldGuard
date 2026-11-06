@@ -1,0 +1,19 @@
+contract_id: cable
+claim:
+  claim_id: signed_before_switch_on
+  text: The handover form is signed before the cable goes live.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_sign, before: e_switch_on}
+    - {holds: cable_live, at: "10:30"}
+world_model:
+  model_id: cable
+  scope_limits: [one handover]
+  relations:
+    liesel_at_substation: {at: [Liesel, substation]}
+    wiebke_at_substation: {at: [Wiebke, substation]}
+inputs:
+  event_model: {initial_states: [liesel_at_substation, wiebke_at_substation]}
+  events:
+    - {event_id: e_sign, at: "09:40", source: 'cable p1 "signs the handover form for the ''north-south'' cable"', actor: Liesel, with: [Wiebke], place: substation, uses: [], initiates: [form_signed]}
+    - {event_id: e_switch_on, at: "10:15", source: cable p2, actor: Wiebke, place: substation, uses: [], requires: [form_signed], initiates: [cable_live]}

@@ -1,0 +1,5 @@
+texts: {tt: ferry.csv, notes: notes.md}
+tables: {tt: {header_rows: 2}}
+aliases: {traveller: [we]}
+values:
+  min_change: {paths: [inputs.causal_model.scenarios.saturday.min_change_h], source: notes p3, unit: h}

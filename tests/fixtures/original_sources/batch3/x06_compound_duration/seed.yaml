@@ -1,0 +1,11 @@
+id: x06_compound_duration
+kind: mistake
+world: choir.yaml
+mode: contract
+mistake: 'text: ''1 h 20 min'' (1.333 h; 1 h 15 min are available); the AI typed drive_h 1.2 (read ''1 h 20'' as a decimal), so its world passes with 3 minutes to spare'
+expect: 'red value drive (text 1 h 20 min = 1.3333 h, world 1.2); text world FAIL (CAUSAL_CONSTRAINT_VIOLATED, CLAIM_ASSERTION_FALSE)'
+layout: 'compound duration in digits with unit abbreviations'
+truth:
+  set:
+    inputs.causal_model.scenarios.festival.drive_h: 1.3333333333333333
+  status: FAIL

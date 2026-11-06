@@ -1,0 +1,10 @@
+id: c07_mesh_two_acts
+kind: control
+world: mesh.yaml
+mode: mesh
+mistake: 'none: two acts as a mesh; ''ten past nine that night'' typed 21:10; a quote with a typographic apostrophe; the giver named before the receiver'
+expect: 'exit 0, no red; every event green in both nodes, the mesh claim green'
+layout: 'mesh with two node contracts and two texts; worded time with ''that night''; curly apostrophe in a quoted span'
+truth:
+  set: {}
+  status: PASS

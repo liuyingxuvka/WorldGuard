@@ -1,0 +1,22 @@
+contract_id: shift
+claim:
+  claim_id: report_handed_over
+  text: Bell has the night report before the 23:15 round.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_handover, before: e_drip}
+    - {holds: bell_has_report, at: "23:30"}
+world_model:
+  model_id: shift
+  scope_limits: [one night]
+  relations:
+    okafor_has_report: {holds: [Okafor, report]}
+    bell_has_report: {holds: [Bell, report]}
+    okafor_on_ward: {at: [Okafor, ward]}
+    bell_on_ward: {at: [Bell, ward]}
+    bell_in_room_12: {at: [Bell, room_12]}
+inputs:
+  event_model: {initial_states: [okafor_has_report, okafor_on_ward, bell_on_ward]}
+  events:
+    - {event_id: e_handover, at: "22:40", source: 'shift p1 "Okafor''s night report - signed and complete - goes to Nurse Bell"', actor: Okafor, with: [Bell], place: ward, uses: [report], initiates: [bell_has_report, bell_in_room_12], terminates: [okafor_has_report, bell_on_ward]}
+    - {event_id: e_drip, at: "23:15", source: shift p2, actor: Bell, place: room_12, uses: [], initiates: [drip_checked]}

@@ -1,0 +1,9 @@
+id: n02_ferry_correct
+kind: control
+world: ferry.yaml
+mistake: 'none: Saturday column, 18.25'
+expect: exit 0, no red
+layout: CSV with a merged two-row header; times written 18.25
+truth:
+  set: {}
+  status: PASS

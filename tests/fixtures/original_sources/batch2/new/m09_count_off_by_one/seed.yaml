@@ -1,0 +1,10 @@
+id: m09_count_off_by_one
+kind: mistake
+world: minibus.yaml
+mistake: 'text: ''nine seats besides the driver''s'' for nine pupils and a teacher; the AI typed capacity 10 (counted the driver''s seat)'
+expect: red value seats (text 9); text world FAIL (capacity overflow)
+layout: counts written as words
+truth:
+  set:
+    inputs.resources.capacities.on_bus: 9
+  status: FAIL

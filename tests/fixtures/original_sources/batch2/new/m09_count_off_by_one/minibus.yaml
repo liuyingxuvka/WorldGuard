@@ -1,0 +1,23 @@
+contract_id: minibus
+claim:
+  claim_id: all_aboard
+  text: All nine pupils and Ms Ortiz ride in the minibus.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: on_bus, color: pupil, qty: 9}
+world_model:
+  model_id: minibus
+  scope_limits: [one trip]
+  relations:
+    ortiz_at_gate: {at: [Ortiz, gate]}
+    ortiz_on_bus: {at: [Ortiz, minibus]}
+inputs:
+  event_model: {initial_states: [ortiz_at_gate]}
+  events:
+    - {event_id: e_wait, at: "08:00", source: minibus p1, actor: Ortiz, place: gate, uses: [], requires: [ortiz_at_gate], initiates: [group_ready]}
+    - {event_id: e_board, at: "08:10", source: minibus p3, actor: Ortiz, place: gate, uses: [], requires: [ortiz_at_gate], initiates: [ortiz_on_bus], terminates: [ortiz_at_gate]}
+  resources:
+    places: {at_gate: [{color: pupil, qty: 9}, {color: teacher, qty: 1}], on_bus: []}
+    capacities: {on_bus: 10}
+    transitions:
+      - {id: board, event: e_board, consumes: [{place: at_gate, color: pupil, qty: 9}, {place: at_gate, color: teacher, qty: 1}], produces: [{place: on_bus, color: pupil, qty: 9}, {place: on_bus, color: teacher, qty: 1}]}

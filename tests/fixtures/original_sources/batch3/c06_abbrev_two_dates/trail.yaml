@@ -1,0 +1,17 @@
+contract_id: trail
+claim:
+  claim_id: tower_before_closing
+  text: The group signs the tower log before the trail closes for the season.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_tower, before: e_close}
+    - {holds: log_signed, at: "2027-11-09T12:00"}
+world_model:
+  model_id: trail
+  scope_limits: [one hike]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_start, at: "2027-11-09T07:05", source: trail p1, actor_state_free: the group is not modelled, initiates: [group_on_trail]}
+    - {event_id: e_tower, at: "2027-11-09T11:20", source: trail p2, actor_state_free: the group is not modelled, requires: [group_on_trail], initiates: [log_signed]}
+    - {event_id: e_close, at: "2027-11-15T17:00", source: trail p1, actor_state_free: the forest service, initiates: [trail_closed]}

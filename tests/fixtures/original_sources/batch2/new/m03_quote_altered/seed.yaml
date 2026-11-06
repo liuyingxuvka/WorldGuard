@@ -1,0 +1,9 @@
+id: m03_quote_altered
+kind: mistake
+world: archive.yaml
+mistake: the AI's quote for p5 says 'leaves by the back door'; the text says 'leaves by the\nside door' (one word changed, quote spans a line break)
+expect: red quote on e_lock_leave
+layout: quote across a line break
+truth:
+  set: {}
+  status: PASS

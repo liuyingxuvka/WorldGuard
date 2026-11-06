@@ -1,0 +1,14 @@
+mesh_id: lantern_play
+nodes:
+  - model_id: play
+    contract:
+      claim:
+        claim_id: lantern_lit_in_act_two
+        asserts:
+          - {node: act2, holds: lantern_lit, at: "21:30"}
+  - {model_id: act1, contract: act1.yaml, source: act one}
+  - {model_id: act2, contract: act2.yaml, source: act two}
+edges:
+  - {edge_id: play_1, from: play, to: act1, relation: parent_child}
+  - {edge_id: play_2, from: play, to: act2, relation: parent_child}
+  - {edge_id: act1_act2, from: act1, to: act2, relation: continues}

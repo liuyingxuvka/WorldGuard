@@ -1,0 +1,24 @@
+contract_id: tide
+claim:
+  claim_id: across_before_the_tide
+  text: We are across the causeway an hour before high water.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: tide
+  scope_limits: [tide table as published, walking time as stated]
+  relations:
+    walkers_on_shore: {at: [walkers, shore]}
+    walkers_on_causeway: {at: [walkers, causeway]}
+inputs:
+  event_model: {initial_states: [walkers_on_shore]}
+  events:
+    - {event_id: e_start, at: "2027-08-14T09:50", source: notes p1, actor: walkers, place: shore, uses: [], initiates: [walkers_on_causeway], terminates: [walkers_on_shore]}
+    - {event_id: e_high_water, at: "2027-08-14T17:48", source: tt r2 hw.time, actor_state_free: the tide, initiates: [high_water]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [crossing_h, safety_h]
+    equations: {margin_h: "t_e_high_water - safety_h - t_e_start - crossing_h"}
+    scenarios: {crossing: {crossing_h: 0.8333333, safety_h: 1}}
+    constraints: ["margin_h >= 0"]

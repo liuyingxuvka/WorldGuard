@@ -1,0 +1,12 @@
+id: x13_date_from_paragraph
+kind: mistake
+world: market.yaml
+mode: contract
+mistake: 'p2 sits under the heading ''Saturday 13 March 2027'' but its first sentence moves the market to Sunday 14 March; the AI dated both times of p2 from the heading (2027-03-13), so its world drives before loading and opens without a permit, and FAILS, while the text is consistent'
+expect: 'red date on e_drive and e_open (the paragraph states one date, 14 March, which beats the heading; world 2027-03-13); text world PASS'
+layout: 'the paragraph''s own date (in another sentence) against the date of the heading above it'
+truth:
+  set:
+    inputs.events[e_drive].at: '2027-03-14T06:45'
+    inputs.events[e_open].at: '2027-03-14T07:35'
+  status: PASS

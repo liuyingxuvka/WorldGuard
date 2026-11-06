@@ -1,0 +1,4 @@
+texts: {hut: hut.md}
+aliases: {walker: [we, our]}
+values:
+  min_change: {paths: [inputs.causal_model.scenarios.plan.min_change_h], source: 'hut p3 "at least 25 minutes"', unit: h}

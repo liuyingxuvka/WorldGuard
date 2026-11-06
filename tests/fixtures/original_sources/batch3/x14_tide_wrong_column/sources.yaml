@@ -1,0 +1,6 @@
+texts: {tt: tide.csv, notes: notes.md}
+tables: {tt: {header_rows: 2}}
+aliases: {walkers: [we]}
+values:
+  crossing: {paths: [inputs.causal_model.scenarios.crossing.crossing_h], source: notes p2, unit: h}
+  safety: {paths: [inputs.causal_model.scenarios.crossing.safety_h], source: notes p3, unit: h}

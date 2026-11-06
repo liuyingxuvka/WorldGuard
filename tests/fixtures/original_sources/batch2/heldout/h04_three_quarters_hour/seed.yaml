@@ -1,0 +1,10 @@
+id: h04_three_quarters_hour
+kind: mistake
+world: walk.yaml
+mistake: 'text: ''three quarters of an hour'' (0.75 h; 40 minutes are available); the AI typed walk_h 0.45 (45 minutes as 0.45 h)'
+expect: red value walk_time (text 0.75 h); text world FAIL
+layout: duration as a fraction in words
+truth:
+  set:
+    inputs.causal_model.scenarios.plan.walk_h: 0.75
+  status: FAIL

@@ -1,0 +1,11 @@
+id: x14_tide_wrong_column
+kind: mistake
+world: tide.yaml
+mode: contract
+mistake: 'the tide table has a merged header (HW and LW over time and height); the AI cites ''tt r2 hw.time'' but typed 17:48, the low-water time of the same row; high water is 11:31, so the causeway must be clear by 10:31 and the walk ends at 10:40'
+expect: 'red time on e_high_water (text 11:31, world 17:48) with a hint that 17:48 is in lw.time of this row; text world FAIL (CAUSAL_CONSTRAINT_VIOLATED, CLAIM_ASSERTION_FALSE)'
+layout: 'two-row merged header with repeated sub-columns (time, m), ISO date column, dotted time cells'
+truth:
+  set:
+    inputs.events[e_high_water].at: '2027-08-14T11:31'
+  status: FAIL

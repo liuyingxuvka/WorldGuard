@@ -1,0 +1,10 @@
+id: h03_us_date
+kind: mistake
+world: lake.yaml
+mistake: 'text: ''the 6 p.m. boat back on Oct. 6'' (a day after the booking ends); the AI typed 2026-10-05'
+expect: red date on e_back (text 6 October); text world FAIL
+layout: US-style dates, abbreviated month with a full stop
+truth:
+  set:
+    inputs.events[e_back].at: 2026-10-06T18:00
+  status: FAIL

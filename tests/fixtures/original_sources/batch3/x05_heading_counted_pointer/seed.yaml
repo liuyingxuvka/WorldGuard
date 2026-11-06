@@ -1,0 +1,10 @@
+id: x05_heading_counted_pointer
+kind: mistake
+world: orchard.yaml
+mode: contract
+mistake: 'the AI counted the two headings as paragraphs, so every pointer is off: ''orchard p2 "switches on the frost fans"'' (the quote is in p1), ''orchard p3'' (p3 is the burners paragraph), ''orchard p5'' (the file has 3 paragraphs); the times it typed are right'
+expect: 'red quote on e_fans (quote not in p2), red time on e_reading (p3 says 21:30), red missing span on e_burners (orchard has 3 paragraphs); the AI''s values are right, so no text world is to be trusted'
+layout: 'Markdown headings between paragraphs; headings are not paragraphs'
+truth:
+  set: {}
+  status: PASS

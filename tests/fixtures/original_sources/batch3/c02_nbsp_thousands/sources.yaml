@@ -1,0 +1,4 @@
+texts: {timber: timber.md}
+values:
+  limit: {paths: [inputs.resources.capacities.bridge], source: timber p1, unit: kg}
+  truck: {paths: ["inputs.resources.places.forest_road[0].qty", "inputs.resources.transitions[cross].consumes[0].qty", "inputs.resources.transitions[cross].produces[0].qty", "claim.asserts[0].qty"], source: timber p2, unit: kg}

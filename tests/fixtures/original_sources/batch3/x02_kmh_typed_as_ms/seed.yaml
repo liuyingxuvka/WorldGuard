@@ -1,0 +1,11 @@
+id: x02_kmh_typed_as_ms
+kind: mistake
+world: weir.yaml
+mode: contract
+mistake: 'text: ''27 km/h''; the AI declared the speed in m/s and typed 27 without converting (7.5 m/s), so the 10 km take 6 minutes in its world instead of 22; the gates open 20 minutes after departure'
+expect: 'red value speed (text 27 km/h = 7.5 m/s, world 27, a factor 3.6); text world FAIL (CAUSAL_CONSTRAINT_VIOLATED, CLAIM_ASSERTION_FALSE)'
+layout: 'speed in km/h read into a value declared in m/s; distance in km read into metres'
+truth:
+  set:
+    inputs.causal_model.scenarios.patrol.speed_ms: 7.5
+  status: FAIL

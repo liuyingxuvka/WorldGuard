@@ -1,0 +1,7 @@
+texts: {stage: stage.md}
+values:
+  rating: {paths: [inputs.resources.capacities.platform], source: stage p1, unit: kg}
+  stack: {paths: ["inputs.resources.places.wings[0].qty", "inputs.resources.places.wings[1].qty",
+                  "inputs.resources.transitions[roll_on].consumes[0].qty", "inputs.resources.transitions[roll_on].consumes[1].qty",
+                  "inputs.resources.transitions[roll_on].produces[0].qty", "inputs.resources.transitions[roll_on].produces[1].qty",
+                  "claim.asserts[0].qty"], source: stage p2, unit: kg}

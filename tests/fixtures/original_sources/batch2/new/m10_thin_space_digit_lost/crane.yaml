@@ -1,0 +1,20 @@
+contract_id: crane
+claim:
+  claim_id: crate_lifted
+  text: The quay crane lifts the crate of pumps.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: on_hook, color: crate_kg, qty: 350}
+world_model:
+  model_id: crane
+  scope_limits: [one lift]
+inputs:
+  event_model: {initial_states: [crate_on_quay]}
+  events:
+    - {event_id: e_crate_ready, at: "06:30", source: crane p2, actor_state_free: nobody acts, initiates: [crate_on_quay]}
+    - {event_id: e_lift, at: "06:45", source: crane p3, actor_state_free: the crane is not an agent here, requires: [crate_on_quay], terminates: [crate_on_quay]}
+  resources:
+    places: {on_quay: [{color: crate_kg, qty: 350}], on_hook: []}
+    capacities: {on_hook: 1200}
+    transitions:
+      - {id: lift, event: e_lift, consumes: [{place: on_quay, color: crate_kg, qty: 350}], produces: [{place: on_hook, color: crate_kg, qty: 350}]}

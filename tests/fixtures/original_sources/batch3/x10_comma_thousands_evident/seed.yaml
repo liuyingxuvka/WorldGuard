@@ -1,0 +1,17 @@
+id: x10_comma_thousands_evident
+kind: mistake
+world: stage.yaml
+mode: contract
+mistake: 'text: each stack ''1,320 kg'' (2 640 kg on a 2.6 t platform); the AI took the comma for a decimal mark and typed 1.32 (kg), so its world passes. The same file writes ''2.6 t'', so its decimal mark is the point and ''1,320'' is unambiguous'
+expect: 'red value stack (span 1,320 kg = 1320 kg, the file''s decimal mark is ''.'' as in 2.6 t; world 1.32, a factor 1000); text world FAIL (RESOURCE_CAPACITY_OVERFLOW)'
+layout: 'English comma thousands separator, decimal mark evident from another number in the same file, no decimal declaration'
+truth:
+  set:
+    inputs.resources.places.wings[0].qty: 1320
+    inputs.resources.places.wings[1].qty: 1320
+    inputs.resources.transitions[roll_on].consumes[0].qty: 1320
+    inputs.resources.transitions[roll_on].consumes[1].qty: 1320
+    inputs.resources.transitions[roll_on].produces[0].qty: 1320
+    inputs.resources.transitions[roll_on].produces[1].qty: 1320
+    claim.asserts[0].qty: 1320
+  status: FAIL

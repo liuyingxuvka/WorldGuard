@@ -1,0 +1,19 @@
+contract_id: clinic
+claim:
+  claim_id: vials_packed
+  text: All vials for the afternoon session fit into the cool box.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: cool_box, color: vial, qty: 13}
+world_model:
+  model_id: clinic
+  scope_limits: [one session]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_pack, at: "13:30", source: clinic p2, actor_state_free: the practice team is not modelled, initiates: [vials_packed]}
+  resources:
+    places: {fridge: [{color: vial, qty: 13}], cool_box: []}
+    capacities: {cool_box: 14}
+    transitions:
+      - {id: pack, event: e_pack, consumes: [{place: fridge, color: vial, qty: 13}], produces: [{place: cool_box, color: vial, qty: 13}]}

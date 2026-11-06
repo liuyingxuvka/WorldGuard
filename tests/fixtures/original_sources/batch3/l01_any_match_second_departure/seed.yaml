@@ -1,0 +1,12 @@
+id: l01_any_match_second_departure
+kind: limit
+limit: L2
+world: depot.yaml
+mode: contract
+mistake: 'text: the shuttle leaves at 06:40 and at 07:10, and Noor takes the second one; the AI typed the first, 06:40, so its world passes (the text arrives at 07:30, five minutes after the shift starts)'
+expect: 'known not caught (L2 any-match): the span states two times and the world''s value is one of them, so e_board reads green and the screen exits 0; a red here would be a bonus, not required'
+layout: 'two departure times in one sentence, the second one meant'
+truth:
+  set:
+    inputs.events[e_board].at: '07:10'
+  status: FAIL

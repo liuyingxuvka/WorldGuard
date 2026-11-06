@@ -1,0 +1,10 @@
+id: c05_soft_hyphen_quote
+kind: control
+world: cable.yaml
+mode: contract
+mistake: 'none: the text has a soft hyphen in ''hand­over'', typographic single quotes and an en dash; the AI''s quote has none of them. Wiebke (a participant) is named before the actor Liesel'
+expect: 'exit 0, no red; the quote is found (D3 folds soft hyphens, typographic quotes and dashes); e_sign actor grey per D11 (''Wiebke named before Liesel: who acts is not read''), so e_sign and both claim rows are grey, not green and not red; e_switch_on green'
+layout: 'soft hyphen U+00AD, U+2018/U+2019 quotes and U+2013 inside a quoted span; another participant named before the actor'
+truth:
+  set: {}
+  status: PASS

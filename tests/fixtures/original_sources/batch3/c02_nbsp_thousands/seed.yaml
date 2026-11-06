@@ -1,0 +1,10 @@
+id: c02_nbsp_thousands
+kind: control
+world: timber.yaml
+mode: contract
+mistake: 'none: ''7 500 kg'' (narrow no-break space U+202F) and ''6 800 kg'' (no-break space U+00A0) typed as 7500 and 6800. NFKC turns both separators into a plain space, which must not split the numbers'
+expect: 'exit 0, no red; both values green; the claim row green'
+layout: 'thousands grouped with U+202F and U+00A0 (not the U+2009 thin space of the public seeds)'
+truth:
+  set: {}
+  status: PASS

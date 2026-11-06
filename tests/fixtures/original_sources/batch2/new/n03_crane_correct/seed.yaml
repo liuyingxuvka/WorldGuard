@@ -1,0 +1,9 @@
+id: n03_crane_correct
+kind: control
+world: crane.yaml
+mistake: 'none: 1.2 tonnes typed as 1200 kg, crate 1 150 kg typed as 1150'
+expect: exit 0, no red
+layout: a number with a thin space; unit written as a word (tonnes)
+truth:
+  set: {}
+  status: PASS

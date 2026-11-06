@@ -1,0 +1,18 @@
+contract_id: lake
+claim:
+  claim_id: back_in_time
+  text: We are back on the shore the evening the booking ends.
+  requested_semantics: [event]
+  asserts:
+    - {holds: on_shore, at: "2026-10-05T20:00"}
+world_model:
+  model_id: lake
+  scope_limits: [boat times as published]
+  relations:
+    on_shore: {at: [we, shore]}
+    on_isola: {at: [we, isola]}
+inputs:
+  event_model: {initial_states: [on_shore]}
+  events:
+    - {event_id: e_out, at: "2026-10-03T07:40", source: lake p1, actor: we, place: shore, uses: [], requires: [on_shore], initiates: [on_isola], terminates: [on_shore]}
+    - {event_id: e_back, at: "2026-10-05T18:00", source: lake p3, actor: we, place: isola, uses: [], requires: [on_isola], initiates: [on_shore], terminates: [on_isola]}

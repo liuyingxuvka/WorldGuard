@@ -1,0 +1,10 @@
+id: m06_dropped_60
+kind: mistake
+world: hut.yaml
+mistake: 'text: 22-minute change (09:58 -> 10:20) against ''at least 25 minutes''; the AI typed min_change_h 0.25 (25 minutes as 0.25 h, /60 dropped), so its world passes'
+expect: red value min_change_h (text 0.4167 h); text world FAIL (change_margin_h < 0)
+layout: minutes in words, world in hours
+truth:
+  set:
+    inputs.causal_model.scenarios.plan.min_change_h: 0.4166666666666667
+  status: FAIL

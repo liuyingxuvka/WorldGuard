@@ -1,0 +1,24 @@
+contract_id: depot
+claim:
+  claim_id: noor_on_time
+  text: Noor reaches the airport before her shift starts.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: depot
+  scope_limits: [shuttle times as published]
+  relations:
+    noor_at_depot: {at: [Noor, depot]}
+    noor_on_shuttle: {at: [Noor, shuttle]}
+inputs:
+  event_model: {initial_states: [noor_at_depot]}
+  events:
+    - {event_id: e_board, at: "06:40", source: depot p1, actor: Noor, place: depot, uses: [], initiates: [noor_on_shuttle], terminates: [noor_at_depot]}
+    - {event_id: e_shift, at: "07:25", source: depot p3, actor_state_free: the shift roster, initiates: [shift_running]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [ride_h]
+    equations: {margin_h: "t_e_shift - t_e_board - ride_h"}
+    scenarios: {early: {ride_h: 0.3333333}}
+    constraints: ["margin_h >= 0"]

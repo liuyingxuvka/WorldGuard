@@ -1,0 +1,21 @@
+contract_id: etappe
+claim:
+  claim_id: rechtzeitig_zum_essen
+  text: Wir erreichen die Hütte vor dem Abendessen, auch mit dem Umweg.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: etappe
+  scope_limits: [Gehzeit aus Strecke und Tempo]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_start, at: "08:15", source: etappe p1, actor_state_free: die Gruppe wird nicht modelliert, initiates: [unterwegs]}
+    - {event_id: e_essen, at: "18:00", source: etappe p5, actor_state_free: die Hütte, initiates: [essen_bereit]}
+  causal_model:
+    variables: [gehzeit_h, margin_h]
+    exogenous: [etappe_m, umweg_m, tempo_kmh]
+    equations: {gehzeit_h: "(etappe_m + umweg_m) / 1000 / tempo_kmh", margin_h: "t_e_essen - t_e_start - gehzeit_h"}
+    scenarios: {plan: {etappe_m: 14600, umweg_m: 2700, tempo_kmh: 4}}
+    constraints: ["margin_h >= 0"]

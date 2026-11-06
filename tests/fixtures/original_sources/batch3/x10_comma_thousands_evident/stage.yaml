@@ -1,0 +1,20 @@
+contract_id: stage
+claim:
+  claim_id: stacks_lifted
+  text: The platform lifts both speaker stacks to stage level.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: platform, color: stack_left, qty: 1.32}
+world_model:
+  model_id: stage
+  scope_limits: [one lift]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_roll_on, at: "16:00", source: stage p2, actor_state_free: the crew is not modelled, initiates: [stacks_on_platform]}
+    - {event_id: e_rise, at: "16:10", source: stage p3, actor_state_free: the platform motor, requires: [stacks_on_platform], initiates: [at_stage_level]}
+  resources:
+    places: {wings: [{color: stack_left, qty: 1.32}, {color: stack_right, qty: 1.32}], platform: []}
+    capacities: {platform: 2600}
+    transitions:
+      - {id: roll_on, event: e_roll_on, consumes: [{place: wings, color: stack_left, qty: 1.32}, {place: wings, color: stack_right, qty: 1.32}], produces: [{place: platform, color: stack_left, qty: 1.32}, {place: platform, color: stack_right, qty: 1.32}]}

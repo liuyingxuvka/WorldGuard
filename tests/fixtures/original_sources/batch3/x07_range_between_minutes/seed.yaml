@@ -1,0 +1,11 @@
+id: x07_range_between_minutes
+kind: mistake
+world: courier.yaml
+mode: contract
+mistake: 'text: the ride takes ''between 35 and 45 minutes'' (40 minutes are available); the AI typed ride_h 0.5 (30 minutes, below the range), so its world passes'
+expect: 'red value ride (world 0.5 h outside 35..45 min = 0.5833..0.75 h); text world PASS at the low end, FAIL at the high end (CAUSAL_CONSTRAINT_VIOLATED, CLAIM_ASSERTION_FALSE)'
+layout: 'a range written ''between A and B minutes'', quoted in the value pointer'
+truth:
+  set:
+    inputs.causal_model.scenarios.evening.ride_h: 0.75
+  status: FAIL

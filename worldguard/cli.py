@@ -21,11 +21,26 @@ def _without_traces(value):
 
 
 def _unit_summary(report):
-    return _without_traces({key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")})
+    return _source_summary(_without_traces({key: report[key] for key in ("contract_id", "status", "checked", "gaps", "scope_limits")}))
 
 
 def _mesh_summary(report):
-    return _without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits", "tree", "mesh_id", "input_digests")})
+    return _source_summary(_without_traces({key: report[key] for key in ("status", "checked", "gaps", "scope_limits", "tree", "mesh_id", "input_digests")}))
+
+
+def _source_summary(report):
+    """Keep decisions and real counterexamples; intermediate source data belongs in --json."""
+    checked = report['checked']
+    if 'source_readings' in checked:
+        readings = checked.pop('source_readings')
+        values = checked.pop('source_values', [])
+        checked['source_checks'] = {'events': len(readings), 'values': len(values),
+                                    'verified_readings': sum(row['sourced'] for row in [*readings, *values])}
+    if 'text_worlds' in checked:
+        # Every failure is already present with its actual message in report['gaps'].
+        checked['text_worlds'] = [{key: value for key, value in world.items() if key != 'gaps'}
+                                  for world in checked['text_worlds']]
+    return report
 
 
 def _emit(full, summarize, as_json):
@@ -183,7 +198,7 @@ def _run(argv):
                 view = lifeline(args.of, mesh=mesh, report=report, limit=None if args.all else DEFAULT_LIMIT)
                 units = mesh_units(args.mesh, data, mesh, report)
             else:
-                contract = GuardContract.from_dict(load_mapping(args.contract))
+                contract = GuardContract.from_dict(load_mapping(args.contract), base_dir=Path(args.contract).resolve().parent)
                 report = run_worldguard(contract)
                 view = lifeline(args.of, contract=contract, report=report, limit=None if args.all else DEFAULT_LIMIT)
                 units = contract_units(args.contract, contract, report)
@@ -237,7 +252,7 @@ def _run(argv):
                             lines.extend(padding + line for line in render_timeline_text(views[identity], label=identity, full=args.full).splitlines())
                     text = "\n".join(lines)
             else:
-                contract = GuardContract.from_dict(load_mapping(args.contract))
+                contract = GuardContract.from_dict(load_mapping(args.contract), base_dir=Path(args.contract).resolve().parent)
                 report = run_worldguard(contract)
                 view = timeline(contract, scenario=args.scenario, report=report)
                 text = dump_json(view) if args.json else render_timeline_text(view, full=args.full)

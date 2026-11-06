@@ -1,0 +1,10 @@
+id: h02_pm_dropped
+kind: mistake
+world: museum.yaml
+mistake: 'text: ''4:30 in the afternoon''; the AI typed 4:30 (forgot +12), so its world fails and blames the order of the counts'
+expect: red time on e_count_pm (text 16:30); text world PASS
+layout: 12-hour time with 'afternoon'
+truth:
+  set:
+    inputs.events[e_count_pm].at: '16:30'
+  status: PASS

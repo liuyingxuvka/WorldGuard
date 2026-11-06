@@ -1,0 +1,19 @@
+contract_id: act2
+claim:
+  claim_id: act2_lantern_lit
+  text: Paulo lowers the lantern and lights it for the night scene.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_lower, before: e_light}
+    - {holds: lantern_lit, at: "21:30"}
+world_model:
+  model_id: act2
+  scope_limits: [act two only]
+  relations:
+    paulo_has_cord: {holds: [Paulo, cord]}
+    paulo_in_wings: {at: [Paulo, wings]}
+inputs:
+  event_model: {initial_states: [paulo_has_cord, paulo_in_wings]}
+  events:
+    - {event_id: e_lower, at: "20:55", source: act2 p1, actor: Paulo, place: wings, uses: [cord], initiates: [lantern_low]}
+    - {event_id: e_light, at: "21:10", source: 'act2 p2 "as the stage manager''s cue sheet asks"', actor: Paulo, place: wings, uses: [], requires: [lantern_low], initiates: [lantern_lit]}

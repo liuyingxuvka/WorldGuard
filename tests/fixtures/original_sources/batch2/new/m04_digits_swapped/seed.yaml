@@ -1,0 +1,10 @@
+id: m04_digits_swapped
+kind: mistake
+world: archive.yaml
+mistake: text says '7:40 that evening'; the AI typed 19:04 (digits swapped); its world FAILS and blames the story (lock before unlock), while the text is consistent
+expect: red time on e_lock_leave (text 19:40); text world PASS, so the world is wrong, not the story
+layout: 12-hour time with 'evening'
+truth:
+  set:
+    inputs.events[e_lock_leave].at: '19:40'
+  status: PASS

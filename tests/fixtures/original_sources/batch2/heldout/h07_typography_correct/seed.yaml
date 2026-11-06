@@ -1,0 +1,9 @@
+id: h07_typography_correct
+kind: control
+world: shift.yaml
+mistake: 'none: curly apostrophe and em dashes in the text, straight ones in the AI''s quote; a title before the name'
+expect: exit 0, no red
+layout: typographic quote, possessive name, code-like place (room 12)
+truth:
+  set: {}
+  status: PASS

@@ -1,0 +1,11 @@
+id: x08_hanna_not_anna
+kind: mistake
+world: stable.yaml
+mode: contract
+mistake: 'text: ''At 07:25 Hanna feeds the old horses in the east barn'' (Hanna rode out to the meadow at 06:50: the text contradicts itself); the AI typed actor Anna, who is in the barn, so its world passes. ''Anna'' is a substring of ''Hanna'': a substring match finds the AI''s name in the span'
+expect: 'red actor on e_feed (span names Hanna, not Anna); text world FAIL (EVENT_RELATION_UNMET: Hanna is not at the barn at 07:25)'
+layout: 'two people whose names nest (Anna inside Hanna)'
+truth:
+  set:
+    inputs.events[e_feed].actor: Hanna
+  status: FAIL

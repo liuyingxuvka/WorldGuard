@@ -1,0 +1,11 @@
+id: x09_lowercase_room_code
+kind: mistake
+world: samples.yaml
+mode: contract
+mistake: 'text: ''puts the samples into the freezer in lab 5''; the AI typed place lab_3 (where it expected the freezer to be)'
+expect: 'red place on e_store (span names lab 5, not lab_3; D10 compares a name with digits such as room_12 with same-shaped tokens); text world not PASS (no relation places Ilse in lab_5)'
+layout: 'a lower-case word-plus-number code (lab 5 / lab_3), the same shape as the design''s room_12 example'
+truth:
+  set:
+    inputs.events[e_store].place: lab_5
+  status: not PASS

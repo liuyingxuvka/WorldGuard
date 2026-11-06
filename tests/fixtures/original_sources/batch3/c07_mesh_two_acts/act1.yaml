@@ -1,0 +1,21 @@
+contract_id: act1
+claim:
+  claim_id: act1_cord_handed_over
+  text: Greta hangs the lantern and hands its cord to Paulo.
+  requested_semantics: [event]
+  asserts:
+    - {holds: paulo_has_cord, at: "20:00"}
+world_model:
+  model_id: act1
+  scope_limits: [act one only]
+  relations:
+    greta_has_cord: {holds: [Greta, cord]}
+    paulo_has_cord: {holds: [Paulo, cord]}
+    greta_on_stage: {at: [Greta, stage]}
+    greta_in_wings: {at: [Greta, wings]}
+    paulo_in_wings: {at: [Paulo, wings]}
+inputs:
+  event_model: {initial_states: [greta_on_stage, greta_has_cord, paulo_in_wings]}
+  events:
+    - {event_id: e_hang, at: "19:10", source: act1 p1, actor: Greta, place: stage, uses: [], initiates: [lantern_hung, greta_in_wings], terminates: [greta_on_stage]}
+    - {event_id: e_hand_cord, at: "19:50", source: act1 p2, actor: Greta, with: [Paulo], place: wings, uses: [cord], initiates: [paulo_has_cord], terminates: [greta_has_cord]}

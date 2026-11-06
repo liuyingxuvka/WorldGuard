@@ -1,0 +1,5 @@
+service,from,to,date,dep,arr
+T08,city,port,2026-11-02,08:00,10:05
+F11,port,island,2026-11-02,11:00,11:45
+F15,island,port,2026-11-03,15:00,16:40
+L1630,port,city,2026-11-03,16:30,18:10

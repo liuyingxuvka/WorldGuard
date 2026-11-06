@@ -1,0 +1,9 @@
+id: n04_release_correct
+kind: control
+world: release.yaml
+mistake: none
+expect: exit 0, no red
+layout: version numbers
+truth:
+  set: {}
+  status: PASS

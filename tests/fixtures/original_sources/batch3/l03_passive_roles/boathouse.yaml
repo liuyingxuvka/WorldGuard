@@ -1,0 +1,21 @@
+contract_id: boathouse
+claim:
+  claim_id: boathouse_opened
+  text: The keys change hands at the jetty and the boathouse is opened.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_keys, before: e_unlock}
+    - {holds: boathouse_open, at: "19:00"}
+world_model:
+  model_id: boathouse
+  scope_limits: [one evening]
+  relations:
+    rosa_has_keys: {holds: [Rosa, keys]}
+    viktor_has_keys: {holds: [Viktor, keys]}
+    rosa_at_jetty: {at: [Rosa, jetty]}
+    viktor_at_jetty: {at: [Viktor, jetty]}
+inputs:
+  event_model: {initial_states: [rosa_has_keys, rosa_at_jetty, viktor_at_jetty]}
+  events:
+    - {event_id: e_keys, at: "18:20", source: boathouse p1, actor: Rosa, with: [Viktor], place: jetty, uses: [keys], initiates: [viktor_has_keys], terminates: [rosa_has_keys]}
+    - {event_id: e_unlock, at: "18:45", source: boathouse p2, actor: Viktor, place: jetty, uses: [keys], initiates: [boathouse_open]}

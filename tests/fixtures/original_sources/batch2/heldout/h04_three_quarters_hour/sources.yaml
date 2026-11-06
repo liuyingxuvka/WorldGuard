@@ -1,0 +1,3 @@
+texts: {walk: walk.md}
+values:
+  walk_time: {paths: [inputs.causal_model.scenarios.plan.walk_h], source: walk p2, unit: h}

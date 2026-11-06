@@ -1,0 +1,20 @@
+contract_id: kran
+claim:
+  claim_id: kiste_gehoben
+  text: Der Kran hebt die Kiste.
+  requested_semantics: [event, resource]
+  asserts:
+    - {place: am_haken, color: kiste_kg, qty: 1250}
+world_model:
+  model_id: kran
+  scope_limits: [ein Hub]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_bereit, at: "06:30", source: kran p2, actor_state_free: niemand handelt, initiates: [kiste_am_kai]}
+    - {event_id: e_hub, at: "06:45", source: kran p3, actor_state_free: der Kran, requires: [kiste_am_kai], terminates: [kiste_am_kai]}
+  resources:
+    places: {am_kai: [{color: kiste_kg, qty: 1250}], am_haken: []}
+    capacities: {am_haken: 1500}
+    transitions:
+      - {id: hub, event: e_hub, consumes: [{place: am_kai, color: kiste_kg, qty: 1250}], produces: [{place: am_haken, color: kiste_kg, qty: 1250}]}

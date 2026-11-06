@@ -1,0 +1,27 @@
+contract_id: archive
+claim:
+  claim_id: archive_evening
+  text: Mara passes the key to Ivo; the guard finds the door locked; Ivo opens the archive and locks it again.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_handover, before: e_unlock}
+    - {holds: archive_locked, at: "20:00"}
+world_model:
+  model_id: archive
+  scope_limits: [one evening]
+  relations:
+    mara_has_key: {holds: [Mara, key]}
+    ivo_has_key: {holds: [Ivo, key]}
+    mara_at_archive: {at: [Mara, archive]}
+    ivo_at_archive: {at: [Ivo, archive]}
+    ivo_in_street: {at: [Ivo, street]}
+inputs:
+  event_model: {initial_states: [key_in_lodge, archive_locked, mara_at_archive, ivo_at_archive]}
+  events:
+    - {event_id: e_take_key, at: "18:10", source: 'archive p1 "from the porter''s lodge"', actor: Mara, place: archive, uses: [], requires: [key_in_lodge], initiates: [mara_has_key], terminates: [key_in_lodge]}
+    - {event_id: e_handover, at: "18:25", source: archive p2, actor: Mara, with: [Ivo], place: archive, uses: [key], initiates: [ivo_has_key], terminates: [mara_has_key]}
+    - {event_id: e_guard_round, at: "19:00", source: archive p3, actor_state_free: the guard is not modelled, requires: [archive_locked], initiates: [guard_passed]}
+    - {event_id: e_unlock, at: "19:15", source: archive p4, actor: Ivo, place: archive, uses: [key], requires: [archive_locked], initiates: [archive_open], terminates: [archive_locked]}
+    - {event_id: e_lock_leave, at: "19:40", source: 'archive p5 "leaves by the side door"', actor: Ivo, place: archive, uses: [key], requires: [archive_open], initiates: [archive_locked, ivo_in_street], terminates: [archive_open, ivo_at_archive]}
+variants:
+  - {id: unlock_before_guard, code: EVENT_PRECONDITION_UNMET, set: {"inputs.events[e_unlock].at": "18:50"}}

@@ -1,0 +1,23 @@
+contract_id: kiln
+claim:
+  claim_id: firing_finished
+  text: The glaze firing finishes before the timer switches the kiln off.
+  requested_semantics: [event, causal]
+  asserts:
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: kiln
+  scope_limits: [one firing]
+  relations:
+    tomasz_at_kiln: {at: [Tomasz, kiln]}
+inputs:
+  event_model: {initial_states: [tomasz_at_kiln]}
+  events:
+    - {event_id: e_load_kiln, at: "14:05", source: kiln p1, actor: Tomasz, place: kiln, uses: [], initiates: [bowls_in_kiln]}
+    - {event_id: e_kiln_off, at: "14:45", source: kiln p3, actor_state_free: the studio timer, initiates: [kiln_off]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [firing_h]
+    equations: {margin_h: "t_e_kiln_off - t_e_load_kiln - firing_h"}
+    scenarios: {studio: {firing_h: 0.5}}
+    constraints: ["margin_h >= 0"]

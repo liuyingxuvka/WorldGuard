@@ -1,0 +1,28 @@
+contract_id: ferry-saturday
+claim:
+  claim_id: back_in_time
+  text: On Saturday the 17:30 ferry back reaches the port in time for the last train.
+  requested_semantics: [event, causal]
+  asserts:
+    - {event: e_ferry_arr, before: e_train_dep}
+    - {variable: margin_h, op: ">=", value: 0}
+world_model:
+  model_id: ferry-saturday
+  scope_limits: [Saturday timetable, no delays]
+  relations:
+    on_island: {at: [traveller, island]}
+    on_ferry: {at: [traveller, ferry]}
+    at_port: {at: [traveller, port]}
+    on_train: {at: [traveller, train]}
+inputs:
+  event_model: {initial_states: [on_island]}
+  events:
+    - {event_id: e_ferry_dep, at: "2026-11-07T17:30", source: notes p1, actor: traveller, place: island, uses: [], requires: [on_island], initiates: [on_ferry], terminates: [on_island]}
+    - {event_id: e_ferry_arr, at: "2026-11-07T18:25", source: tt r1 saturday.arr, actor: traveller, place: ferry, uses: [], requires: [on_ferry], initiates: [at_port], terminates: [on_ferry]}
+    - {event_id: e_train_dep, at: "2026-11-07T18:40", source: notes p2, actor: traveller, place: port, uses: [], requires: [at_port], initiates: [on_train], terminates: [at_port]}
+  causal_model:
+    variables: [margin_h]
+    exogenous: [min_change_h]
+    equations: {margin_h: "t_e_train_dep - t_e_ferry_arr - min_change_h"}
+    scenarios: {saturday: {min_change_h: 0.25}}
+    constraints: ["margin_h >= 0"]

@@ -1,0 +1,10 @@
+id: m07_wrong_column
+kind: mistake
+world: ferry.yaml
+mistake: the AI cites the Saturday arrival but typed 18:12 from the Mon-Fri column; with the 18:35 train the text leaves 10 minutes against the 15 needed, the AI's world 23
+expect: red time on e_ferry_arr (text 18:25); text world FAIL (margin_h < 0)
+layout: merged header; dotted times
+truth:
+  set:
+    inputs.events[e_ferry_arr].at: 2026-11-07T18:25
+  status: FAIL

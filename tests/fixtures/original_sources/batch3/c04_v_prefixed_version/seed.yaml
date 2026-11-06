@@ -1,0 +1,10 @@
+id: c04_v_prefixed_version
+kind: control
+world: window.yaml
+mode: contract
+mistake: 'none: the text writes the release as ''v2.10.0'', the world names it ''2.10.0''; the leading v is not part of the code''s shape, and 2.10.0 has a two-digit group'
+expect: 'exit 0, no red; uses 2.10.0 green on e_install (same code as v2.10.0), place C4 green; claim rows green'
+layout: 'version code with a ''v'' prefix and a two-digit group; letter-digit gate code'
+truth:
+  set: {}
+  status: PASS

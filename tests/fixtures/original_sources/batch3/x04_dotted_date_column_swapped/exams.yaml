@@ -1,0 +1,17 @@
+contract_id: exams
+claim:
+  claim_id: practical_after_exam
+  text: Lukas sits the Chemistry exam before his lab practical.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_exam_end, before: e_practical}
+    - {holds: practical_done, at: "2027-06-07T17:00"}
+world_model:
+  model_id: exams
+  scope_limits: [published exam timetable]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_exam_start, at: "2027-07-06T09:00", source: tt r1 start, actor_state_free: the exam timetable, initiates: [exam_running]}
+    - {event_id: e_exam_end, at: "2027-07-06T11:30", source: tt r1 end, actor_state_free: the exam timetable, requires: [exam_running], initiates: [exam_done], terminates: [exam_running]}
+    - {event_id: e_practical, at: "2027-06-07T14:00", source: notes p1, actor_state_free: the lab booking, requires: [exam_done], initiates: [practical_done]}

@@ -1,0 +1,21 @@
+contract_id: window
+claim:
+  claim_id: machines_updated
+  text: The tagged release is installed on the ticket machines at Gate C4.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_tag, before: e_install}
+    - {holds: machines_updated, at: "22:40"}
+world_model:
+  model_id: window
+  scope_limits: [one maintenance window]
+  relations:
+    farid_in_server_room: {at: [Farid, server_room]}
+    farid_at_c4: {at: [Farid, C4]}
+    farid_has_release: {holds: [Farid, "2.10.0"]}
+inputs:
+  event_model: {initial_states: [farid_in_server_room]}
+  events:
+    - {event_id: e_tag, at: "22:00", source: window p1, actor: Farid, place: server_room, uses: [], initiates: [farid_has_release]}
+    - {event_id: e_walk, at: "22:10", source: window p2, actor: Farid, place: server_room, uses: [], initiates: [farid_at_c4], terminates: [farid_in_server_room]}
+    - {event_id: e_install, at: "22:25", source: window p3, actor: Farid, place: C4, uses: ["2.10.0"], initiates: [machines_updated]}

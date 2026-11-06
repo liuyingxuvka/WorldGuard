@@ -1,0 +1,15 @@
+contract_id: museum
+claim:
+  claim_id: counted_twice
+  text: The guide counts the pupils in the morning and again before the bus.
+  requested_semantics: [event]
+  asserts:
+    - {event: e_count_am, before: e_count_pm}
+world_model:
+  model_id: museum
+  scope_limits: [one day]
+inputs:
+  event_model: {initial_states: []}
+  events:
+    - {event_id: e_count_am, at: "9:15", source: museum p1, actor_state_free: the guide is not modelled, initiates: [counted_once]}
+    - {event_id: e_count_pm, at: "4:30", source: museum p2, actor_state_free: the guide is not modelled, requires: [counted_once], initiates: [counted_twice]}
