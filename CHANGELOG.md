@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.10.1 - 2026-11-06 - Bind readings to the stated event and role
+
+- Match finite ordinal event references and named participants to the selected source event, instead of accepting another clock or a passive receiver as evidence for the modeled actor. Ambiguous references remain grey; definite mismatches replay through the existing world evaluator.
+- Preserve visible limits for single-world and mesh comparisons: they check the supplied IDs, and an empty observation set supplies no observation verification. A nonempty set does not establish independent observation.
+- Keep historical source fixtures and expected limitations unchanged. Separately document the reviewed expectation corrections for source-binding bugs.
+
 ## v0.10.0 - 2026-11-06 - Check original passages and values
 
 - Declare original files in `texts` and point event `source` at a paragraph or CSV cell. The native check compares quoted words, times, dates, named participants and codes with the actual file; uncertain readings stay grey.
