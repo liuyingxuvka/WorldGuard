@@ -10,7 +10,7 @@
 
 | Version | Runtime | Package |
 | --- | --- | --- |
-| `v0.9.0` | Python 3.11+, PyYAML | `worldguard` |
+| `v0.10.0` | Python 3.11+, PyYAML | `worldguard` |
 
 [中文说明](./README.zh-CN.md)
 
@@ -96,7 +96,7 @@ they mean.
 **1. Install the skill for your AI, from the release tag.**
 
 ```bash
-git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.10.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -110,7 +110,7 @@ PyYAML is needed (JSON worlds need nothing).
 **2. Optional: the `worldguard` command**, from the same tag:
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.10.0"
 ```
 
 It installs the console command `worldguard` with the five subcommands `check`, `mesh-check`, `timeline`, `lifeline`

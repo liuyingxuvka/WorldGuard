@@ -10,7 +10,7 @@
 
 | 版本 | 运行环境 | 包名 |
 | --- | --- | --- |
-| `v0.9.0` | Python 3.11+，PyYAML | `worldguard` |
+| `v0.10.0` | Python 3.11+，PyYAML | `worldguard` |
 
 [English](./README.md)
 
@@ -91,7 +91,7 @@ $ python skills/worldguard/scripts/run_worldguard.py check --contract tests/fixt
 **1. 从发布的 tag 安装技能。**
 
 ```bash
-git clone --depth 1 --branch v0.9.0 https://github.com/liuyingxuvka/WorldGuard.git
+git clone --depth 1 --branch v0.10.0 https://github.com/liuyingxuvka/WorldGuard.git
 python -m pip install PyYAML
 python WorldGuard/scripts/install_skill.py --target ~/.claude/skills          # Claude Code
 python WorldGuard/scripts/install_skill.py --target ~/.codex/skills           # Codex (or "$CODEX_HOME/skills")
@@ -104,7 +104,7 @@ python WorldGuard/scripts/install_skill.py --target ~/.claude/skills --check  # 
 **2. 可选：`worldguard` 命令**，同一个 tag：
 
 ```bash
-python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.9.0"
+python -m pip install "git+https://github.com/liuyingxuvka/WorldGuard.git@v0.10.0"
 ```
 
 装好后有 `worldguard` 命令（五个子命令：`check`、`mesh-check`、`timeline`、`lifeline`、`compare`），以及 Python 接口（`GuardContract`、`ModelMeshContract`、

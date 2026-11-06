@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.0 - 2026-11-06 - Check original passages and values
+
+- Declare original files in `texts` and point event `source` at a paragraph or CSV cell. The native check compares quoted words, times, dates, named participants and codes with the actual file; uncertain readings stay grey.
+- Read merged table headers, quantities, ranges and durations from the same source. Physical conversion uses PhysicsGuard's unit table through the optional `units` extra; unknown units and offset temperatures stay grey. Signed quantities retain their sign.
+- Replay definite source edits through the existing world evaluator, including both endpoints of a range, so a sound AI transcription cannot hide a failing text world. Parent claims inherit actual child failures.
+- Reports and timelines expose source status, reasons and original-file digests. Mesh paths stay relative to the manifest, and shared paragraphs are counted once across the tree. The default summary omits intermediate copies; `--json` retains the complete readings and edits.
+- Reject unknown contract fields rather than silently ignoring a misspelled check.
+
 ## v0.9.0 - 2026-11-04 - Declared relations, visible contradictions and lifelines
 
 - Lifelines include events that release a declared fact on the pictures of both entities it names, including an event with no actor. Scope limits also name released facts that no relation covers.
