@@ -2,23 +2,21 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 from contextlib import redirect_stdout
 from io import StringIO
 import json
 from pathlib import Path
-import re
 from unittest.mock import patch
-from urllib.parse import unquote, urlsplit
+from urllib.parse import urlsplit
 
 import pytest
+
+from flowguard.testing import LINKS, check_route_texts
 
 from worldguard.cli import main
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/worldguard"
-LINKS = re.compile(r"\[[^\]]*\]\(([^\s)]+)\)")
-CODES = re.compile(r"`([^`\n]+)`")
 HELP_ARGS = [["--help"]]
 
 
@@ -39,55 +37,9 @@ def _cli_options():
     return flags
 
 
-def _slug(heading):
-    return re.sub(r"[^\w\s-]", "", heading.lower()).replace(" ", "-")
-
-
-def _destination(origin, link):
-    value = urlsplit(link)
-    if value.scheme or value.netloc:
-        return None
-    path = (origin.parent / unquote(value.path)).resolve() if value.path else origin
-    return path, unquote(value.fragment)
-
-
 def _check(route, texts, flags):
-    paragraphs = Counter(
-        " ".join(part.split())
-        for text in texts.values()
-        for part in re.split(r"\n\s*\n", text)
-        if len(part.split()) >= 8
-    )
-    for paragraph, count in paragraphs.items():
-        assert count == 1, f"{route}: repeated paragraph: {paragraph}"
-    for origin, text in texts.items():
-        for link in LINKS.findall(text):
-            resolved = _destination(origin, link)
-            if resolved is None:
-                continue
-            target, fragment = resolved
-            assert target.exists(), f"{route}: dead link: {link} in {origin}"
-            if fragment:
-                headings = re.findall(r"^#+ (.+)$", target.read_text(), re.M)
-                assert fragment in {
-                    _slug(heading) for heading in headings
-                }, f"{route}: missing heading: {link} in {origin}"
-        for code in CODES.findall(text):
-            if code.startswith(
-                ("grep ", "git ", "pip ", "python -m pytest", "python -m flowguard")
-            ):
-                continue
-            for option in re.findall(r"--[a-z0-9][\w-]*", code):
-                assert option in flags, f"{route}: unknown option: {code}"
-            if code.startswith(("references/", "assets/", "scripts/", "agents/")):
-                target = SKILL / code.split()[0].split("#", 1)[0]
-            elif code.startswith(("worldguard/", "tests/")):
-                target = ROOT / code.split()[0].split("#", 1)[0]
-            else:
-                continue
-            if "<" in code or "*" in code:
-                continue
-            assert target.exists(), f"{route}: missing path: {code}"
+    check_route_texts(route, texts, flags, skill_root=SKILL, project_root=ROOT,
+                      project_prefixes=('worldguard/', 'tests/'))
 
 
 def _routes():
@@ -95,7 +47,7 @@ def _routes():
     return sorted(
         {
             (entry.parent / urlsplit(link).path).resolve()
-            for link in LINKS.findall(entry.read_text())
+            for link in LINKS.findall(entry.read_text(encoding='utf-8'))
             if urlsplit(link).path.startswith("references/")
         }
     )
@@ -107,7 +59,7 @@ def test_route_texts_have_no_repeats_dead_links_or_missing_names(route):
     files = {SKILL / "SKILL.md", route}
     for path in files:
         assert path.is_file(), f"{route.name}: missing reference: {path}"
-    _check(route.name, {path: path.read_text() for path in sorted(files)}, _cli_options())
+    _check(route.name, {path: path.read_text(encoding='utf-8') for path in sorted(files)}, _cli_options())
 
 
 def test_skill_has_three_references_and_the_model_tree_block():
@@ -117,7 +69,7 @@ def test_skill_has_three_references_and_the_model_tree_block():
         "worldguard-contracts.md",
         "model-mesh.md",
     }
-    paragraphs = (SKILL / "SKILL.md").read_text().split("\n\n")
+    paragraphs = (SKILL / "SKILL.md").read_text(encoding='utf-8').split("\n\n")
     note = next(part for part in paragraphs if part.startswith("- Node:"))
     assert [line.split(":", 1)[0] for line in note.splitlines()] == [
         "- Node",
@@ -131,7 +83,7 @@ def test_skill_has_three_references_and_the_model_tree_block():
 
 
 def test_skill_starts_from_the_model():
-    text = (SKILL / "SKILL.md").read_text()
+    text = (SKILL / "SKILL.md").read_text(encoding='utf-8')
     headings = [line for line in text.splitlines() if line.startswith("## ")]
     assert headings[0] == "## Start from the model"
     assert headings.index("## Start from the model") < headings.index("## Choose a command")

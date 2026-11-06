@@ -269,16 +269,17 @@ WorldGuard 按 `world_model.relations` 重放整个世界来核对（否则是 `
 
 ## 开发 WorldGuard
 
-每次提交前跑一遍全套测试，几秒钟就跑完；CI 会在 Python 3.11 和 3.13 上再跑一遍。
+每次提交前跑一遍全套测试；CI 会在 Python 3.11 和 3.13 上通过 `python -m flowguard check --all` 再跑一遍，
+同时检查已声明的意图。
 
 ```bash
 python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
-`tests/test_error_handlers.py` 列出了 WorldGuard 的代码、脚本、测试和旧模型里每一个可以不重新抛出就结束的错误处理：
-每个函数里有几个、各自做什么、为什么需要，以及它出自哪条写下来的规则（引用那份文件里的原句）。清单和源码对照检查，
-引用的句子也和原文件对照检查。测试或测试模块被跳过、被标成"预期失败"，或者整轮测试被提前结束，都算失败。
+`tests/error_policy.py` 列出了 WorldGuard 的代码、脚本、技能启动器和测试里每一个可以不重新抛出就结束的错误处理：
+每个函数里有几个、各自做什么、为什么需要，以及它出自哪条写下来的规则（引用那份文件里的原句）。
+`tests/test_error_handlers.py` 通过共享源码图核对这份清单，也和原文件核对引用的句子。测试或测试模块被跳过、被标成"预期失败"，或者整轮测试被提前结束，都算失败。
 无效输入（包括读不了的文件）抛出 `WorldInputError`（退出码 2），其他任何错误都是程序的错，带着回溯直接抛出。
 
 `test` 这一组会装上 pytest 和 FlowGuard：WorldGuard 用 FlowGuard 维护自己，这一组里钉着本版本开发时用的 FlowGuard 版本。

@@ -301,16 +301,18 @@ job: naming the right place and the things an event uses, and declaring the rela
 
 ## Developing WorldGuard
 
-Run the whole test suite before each commit; it takes seconds. CI runs it again on Python 3.11 and 3.13.
+Run the whole test suite before each commit. CI runs it again on Python 3.11 and 3.13 through
+`python -m flowguard check --all`, including the declared intent checks.
 
 ```bash
 python -m pip install -e ".[test]"
 python -m pytest -q
 ```
 
-`tests/test_error_handlers.py` lists every error handler in WorldGuard, its scripts, tests and flow models that can
-finish without raising, with how many there are in each function, what each does, why it is needed and the sentence of
-the written rule it serves; the list is checked against the source and the sentences against their files. A test or a
+`tests/error_policy.py` lists every error handler in WorldGuard, its scripts, skill launcher and tests that can finish
+without raising, with how many there are in each function, what each does, why it is needed and the sentence of the
+written rule it serves. `tests/test_error_handlers.py` checks this policy against the shared source map and the quoted
+sentences against their files. A test or a
 test module that ends skipped or expected to fail, or a run cut short, fails. Invalid input, including a file that
 cannot be read, raises `WorldInputError` (exit 2); any other error is a fault and is raised with its traceback.
 

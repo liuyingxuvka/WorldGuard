@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
+from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 
-from ._helpers import error, requested_semantic_ids, result
+from ._helpers import append_guard_boundary, error, requested_semantic_ids, result
 
 
 _RCC8 = {"DC", "EC", "PO", "EQ", "TPP", "NTPP", "TPPI", "NTPPI"}
@@ -237,12 +237,8 @@ def _check(contract: GuardContract):
 
 
 def run(contract: GuardContract):
-    """Check the complete native SpaceGuard rules once, then append its boundary."""
-    checked = _check(contract)
-    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["SpaceGuard"]:
-        from dataclasses import replace
-        from worldguard.status import aggregate_statuses
-        checked = replace(checked,
-            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
-            errors=[*checked.errors, error('SPACE_BOUNDARY_METRIC_GEOMETRY', 'RCC8 does not own metric distance.')])
-    return checked
+    """Check native SpaceGuard rules once, then append only its declared boundary."""
+    return append_guard_boundary(
+        _check(contract), contract, 'SpaceGuard',
+        lambda: error('SPACE_BOUNDARY_METRIC_GEOMETRY', 'RCC8 does not own metric distance.'),
+    )

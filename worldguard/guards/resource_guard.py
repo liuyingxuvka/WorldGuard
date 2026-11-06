@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import math
 
-from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
+from worldguard.contracts import GuardContract
 from worldguard.status import GuardStatus
 from worldguard.semantic import token_replay
 
-from ._helpers import error, requested_semantic_ids, result
+from ._helpers import append_guard_boundary, error, requested_semantic_ids, result
 
 
 def _check(contract: GuardContract):
@@ -110,12 +110,8 @@ def _check(contract: GuardContract):
 
 
 def run(contract: GuardContract):
-    """Check the complete native ResourceGuard rules once, then append its boundary."""
-    checked = _check(contract)
-    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS["ResourceGuard"]:
-        from dataclasses import replace
-        from worldguard.status import aggregate_statuses
-        checked = replace(checked,
-            status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
-            errors=[*checked.errors, error('RESOURCE_BOUNDARY_NORM_AUTHORIZATION', 'ResourceGuard does not own permission.')])
-    return checked
+    """Check native ResourceGuard rules once, then append only its declared boundary."""
+    return append_guard_boundary(
+        _check(contract), contract, 'ResourceGuard',
+        lambda: error('RESOURCE_BOUNDARY_NORM_AUTHORIZATION', 'ResourceGuard does not own permission.'),
+    )

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
+from dataclasses import replace
+from typing import Any, Callable
 
-from worldguard.contracts import GuardContract
+from worldguard.contracts import GUARD_BOUNDARY_SEMANTICS, GuardContract
 from worldguard.reports import GuardResult
-from worldguard.status import GuardStatus
+from worldguard.status import GuardStatus, aggregate_statuses
 
 
 def requested_semantic_ids(contract: GuardContract) -> set[str]:
@@ -33,3 +34,16 @@ def result(
 
 def error(code: str, message: str, severity: str = "blocking") -> dict[str, str]:
     return {"code": code, "severity": severity, "message": message, "source_ref": code}
+
+
+def append_guard_boundary(
+    checked: GuardResult, contract: GuardContract, guard: str,
+    boundary_error: Callable[[], dict[str, str]],
+) -> GuardResult:
+    """Keep the complete native check, then add a requested boundary without hiding its result."""
+    if requested_semantic_ids(contract) & GUARD_BOUNDARY_SEMANTICS[guard]:
+        return replace(
+            checked, status=aggregate_statuses([checked.status, GuardStatus.BOUNDARY_EXCEEDED]),
+            errors=[*checked.errors, boundary_error()],
+        )
+    return checked

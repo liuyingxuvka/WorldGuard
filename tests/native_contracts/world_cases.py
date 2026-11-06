@@ -1,4 +1,4 @@
-"""The unchanged finite native world fixtures shared by independent model aspects."""
+"""Shared native input fixtures; no expected-state machine or alternate checker."""
 from dataclasses import dataclass, replace
 from copy import deepcopy
 from contextlib import redirect_stdout
@@ -27,7 +27,44 @@ class CheckRequest:
     timeline: bool = False
     space_token: str = 'none'
     actor_state: str = 'none'
-EXTERNAL_INPUTS = (CheckRequest('actor_state_unchecked', actor_state='unchecked'), CheckRequest('actor_state_free', actor_state='free'), CheckRequest('compare_match', rows='comparison', compare=True), CheckRequest('compare_mismatch', rows='comparison', compare=True, compare_mismatch=True), CheckRequest('uncaught_variant', uncaught_variant=True, rows='variants'), CheckRequest('forbidden_event', forbidden_event=True, rows='norm'), CheckRequest('event_clock', scm_mode='event_clock', rows='variable'), CheckRequest('tokens_cloned', tokens_cloned=True, rows='tokens'), CheckRequest('number', time_form='number'), CheckRequest('label'), CheckRequest('iso', time_form='iso'), CheckRequest('clock_reversed', time_form='clock', event_order_correct=False), CheckRequest('clock_good', time_form='clock'), CheckRequest('word_time', time_form='word'), CheckRequest('mixed_time', time_form='mixed'), CheckRequest('duplicate_ids', duplicate_ids=True), CheckRequest('scenario_late', scm_mode='scenario', rows='variable'), CheckRequest('intervention_late', scm_mode='intervention', rows='variable'), CheckRequest('owned_boundary', boundary='owned'), CheckRequest('foreign_boundary', boundary='unselected'), CheckRequest('unbound', rows='none'), CheckRequest('false_row', rows='false'), CheckRequest('unknown_row', rows='unknown'), CheckRequest('missing_event_time', time_form='missing'), CheckRequest('partial_run_fail', scm_mode='partial_fail', rows='variable'), CheckRequest('partial_run_gap', scm_mode='partial_gap', rows='variable'), CheckRequest('boundary_with_fail', time_form='clock', event_order_correct=False, boundary='owned'), CheckRequest('boundary_with_gap', time_form='missing', boundary='owned'), *(CheckRequest('retired_' + key, retired_key=key) for key in ('schema_version', 'run_id', 'dependencies', 'output_requirements', 'target_guard', 'target_guards', 'atoms')), CheckRequest('token_event_mismatch', token_event_mismatch=True, rows='tokens'), CheckRequest('transition_unlinked', transition_unlinked=True, rows='tokens'), CheckRequest('observed_copy', compare=True, compare_mismatch=True, observed_copy=True, rows='comparison'), CheckRequest('timeline_late_ferry', scm_mode='event_clock', rows='variable', timeline=True), CheckRequest('space_token_agrees', rows='tokens', space_token='agrees'), CheckRequest('space_token_disjoint', rows='tokens', space_token='disjoint'), CheckRequest('space_token_unrelated', rows='tokens', space_token='unrelated'))
+EXTERNAL_INPUTS = (
+    CheckRequest('actor_state_unchecked', actor_state='unchecked'),
+    CheckRequest('actor_state_free', actor_state='free'),
+    CheckRequest('compare_match', rows='comparison', compare=True),
+    CheckRequest('compare_mismatch', rows='comparison', compare=True, compare_mismatch=True),
+    CheckRequest('uncaught_variant', uncaught_variant=True, rows='variants'),
+    CheckRequest('forbidden_event', forbidden_event=True, rows='norm'),
+    CheckRequest('event_clock', scm_mode='event_clock', rows='variable'),
+    CheckRequest('tokens_cloned', tokens_cloned=True, rows='tokens'),
+    CheckRequest('number', time_form='number'),
+    CheckRequest('label'),
+    CheckRequest('iso', time_form='iso'),
+    CheckRequest('clock_reversed', time_form='clock', event_order_correct=False),
+    CheckRequest('clock_good', time_form='clock'),
+    CheckRequest('word_time', time_form='word'),
+    CheckRequest('mixed_time', time_form='mixed'),
+    CheckRequest('duplicate_ids', duplicate_ids=True),
+    CheckRequest('scenario_late', scm_mode='scenario', rows='variable'),
+    CheckRequest('intervention_late', scm_mode='intervention', rows='variable'),
+    CheckRequest('owned_boundary', boundary='owned'),
+    CheckRequest('foreign_boundary', boundary='unselected'),
+    CheckRequest('unbound', rows='none'),
+    CheckRequest('false_row', rows='false'),
+    CheckRequest('unknown_row', rows='unknown'),
+    CheckRequest('missing_event_time', time_form='missing'),
+    CheckRequest('partial_run_fail', scm_mode='partial_fail', rows='variable'),
+    CheckRequest('partial_run_gap', scm_mode='partial_gap', rows='variable'),
+    CheckRequest('boundary_with_fail', time_form='clock', event_order_correct=False, boundary='owned'),
+    CheckRequest('boundary_with_gap', time_form='missing', boundary='owned'),
+    *(CheckRequest('retired_' + key, retired_key=key) for key in ('schema_version', 'run_id', 'dependencies', 'output_requirements', 'target_guard', 'target_guards', 'atoms')),
+    CheckRequest('token_event_mismatch', token_event_mismatch=True, rows='tokens'),
+    CheckRequest('transition_unlinked', transition_unlinked=True, rows='tokens'),
+    CheckRequest('observed_copy', compare=True, compare_mismatch=True, observed_copy=True, rows='comparison'),
+    CheckRequest('timeline_late_ferry', scm_mode='event_clock', rows='variable', timeline=True),
+    CheckRequest('space_token_agrees', rows='tokens', space_token='agrees'),
+    CheckRequest('space_token_disjoint', rows='tokens', space_token='disjoint'),
+    CheckRequest('space_token_unrelated', rows='tokens', space_token='unrelated'),
+)
 
 def _real_contract(request):
     if request.actor_state != 'none':
@@ -111,8 +148,6 @@ def _replay_observed_copy(contract, observed):
     copied['inputs']['events'][0]['initiates'] = 'independent-copy-proof'
     assert world.to_dict() == original, 'observed copy shares nested input objects'
 
-def worst(values):
-    return next((s for s in ('FAIL', 'GAP', 'BOUNDARY_EXCEEDED', 'PASS') if s in values), 'PASS')
 
 def replay(request, *, write_observed=False):
     """Call the native CLI afresh, retaining the original fixture witness assertions."""
@@ -152,6 +187,11 @@ def witness_assertions(request, gaps):
     if request.tokens_cloned:
         assert any((row['code'] == 'RESOURCE_UNIQUE_TOKEN_DUPLICATED' for row in gaps)), 'the original clone contradiction disappeared'
 
+def worst(values):
+    """Independent projection of the original finite stage contribution order."""
+    return next((status for status in ('FAIL', 'GAP', 'BOUNDARY_EXCEEDED', 'PASS') if status in values), 'PASS')
+
+
 def stage_values(request, code, report):
     """Classify actual native contributions, not numerical or temporal world details."""
     if code == 2:
@@ -166,10 +206,6 @@ def stage_values(request, code, report):
         statuses.append('GAP')
     return ('PASS', events, consistency, worst(statuses))
 
-def _terminal_check(state, applies, expected, message):
-    if state.request is not None and state.status and applies(state.request) and (state.status != expected[1]):
-        return False
-    return True
 
 def replay_timeline(request):
     from worldguard.cli import main
