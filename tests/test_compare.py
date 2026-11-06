@@ -108,3 +108,29 @@ def test_written_observed_copy_shows_the_downstream_break(tmp_path,capsys):
     assert any(g['code']=='MESH_HANDOFF_TIME_BACKWARDS' for g in report['gaps'])
     assert main(['compare','--mesh',str(world),'--observed',str(obs),'--write-observed',str(out)])==2
     assert json.loads(out.read_text())==expected
+
+
+def test_zero_observations_are_a_local_comparison_without_validation_evidence():
+    world = load_mapping(TRIP)
+    result = compare_world(world, {})
+    assert result['status'] == 'PASS'  # Preserve the comparison of only supplied ids.
+    assert result['matches'] == result['mismatches'] == []
+    assert result['scope_limits'] == ['No observations supplied; no observation-based validation was performed.']
+    partial = compare_world(world, {'variables': {'slack_back_h': .75}})
+    assert partial['status'] == 'PASS' and len(partial['matches']) == 1
+    assert 'Only supplied' in partial['scope_limits'][0]
+    assert 'independence is not established' in partial['scope_limits'][0]
+
+
+@pytest.mark.parametrize('nodes,has_readings', [({}, False), ({'a': {}}, False), ({'a': {'events': {'a': 't1'}}}, True)])
+def test_tree_comparison_keeps_the_same_observation_boundary(nodes, has_readings):
+    from tests.test_model_mesh import continued_tree
+    from worldguard.mesh import compare_mesh
+    result = compare_mesh(continued_tree(), {'nodes': nodes})
+    assert result['status'] == 'PASS'
+    assert len(result['matches']) == int(has_readings)
+    assert result['mismatches'] == []
+    assert result['scope_limits'] == [
+        'Only supplied event/variable IDs compared; observation independence is not established by this command.'
+        if has_readings else 'No observations supplied; no observation-based validation was performed.'
+    ]

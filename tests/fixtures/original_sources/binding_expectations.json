@@ -1,0 +1,48 @@
+{
+  "batch2/heldout/h05_percent_range_shifted": {
+    "reference_counts": {"green": 1, "red": 5, "grey": 3},
+    "reason": "Three same-actor climbs cite one paragraph with three times and no event selector. Their times cannot be uniquely bound; the independently wrong percent range remains red and its text world remains FAIL."
+  },
+  "batch2/new/m01_quarter_to": {
+    "text_status": "PASS",
+    "reference_counts": {"green": 4, "red": 3, "grey": 0},
+    "reason": "The stated quarter-to-seven excludes the model's time, so the source contradiction stays red. The original provides neither a.m. nor p.m.; choosing the nearest of 06:45/18:45 to rewrite a text world was an unsupported guess. No guessed correction is now replayed."
+  },
+  "batch2/new/m02_role_swap": {
+    "has_red": true,
+    "text_status": "FAIL",
+    "reference_counts": {"green": 3, "red": 4, "grey": 1},
+    "reason": "The active transfer names Ivo as giver and Mara as recipient. The model swaps them. The finite named subject now supplies the actor correction; the existing world evaluator exposes the failed transfer."
+  },
+  "batch2/new/m02b_role_swap_quoted": {
+    "text_status": "FAIL",
+    "reference_counts": {"green": 3, "red": 4, "grey": 1},
+    "reason": "The fabricated quote remains red. The actual passage independently identifies Ivo as giver, so its actor correction now also reaches the existing text-world evaluator."
+  },
+  "batch2/new/m03_quote_altered": {
+    "reference_counts": {"green": 3, "red": 2, "grey": 2},
+    "reason": "The altered quote stays red. Quarter-past-seven without a.m./p.m. does not uniquely support either 07:15 or 19:15; affected source readings are grey instead of borrowing the model's hour."
+  },
+  "batch2/new/m04_digits_swapped": {
+    "reference_counts": {"green": 3, "red": 6, "grey": 1},
+    "reason": "The wrong numeric times remain red and their unique corrections still replay. The separate quarter-past-seven reading has no a.m./p.m. and is no longer green merely because the model supplies 19:15."
+  },
+  "batch2/new/n00_archive_correct": {
+    "reference_counts": {"green": 4, "red": 0, "grey": 3},
+    "reason": "The correct declared world still passes and is never called red. Its quarter-past-seven original does not choose 07:15 versus 19:15; that source support and the dependent claim are grey while uniquely stated events remain green."
+  },
+  "batch3/l01_any_match_second_departure": {
+    "has_red": true,
+    "text_status": "FAIL",
+    "reference_counts": {"green": 2, "red": 4, "grey": 0},
+    "repaired_limit": true,
+    "reason": "Noor takes the second of the explicitly ordered 06:40/07:10 departures. The source selects 07:10, not any matching time in the paragraph; the real travel calculation gives 07:30 after the 07:25 deadline."
+  },
+  "batch3/l03_passive_roles": {
+    "has_red": true,
+    "text_status": "FAIL",
+    "reference_counts": {"green": 1, "red": 4, "grey": 0},
+    "repaired_limit": true,
+    "reason": "The keys are handed to Rosa by Viktor. The finite passive by-agent identifies Viktor as the actor; swapping him with the recipient is now red and the original native transfer constraints fail after the actor correction."
+  }
+}

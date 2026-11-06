@@ -1,7 +1,8 @@
-"""Public original-source observations; the oracle is frozen from v1 and third-batch TRUTH.
+"""Public original-source observations; retain the historical oracle alongside binding corrections.
 
 Historical folders named ``heldout`` are now public development fixtures. These cases are not independent
-acceptance. A known-limit row records a miss; a passing regression on it does not mean the slip was caught.
+acceptance. Historical known-limit rows record misses; binding_expectations records the explicitly
+reviewed behavior changes, rather than treating those old green results as present acceptance.
 """
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ from worldguard.mesh import ModelMeshContract, run_model_mesh
 
 FIXTURES = Path(__file__).parent / "fixtures" / "original_sources"
 ORACLE = json.loads((FIXTURES / "expectations.json").read_text(encoding="utf-8"))
+BINDING_EXPECTATIONS = json.loads((FIXTURES / "binding_expectations.json").read_text(encoding="utf-8"))
 SOURCE_FIELDS = {"texts", "aliases", "tables", "decimal", "values"}
 SEVERITY = {"PASS": 0, "BOUNDARY_EXCEEDED": 1, "GAP": 2, "FAIL": 3}
 
@@ -92,11 +94,17 @@ def test_original_fixture_provenance_and_oracle_cover_every_seed():
     paths = {str(path.parent.relative_to(FIXTURES)) for path in FIXTURES.glob("batch*/**/sources.yaml")}
     assert paths == {row["path"] for row in ORACLE}
     assert len(paths) == 67
+    # This count describes the original experiment, including the two limits now repaired.
     assert sum(row.get("kind") == "known_limit" for row in ORACLE) == 3
+    assert BINDING_EXPECTATIONS.keys() <= paths
+    assert all(row["reason"] for row in BINDING_EXPECTATIONS.values())
 
 
 @pytest.mark.parametrize("expected", ORACLE, ids=[row["path"] for row in ORACLE])
-def test_public_original_seed_observation_matches_frozen_oracle(expected):
+def test_public_original_seed_matches_reviewed_current_expectations(expected):
+    historical = expected
+    correction = BINDING_EXPECTATIONS.get(expected['path'], {})
+    expected = {**historical, **correction}
     folder = FIXTURES / expected["path"]
     mode, data, _ = load_seed(folder)
     if "input_error" in expected:
@@ -112,17 +120,20 @@ def test_public_original_seed_observation_matches_frozen_oracle(expected):
     assert worlds, "the source-enabled check must expose the text-world result even when no edit was needed"
     actual_text = max((row["status"] for row in worlds), key=SEVERITY.__getitem__)
     assert actual_text == expected["text_status"]
-    # The first two batches are strict v1 colour/exit controls. Third-batch TRUTH corrects the
-    # prototype's v-prefixed-code false red and lower-case-room-code miss, so retain both records.
-    if not expected['path'].startswith('batch3/'):
+    # Keep strict first/second-batch observations and the reviewed new binding outcomes. Other
+    # third-batch colour counts remain historical prototype observations, as in the original test.
+    if not expected['path'].startswith('batch3/') or 'reference_counts' in correction:
         assert source_colour_counts(report) == expected['reference_counts']
     for row in statuses:
         assert {"id", "colour", "reason", "source_digest"} <= row.keys()
         assert row["colour"] in {"red", "green", "grey"}
         assert row["id"] and row["reason"]
         assert len(row["source_digest"]) == 64
-    # Controls must never be called red; limits retain their visible misses without being scored as caught.
-    if expected.get("kind") in {"control", "known_limit"}:
+    # Correct controls remain non-red. A repaired historical limit must now be caught; the one
+    # remaining unsupported quantity limit keeps its visible miss, rather than being scored caught.
+    if historical.get("kind") == "control" or (
+        historical.get("kind") == "known_limit" and not correction.get('repaired_limit')
+    ):
         assert not has_red
 
 

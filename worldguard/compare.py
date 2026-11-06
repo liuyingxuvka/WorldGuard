@@ -24,6 +24,11 @@ def finite_number(value: Any, name: str, *, nonnegative: bool = False) -> float:
     return result
 
 
+def comparison_scope(has_observations: bool) -> list[str]:
+    return ["Only supplied event/variable IDs compared; observation independence is not established by this command."
+            if has_observations else "No observations supplied; no observation-based validation was performed."]
+
+
 def compare_world_values(contract: GuardContract | Mapping[str, Any], observed: Mapping[str, Any]) -> dict[str, Any]:
     """Derive expected times and scenario values from the world and compare only observed ids."""
     if not isinstance(contract, GuardContract):
@@ -76,7 +81,7 @@ def compare_world_values(contract: GuardContract | Mapping[str, Any], observed: 
         expected = finite_number(values[scenario][variable_id], f"expected variable {variable_id}")
         record(variable_id, "variable", expected, actual, actual_number - expected, tolerance)
     result = {"status": "FAIL" if mismatches else "PASS", "contract_id": contract.contract_id,
-            "matches": matches, "mismatches": mismatches,
+            "matches": matches, "mismatches": mismatches, "scope_limits": comparison_scope(bool(matches or mismatches)),
             **({"source": observed["source"]} if "source" in observed else {})}
 
     return result, contract, selected_occurrences

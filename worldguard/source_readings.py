@@ -19,6 +19,8 @@ from .source_readers import (
     uses_24h,
     decimal_evidence,
     CELL_TIME,
+    CLOCK,
+    AMPM,
     times_in,
     sentences,
     time_mentions,
@@ -263,7 +265,7 @@ def mentions_with_dates(res: dict) -> list[tuple[set[int], list]]:
         return [(c, dates) for c, _ in cands]
     span = res["span"]
     sents = sentences(span)
-    para_dates = list(dict.fromkeys(date_mentions(span)))
+    para_dates = list(dict.fromkeys(date_mentions(res.get("paragraph_span", span))))
     head_dates = list(dict.fromkeys(date_mentions(text.heads[res["n"] - 1])))
     out = []
     for cands, index in time_mentions(span, text.conv24):
@@ -272,6 +274,106 @@ def mentions_with_dates(res: dict) -> list[tuple[set[int], list]]:
             (cands, own or (para_dates if len(para_dates) == 1 else []) or (head_dates if len(head_dates) == 1 else []))
         )
     return out
+
+
+# Finite source bindings, shared by ordinary and mesh source evidence.
+_ORDINAL = re.compile(
+    r"^\s+(?:takes?|catches?|boards?|chooses?|uses?|rides?)\s+(?:the\s+)?"
+    r"(first|second|third|last|former|latter)\b", re.I,
+)
+_TRANSFER_PASSIVE = re.compile(
+    r"\b(?:is|are|was|were)\s+(?:(?:being|been)\s+)?(?:handed|given|passed|transferred)\b", re.I,
+)
+_ACTIVE_EVENT = re.compile(
+    r"^\s+(?:hands?|gives?|passes?|transfers?|opens?|closes?|locks?|unlocks?|boards?|takes?|"
+    r"catches?|chooses?|uses?|rides?|arrives?|departs?|leaves?|enters?|starts?|packs?)\b", re.I,
+)
+
+
+def _event_time_binding(res, event, aliases):
+    """Bind a finite named event/ordinal, rather than accepting any value in its paragraph."""
+    original = mentions_with_dates(res)
+    span = norm(res['span'])
+    if res['text'].kind == 'csv':
+        return original, span, '', '', False
+    pointer = POINTER.match(str(event.get('source', '')))
+    quote = pointer['quote'] if pointer and not res.get('quote_missing') else None
+    if quote and time_mentions(quote, res['text'].conv24):
+        span = norm(quote)
+    clauses = [part.strip() for sentence in sentences(span) for part in sentence.split(';') if part.strip()]
+    actor = event.get('actor')
+
+    def mentions(part):
+        return mentions_with_dates({**res, 'span': part, 'paragraph_span': res['span']})
+
+    available = mentions(span)
+    if len(available) == 1 and len(available[0][0]) == 1:
+        return available, span, '', '', False
+    if re.search(r'\b(?:between\s+\d{1,2}:\d{2}\s+and|from\s+\d{1,2}:\d{2}\s+(?:to|until))\b', span, re.I) and len(available) > 1:
+        return available, span, 'cannot bind one event time in an interval: ' + ', '.join(show_cands(c) for c, _ in available), '', True
+    selections = []
+    for index, clause in enumerate(clauses):
+        hit = named_at(actor, clause, aliases) if actor else None
+        if hit:
+            end = hit[1] + len(norm(hit[0].replace('_', ' ')))
+            if choice := _ORDINAL.match(clause[end:]):
+                selections.append((index, choice[1].lower(), clause[:hit[1]]))
+    if len(selections) == 1:
+        index, ordinal, prefix = selections[0]
+        own = mentions(clauses[index])
+        if len(own) == 1 and len(own[0][0]) == 1:
+            return own, clauses[index], '', f' (explicit time for {actor})', False
+        pool = prefix if len(CLOCK.findall(prefix)) + len(AMPM.findall(prefix)) >= 2 else clauses[index - 1] if index else ''
+        options = mentions(pool) if pool else []
+        numeric = len(CLOCK.findall(pool)) + len(AMPM.findall(pool)) == len(options)
+        unique = len({next(iter(candidates)) for candidates, _ in options if len(candidates) == 1}) == len(options)
+        if 2 <= len(options) <= 3 and numeric and unique and all(len(c) == 1 for c, _ in options):
+            chosen = {'first': 0, 'second': 1, 'third': 2, 'last': len(options) - 1,
+                      'former': 0, 'latter': 1}[ordinal]
+            if chosen < len(options) and (ordinal not in ('former', 'latter') or len(options) == 2):
+                return [options[chosen]], clauses[index], '', f' ({ordinal} of {len(options)} departures for {actor})', False
+        return original, clauses[index], f'cannot bind {actor} to {ordinal}: need one ordered list of 2-3 explicit clock times', '', False
+    if len(selections) > 1:
+        return original, span, f'cannot bind {actor}: several event selections in this span', '', False
+    timed_actor = [clause for clause in clauses if actor and named(actor, clause, aliases) and mentions(clause)]
+    selected_span = timed_actor[0] if len(timed_actor) == 1 else span
+    found = mentions(selected_span)
+    signatures = {(tuple(sorted(c)), tuple(dates)) for c, dates in found}
+    if len(signatures) > 1 or any(len(c) > 1 for c, _ in found):
+        choices = ', '.join(show_cands(c) for c, _ in found)
+        return found, selected_span, f'cannot bind one event time: candidates {choices}; name the event or its choice', '', False
+    return found, selected_span, '', '', False
+
+def _event_actor_binding(span, actor, persons, aliases):
+    """Only explicit named subjects or the finite passive transfer agent establish the role."""
+    hits = {person: hit for person in persons if (hit := named_at(person, span, aliases))}
+    if passive := _TRANSFER_PASSIVE.search(span):
+        tail = re.split(r'\bby\b', span[passive.end():], maxsplit=1, flags=re.I)
+        if len(tail) == 2:
+            agent_text = norm(tail[1])
+            agents = [(person, hit) for person in persons if (hit := named_at(person, agent_text, aliases))]
+            if len(agents) == 1:
+                person, (word, start) = agents[0]
+                end = start + len(norm(word.replace('_', ' ')))
+                prefix = re.fullmatch(r'\s*(?:(?:Dr|Mr|Mrs|Ms)\.?\s*)?', agent_text[:start], re.I)
+                suffix = re.match(r'\s*(?:[.!?]|$|\b(?:at|in|on)\s)', agent_text[end:], re.I)
+                if prefix and suffix:
+                    return person, ''
+        return None, 'cannot bind transfer agent: passive transfer needs one named by-agent'
+    if re.search(r'\b(?:is|are|was|were)\b.*\bby\b', span, re.I) and len(hits) > 1:
+        return None, 'cannot bind actor: passive role is outside the supported transfer forms'
+    if not hits:
+        return None, f'{actor} not named in event span (pronoun?)'
+    first = min(hits, key=lambda name: hits[name][1])
+    hit = hits[first]
+    suffix = span[hit[1] + len(norm(hit[0].replace('_', ' '))):]
+    if len(hits) > 1 and re.match(r'^\s+(?:watches?|sees?|hears?|asks?|tells?)\b', suffix, re.I):
+        return None, 'cannot bind actor through a nested observer/speech clause'
+    if _ACTIVE_EVENT.match(suffix):
+        return first, ''
+    if first != actor and actor in hits:
+        return None, f'{first} named before {actor}: who acts is not read'
+    return first, ''
 
 
 def table_hint(res: dict, minutes: int) -> str:
@@ -307,12 +409,20 @@ def read_event(event: dict, texts: dict, aliases: dict, names: tuple, cited: dic
     out["span"] = span
     # time and date
     kind, at_date, at_min = at_parts(event["at"]) if "at" in event else (None, None, None)
-    found = mentions_with_dates(res)
+    found, actor_span, time_ambiguity, binding_note, time_interval = _event_time_binding(res, event, aliases)
     time_ok = False
     if "at" not in event:
         add("time", ".", "event has no time")
     elif at_min is None:
         add("time", ".", f"world clock is {kind}s; nothing to compare")
+    elif time_ambiguity and (time_interval or not found or any(at_min in candidates for candidates, _ in found)):
+        add("time", ".", time_ambiguity)
+        # A missing event/time binding must not hide a separately explicit date contradiction.
+        dates = list(dict.fromkeys(date for _, dates in found for date in dates))
+        if kind == "ISO date-time" and len(dates) == 1 and not date_matches(dates[0], at_date):
+            add("date", "R", f"span says {show_date(dates[0])}; world says {at_date}")
+            year, month, day = dates[0]
+            out["edits"]["at"] = f"{year or int(at_date[:4]):04d}-{month:02d}-{day:02d}T{at_min // 60:02d}:{at_min % 60:02d}"
     elif not found:
         add("time", ".", f'span has no time; "{event["at"]}" is the AI\'s')
     else:
@@ -332,7 +442,7 @@ def read_event(event: dict, texts: dict, aliases: dict, names: tuple, cited: dic
                 add(
                     "time",
                     "G",
-                    hm(at_min) + note12 + (f" on {show_date(dates[0])}" if iso and text.kind == "prose" else ""),
+                    hm(at_min) + note12 + binding_note + (f" on {show_date(dates[0])}" if iso and text.kind == "prose" else ""),
                 )
                 time_ok = True
         elif timed:
@@ -359,8 +469,8 @@ def read_event(event: dict, texts: dict, aliases: dict, names: tuple, cited: dic
                 "R",
                 f"span says {said}; world says {event['at']}" + (table_hint(res, at_min) if text.kind == "csv" else ""),
             )
-            if len(found) == 1:
-                new = min(found[0][0], key=lambda c: abs(c - at_min))
+            if len(found) == 1 and len(found[0][0]) == 1:
+                new = next(iter(found[0][0]))
                 dates = found[0][1]
                 if kind == "clock":
                     out["edits"]["at"] = hm(new)
@@ -375,23 +485,19 @@ def read_event(event: dict, texts: dict, aliases: dict, names: tuple, cited: dic
     actor_ok = text.kind == "csv" or not event.get("actor")
     if text.kind == "prose" and event.get("actor"):
         actor = event["actor"]
-        participants = {actor, *(event.get("with", []) or [])}
         where = {p: named_at(p, span, aliases) for p in persons}
         in_span = {p for p, hit in where.items() if hit}
-        others = sorted(in_span - participants)
-        if actor in in_span:
-            first = [w for w in event.get("with", []) or [] if w in in_span and where[w][1] < where[actor][1]]
-            if first:
-                add("actor", ".", f"{', '.join(first)} named before {actor}: who acts is not read")
-            else:
-                add("actor", "G", actor)
-                actor_ok = True
-        elif others:
-            add("actor", "R", f"span names {', '.join(others)}, not {actor}")
-            if len(others) == 1:
-                out["edits"]["actor"] = others[0]
+        bound_actor, ambiguity = _event_actor_binding(actor_span, actor, persons, aliases)
+        if ambiguity:
+            add("actor", ".", ambiguity)
+        elif bound_actor == actor:
+            add("actor", "G", actor)
+            actor_ok = True
+        elif bound_actor:
+            add("actor", "R", f"span actor is {bound_actor}, not {actor}")
+            out["edits"]["actor"] = bound_actor
         else:
-            add("actor", ".", f"{actor} not named in span (pronoun?)")
+            add("actor", ".", f"{actor} not named in event span")
         for who in event.get("with", []) or []:
             add("with", "G" if who in in_span else ".", who if who in in_span else f"{who} not named")
         uses = event.get("uses", []) or []

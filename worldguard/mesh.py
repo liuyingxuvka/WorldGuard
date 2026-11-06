@@ -756,7 +756,7 @@ def _finding(
 
 def compare_mesh_with_observed_copy(world, observed):
     """Compare a tree once and copy only selected event times."""
-    from .compare import compare_world_values, finite_number
+    from .compare import compare_world_values, comparison_scope, finite_number
 
     if not isinstance(world, ModelMeshContract):
         world = ModelMeshContract.from_dict(world)
@@ -790,6 +790,7 @@ def compare_mesh_with_observed_copy(world, observed):
         "status": "FAIL" if mismatches else "PASS",
         "matches": matches,
         "mismatches": mismatches,
+        "scope_limits": comparison_scope(bool(matches or mismatches)),
         **({"source": observed["source"]} if "source" in observed else {}),
     }, copied
 

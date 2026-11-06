@@ -112,41 +112,35 @@ def _twelve(hour: int, minute: int, sentence: str) -> set[int]:
 
 
 def time_mentions(text: str, conv24: bool = True) -> list[tuple[set[int], int]]:
-    """Every time stated in the text: (candidate minutes after midnight, sentence index). A 12-hour mention without
-    a.m./p.m. or a day-part word has two candidates."""
+    """Times in source order as (candidate minutes, sentence index); never choose an event here."""
     found = []
     for index, sentence in enumerate(sentences(text)):
         for match in CLOCK.finditer(sentence):
             hour, minute = int(match[1]), int(match[2])
-            if 1 <= hour <= 12 and (
+            candidates = (_twelve(hour, minute, sentence) if 1 <= hour <= 12 and (
                 PM_WORDS.search(sentence) or AM_WORDS.search(sentence) or NIGHT.search(sentence) or not conv24
-            ):
-                found.append((_twelve(hour, minute, sentence), index))
-            else:
-                found.append(({hour * 60 + minute}, index))
-        for h, m, ap in AMPM.findall(sentence):
-            found.append(({(int(h) % 12 + (12 if ap.lower() == "p" else 0)) * 60 + int(m or 0)}, index))
-        for amount, relation, hour_word in WORDED.findall(sentence):
+            ) else {hour * 60 + minute})
+            found.append((index, match.start(), candidates))
+        for match in AMPM.finditer(sentence):
+            hour, minute, ap = match.groups()
+            found.append((index, match.start(), {(int(hour) % 12 + (12 if ap.lower() == 'p' else 0)) * 60 + int(minute or 0)}))
+        for match in WORDED.finditer(sentence):
+            amount, relation, hour_word = match.groups()
             hour = int(hour_word) if hour_word.isdigit() else HOUR_WORDS[hour_word.lower()]
             minutes = {"quarter": 15, "half": 30}.get(amount.lower()) or word_number(amount)
-            if (
-                minutes is None
-                or not 0 < minutes < 60
-                or (amount.lower() == "half" and relation.lower() in {"to", "before"})
-            ):
+            if minutes is None or not 0 < minutes < 60 or amount.lower() == 'half' and relation.lower() in {'to', 'before'}:
                 continue
             if relation.lower() in {"to", "before"}:
                 hour, minutes = (hour - 1) or 12, 60 - minutes
-            found.append((_twelve(hour, minutes, sentence), index))
-        for hour_word in OCLOCK.findall(sentence):
-            found.append(
-                (_twelve(int(hour_word) if hour_word.isdigit() else HOUR_WORDS[hour_word.lower()], 0, sentence), index)
-            )
-        if re.search(r"\bnoon\b", sentence, re.I):
-            found.append(({720}, index))
-        if re.search(r"\bmidnight\b", sentence, re.I):
-            found.append(({0}, index))
-    return found
+            found.append((index, match.start(), _twelve(hour, minutes, sentence)))
+        for match in OCLOCK.finditer(sentence):
+            word = match[1]
+            found.append((index, match.start(), _twelve(int(word) if word.isdigit() else HOUR_WORDS[word.lower()], 0, sentence)))
+        if match := re.search(r"\bnoon\b", sentence, re.I):
+            found.append((index, match.start(), {720}))
+        if match := re.search(r"\bmidnight\b", sentence, re.I):
+            found.append((index, match.start(), {0}))
+    return [(candidates, index) for index, _, candidates in sorted(found, key=lambda row: row[:2])]
 
 
 def times_in(text: str) -> list[int]:

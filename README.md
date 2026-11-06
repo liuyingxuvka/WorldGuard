@@ -157,6 +157,8 @@ input.
 
 A plan can also be checked against what really happened. `compare` checks the observed times and values you give it;
 `--write-observed` writes an independent copy with the observed event times, leaving other inputs unchanged.
+It compares only supplied IDs. Empty observations perform no validation, and matching supplied values do not
+establish observation independence; the result keeps that boundary in `scope_limits`.
 Checking that copy shows whether those times break the declared constraints:
 
 

@@ -78,6 +78,16 @@ variants; a mesh separately counts its own variants and `checked.node_variants`.
 
 With `texts: {ch: chapter.md}`, event `source: ch p3 "quoted words"` reads the third non-heading paragraph; `tt r3 arr` reads a CSV data row and column (`tables: {tt: {header_rows: 2}}` for merged headers). `aliases: {Anna: [Dr. Anna]}` supplies names; `decimal: {ch: ','}` resolves numeric convention. Source files enter the input digests. A definite mismatch is red; pronouns and unreadable language are grey. Uncited paragraphs appear in `scope_limits`.
 
+Event times need a unique binding within that passage. A single explicit time, an exact quote with one time,
+or a named actor's separate timed clause can supply it. For one ordered list of 2–3 explicit numeric clocks,
+`Anna takes/catches/boards/chooses/uses/rides the first/second/third/last` selects the stated departure;
+`former/latter` also work for two. The finite role reader recognises named active subjects and passive transfers
+(`is/was handed/given/passed/transferred ... by Viktor`), so a recipient cannot stand in for the giver.
+Unresolved event choices, intervals, an unqualified 12-hour clock and nested observer roles stay grey with the
+specific candidates or reason. A definite wrong time is still red, but an ambiguous correction is never guessed.
+This is a bounded passage reader, not general natural-language understanding; use a precise quote when a
+paragraph contains several events of the same actor. A green reading does not independently establish reality.
+
 Other numeric inputs use `values: {distance: {paths: [inputs.causal_model.scenarios.base.distance], source: ch p2, unit: km}}`. Quantity conversion uses PhysicsGuard's unit table (`units` extra); without it, grey. `unit: '1'` checks only dimensionless/count values, without understanding noun meanings. Unknown physical units and offset temperature conversions stay grey. Source ranges produce text worlds at both endpoints; explicit text time or actor edits use the existing variant evaluator. Claim rows expose `source_statuses`: id, colour, reason, original `sources` and their `source_digest`. Source paths are relative to the contract/mesh manifest, never the saved report; parent rows bind the target's originals.
 
 `timeline` and tree lines mark claims that pass on AI transcription only. The default summary keeps decisions and counterexamples; `--json` includes the original readings and edits. Optional `source` strings remain labels. Event counterexamples include a timeline `trace`; summaries omit it.
@@ -102,6 +112,8 @@ only supplied observations are compared. ISO/clock differences and `time_toleran
 other clocks and variable tolerances use their own scale. Differences are actual minus expected;
 absolute differences control tolerance. `source` is copied unchanged. Exit 0 means all supplied readings
 match, 1 means a mismatch, 2 means invalid input, unknown id/scenario or mixed time kinds.
+The result's `scope_limits` states this boundary: an empty observation set performs no observation-based
+validation; a nonempty set covers only its supplied IDs and does not prove that observations are independent.
 `--write-observed OUT` makes a new copy changing only selected event `at` values; other events and variables
 stay unchanged. An existing OUT is an input error. Run `check --contract OUT` to check the resulting world.
 
